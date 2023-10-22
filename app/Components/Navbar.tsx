@@ -20,7 +20,9 @@ import Image from "next/image";
 interface NavbarProps {
   language: string;
   onLangChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  onLangClick?: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void;
 }
+
 
 const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -36,12 +38,24 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
     { EN: "Favorites", UR: "پسندیدہ", HI: "पसंदीदा" },
   ];
   type Language = "EN" | "UR" | "HI";
-  const handleLangChange = (selectedLanguage: string) => {
-    // Perform any additional actions specific to click events here
+ const handleLanguageChange = (selectedLanguage: string) => {
+   const customEvent = {
+     target: {
+       value: selectedLanguage,
+     },
+   } as React.ChangeEvent<HTMLSelectElement>;
 
-    // Call the onLangChange function
-    onLangChange({ target: { value: selectedLanguage } });
-  };
+   onLangChange(customEvent);
+ };
+//  const handleLanguageChange = (selectedLanguage: string) => {
+//    const customEvent = {
+//      target: {
+//        value: selectedLanguage,
+//      },
+//    } as React.ChangeEvent<HTMLSelectElement>;
+
+//    onLangChange(customEvent);
+//  };
 
   return (
     <div>
@@ -139,7 +153,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* langchange */}
             <div className="grid grid-flow-col gap-2 mt-12">
               <span
-                onClick={() => handleLangChange("EN")}
+                onClick={() => handleLanguageChange("EN")}
                 className={`${
                   language == "EN"
                     ? "bg-[#984A02] text-white"
@@ -149,7 +163,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 English
               </span>
               <span
-                onClick={() => handleLangChange("UR")}
+                onClick={() => handleLanguageChange("UR")}
                 className={`${
                   language == "UR"
                     ? "bg-[#984A02] text-white"
@@ -159,7 +173,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 Urdu
               </span>
               <span
-                onClick={() => handleLangChange("HI")}
+                onClick={() => handleLanguageChange("HI")}
                 className={`${
                   language == "HI"
                     ? "bg-[#984A02] text-white"
@@ -169,6 +183,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 Hindi
               </span>
             </div>
+
             {/* Navigation Links (Mobile) */}
             <div className="flex gap-7">
               <div>

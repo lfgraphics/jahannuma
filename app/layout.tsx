@@ -24,7 +24,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#F0D586" />
       </head>
       <body>
-        <Navbar language={language} onLangChange={langChange} />
+        <Navbar language={language}  onLangChange={langChange} />
         {children}
         <Footer language={language} />
       </body>
