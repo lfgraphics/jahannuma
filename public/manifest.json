@@ -1,0 +1,8 @@
+{
+    "name": "JahanNuman",
+    "short_name": "App",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#F0D586",
+    "theme_color": "#F0D586"
+}

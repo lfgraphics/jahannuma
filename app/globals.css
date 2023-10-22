@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+html{
+  scroll-behavior: smooth;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Hide both vertical and horizontal scrollbars */
+body {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+/* Hide vertical scrollbar for Chrome, Safari, and newer Edge */
+*::-webkit-scrollbar {
+  width: 0;
+  /* Adjust this value to your preference */
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+/* Hide horizontal scrollbar for Chrome, Safari, and newer Edge */
+*::-webkit-scrollbar-horizontal {
+  height: 0;
+  /* Adjust this value to your preference */
+}
+
+*::-webkit-scrollbar-thumb:horizontal {
+  background-color: transparent;
+}
