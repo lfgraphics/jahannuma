@@ -6,17 +6,15 @@ import {
   IconButton,
   Typography,
   Container,
-  InputBase,
   Drawer,
   List,
   ListItem,
   ListItemText,
-
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
+import Image from "next/image";
 
 // export const [language, setLanguage] = useState("EN");
 interface NavbarProps {
@@ -27,44 +25,23 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Function to handle search input focus
-  const handleSearchFocus = () => {
-    // Add your logic to change opacity here
-  };
+  const pages = [
+    { EN: "Share", UR: "شئر", HI: "शेयर" },
+    { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
+    { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
+    { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
+    { EN: "e-books", UR: "ای بکس", HI: "ई-बुक्स" },
+    { EN: "Blogs", UR: "بلاگز", HI: "ब्लॉग्स" },
+    { EN: "Interviews", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
+    { EN: "Favorites", UR: "پسندیدہ", HI: "पसंदीदा" },
+  ];
+  type Language = "EN" | "UR" | "HI";
+  const handleLangChange = (selectedLanguage: string) => {
+    // Perform any additional actions specific to click events here
 
-  const urduItems = [
-    "شاعر",
-    "آشار",
-    "ای-بکس",
-    "غزلیں",
-    "نظمیں",
-    "بلاگز",
-    "انٹرویوز",
-  ];
-  const englishItems = [
-    "Shaer",
-    "Ashaar",
-    "Ghazlen",
-    "Nazmen",
-    "E-Books",
-    "Blogs",
-    "Interviews",
-  ];
-  const hindiItems = [
-    "कवि",
-    "छंद",
-    "ई-बुक्स",
-    "ग़ज़लें",
-    "कविताएँ",
-    "ब्लॉग्स",
-    "साक्षात्कार",
-  ];
-  const itemsToDisplay =
-    language === "UR"
-      ? urduItems
-      : language === "EN"
-      ? englishItems
-      : hindiItems;
+    // Call the onLangChange function
+    onLangChange({ target: { value: selectedLanguage } });
+  };
 
   return (
     <div>
@@ -73,11 +50,11 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
         className="bg-[#F0D586] text-[#984A02]"
         style={{ backgroundColor: "#F0D586" }}
       >
-        <Container maxWidth="lg">
-          <Toolbar className="justify-between pr-0 text-center text-[#984A02] lg:hidden md:hidden">
+        <Container>
+          <Toolbar className="justify-between pr-0 text-center text-[#984A02]">
             {/* Hamburger Menu Icon (Mobile) */}
             <IconButton
-              className="lg:hidden md:hidden "
+              className="lg:hidden"
               edge="start"
               aria-label="menu"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -91,21 +68,24 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* Logo */}
             <Typography variant="h6">
               <a href="/">
-                <img src="/logo.svg" alt="Logo" width="80" />
+                <Image src="/logo.svg" alt="Logo" width="80" height="60" />
               </a>
             </Typography>
 
             <List className="hidden lg:flex md:text-xs w-[68%] justify-center">
-              {itemsToDisplay.map((item) => (
-                <Link href={`/${item}`} key={item}>
+              {pages.map((page) => (
+                <Link href={`/${page.EN}`} key={page.EN}>
                   <ListItem button>
-                    <ListItemText primary={item} className="text-[#984A02]" />
+                    <ListItemText
+                      primary={page[language as Language]}
+                      className="text-[#984A02]"
+                    />
                   </ListItem>
                 </Link>
               ))}
             </List>
             {/* Language Select */}
-            <div className="m-2 border-[#984A02] text-[#984A02] hidden lg:block md:hidden sm:hidden">
+            <div className="m-2 border-[#984A02] text-[#984A02] ">
               <select
                 value={language}
                 onChange={onLangChange}
@@ -119,21 +99,10 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* donation button  */}
             <a
               href="/donate"
-              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-2 rounded-sm mr-3 hidden lg:block md:block w-32"
+              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-2 rounded-sm mr-3 w-32 text-[1rem]"
             >
               <button>Donate Us</button>
             </a>
-            {/* Search Bar (Desktop) */}
-            <div className="">
-              <div className="bg-opacity-30 bg-white rounded-md p-1 flex items-center">
-                <SearchIcon />
-                <InputBase
-                  className="w-36"
-                  placeholder="Search..."
-                  onFocus={handleSearchFocus}
-                />
-              </div>
-            </div>
           </Toolbar>
         </Container>
       </AppBar>
@@ -160,56 +129,56 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
           </IconButton>
           <div
             style={{
-              width: "100vw",
+              width: "80vw",
               display: "flex",
               flexDirection: "column",
               gap: "2rem",
               alignItems: "center",
             }}
           >
-            {/* faviorites */}
-
-            <Link
-              href="/Faviorites"
-              className="border-b-2 mt-3 border-black w-[100vw] text-center"
-            >
-              <Typography className="text-red-500 hover:text-[#984A02]">
-                <h3>Faviorites</h3>
-              </Typography>
-            </Link>
-
-            {/* donation button  */}
-            <div className="w-[100%] border-b-2 border-black text-center pb-3 md:hidden lg:hidden">
-              <a
-                href="/donate"
-                className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-3 rounded-sm"
+            {/* langchange */}
+            <div className="grid grid-flow-col gap-2 mt-12">
+              <span
+                onClick={() => handleLangChange("EN")}
+                className={`${
+                  language == "EN"
+                    ? "bg-[#984A02] text-white"
+                    : "bg-transparent text-[#984A02]"
+                } p-2`}
               >
-                <button>Donate Us</button>
-              </a>
-            </div>
-            {/* Language Select (Mobile) */}
-            <div className="w-[100%] border-b-2 border-black text-center pb-3">
-              <select
-                value={language}
-                onChange={onLangChange}
-                className="text-[#984A02] lg:border-[#984A02] lg:hidden md:hidden sm:hidden w-56 bg-transparent"
+                English
+              </span>
+              <span
+                onClick={() => handleLangChange("UR")}
+                className={`${
+                  language == "UR"
+                    ? "bg-[#984A02] text-white"
+                    : "bg-transparent text-[#984A02]"
+                } p-2`}
               >
-                <option value="UR">Urdu</option>
-                <option value="EN">English</option>
-                <option value="HI">Hindi</option>
-              </select>
+                Urdu
+              </span>
+              <span
+                onClick={() => handleLangChange("HI")}
+                className={`${
+                  language == "HI"
+                    ? "bg-[#984A02] text-white"
+                    : "bg-transparent text-[#984A02]"
+                } p-2`}
+              >
+                Hindi
+              </span>
             </div>
-
             {/* Navigation Links (Mobile) */}
             <div className="flex gap-7">
               <div>
                 <h3 className="text-black font-bold">Navs</h3>
                 <List id="navelems" className="flex flex-col">
-                  {itemsToDisplay.map((item) => (
-                    <Link href={`/${item}`} key={item}>
+                  {pages.map((page) => (
+                    <Link href={`/${page.EN}`} key={page.EN}>
                       <ListItem button>
                         <ListItemText
-                          primary={item}
+                          primary={page[language as Language]}
                           className="text-[#984A02]"
                         />
                       </ListItem>

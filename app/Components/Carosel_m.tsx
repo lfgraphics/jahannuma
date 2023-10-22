@@ -6,6 +6,8 @@ const Carousel1: React.FC = () => {
     "https://ideogram.ai/api/images/direct/ZYl4IE91RpCJ_q-ZqKsTrw",
     "https://ideogram.ai/api/images/direct/8smUhEw8QqymnvHgaCTuYQ",
     "https://ideogram.ai/api/images/direct/fg28RoKYRSuVR0PS8NNomA",
+    "/carousel/josh.jpeg",
+    "/carousel/jnd.jpeg"
   ]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
