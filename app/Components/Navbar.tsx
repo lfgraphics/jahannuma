@@ -125,10 +125,10 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
       >
         <div
           style={{
-            height: "max-content",
             background: "#F0D586",
             color: "#984A02",
           }}
+          className="min-h-[100vh] h-[max-content]"
         >
           {/* Close Icon */}
           <IconButton

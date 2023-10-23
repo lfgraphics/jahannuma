@@ -1,4 +1,5 @@
 import Ashaar from "./Ashaar/page";
+import Branches from "./Components/Branches";
 import Carousel1 from "./Components/Carosel_m";
 import RandCard from "./Components/RandCard";
 // import { getAllShaers } from "./Ashaar/data";
@@ -10,8 +11,7 @@ export default function Home() {
     <>
       <Carousel1></Carousel1>
       <RandCard></RandCard>
-      {/* <Ashaar data={shaerData}></Ashaar> */}
-      {/* <Carousel2></Carousel2> */}
+      <Branches></Branches>
     </>
   );
 }
