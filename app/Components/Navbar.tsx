@@ -23,12 +23,11 @@ interface NavbarProps {
   onLangClick?: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void;
 }
 
-
 const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pages = [
-    { EN: "Share", UR: "شئر", HI: "शेयर" },
+    { EN: "Share", UR: "شاعر", HI: "शेयर" },
     { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
     { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
     { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
@@ -38,24 +37,15 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
     { EN: "Favorites", UR: "پسندیدہ", HI: "पसंदीदा" },
   ];
   type Language = "EN" | "UR" | "HI";
- const handleLanguageChange = (selectedLanguage: string) => {
-   const customEvent = {
-     target: {
-       value: selectedLanguage,
-     },
-   } as React.ChangeEvent<HTMLSelectElement>;
+  const handleLanguageChange = (selectedLanguage: string) => {
+    const customEvent = {
+      target: {
+        value: selectedLanguage,
+      },
+    } as React.ChangeEvent<HTMLSelectElement>;
 
-   onLangChange(customEvent);
- };
-//  const handleLanguageChange = (selectedLanguage: string) => {
-//    const customEvent = {
-//      target: {
-//        value: selectedLanguage,
-//      },
-//    } as React.ChangeEvent<HTMLSelectElement>;
-
-//    onLangChange(customEvent);
-//  };
+    onLangChange(customEvent);
+  };
 
   return (
     <div>
@@ -68,7 +58,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
           <Toolbar className="justify-between pr-0 text-center text-[#984A02]">
             {/* Hamburger Menu Icon (Mobile) */}
             <IconButton
-              className="lg:hidden"
+              className="lg:hidden text-[#984A02]"
               edge="start"
               aria-label="menu"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -129,7 +119,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
       >
         <div
           style={{
-            height: "100vh",
+            height: "max-content",
             background: "#F0D586",
             color: "#984A02",
           }}

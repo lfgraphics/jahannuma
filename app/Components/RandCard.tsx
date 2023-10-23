@@ -19,6 +19,10 @@ const RandCard: React.FC<{}> = () => {
   // Define handleDownload and handleShareClick functions here
   const handleDownload = (elementId: string) => {
     console.log("download is clicked");
+    document.querySelectorAll(".icons").forEach(function (icon) {
+      icon.classList.add("hidden");
+    });
+
     const element = document.getElementById(elementId);
     if (element) {
       html2canvas(element).then(function (canvas) {
@@ -29,7 +33,13 @@ const RandCard: React.FC<{}> = () => {
         anchorTag.target = "_blank";
         anchorTag.click();
       });
+      document.querySelectorAll(".icons").forEach(function (icon) {
+        icon.classList.remove("hidden");
+      });
     }
+    document.querySelectorAll(".icons").forEach(function (icon) {
+      icon.classList.remove("hidden");
+    });
   };
 
   const handleShareClick = (shaerData: Shaer, id: string): void => {
@@ -53,10 +63,10 @@ const RandCard: React.FC<{}> = () => {
 
   return (
     <div className="justify-center flex flex-col items-center m-4">
-      <h4 className="font-bold text-3xl m-4">Todays Sher</h4>
+      <h4 className="font-bold text-2xl m-4">Todays Sher</h4>
       <div
         id={"sherCard"}
-        className="bg-white p-4 rounded-sm shadow-md w-[90vw] justify-center flex flex-col items-center"
+        className="bg-white p-4 rounded-sm shadow-md w-[95vw] justify-center flex flex-col items-center"
       >
         <h2 className="text-black text-2xl font-bold mb-2">
           {randomData.shaer}
@@ -68,7 +78,7 @@ const RandCard: React.FC<{}> = () => {
         ))}
         <div className="felx text-center">
           {/* Your buttons and actions here */}
-          <div className="felx text-center">
+          <div className="felx text-center icons">
             <button
               className="m-3"
               onClick={() => handleShareClick(randomData, "sherCard")}

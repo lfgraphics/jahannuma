@@ -152,6 +152,10 @@ const Ashaar: React.FC<{}> = () => {
 
   const handleDownload = (elementId: string) => {
     console.log("download is clicked");
+    document.querySelectorAll(".icons").forEach(function (icon) {
+      icon.classList.add("hidden");
+    });
+
     const element = document.getElementById(elementId);
     if (element) {
       html2canvas(element).then(function (canvas) {
@@ -161,8 +165,16 @@ const Ashaar: React.FC<{}> = () => {
         anchorTag.href = canvas.toDataURL();
         anchorTag.target = "_blank";
         anchorTag.click();
+        document.querySelectorAll(".icons").forEach(function(icon) {
+  icon.classList.remove("hidden");
+});
+
       });
     }
+    document.querySelectorAll(".icons").forEach(function(icon) {
+  icon.classList.remove("hidden");
+});
+
   };
 
   // Delay setting selectedCard to null to allow the closing animation
@@ -188,7 +200,7 @@ const Ashaar: React.FC<{}> = () => {
                 {line}
               </p>
             ))}
-            <div className="felx text-center">
+            <div className="felx text-center icons">
               <button
                 className={`m-3 text-gray-500`}
                 onClick={() =>
