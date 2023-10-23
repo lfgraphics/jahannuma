@@ -3,7 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,11 +12,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [language, setLanguage] = useState<string>("EN");
+  const [language, setLanguage] = useState<string>("UR");
 
   const langChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    localStorage?.setItem("lang", event.target.value);
     setLanguage(event.target.value);
   };
+    useEffect(() => {
+      // Get the language from localStorage and set it in the state
+      if (typeof window !== "undefined" && window.localStorage) {
+        const storedLang = localStorage.getItem("lang");
+        if (storedLang) {
+          setLanguage(storedLang);
+        } else{
+          setLanguage("UR")
+        }
+      }
+    }, []);
   return (
     <html lang="en">
       <head>

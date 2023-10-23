@@ -27,14 +27,14 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pages = [
-    { EN: "Share", UR: "شاعر", HI: "शेयर" },
+    { EN: "Shaer", UR: "شاعر", HI: "शेयर" },
     { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
     { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
     { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
-    { EN: "e-books", UR: "ای بکس", HI: "ई-बुक्स" },
+    { EN: "E-Books", UR: "ای بکس", HI: "ई-बुक्स" },
     { EN: "Blogs", UR: "بلاگز", HI: "ब्लॉग्स" },
     { EN: "Interviews", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
-    { EN: "Favorites", UR: "پسندیدہ", HI: "पसंदीदा" },
+    { EN: "Faviorites", UR: "پسندیدہ", HI: "पसंदीदा" },
   ];
   type Language = "EN" | "UR" | "HI";
   const handleLanguageChange = (selectedLanguage: string) => {
@@ -43,7 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
         value: selectedLanguage,
       },
     } as React.ChangeEvent<HTMLSelectElement>;
-
+    localStorage?.setItem("lang", selectedLanguage);
     onLangChange(customEvent);
   };
 
@@ -93,11 +93,17 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
               <select
                 value={language}
                 onChange={onLangChange}
-                className="bg-transparent"
+                className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none"
               >
-                <option value="UR">Urdu</option>
-                <option value="EN">English</option>
-                <option value="HI">Hindi</option>
+                <option className="bg-[#F0D586]" value="UR">
+                  Urdu
+                </option>
+                <option className="bg-[#F0D586]" value="EN">
+                  English
+                </option>
+                <option className="bg-[#F0D586]" value="HI">
+                  Hindi
+                </option>
               </select>
             </div>
             {/* donation button  */}

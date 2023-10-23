@@ -165,22 +165,15 @@ const Ashaar: React.FC<{}> = () => {
         anchorTag.href = canvas.toDataURL();
         anchorTag.target = "_blank";
         anchorTag.click();
-        document.querySelectorAll(".icons").forEach(function(icon) {
-  icon.classList.remove("hidden");
-});
-
+        document.querySelectorAll(".icons").forEach(function (icon) {
+          icon.classList.remove("hidden");
+        });
       });
     }
-    document.querySelectorAll(".icons").forEach(function(icon) {
-  icon.classList.remove("hidden");
-});
-
+    document.querySelectorAll(".icons").forEach(function (icon) {
+      icon.classList.remove("hidden");
+    });
   };
-
-  // Delay setting selectedCard to null to allow the closing animation
-  // setTimeout(() => {
-  //   setSelectedCard(null);
-  // }, 500); // Adjust the delay to match your animation duration
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
@@ -241,7 +234,7 @@ const Ashaar: React.FC<{}> = () => {
         // <div className="justify-center w-max h-max">
         <div
           id="modal"
-          className="fixed bottom-0 left-0 right-0 bg-white p-4 transform transition-all ease-in-out min-h-[50vh] max-h-[90vh] z-50 rounded-lg rounded-b-none w-[90%] mx-auto border-2 border-b-0"
+          className="fixed bottom-0 left-0 right-0 bg-white p-4 transform transition-all ease-in-out min-h-[50vh] max-h-[90vh] z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
         >
           <button
             className="absolute bottom-12 right-5"
