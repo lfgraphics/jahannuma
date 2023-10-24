@@ -1,6 +1,8 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import * as data from "./data";
+import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
+
 import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,16 +12,22 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
+import { Filter } from "react-feather";
+import Image from "next/image";
 
 interface Shaer {
   shaer: string;
   sherHead: string[];
   wholeSher: string[];
+  tag: string[];
 }
 
 const Ashaar: React.FC<{}> = () => {
+  const [searchText, setSearchText] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("");
+  const [dataItems, setDataItems] = useState(data.getAllShaers());
+
   // Fetch the data and assign it to the 'data' prop
-  const dataItems: Shaer[] = data.getAllShaers();
 
   const [selectedCard, setSelectedCard] = useState<Shaer | null>(null);
 
@@ -28,6 +36,47 @@ const Ashaar: React.FC<{}> = () => {
   const [likedCards, setLikedCards] = useState<boolean[]>(
     new Array(dataItems.length).fill(false)
   );
+
+  // Get all unique tags from the data
+  const allTags = data.getAllUniqueTags();
+
+  // Function to handle search input change
+  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value.toLowerCase();
+    let xMark = document.getElementById("searchClear");
+    value === ""
+      ? xMark?.classList.add("hidden")
+      : xMark?.classList.remove("hidden");
+    setSearchText(value);
+
+    // Call the filterDataBySearch function to filter the data
+    const filteredData = filterDataBySearch(value);
+    setDataItems(filteredData);
+  };
+
+  // Function to clear the search input
+  const clearSearch = () => {
+    let input = document.getElementById("searchBox") as HTMLInputElement;
+    input.value = "";
+    setSearchText("");
+    let xMark = document.getElementById("searchClear");
+    xMark?.classList.add("hidden");
+  };
+
+  // Function to check if a Shaer matches the selected filter and search text
+  const isShaerMatch = (shaerData: Shaer) => {
+    return (
+      (selectedFilter === "" || shaerData.tag.includes(selectedFilter)) &&
+      (shaerData.shaer.toLowerCase().includes(searchText) ||
+        shaerData.sherHead.some((line) =>
+          line.toLowerCase().includes(searchText)
+        ) ||
+        shaerData.wholeSher.some((line) =>
+          line.toLowerCase().includes(searchText)
+        ) ||
+        shaerData.tag.some((tag) => tag.toLowerCase().includes(searchText)))
+    );
+  };
 
   const handleHeartClick = (shaerData: Shaer, index: any, id: string): void => {
     if (typeof window !== "undefined" && window.localStorage) {
@@ -174,60 +223,134 @@ const Ashaar: React.FC<{}> = () => {
       icon.classList.remove("hidden");
     });
   };
+  const toggleFilter = () => {
+    document.getElementById("filtersListBox")?.classList.toggle("max-h-0");
+  };
+
+    const filterData = (tag: string) => {
+      setSelectedFilter(tag);
+    };
+
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
-        {dataItems.map((shaerData, index) => (
-          <div
-            key={index}
-            id={`card${index}`}
-            className="bg-white p-4 rounded-sm shadow-md"
-            // onClick={() => handleCardClick(shaerData)}
-          >
-            <h2 className="text-black text-2xl font-bold mb-2">
-              {shaerData.shaer}
-            </h2>
-            {/* Display a snippet of the ghazal data here */}
-            {shaerData.sherHead.map((line, index) => (
-              <p key={index} className="text-black">
-                {line}
-              </p>
-            ))}
-            <div className="felx text-center icons">
-              <button
-                className={`m-3 text-gray-500`}
-                onClick={() =>
-                  handleHeartClick(shaerData, index, `heart-icon-${index}`)
-                }
-                id={`heart-icon-${index}`}
-              >
-                <FontAwesomeIcon icon={faHeart} />
-              </button>
-              <button
-                className="m-3"
-                onClick={() => handleShareClick(shaerData, `card${index}`)}
-              >
-                <FontAwesomeIcon icon={faShare} style={{ color: "#984A02" }} />
-              </button>
-              <button
-                className="m-3"
-                onClick={() => handleDownload(`card${index}`)}
-              >
-                <FontAwesomeIcon
-                  icon={faDownload}
-                  style={{ color: "#984A02" }}
-                />
-              </button>
-
-              <button
-                className="text-[#984A02] font-semibold m-3"
-                onClick={() => handleCardClick(shaerData)}
-              >
-                View More
-              </button>
+      <div className="flex flex-row w-screen bg-[#F0D586] p-3 justify-between items-center relative">
+        <div
+          onClick={toggleFilter}
+          className="cursor-pointer filter-btn flex-[20%] flex justify-center text-[#984A02]"
+        >
+          <Filter></Filter>
+        </div>
+        <div className="filter-btn flex-[90%] text-center justify-center flex">
+          <div className="flex justify-center basis-[95%] h-auto">
+            <input
+              type="text"
+              placeholder="Search what you want"
+              className="text-black focus:outline-none focus:border-none p-2 w-64"
+              id="searchBox"
+              onKeyUp={handleSearchKeyUp}
+            />
+            <div
+              className="hidden justify-center bg-white h-[100%] pr-3 items-center"
+              id="searchClear"
+              onClick={clearSearch}
+            >
+              <Image
+                src="/icons/x.svg"
+                alt="x icon"
+                width="20"
+                height="20"
+              ></Image>
             </div>
           </div>
-        ))}
+        </div>
+      </div>
+      <div
+        id="filtersListBox"
+        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-white absolute transition-all left-8 border-2 border-t-0"
+        // onKeyUp={handleSearchChange}
+      >
+        <ul className="p-2 text-black select-none" onClick={toggleFilter}>
+          <li
+            className={`border-b-2 m-2 cursor-pointer ${
+              selectedFilter === "" ? "font-bold text-[#984A02]" : ""
+            }`}
+            onClick={() => filterData("")}
+          >
+            All
+          </li>
+          {allTags.map((tag) => (
+            <li
+              key={tag}
+              className={`border-b-2 m-2 cursor-pointer ${
+                tag === selectedFilter ? "font-bold text-[#984A02]" : ""
+              }`}
+              onClick={() => filterData(tag)}
+            >
+              {tag}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
+        {dataItems.map((shaerData, index) => {
+          if (isShaerMatch(shaerData)) {
+            return (
+              <div
+                key={index}
+                id={`card${index}`}
+                className="bg-white p-4 rounded-sm shadow-md"
+              >
+                <h2 className="text-black text-2xl font-bold mb-2">
+                  {shaerData.shaer}
+                </h2>
+                {/* Display a snippet of the ghazal data here */}
+                {shaerData.sherHead.map((line, index) => (
+                  <p key={index} className="text-black">
+                    {line}
+                  </p>
+                ))}
+                <div className="felx text-center icons">
+                  <button
+                    className={`m-3 text-gray-500`}
+                    onClick={() =>
+                      handleHeartClick(shaerData, index, `heart-icon-${index}`)
+                    }
+                    id={`heart-icon-${index}`}
+                  >
+                    <FontAwesomeIcon icon={faHeart} />
+                  </button>
+                  <button
+                    className="m-3"
+                    onClick={() => handleShareClick(shaerData, `card${index}`)}
+                  >
+                    <FontAwesomeIcon
+                      icon={faShare}
+                      style={{ color: "#984A02" }}
+                    />
+                  </button>
+                  <button
+                    className="m-3"
+                    onClick={() => handleDownload(`card${index}`)}
+                  >
+                    <FontAwesomeIcon
+                      icon={faDownload}
+                      style={{ color: "#984A02" }}
+                    />
+                  </button>
+
+                  <button
+                    className="text-[#984A02] font-semibold m-3"
+                    onClick={() => handleCardClick(shaerData)}
+                  >
+                    View More
+                  </button>
+                </div>
+              </div>
+            );
+          } else {
+            return null; // Skip rendering this Shaer
+          }
+        })}
       </div>
 
       {selectedCard && (

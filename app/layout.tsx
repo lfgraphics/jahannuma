@@ -35,7 +35,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#F0D586" />
       </head>
-      <body>
+      <body className="bg-[#ffff] dark:bg-white text-black">
         <Navbar language={language}  onLangChange={langChange} />
         {children}
         <Footer language={language} />

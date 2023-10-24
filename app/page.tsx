@@ -9,9 +9,11 @@ import RandCard from "./Components/RandCard";
 export default function Home() {
   return (
     <>
+    <div className="bg-white text-black">
       <Carousel1></Carousel1>
       <RandCard></RandCard>
       <Branches></Branches>
+    </div>
     </>
   );
 }
