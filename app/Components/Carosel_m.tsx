@@ -3,11 +3,12 @@ import React, { useEffect, useState } from "react";
 
 const Carousel1: React.FC = () => {
   const [images] = useState([
+    "/carousel/caroselcheck.png",
     "https://ideogram.ai/api/images/direct/ZYl4IE91RpCJ_q-ZqKsTrw",
     "https://ideogram.ai/api/images/direct/8smUhEw8QqymnvHgaCTuYQ",
     "https://ideogram.ai/api/images/direct/fg28RoKYRSuVR0PS8NNomA",
     "/carousel/josh.jpeg",
-    "/carousel/jnd.jpeg"
+    "/carousel/jnd.jpeg",
   ]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -37,7 +38,7 @@ const Carousel1: React.FC = () => {
       >
         <img
           src={imageUrl}
-          className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+          className="absolute block w-full h-auto -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
           alt={`Carousel Item ${index + 1}`}
         />
       </div>
@@ -47,10 +48,10 @@ const Carousel1: React.FC = () => {
   return (
     <div
       id="default-carousel"
-      className="relative w-full"
+      className="relative w-full h-auto"
       data-carousel="slide"
     >
-      <div className="mt-4 mb-4 relative overflow-hidden rounded-lg pb-[56.25%]">
+      <div className=" relative overflow-hidden pb-[30%]">
         {renderCarouselItems()}
       </div>
       <div className="absolute z-30 flex space-x-3 -translate-x-1/2 bottom-5 left-1/2">
