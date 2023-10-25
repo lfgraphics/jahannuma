@@ -7,7 +7,8 @@ const Branches = () => {
   return (
     <div>
       <div className="mt-3">
-        <p className="text-center text-2xl font-bold">Jahannuma Branches</p>
+                <p className="text-xl m-4 font-semibold text-center text-[#984A02]">
+Jahannuma Branches</p>
         <div className=" p-4 w-screen overflow-x-auto">
           <div className="flex flex-row w-max">
             <div className="rounded-lg overflow-hidden border-2 border-[#F0D586] w-[300px] h-[max-content] m-3">

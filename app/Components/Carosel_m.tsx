@@ -1,14 +1,27 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
 const Carousel1: React.FC = () => {
   const [images] = useState([
-    "/carousel/caroselcheck.png",
-    "https://ideogram.ai/api/images/direct/ZYl4IE91RpCJ_q-ZqKsTrw",
-    "https://ideogram.ai/api/images/direct/8smUhEw8QqymnvHgaCTuYQ",
-    "https://ideogram.ai/api/images/direct/fg28RoKYRSuVR0PS8NNomA",
-    "/carousel/josh.jpeg",
-    "/carousel/jnd.jpeg",
+    {
+      src: "/carousel/caroselcheck.png",
+      link: "/Ashaar",
+    },
+    {
+      src: "https://ideogram.ai/api/images/direct/ZYl4IE91RpCJ_q-ZqKsTrw",
+      link: "/",
+    },
+    {
+      src: "https://ideogram.ai/api/images/direct/8smUhEw8QqymnvHgaCTuYQ",
+      link: "/",
+    },
+    {
+      src: "https://ideogram.ai/api/images/direct/fg28RoKYRSuVR0PS8NNomA",
+      link: "/",
+    },
+    { src: "/carousel/josh.jpeg", link: "/" },
+    { src: "/carousel/jnd.jpeg", link: "/" },
   ]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -28,7 +41,7 @@ const Carousel1: React.FC = () => {
   };
 
   const renderCarouselItems = () => {
-    return images.map((imageUrl, index) => (
+    return images.map((image, index) => (
       <div
         key={index}
         className={`duration-700 ease-in-out ${
@@ -36,11 +49,13 @@ const Carousel1: React.FC = () => {
         }`}
         data-carousel-item
       >
-        <img
-          src={imageUrl}
-          className="absolute block w-full h-auto -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-          alt={`Carousel Item ${index + 1}`}
-        />
+        <Link href={image.link}>
+            <img
+              src={image.src}
+              className="absolute block w-full h-auto -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+              alt={`Carousel Item ${index + 1}`}
+            />
+        </Link>
       </div>
     ));
   };
@@ -51,7 +66,7 @@ const Carousel1: React.FC = () => {
       className="relative w-full h-auto"
       data-carousel="slide"
     >
-      <div className=" relative overflow-hidden pb-[30%]">
+      <div className=" relative overflow-hidden pb-[40%]">
         {renderCarouselItems()}
       </div>
       <div className="absolute z-30 flex space-x-3 -translate-x-1/2 bottom-5 left-1/2">

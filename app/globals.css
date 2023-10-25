@@ -32,6 +32,7 @@ body {
 
 /* Hide both vertical and horizontal scrollbars */
 body {
+  background: #fff;
   scrollbar-width: none;
   /* Firefox */
   -ms-overflow-style: none;

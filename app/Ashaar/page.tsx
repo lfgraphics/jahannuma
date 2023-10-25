@@ -44,9 +44,7 @@ const Ashaar: React.FC<{}> = () => {
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
     let xMark = document.getElementById("searchClear");
-    value === ""
-      ? xMark?.classList.add("hidden")
-      : xMark?.classList.remove("hidden");
+    value === "" ? xMark?.classList.add("hidden") : xMark?.classList.remove("hidden");
     setSearchText(value);
 
     // Call the filterDataBySearch function to filter the data
@@ -55,13 +53,16 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   // Function to clear the search input
-  const clearSearch = () => {
-    let input = document.getElementById("searchBox") as HTMLInputElement;
-    input.value = "";
-    setSearchText("");
-    let xMark = document.getElementById("searchClear");
-    xMark?.classList.add("hidden");
-  };
+ const clearSearch = () => {
+   let input = document.getElementById("searchBox") as HTMLInputElement;
+   let xMark = document.getElementById("searchClear");
+   input.value = "";
+   xMark?.classList.add("hidden");
+
+   // Clear the searched data and show all data again
+   setSearchText(""); // Clear the searchText state
+   setDataItems(data.getAllShaers()); // Restore the original data
+ };
 
   // Function to check if a Shaer matches the selected filter and search text
   const isShaerMatch = (shaerData: Shaer) => {
@@ -227,9 +228,9 @@ const Ashaar: React.FC<{}> = () => {
     document.getElementById("filtersListBox")?.classList.toggle("max-h-0");
   };
 
-    const filterData = (tag: string) => {
-      setSelectedFilter(tag);
-    };
+  const filterData = (tag: string) => {
+    setSelectedFilter(tag);
+  };
 
   return (
     <div>
@@ -250,15 +251,16 @@ const Ashaar: React.FC<{}> = () => {
               onKeyUp={handleSearchKeyUp}
             />
             <div
-              className="hidden justify-center bg-white h-[100%] pr-3 items-center"
-              id="searchClear"
+              className="justify-center bg-white h-[100%] pr-3 items-center flex w-11"
               onClick={clearSearch}
             >
               <Image
+                id="searchClear"
                 src="/icons/x.svg"
                 alt="x icon"
                 width="20"
                 height="20"
+                className="hidden"
               ></Image>
             </div>
           </div>

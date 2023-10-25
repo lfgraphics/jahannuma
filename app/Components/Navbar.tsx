@@ -181,7 +181,10 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             </div>
 
             {/* Navigation Links (Mobile) */}
-            <div className="flex gap-7">
+            <div
+              className="flex gap-7"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <div>
                 <h3 className="text-black font-bold">Navs</h3>
                 <List id="navelems" className="flex flex-col">

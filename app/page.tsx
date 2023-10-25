@@ -1,4 +1,5 @@
 import Ashaar from "./Ashaar/page";
+import Ads from "./Components/Ads";
 import Branches from "./Components/Branches";
 import Carousel1 from "./Components/Carosel_m";
 import RandCard from "./Components/RandCard";
@@ -13,6 +14,7 @@ export default function Home() {
       <Carousel1></Carousel1>
       <RandCard></RandCard>
       <Branches></Branches>
+      <Ads></Ads>
     </div>
     </>
   );
