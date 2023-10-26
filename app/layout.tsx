@@ -37,7 +37,9 @@ export default function RootLayout({
       </head>
       <body className="bg-[#ffff] dark:bg-white text-black">
         <Navbar language={language}  onLangChange={langChange} />
+        <div className="mt-14">
         {children}
+        </div>
         <Footer language={language} />
       </body>
     </html>

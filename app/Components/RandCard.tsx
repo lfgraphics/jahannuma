@@ -18,25 +18,31 @@ const RandCard: React.FC<{}> = () => {
 
   // Define handleDownload and handleShareClick functions here
   const handleDownload = (elementId: string) => {
-    console.log("download is clicked");
     document.querySelectorAll(".icons").forEach(function (icon) {
       icon.classList.add("hidden");
     });
 
     const element = document.getElementById(elementId);
-    if (element) {
-      html2canvas(element).then(function (canvas) {
-        var anchorTag = document.createElement("a");
-        document.body.appendChild(anchorTag);
-        anchorTag.download = `${prompt("Enter file name to save")}.png`;
-        anchorTag.href = canvas.toDataURL();
-        anchorTag.target = "_blank";
-        anchorTag.click();
-      });
-      document.querySelectorAll(".icons").forEach(function (icon) {
-        icon.classList.remove("hidden");
-      });
-    }
+if (element) {
+  const fileName = prompt("Enter file name to save");
+
+  if (fileName !== null && fileName.trim() !== "") {
+    // Check if a valid file name is provided
+    html2canvas(element).then(function (canvas) {
+      var anchorTag = document.createElement("a");
+      document.body.appendChild(anchorTag);
+      anchorTag.download = `${fileName}.png`;
+      anchorTag.href = canvas.toDataURL();
+      anchorTag.target = "_blank";
+      anchorTag.click();
+    });
+  }
+
+  document.querySelectorAll(".icons").forEach(function (icon) {
+    icon.classList.remove("hidden");
+  });
+}
+
     document.querySelectorAll(".icons").forEach(function (icon) {
       icon.classList.remove("hidden");
     });
@@ -75,12 +81,15 @@ const RandCard: React.FC<{}> = () => {
   return (
     insideBrowser && (
       <div className="justify-center flex flex-col items-center m-4">
-        <h4 className="text-xl m-4 font-semibold text-[#984A02]">
+        <h4
+          className="text-xl m-4 font-semibold text-[#984A02] tracking-[5px]"
+          // style={{ letterSpacing: "5px" }}
+        >
           Random sher
         </h4>
         <div
           id={"sherCard"}
-          className="bg-white p-4 rounded-sm shadow-md w-[95vw] justify-center flex flex-col items-center"
+          className="bg-white p-4 rounded-sm w-[95vw] justify-center flex flex-col items-center"
         >
           <h2 className="text-black text-2xl font-bold mb-2">
             {randomData.shaer}
@@ -92,21 +101,23 @@ const RandCard: React.FC<{}> = () => {
           ))}
           <div className="felx text-center">
             {/* Your buttons and actions here */}
-            <div className="felx text-center icons">
+            <div className="flex flex-row items-center icons gap-3">
               <button
-                className="m-3"
+                className="m-3 flex gap-2 items-center"
                 onClick={() => handleShareClick(randomData, "sherCard")}
               >
                 <FontAwesomeIcon icon={faShare} style={{ color: "#984A02" }} />
+                <p>Share this</p>
               </button>
               <button
-                className="m-3"
+                className="m-3 flex gap-2 items-center"
                 onClick={() => handleDownload("sherCard")}
-              >
+                >
                 <FontAwesomeIcon
                   icon={faDownload}
                   style={{ color: "#984A02" }}
-                />
+                  />
+                  <p>Download this</p>
               </button>
             </div>
           </div>

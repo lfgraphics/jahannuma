@@ -6,9 +6,10 @@ import React from "react";
 const Branches = () => {
   return (
     <div>
-      <div className="mt-3">
-                <p className="text-xl m-4 font-semibold text-center text-[#984A02]">
-Jahannuma Branches</p>
+      <div className=" bg-gray-100">
+        <p className="pt-7 text-xl font-semibold text-center text-[#984A02] tracking-[5px]">
+          Jahannuma Branches
+        </p>
         <div className=" p-4 w-screen overflow-x-auto">
           <div className="flex flex-row w-max">
             <div className="rounded-lg overflow-hidden border-2 border-[#F0D586] w-[300px] h-[max-content] m-3">

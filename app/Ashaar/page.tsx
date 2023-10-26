@@ -234,7 +234,7 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      <div className="flex flex-row w-screen bg-[#F0D586] p-3 justify-between items-center relative">
+      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center relative">
         <div
           onClick={toggleFilter}
           className="cursor-pointer filter-btn flex-[20%] flex justify-center text-[#984A02]"
@@ -246,12 +246,12 @@ const Ashaar: React.FC<{}> = () => {
             <input
               type="text"
               placeholder="Search what you want"
-              className="text-black focus:outline-none focus:border-none p-2 w-64"
+              className="text-black border border-black focus:outline-none focus:border-r-0 border-r-0 p-2 w-64"
               id="searchBox"
               onKeyUp={handleSearchKeyUp}
             />
             <div
-              className="justify-center bg-white h-[100%] pr-3 items-center flex w-11"
+              className="justify-center bg-white h-[100%] pr-3 items-center flex w-11 border border-l-0 border-black"
               onClick={clearSearch}
             >
               <Image
@@ -260,7 +260,7 @@ const Ashaar: React.FC<{}> = () => {
                 alt="x icon"
                 width="20"
                 height="20"
-                className="hidden"
+                className="hidden text-[#984A02]"
               ></Image>
             </div>
           </div>
@@ -268,7 +268,7 @@ const Ashaar: React.FC<{}> = () => {
       </div>
       <div
         id="filtersListBox"
-        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-white absolute transition-all left-8 border-2 border-t-0"
+        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-white absolute transition-all left-8 shadow-md border-t-0"
         // onKeyUp={handleSearchChange}
       >
         <ul className="p-2 text-black select-none" onClick={toggleFilter}>

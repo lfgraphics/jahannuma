@@ -3,6 +3,7 @@ import Ads from "./Components/Ads";
 import Branches from "./Components/Branches";
 import Carousel1 from "./Components/Carosel_m";
 import RandCard from "./Components/RandCard";
+import DoYouKnow from "./Components/doyoouknow/DoYouKnow";
 // import { getAllShaers } from "./Ashaar/data";
 // const shaerData = getAllShaers();
 // import Carousel2 from "./Components/Carousel2";
@@ -15,6 +16,7 @@ export default function Home() {
       <RandCard></RandCard>
       <Branches></Branches>
       <Ads></Ads>
+      <DoYouKnow></DoYouKnow>
     </div>
     </>
   );

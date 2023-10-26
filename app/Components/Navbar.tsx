@@ -48,10 +48,10 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   };
 
   return (
-    <div>
+    <div className="fixed w-screen z-50 top-0">
       <AppBar
         position="static"
-        className="bg-[#F0D586] text-[#984A02]"
+        className="bg-[#F0D586] text-[#984A02] shadow-none"
         style={{ backgroundColor: "#F0D586" }}
       >
         <Container>

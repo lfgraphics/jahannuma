@@ -44,13 +44,13 @@ const Ads: React.FC = () => {
   return (
     <div className="p-0 pt-3 pb-4 w-screen overflow-x-auto self-center justify-center">
       <div
-        className="flex flex-row"
+        className="flex flex-row mt-4 mb-6"
         style={scrollSnapStyle}
         // style={translateXStyle}
       >
         {adsData.map((ad, index) => (
           <Link href={ad.redirectUrl} key={index}>
-            <div className=" overflow-auto w-[95vw] h-[max-content] m-3 scroll-snap-align-start">
+            <div className=" overflow-auto w-[95vw] h-[max-content] m-3 scroll-snap-align-start shadow-md rounded-md">
               <Image
                 src={ad.imageUrl}
                 alt={`Image ${index + 1}`}
