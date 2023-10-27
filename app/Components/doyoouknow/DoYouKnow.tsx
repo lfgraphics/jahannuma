@@ -35,7 +35,7 @@ const DoYouKnow: React.FC = () => {
           <ChevronLeft size={20} />
         </div>
         <div
-          className="flex basis-[90%] justify-center overflow-hidden rounded-lg shadow-md h-96 overflow-y-auto"
+          className="flex basis-[90%] justify-center overflow-hidden rounded-lg shadow-md h-[30rem] overflow-y-auto"
           style={{ background: card.bgGradient }}
         >
           <div className="card w-full min-h-[100%] h-max">

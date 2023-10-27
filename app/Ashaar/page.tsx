@@ -136,9 +136,7 @@ const Ashaar: React.FC<{}> = () => {
           setIsAddedToLocalStorage(false);
 
           // Optionally, you can update the UI or show a success message
-          document
-            .getElementById(`${id}`)
-            ?.classList.remove("text-red-600");
+          document.getElementById(`${id}`)?.classList.remove("text-red-600");
           console.log("Data removed from Local Storage successfully.");
         }
       } catch (error) {
@@ -158,7 +156,9 @@ const Ashaar: React.FC<{}> = () => {
         navigator
           .share({
             title: shaerData.shaer, // Use the shaer's name as the title
-            text: shaerData.sherHead.map((line) => line).join("\n"), // Join sherHead lines with line breaks
+            text:
+              shaerData.sherHead.map((line) => line).join("\n") +
+              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join sherHead lines with line breaks
             url: window.location.href, // Get the current page's URL
           })
 
@@ -237,32 +237,36 @@ const Ashaar: React.FC<{}> = () => {
     setSelectedFilter(tag);
   };
 
-    const [cardAppearances, setCardAppearances] = useState<{
-      [cardId: string]: string;
-    }>({});
+  const [cardAppearances, setCardAppearances] = useState<{
+    [cardId: string]: string;
+  }>({});
 
+  useEffect(() => {
+    // Check if the cardData is in localStorage
+    if (window !== undefined && window.localStorage) {
+      const storedData = localStorage.getItem("Ashaar");
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        dataItems.forEach((shaerData, index) => {
+          const cardId = `card${index}`;
+          const cardData = shaerData.sherHead.map((line) => line).join("|"); // Serialize the card data
 
- useEffect(() => {
-   // Check if the cardData is in localStorage
-   if (window !== undefined && window.localStorage) {
-     const storedData = localStorage.getItem("Ashaar");
-     if (storedData) {
-       const parsedData = JSON.parse(storedData);
-       dataItems.forEach((shaerData, index) => {
-         const cardId = `card${index}`;
-         const cardData = shaerData.sherHead.map((line) => line).join("|"); // Serialize the card data
-
-         if (parsedData.some((data: { sherHead: any[]; }) => data.sherHead.join("|") === cardData)) {
-           // If card data exists in the stored data, update the card's appearance
-           const cardElement = document.getElementById(`heart-icon-${index}`);
-           if (cardElement) {
-             cardElement.classList.add("text-red-600");
-           }
-         }
-       });
-     }
-   }
- }, [dataItems]);
+          if (
+            parsedData.some(
+              (data: { sherHead: any[] }) =>
+                data.sherHead.join("|") === cardData
+            )
+          ) {
+            // If card data exists in the stored data, update the card's appearance
+            const cardElement = document.getElementById(`heart-icon-${index}`);
+            if (cardElement) {
+              cardElement.classList.add("text-red-600");
+            }
+          }
+        });
+      }
+    }
+  }, [dataItems]);
 
   return (
     <div>
@@ -300,8 +304,7 @@ const Ashaar: React.FC<{}> = () => {
       </div>
       <div
         id="filtersListBox"
-        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-white absolute transition-all left-8 shadow-md border-t-0"
-        // onKeyUp={handleSearchChange}
+        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-white absolute transition-all left-8 shadow-md border-t-0 z-50"
       >
         <ul className="p-2 text-black select-none" onClick={toggleFilter}>
           <li
@@ -346,7 +349,7 @@ const Ashaar: React.FC<{}> = () => {
                 <div className="felx text-center icons">
                   <button
                     className={`m-3 text-gray-500 ${
-                      cardAppearances["card"+index] || ""
+                      cardAppearances["card" + index] || ""
                     }`}
                     onClick={() =>
                       handleHeartClick(shaerData, index, `heart-icon-${index}`)

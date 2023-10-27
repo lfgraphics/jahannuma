@@ -23,25 +23,25 @@ const RandCard: React.FC<{}> = () => {
     });
 
     const element = document.getElementById(elementId);
-if (element) {
-  const fileName = prompt("Enter file name to save");
+    if (element) {
+      const fileName = prompt("Enter file name to save");
 
-  if (fileName !== null && fileName.trim() !== "") {
-    // Check if a valid file name is provided
-    html2canvas(element).then(function (canvas) {
-      var anchorTag = document.createElement("a");
-      document.body.appendChild(anchorTag);
-      anchorTag.download = `${fileName}.png`;
-      anchorTag.href = canvas.toDataURL();
-      anchorTag.target = "_blank";
-      anchorTag.click();
-    });
-  }
+      if (fileName !== null && fileName.trim() !== "") {
+        // Check if a valid file name is provided
+        html2canvas(element).then(function (canvas) {
+          var anchorTag = document.createElement("a");
+          document.body.appendChild(anchorTag);
+          anchorTag.download = `${fileName}.png`;
+          anchorTag.href = canvas.toDataURL();
+          anchorTag.target = "_blank";
+          anchorTag.click();
+        });
+      }
 
-  document.querySelectorAll(".icons").forEach(function (icon) {
-    icon.classList.remove("hidden");
-  });
-}
+      document.querySelectorAll(".icons").forEach(function (icon) {
+        icon.classList.remove("hidden");
+      });
+    }
 
     document.querySelectorAll(".icons").forEach(function (icon) {
       icon.classList.remove("hidden");
@@ -54,7 +54,10 @@ if (element) {
         navigator
           .share({
             title: shaerData.shaer,
-            text: shaerData.sherHead.map((line) => line).join("\n"),
+            text:
+              shaerData.sherHead.map((line) => line).join("\n") +
+              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join sherHead lines with line breaks
+
             url: window.location.href + `/#${id}`,
           })
           .then(() => console.log("Successful share"))
@@ -112,12 +115,12 @@ if (element) {
               <button
                 className="m-3 flex gap-2 items-center"
                 onClick={() => handleDownload("sherCard")}
-                >
+              >
                 <FontAwesomeIcon
                   icon={faDownload}
                   style={{ color: "#984A02" }}
-                  />
-                  <p>Download this</p>
+                />
+                <p>Download this</p>
               </button>
             </div>
           </div>

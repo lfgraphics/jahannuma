@@ -6,7 +6,7 @@ import React from "react";
 const Branches = () => {
   return (
     <div>
-      <div className=" bg-gray-100">
+      <div className=" bg-gray-100 h-[620px]">
         <p className="pt-7 text-xl font-semibold text-center text-[#984A02] tracking-[5px]">
           Jahannuma Branches
         </p>
