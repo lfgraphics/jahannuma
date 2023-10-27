@@ -93,7 +93,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
               <select
                 value={language}
                 onChange={onLangChange}
-                className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none"
+                className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none pb-[11px]"
               >
                 <option className="bg-[#F0D586]" value="UR">
                   Urdu
@@ -109,7 +109,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* donation button  */}
             <a
               href="/donate"
-              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-2 rounded-sm mr-3 w-32 text-[1rem]"
+              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-2 rounded-sm mr-3 w-32 text-[1rem] pb-[13px]"
             >
               <button>Donate Us</button>
             </a>

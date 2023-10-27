@@ -7,7 +7,7 @@ const Branches = () => {
   return (
     <div>
       <div className=" bg-gray-100 h-[620px]">
-        <p className="pt-7 text-xl font-semibold text-center text-[#984A02] tracking-[5px]">
+        <p className="pt-7 text-xl font-semibold text-center text-[#984A02] tracking-[5px] pb-[13px]">
           Jahannuma Branches
         </p>
         <div className=" p-4 w-screen overflow-x-auto">
@@ -21,7 +21,7 @@ const Branches = () => {
                   height="400"
                   className="w-full h-auto"
                 ></Image>
-                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold">
+                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold pb-[11px]">
                   <p>Bazm-e-Urdu</p>
                 </div>
               </Link>
@@ -35,7 +35,7 @@ const Branches = () => {
                   height="400"
                   className="w-full h-auto"
                 ></Image>
-                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold">
+                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold pb-[11px]">
                   <p>Bazm-e-Hindi</p>
                 </div>
               </Link>
@@ -49,7 +49,7 @@ const Branches = () => {
                   height="400"
                   className="w-full h-auto"
                 ></Image>
-                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold">
+                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold pb-[11px]">
                   <p>Blogs</p>
                 </div>
               </Link>

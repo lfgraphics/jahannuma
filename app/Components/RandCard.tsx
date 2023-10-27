@@ -1,9 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import * as data from "../Ashaar/data";
+import * as data from "../Ghazlen/data";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faShare } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
+import Loader from "./Loader";
+import { ArrowDown } from "react-feather";
 
 interface Shaer {
   shaer: string;
@@ -56,7 +58,7 @@ const RandCard: React.FC<{}> = () => {
             title: shaerData.shaer,
             text:
               shaerData.sherHead.map((line) => line).join("\n") +
-              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join sherHead lines with line breaks
+              `\nFound this on Jahan Numa website\nCheckout there webpage here>>\n `, // Join sherHead lines with line breaks
 
             url: window.location.href + `/#${id}`,
           })
@@ -82,23 +84,31 @@ const RandCard: React.FC<{}> = () => {
   }, []);
 
   return (
-    insideBrowser && (
-      <div className="justify-center flex flex-col items-center m-4">
-        <h4
-          className="text-xl m-4 font-semibold text-[#984A02] tracking-[5px]"
-          // style={{ letterSpacing: "5px" }}
-        >
-          Random sher
-        </h4>
+    <div className="justify-center flex flex-col items-center m-4">
+      <h4
+        className="text-xl m-4 font-semibold text-[#984A02] tracking-[5px]"
+        // style={{ letterSpacing: "5px" }}
+      >
+        Random sher
+      </h4>
+      {!insideBrowser && <Loader></Loader>}
+      {insideBrowser && (
         <div
           id={"sherCard"}
           className="bg-white p-4 rounded-sm w-[95vw] justify-center flex flex-col items-center"
         >
-          <h2 className="text-black text-2xl font-bold mb-2">
+          <h2
+            className="text-black text-2xl font-bold mb-2"
+            style={{ lineHeight: "normal" }}
+          >
             {randomData.shaer}
           </h2>
           {randomData.sherHead.map((line, index) => (
-            <p key={index} className="text-black">
+            <p
+              key={index}
+              className="text-black text-center"
+              style={{ lineHeight: "normal" }}
+            >
               {line}
             </p>
           ))}
@@ -110,7 +120,7 @@ const RandCard: React.FC<{}> = () => {
                 onClick={() => handleShareClick(randomData, "sherCard")}
               >
                 <FontAwesomeIcon icon={faShare} style={{ color: "#984A02" }} />
-                <p>Share this</p>
+                <p className="pb-[11px]">Share this</p>
               </button>
               <button
                 className="m-3 flex gap-2 items-center"
@@ -120,13 +130,21 @@ const RandCard: React.FC<{}> = () => {
                   icon={faDownload}
                   style={{ color: "#984A02" }}
                 />
-                <p>Download this</p>
+                <p className="pb-[11px]">Download this</p>
               </button>
+              {/* <button
+                className="m-3 text-[20px] flex gap-2 items-center"
+                onClick={() => handleDownload("sherCard")}
+              >
+                <ArrowDown
+                  style={{ color: "#984A02" }}
+                />
+              </button> */}
             </div>
           </div>
         </div>
-      </div>
-    )
+      )}
+    </div>
   );
 };
 
