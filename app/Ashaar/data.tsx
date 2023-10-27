@@ -11,19 +11,25 @@ const data: Shaer[] = [
     shaer: "Shaer 1",
     sherHead: ["line 1", "line 2"],
     wholeSher: ["multiple", "lines", "here"],
-    tag:['Zamin']
+    tag: ["Zamin"],
+  },
+  {
+    shaer: "Shaer 1",
+    sherHead: ["line 1", "line 2", "line 3"],
+    wholeSher: ["multiple", "lines", "here"],
+    tag: ["Zamin"],
   },
   {
     shaer: "Shaer 2",
     sherHead: ["another", "example"],
     wholeSher: ["of", "data"],
-    tag:['Asman']
+    tag: ["Asman"],
   },
   {
     shaer: "Shaer 2",
     sherHead: ["example 2", "for checking it"],
     wholeSher: ["of", "data"],
-    tag:['Jahan']
+    tag: ["Jahan"],
   },
   // Add more data as needed
 ];
@@ -60,7 +66,9 @@ export const deleteShaerByName = (name: string): void => {
     data.splice(index, 1);
   }
 };
-export function map(arg0: (shaerData: any, index: string) => import("react").JSX.Element): import("react").ReactNode {
+export function map(
+  arg0: (shaerData: any, index: string) => import("react").JSX.Element
+): import("react").ReactNode {
   throw new Error("Function not implemented.");
 }
 
@@ -101,4 +109,3 @@ export const filterDataBySearch = (searchText: string): Shaer[] => {
   });
   return filteredData;
 };
-

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as data from "./data";
 import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
 
@@ -44,7 +44,9 @@ const Ashaar: React.FC<{}> = () => {
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
     let xMark = document.getElementById("searchClear");
-    value === "" ? xMark?.classList.add("hidden") : xMark?.classList.remove("hidden");
+    value === ""
+      ? xMark?.classList.add("hidden")
+      : xMark?.classList.remove("hidden");
     setSearchText(value);
 
     // Call the filterDataBySearch function to filter the data
@@ -53,16 +55,16 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   // Function to clear the search input
- const clearSearch = () => {
-   let input = document.getElementById("searchBox") as HTMLInputElement;
-   let xMark = document.getElementById("searchClear");
-   input.value = "";
-   xMark?.classList.add("hidden");
+  const clearSearch = () => {
+    let input = document.getElementById("searchBox") as HTMLInputElement;
+    let xMark = document.getElementById("searchClear");
+    input.value = "";
+    xMark?.classList.add("hidden");
 
-   // Clear the searched data and show all data again
-   setSearchText(""); // Clear the searchText state
-   setDataItems(data.getAllShaers()); // Restore the original data
- };
+    // Clear the searched data and show all data again
+    setSearchText(""); // Clear the searchText state
+    setDataItems(data.getAllShaers()); // Restore the original data
+  };
 
   // Function to check if a Shaer matches the selected filter and search text
   const isShaerMatch = (shaerData: Shaer) => {
@@ -109,7 +111,7 @@ const Ashaar: React.FC<{}> = () => {
 
           // Toggle the color between "#984A02" and "grey" based on the current color
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-[#984A02]");
+          document.getElementById(`${id}`)!.classList.add("text-red-600");
           // document.getElementById(`${id}`)!.style.color = "#984A02";
 
           localStorage.setItem("Ashaar", updatedDataJSON);
@@ -126,7 +128,7 @@ const Ashaar: React.FC<{}> = () => {
 
           // Store the updated data in Local Storage
 
-          document.getElementById(`${id}`)!.classList.remove("text-[#984A02]");
+          document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
           localStorage.setItem("Ashaar", updatedDataJSON);
@@ -134,6 +136,9 @@ const Ashaar: React.FC<{}> = () => {
           setIsAddedToLocalStorage(false);
 
           // Optionally, you can update the UI or show a success message
+          document
+            .getElementById(`${id}`)
+            ?.classList.remove("text-red-600");
           console.log("Data removed from Local Storage successfully.");
         }
       } catch (error) {
@@ -232,6 +237,33 @@ const Ashaar: React.FC<{}> = () => {
     setSelectedFilter(tag);
   };
 
+    const [cardAppearances, setCardAppearances] = useState<{
+      [cardId: string]: string;
+    }>({});
+
+
+ useEffect(() => {
+   // Check if the cardData is in localStorage
+   if (window !== undefined && window.localStorage) {
+     const storedData = localStorage.getItem("Ashaar");
+     if (storedData) {
+       const parsedData = JSON.parse(storedData);
+       dataItems.forEach((shaerData, index) => {
+         const cardId = `card${index}`;
+         const cardData = shaerData.sherHead.map((line) => line).join("|"); // Serialize the card data
+
+         if (parsedData.some((data: { sherHead: any[]; }) => data.sherHead.join("|") === cardData)) {
+           // If card data exists in the stored data, update the card's appearance
+           const cardElement = document.getElementById(`heart-icon-${index}`);
+           if (cardElement) {
+             cardElement.classList.add("text-red-600");
+           }
+         }
+       });
+     }
+   }
+ }, [dataItems]);
+
   return (
     <div>
       <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center relative">
@@ -300,7 +332,7 @@ const Ashaar: React.FC<{}> = () => {
               <div
                 key={index}
                 id={`card${index}`}
-                className="bg-white p-4 rounded-sm shadow-md"
+                className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
               >
                 <h2 className="text-black text-2xl font-bold mb-2">
                   {shaerData.shaer}
@@ -313,7 +345,9 @@ const Ashaar: React.FC<{}> = () => {
                 ))}
                 <div className="felx text-center icons">
                   <button
-                    className={`m-3 text-gray-500`}
+                    className={`m-3 text-gray-500 ${
+                      cardAppearances["card"+index] || ""
+                    }`}
                     onClick={() =>
                       handleHeartClick(shaerData, index, `heart-icon-${index}`)
                     }
