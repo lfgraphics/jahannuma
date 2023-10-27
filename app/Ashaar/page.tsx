@@ -31,12 +31,6 @@ const Ashaar: React.FC<{}> = () => {
 
   const [selectedCard, setSelectedCard] = useState<Shaer | null>(null);
 
-  const [isAddedToLocalStorage, setIsAddedToLocalStorage] = useState(false);
-
-  const [likedCards, setLikedCards] = useState<boolean[]>(
-    new Array(dataItems.length).fill(false)
-  );
-
   // Get all unique tags from the data
   const allTags = data.getAllUniqueTags();
 
@@ -104,11 +98,6 @@ const Ashaar: React.FC<{}> = () => {
           // Serialize the updated data back to JSON
           const updatedDataJSON = JSON.stringify(existingData);
 
-          // Store the updated data in Local Storage
-
-          // Set isAddedToLocalStorage to true when data is added
-          setIsAddedToLocalStorage(true);
-
           // Toggle the color between "#984A02" and "grey" based on the current color
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
@@ -132,8 +121,6 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
           localStorage.setItem("Ashaar", updatedDataJSON);
-          // Set isAddedToLocalStorage to false when data is removed
-          setIsAddedToLocalStorage(false);
 
           // Optionally, you can update the UI or show a success message
           document.getElementById(`${id}`)?.classList.remove("text-red-600");
@@ -237,10 +224,6 @@ const Ashaar: React.FC<{}> = () => {
     setSelectedFilter(tag);
   };
 
-  const [cardAppearances, setCardAppearances] = useState<{
-    [cardId: string]: string;
-  }>({});
-
   useEffect(() => {
     // Check if the cardData is in localStorage
     if (window !== undefined && window.localStorage) {
@@ -248,13 +231,12 @@ const Ashaar: React.FC<{}> = () => {
       if (storedData) {
         const parsedData = JSON.parse(storedData);
         dataItems.forEach((shaerData, index) => {
-          const cardId = `card${index}`;
-          const cardData = shaerData.sherHead.map((line) => line).join("|"); // Serialize the card data
+          const cardData = shaerData.wholeSher.map((line) => line).join("|"); // Serialize the card data
 
           if (
             parsedData.some(
-              (data: { sherHead: any[] }) =>
-                data.sherHead.join("|") === cardData
+              (data: { wholeSher: any[] }) =>
+                data.wholeSher.join("|") === cardData
             )
           ) {
             // If card data exists in the stored data, update the card's appearance
@@ -348,9 +330,7 @@ const Ashaar: React.FC<{}> = () => {
                 ))}
                 <div className="felx text-center icons">
                   <button
-                    className={`m-3 text-gray-500 ${
-                      cardAppearances["card" + index] || ""
-                    }`}
+                    className={`m-3 text-gray-500`}
                     onClick={() =>
                       handleHeartClick(shaerData, index, `heart-icon-${index}`)
                     }
@@ -395,28 +375,38 @@ const Ashaar: React.FC<{}> = () => {
       {selectedCard && (
         // <div className="justify-center w-max h-max">
         <div
+          onClick={handleCloseModal}
           id="modal"
-          className="fixed bottom-0 left-0 right-0 bg-white p-4 transform transition-all ease-in-out min-h-[50vh] max-h-[90vh] z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
+          className="bg-black bg-opacity-50 h-[100vh] w-[100vw] fixed top-0 z-50 overflow-hidden"
         >
-          <button
-            className="absolute bottom-12 right-5"
-            onClick={handleCloseModal}
+          <div
+            style={{ lineHeight: "normal" }}
+            dir="rtl"
+            className="opacity-100 fixed bottom-0 left-0 right-0 bg-white p-4 transition-all ease-in-out min-h-[50vh] max-h-[70vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
-            <FontAwesomeIcon
-              icon={faTimes}
-              className="text-[#984A02] text-2xl"
-            />
-          </button>
-          <h2 className="text-black font-2xl font-bold p-1 border-b-2">
-            {selectedCard.shaer}
-          </h2>
-          {selectedCard.wholeSher.map((line, index) => (
-            <p key={index} className="text-black">
-              {line}
-            </p>
-          ))}
+            <button
+              className="absolute bottom-12 left-5 z-50"
+              onClick={handleCloseModal}
+            >
+              <FontAwesomeIcon
+                icon={faTimes}
+                className="text-[#984A02] text-2xl"
+              />
+            </button>
+            <h2 className="text-black font-2xl font-bold p-1 border-b-2">
+              {selectedCard.shaer}
+            </h2>
+            {selectedCard.wholeSher.map((line, index) => (
+              <p
+                style={{ lineHeight: "normal" }}
+                key={index}
+                className="text-black"
+              >
+                {line}
+              </p>
+            ))}
+          </div>
         </div>
-        // </div>
       )}
     </div>
   );
