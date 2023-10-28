@@ -51,7 +51,7 @@ const EnduRandcard: React.FC<{}> = () => {
 
   const handleShareClick = (shaerData: Shaer, id: string): void => {
     try {
-      if (navigator.share) {
+      if (typeof window !== undefined && navigator.share) {
         navigator
           .share({
             title: shaerData.shaer,
@@ -73,7 +73,7 @@ const EnduRandcard: React.FC<{}> = () => {
   const [insideBrowser, setInsideBrowser] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== undefined) {
       // Code is running in a browser
       setInsideBrowser(true);
     } else {

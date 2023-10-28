@@ -4,22 +4,22 @@ import Link from "next/link";
 
 const Carousel1: React.FC = () => {
   const [images] = useState([
-    {
-      src: "/carousel/caroselcheck.png",
-      link: "/Ashaar",
-    },
-    {
-      src: "https://ideogram.ai/api/images/direct/ZYl4IE91RpCJ_q-ZqKsTrw",
-      link: "/",
-    },
-    {
-      src: "https://ideogram.ai/api/images/direct/8smUhEw8QqymnvHgaCTuYQ",
-      link: "/",
-    },
-    {
-      src: "https://ideogram.ai/api/images/direct/fg28RoKYRSuVR0PS8NNomA",
-      link: "/",
-    },
+    // {
+    //   src: "/carousel/caroselcheck.png",
+    //   link: "/Ashaar",
+    // },
+    // {
+    //   src: "https://ideogram.ai/api/images/direct/ZYl4IE91RpCJ_q-ZqKsTrw",
+    //   link: "/",
+    // },
+    // {
+    //   src: "https://ideogram.ai/api/images/direct/8smUhEw8QqymnvHgaCTuYQ",
+    //   link: "/",
+    // },
+    // {
+    //   src: "https://ideogram.ai/api/images/direct/fg28RoKYRSuVR0PS8NNomA",
+    //   link: "/",
+    // },
     { src: "/carousel/josh.jpeg", link: "/" },
     { src: "/carousel/jnd.jpeg", link: "/" },
   ]);

@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 export default function RootLayout({
   children,
@@ -33,22 +34,36 @@ export default function RootLayout({
       }
     }
   }, []);
-
-  if (
-    typeof window !== undefined &&
-    window.localStorage &&
-    language !== "UR" &&
-    !window.location.href.includes(language)
-  ) {
-    setTimeout(changeLang, 1500);
+  if (typeof window !== undefined) {
+    if (
+      window.localStorage &&
+      language !== "UR" &&
+      !window.location.href.includes(language)
+    ) {
+      setTimeout(changeLang, 1500);
+    }
   }
 
-  
+  let pageTitle = "Jahan Numa";
+  useEffect(() => {
+    // Define a default title
 
+    // Update the title based on the route
+    if (window.location.href.includes("Ashaar")) {
+      pageTitle = "Ashaar - Jahan Numa";
+    } else if (window.location.href.includes("Ghazlen")) {
+      pageTitle = "Ghazlen - Jahan Numa";
+    }
+
+    // Update the title in the <head> section
+    document.title = pageTitle;
+  }, [window.location.href]); // Default title for the landing page
+
+  // Conditionally set the title based on the route
   return (
     <html lang="en">
       <head>
-        <title></title>
+        <title>{pageTitle}</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link
