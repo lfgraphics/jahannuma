@@ -12,54 +12,48 @@ export default function RootLayout({
 }) {
   const [language, setLanguage] = useState<string>("UR");
 
-  const changeLang = () => {
-    if (typeof window !== undefined && window.localStorage) {
-      document.getElementById("redirect")?.click();
-    }
-  };
+  // const changeLang = () => {
+  //   if (typeof window !== undefined && window.localStorage) {
+  //     document.getElementById("redirect")?.click();
+  //   }
+  // };
 
   const langChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     localStorage?.setItem("lang", event.target.value);
     setLanguage(event.target.value);
-    setTimeout(changeLang, 1500);
+    // setTimeout(changeLang, 1500);
   };
-  useEffect(() => {
-    // Get the language from localStorage and set it in the state
-    if (typeof window !== "undefined" && window.localStorage) {
-      const storedLang = localStorage.getItem("lang");
-      if (storedLang) {
-        setLanguage(storedLang);
-      } else {
-        setLanguage("UR");
-      }
-    }
-  }, []);
-  if (typeof window !== undefined) {
-    if (
-      window.localStorage &&
-      language !== "UR" &&
-      !window.location.href.includes(language)
-    ) {
-      setTimeout(changeLang, 1500);
-    }
-  }
+  // useEffect(() => {
+  //   // Get the language from localStorage and set it in the state
+  //   if (typeof window !== "undefined" && window.localStorage) {
+  //     const storedLang = localStorage.getItem("lang");
+  //     if (storedLang) {
+  //       setLanguage(storedLang);
+  //     } else {
+  //       setLanguage("UR");
+  //     }
+  //   }
+  // }, []);
+  // if (typeof window !== undefined) {
+  //   if (
+  //     window.localStorage &&
+  //     language !== "UR" &&
+  //     !window.location.href.includes(language)
+  //   ) {
+  //     setTimeout(changeLang, 1500);
+  //   }
+  // }
 
-  let pageTitle = "Jahan Numa";
-  useEffect(() => {
-    // Define a default title
+  const [pageTitle, setPageTitle] = useState("Jahan Numa");
 
-    // Update the title based on the route
-    if (window.location.href.includes("Ashaar")) {
-      pageTitle = "Ashaar - Jahan Numa";
-    } else if (window.location.href.includes("Ghazlen")) {
-      pageTitle = "Ghazlen - Jahan Numa";
-    }
-
-    // Update the title in the <head> section
-    document.title = pageTitle;
-  }, [window.location.href]); // Default title for the landing page
-
-  // Conditionally set the title based on the route
+  // useEffect(() => {
+  //   // Update the title based on the route or URL
+  //   if (window.location.href.includes("Ashaar")) {
+  //     setPageTitle("Ashaar - Jahan Numa");
+  //   } else if (window.location.href.includes("Ghazlen")) {
+  //     setPageTitle("Ghazlen - Jahan Numa");
+  //   }
+  // }, [window.location.href]);
   return (
     <html lang="en">
       <head>
@@ -76,7 +70,7 @@ export default function RootLayout({
       </head>
       <body className="bg-[#ffff] dark:bg-white text-black font-noto-nastaliq">
         <Navbar language={language} onLangChange={langChange} />
-        <div className="mt-14">{children}</div>
+        <div className="mt-[4.5rem]">{children}</div>
         <Footer language={language} />
       </body>
     </html>

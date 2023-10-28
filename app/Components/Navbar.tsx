@@ -71,9 +71,10 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             </IconButton>
             {/* Logo */}
             <Typography variant="h6">
-              <a href={`${language !== "UR" ? language + "/" : "/"}`} id="redirect">
+              <Link
+                href={language !== "UR" && !window.location.href.includes(language)? `/${language}`: "/"}id="redirect">
                 <Image src="/logo.svg" alt="Logo" width="80" height="60" />
-              </a>
+              </Link>
             </Typography>
 
             <List className="hidden lg:flex md:text-xs w-[68%] justify-center">
@@ -97,7 +98,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* Language Select */}
             <div className="m-2 border-[#984A02] text-[#984A02] ">
               <select
-              id="langChange"
+                id="langChange"
                 value={language}
                 onChange={onLangChange}
                 className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none pb-[11px]"
@@ -114,12 +115,12 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
               </select>
             </div>
             {/* donation button  */}
-            <a
+            <Link
               href="/donate"
               className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-2 rounded-sm mr-3 w-32 text-[1rem] pb-[13px]"
             >
               <button>Donate Us</button>
-            </a>
+            </Link>
           </Toolbar>
         </Container>
       </AppBar>
