@@ -13,16 +13,19 @@ export default function RootLayout({
   const [language, setLanguage] = useState<string>("UR");
 
   const changeLang = () => {
-    if (typeof window !== undefined && window.localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       document.getElementById("redirect")?.click();
     }
   };
 
   const langChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    localStorage?.setItem("lang", event.target.value);
-    setLanguage(event.target.value);
-    setTimeout(changeLang, 1500);
+    if (typeof window !== "undefined") {
+      localStorage?.setItem("lang", event.target.value);
+      setLanguage(event.target.value);
+      setTimeout(changeLang, 1500);
+    }
   };
+
   useEffect(() => {
     // Get the language from localStorage and set it in the state
     if (typeof window !== "undefined" && window.localStorage) {
@@ -34,15 +37,18 @@ export default function RootLayout({
       }
     }
   }, []);
-  if (typeof window !== undefined) {
-    if (
-      window.localStorage &&
-      language !== "UR" &&
-      !window.location.href.includes(language)
-    ) {
-      setTimeout(changeLang, 1500);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (
+        window.localStorage &&
+        language !== "UR" &&
+        !window.location.href.includes(language)
+      ) {
+        setTimeout(changeLang, 1500);
+      }
     }
-  }
+  }, [language]);
 
   const [pageTitle, setPageTitle] = useState("Jahan Numa");
 
