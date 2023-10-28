@@ -1,11 +1,8 @@
 "use client";
 import "./globals.css";
-import { Inter } from "next/font/google";
 import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
 import { useEffect, useState } from "react";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
@@ -14,9 +11,16 @@ export default function RootLayout({
 }) {
   const [language, setLanguage] = useState<string>("UR");
 
+  const changeLang = () => {
+    if (typeof window !== undefined && window.localStorage) {
+      document.getElementById("redirect")?.click();
+    }
+  };
+
   const langChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     localStorage?.setItem("lang", event.target.value);
     setLanguage(event.target.value);
+    setTimeout(changeLang, 1500);
   };
   useEffect(() => {
     // Get the language from localStorage and set it in the state
@@ -29,9 +33,22 @@ export default function RootLayout({
       }
     }
   }, []);
+
+  if (
+    typeof window !== undefined &&
+    window.localStorage &&
+    language !== "UR" &&
+    !window.location.href.includes(language)
+  ) {
+    setTimeout(changeLang, 1500);
+  }
+
+  
+
   return (
     <html lang="en">
       <head>
+        <title></title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link

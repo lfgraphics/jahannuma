@@ -71,20 +71,14 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             </IconButton>
             {/* Logo */}
             <Typography variant="h6">
-              <a href={`${language !== "UR" ? language + "/" : "/"}`} id="redirect">
+              <a href="/">
                 <Image src="/logo.svg" alt="Logo" width="80" height="60" />
               </a>
             </Typography>
 
             <List className="hidden lg:flex md:text-xs w-[68%] justify-center">
               {pages.map((page) => (
-                <Link
-                  href={`/${
-                    language == "UR" ? page.EN : language + "/" + page.EN
-                  }`}
-                  key={page.EN}
-                >
-                  {/* language == "UR"? page.EN: language + "/" + */}
+                <Link href={`/${page.EN}`} key={page.EN}>
                   <ListItem button>
                     <ListItemText
                       primary={page[language as Language]}
@@ -97,7 +91,6 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* Language Select */}
             <div className="m-2 border-[#984A02] text-[#984A02] ">
               <select
-              id="langChange"
                 value={language}
                 onChange={onLangChange}
                 className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none pb-[11px]"
