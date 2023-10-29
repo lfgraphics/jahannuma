@@ -46,7 +46,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
     localStorage?.setItem("lang", selectedLanguage);
     onLangChange(customEvent);
   };
-  const [redirectHref, setRedirectHref] = useState(""); // Initialize redirectHref with an empty string
+  const [redirectHref, setRedirectHref] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -65,7 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
 
       setRedirectHref(updatedRedirectHref); // Update the state variable with the new value
     }
-  }, [language]);
+  }, []);
 
   return (
     <div className="fixed w-screen z-50 top-0">
