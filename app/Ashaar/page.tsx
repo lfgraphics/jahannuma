@@ -25,8 +25,21 @@ interface Shaer {
 const Ashaar: React.FC<{}> = () => {
   const [searchText, setSearchText] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
-  const [dataItems, setDataItems] = useState(data.getAllShaers());
+  const [dataItems, setDataItems] = useState<Shaer[]>([]);
 
+  useEffect(() => {
+    // This effect runs when the component mounts
+    const shuffledData = shuffleArray(data.getAllShaers());
+    setDataItems(shuffledData);
+  }, []);
+
+  function shuffleArray(array: Shaer[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
   // Fetch the data and assign it to the 'data' prop
 
   const [selectedCard, setSelectedCard] = useState<Shaer | null>(null);

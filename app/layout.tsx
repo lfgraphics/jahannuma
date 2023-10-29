@@ -22,7 +22,7 @@ export default function RootLayout({
     if (typeof window !== "undefined") {
       localStorage?.setItem("lang", event.target.value);
       setLanguage(event.target.value);
-      setTimeout(changeLang, 1500);
+      setTimeout(changeLang, 500);
     }
   };
 
@@ -45,7 +45,7 @@ export default function RootLayout({
         language !== "UR" &&
         !window.location.href.includes(language)
       ) {
-        setTimeout(changeLang, 1500);
+        setTimeout(changeLang, 500);
       }
     }
   }, [language]);

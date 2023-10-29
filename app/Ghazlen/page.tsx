@@ -25,14 +25,27 @@ interface Shaer {
 const Ashaar: React.FC<{}> = () => {
   const [searchText, setSearchText] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
-  const [dataItems, setDataItems] = useState(data.getAllShaers());
-
-  // Fetch the data and assign it to the 'data' prop
-
   const [selectedCard, setSelectedCard] = useState<Shaer | null>(null);
-
-  // Get all unique tags from the data
   const allTags = data.getAllUniqueTags();
+
+  const [dataItems, setDataItems] = useState<Shaer[]>([]); // Specify the type explicitly as Shaer[]
+
+ useEffect(() => {
+   // This effect runs when the component mounts
+   const shuffledData = shuffleArray(data.getAllShaers());
+   setDataItems(shuffledData);
+ }, []);
+
+  function shuffleArray(array: Shaer[]) {
+    // Shuffle the array as before
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // Now dataItems is set with the shuffled data when the component mounts
 
   // Function to handle search input change
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -76,7 +89,7 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   const handleHeartClick = (shaerData: Shaer, index: any, id: string): void => {
-    if (typeof window !== "undefined" && window.localStorage) {
+    if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ashaar");

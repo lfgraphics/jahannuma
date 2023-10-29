@@ -25,7 +25,21 @@ interface Shaer {
 const Ashaar: React.FC<{}> = () => {
   const [searchText, setSearchText] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
-  const [dataItems, setDataItems] = useState(data.getAllShaers());
+  const [dataItems, setDataItems] = useState<Shaer[]>([]);
+
+  useEffect(() => {
+    // This effect runs when the component mounts
+    const shuffledData = shuffleArray(data.getAllShaers());
+    setDataItems(shuffledData);
+  }, []);
+
+  function shuffleArray(array: Shaer[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
 
   // Fetch the data and assign it to the 'data' prop
 
@@ -101,7 +115,7 @@ const Ashaar: React.FC<{}> = () => {
           // Toggle the color between "#984A02" and "grey" based on the current color
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
-          // document.getElementById(`${id}`)!.style.color = "#984A02";
+          // document.getElementById(`${id}`)!.style color = "#984A02";
 
           localStorage.setItem("Ashaar", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
@@ -137,7 +151,6 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   const handleShareClick = (shaerData: Shaer, id: String): void => {
-    // console.log(shaerData.sherHead);
     try {
       if (navigator.share) {
         navigator
@@ -216,6 +229,7 @@ const Ashaar: React.FC<{}> = () => {
       icon.classList.remove("hidden");
     });
   };
+
   const toggleFilter = () => {
     document.getElementById("filtersListBox")?.classList.toggle("max-h-0");
   };

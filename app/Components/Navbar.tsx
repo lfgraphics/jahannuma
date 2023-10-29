@@ -72,7 +72,13 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* Logo */}
             <Typography variant="h6">
               <Link
-                href={language !== "UR" && !window.location.href.includes(language)? `/${language}`: "/"}id="redirect">
+                href={
+                  language !== "UR" && !window.location.href.includes(language)
+                    ? `/${language}`
+                    : "/"
+                }
+                id="redirect"
+              >
                 <Image src="/logo.svg" alt="Logo" width="80" height="60" />
               </Link>
             </Typography>
@@ -197,7 +203,11 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 <h3 className="text-black font-bold">Navs</h3>
                 <List id="navelems" className="flex flex-col">
                   {pages.map((page) => (
-                    <Link href={`/${page.EN}`} key={page.EN}>
+                    <Link
+                      href={`/${
+                        language == "UR" ? page.EN : language + "/" + page.EN
+                      }`}
+                    >
                       <ListItem button>
                         <ListItemText
                           primary={page[language as Language]}
@@ -214,7 +224,9 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                   {["About_site", "About_owner", "Contact", "Programs"].map(
                     (item) => (
                       <Link
-                        href={`/${item == "Contact" ? "#contact" : item}`}
+                        href={`/${
+                          language == "UR" ? item : language + "/" + item
+                        }`}
                         key={item}
                         onClick={() => setMobileMenuOpen(false)}
                       >
