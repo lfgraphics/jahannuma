@@ -202,8 +202,9 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
               <div>
                 <h3 className="text-black font-bold">Navs</h3>
                 <List id="navelems" className="flex flex-col">
-                  {pages.map((page) => (
+                  {pages.map((page, index) => (
                     <Link
+                      key={index}
                       href={`/${
                         language == "UR" ? page.EN : language + "/" + page.EN
                       }`}
