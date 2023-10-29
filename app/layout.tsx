@@ -40,7 +40,7 @@ export default function RootLayout({
       }
     }
   }, []);
-  let select = document.getElementById("langChange") as HTMLSelectElement;
+  // let select = document.getElementById("langChange") as HTMLSelectElement;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
