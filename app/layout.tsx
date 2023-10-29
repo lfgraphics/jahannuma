@@ -22,6 +22,9 @@ export default function RootLayout({
     if (typeof window !== "undefined") {
       localStorage?.setItem("lang", event.target.value);
       setLanguage(event.target.value);
+      if (event.target.value == "UR") {
+        document.getElementById("redirect")?.click();
+      }
       setTimeout(changeLang, 500);
     }
   };
@@ -37,6 +40,7 @@ export default function RootLayout({
       }
     }
   }, []);
+  let select = document.getElementById("langChange") as HTMLSelectElement;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -47,6 +51,9 @@ export default function RootLayout({
       ) {
         setTimeout(changeLang, 500);
       }
+      // else if (select.value == 'UR') {
+      //   setTimeout(changeLang, 500);
+      // }
     }
   }, [language]);
 

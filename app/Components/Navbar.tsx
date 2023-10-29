@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -47,6 +47,24 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
     onLangChange(customEvent);
   };
 
+  let redirectHref;
+
+  if (typeof window !== "undefined") {
+    const currentPath = window.location.pathname;
+
+    redirectHref = currentPath;
+
+    if (currentPath.includes("/EN") || currentPath.includes("/HI")) {
+      redirectHref =
+        language === "UR"
+          ? currentPath.replace("/EN", "").replace("/HI", "")
+          : currentPath;
+    } else if (language !== "UR") {
+      const origin = window.location.origin;
+      redirectHref = `${origin}/${language}${currentPath}`;
+    }
+  }
+
   return (
     <div className="fixed w-screen z-50 top-0">
       <AppBar
@@ -54,6 +72,13 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
         className="bg-[#F0D586] text-[#984A02] shadow-none"
         style={{ backgroundColor: "#F0D586" }}
       >
+        <Link
+          href={`${redirectHref}`}
+          id="redirect"
+          className="opacity-0 h-0 overflow-hidden"
+        >
+          r
+        </Link>
         <Container>
           <Toolbar className="justify-between pr-0 text-center text-[#984A02]">
             {/* Hamburger Menu Icon (Mobile) */}
@@ -72,12 +97,8 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* Logo */}
             <Typography variant="h6">
               <Link
-                href={
-                  language !== "UR" && !window.location.href.includes(language)
-                    ? `/${language}`
-                    : "/"
-                }
-                id="redirect"
+                href={language !== "UR" ? `/${language}` : "/"}
+                // id="redirect"
               >
                 <Image src="/logo.svg" alt="Logo" width="80" height="60" />
               </Link>
