@@ -48,24 +48,39 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   };
   const [redirectHref, setRedirectHref] = useState(""); // Initialize redirectHref with an empty string
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const currentPath = window.location.pathname;
-      let updatedRedirectHref = currentPath;
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const currentPath = window.location.pathname;
+    let updatedRedirectHref = currentPath;
 
-      if (currentPath.includes("/EN") || currentPath.includes("/HI")) {
-        updatedRedirectHref =
-          language === "UR"
-            ? currentPath.replace("/EN", "").replace("/HI", "")
-            : currentPath;
-      } else if (language !== "UR") {
-        const origin = window.location.origin;
-        updatedRedirectHref = `${origin}/${language}${currentPath}`;
+    if (Array.isArray(pages) && pages.length > 0) {
+      const includesENPage = pages.some((page) =>
+        currentPath.includes(page.EN)
+      );
+      if (includesENPage) {
+        const otherLanguage = language === "EN" ? "HI" : "EN";
+        // Check if the current path includes the other language
+        if (currentPath.includes(`/${otherLanguage}`)) {
+          updatedRedirectHref = `${origin}${currentPath.replace(
+            `/${otherLanguage}`,
+            ""
+          )}`;
+        } else {
+          updatedRedirectHref = `${origin}/${language}${currentPath}`;
+        }
+      } else {
+        if (language === "UR") {
+          updatedRedirectHref = "/";
+        } else {
+          updatedRedirectHref = `/${language}${currentPath}`;
+        }
       }
-
-      setRedirectHref(updatedRedirectHref); // Update the state variable with the new value
     }
-  }, [language]);
+
+    setRedirectHref(updatedRedirectHref); // Update the state variable with the new value
+  }
+}, [language]);
+
 
   return (
     <div className="fixed w-screen z-50 top-0">
