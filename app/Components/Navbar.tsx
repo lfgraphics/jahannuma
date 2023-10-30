@@ -50,21 +50,35 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      let currentPath = window.location.pathname;
-      const updatedRedirectHref = currentPath;
+      const currentPath = window.location.pathname;
+      let updatedRedirectHref = currentPath;
 
-      if (currentPath.includes("/EN") || currentPath.includes("/HI")) {
-  updatedRedirectHref =
-    language === "UR"
-      ? currentPath.replace("/EN", "").replace("/HI", "")
-      : language === "HI"
-      ? currentPath.replace("/EN", "/HI")
-      : currentPath.replace("/HI", "/EN");
-}
- // else if (language !== "UR") {
- //        const origin = window.location.origin;
- //        updatedRedirectHref = `${origin}/${language}${currentPath}`;
- //      }
+      if (language !== "UR") {
+        // Check if the current path includes /HI or /EN
+        if (currentPath === "/HI" || currentPath === "/EN") {
+          // Remove /HI or /EN
+          updatedRedirectHref = currentPath.replace(/\/(HI|EN)/, `${language}`);
+        } else {
+          // Check if the current path includes a language parameter
+          const languageMatch = currentPath.match(/\/(EN|HI|UR)\//);
+          if (languageMatch) {
+            // Remove the existing language parameter and replace it with the selected language
+            updatedRedirectHref = `${origin}${currentPath.replace(
+              `/${languageMatch[1]}`,
+              `/${language}`
+            )}`;
+          } else {
+            // If the current path doesn't include a language parameter, add the selected language
+            updatedRedirectHref = `${origin}/${language}${currentPath}`;
+          }
+        }
+      } else if (language === "UR") {
+        // Remove /EN or /HI
+        updatedRedirectHref = `${origin}${currentPath.replace(
+          /\/(EN|HI)/,
+          ""
+        )}`;
+      }
 
       setRedirectHref(updatedRedirectHref); // Update the state variable with the new value
     }

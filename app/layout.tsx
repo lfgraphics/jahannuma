@@ -3,14 +3,11 @@ import "./globals.css";
 import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({children,}:{children: React.ReactNode;}) {
   const [language, setLanguage] = useState<string>("UR");
+  const [pageTitle, setPageTitle] = useState("Jahan Numa");
+
 
   const changeLang = () => {
     if (typeof window !== "undefined" && window.localStorage) {
@@ -30,7 +27,6 @@ export default function RootLayout({
   };
 
   useEffect(() => {
-    // Get the language from localStorage and set it in the state
     if (typeof window !== "undefined" && window.localStorage) {
       const storedLang = localStorage.getItem("lang");
       if (storedLang) {
@@ -40,7 +36,6 @@ export default function RootLayout({
       }
     }
   }, []);
-  // let select = document.getElementById("langChange") as HTMLSelectElement;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -51,22 +46,9 @@ export default function RootLayout({
       ) {
         setTimeout(changeLang, 500);
       }
-      // else if (select.value == 'UR') {
-      //   setTimeout(changeLang, 500);
-      // }
     }
   }, [language]);
 
-  const [pageTitle, setPageTitle] = useState("Jahan Numa");
-
-  // useEffect(() => {
-  //   // Update the title based on the route or URL
-  //   if (window.location.href.includes("Ashaar")) {
-  //     setPageTitle("Ashaar - Jahan Numa");
-  //   } else if (window.location.href.includes("Ghazlen")) {
-  //     setPageTitle("Ghazlen - Jahan Numa");
-  //   }
-  // }, [window.location.href]);
   return (
     <html lang="en">
       <head>
