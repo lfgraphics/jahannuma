@@ -50,7 +50,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const currentPath = window.location.pathname;
+      let currentPath = window.location.pathname;
       let updatedRedirectHref = currentPath;
 
       if (currentPath.includes("/EN") || currentPath.includes("/HI")) {
