@@ -61,10 +61,10 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
       ? currentPath.replace("/EN", "/HI")
       : currentPath.replace("/HI", "/EN");
 }
- // else if (language !== "UR") {
- //        const origin = window.location.origin;
- //        updatedRedirectHref = `${origin}/${language}${currentPath}`;
- //      }
+ else if (language !== "UR") {
+        const origin = window.location.origin;
+        updatedRedirectHref = `${origin}/${language}${currentPath}`;
+      }
 
       setRedirectHref(updatedRedirectHref); // Update the state variable with the new value
     }
