@@ -1,9 +1,18 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+    reactStrictMode: true,
+}
 
 module.exports = {
     reactStrictMode: true,
-    images: {
-        domains: ['ideogram.ai', 'rekhta.org', 'instagram.com', 'google.com'], // Add the domains you want to allow here
-    },
 };
+
+const withPWA = require("next-pwa")({
+    dest: "public",
+    register: true,
+    skipWaiting: true,
+    disable: process.env.NODE_ENV === "development",
+});
+// /** @type {import('next').NextConfig} */
+
+module.exports = withPWA(nextConfig);
