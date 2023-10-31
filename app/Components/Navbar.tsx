@@ -85,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   }, [language]);
 
   return (
-    <div className="fixed w-screen z-50 top-0">
+    <div className="fixed w-screen z-50 top-0 font-noto-nastaliq">
       <AppBar
         position="static"
         className="bg-[#F0D586] text-[#984A02] shadow-none"
@@ -116,32 +116,32 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             <Link href={language !== "UR" ? `/${language}` : "/"}>
               <Image src="/logo.svg" alt="Logo" width="80" height="60" />
             </Link>
+            <div className="w-0 lg:w-[100%]">
+              <ul className="hidden lg:flex md:text-xs justify-center font-noto-nastaliq space-x-4">
+                {pages.map((page) => (
+                  <li
+                    key={page.EN}
+                    className="text-[#984A02] hover:text-[#0E88D6] font-medium text-xl mr-2"
+                  >
+                    <Link
+                      href={`/${
+                        language === "UR" ? page.EN : `${language}/${page.EN}`
+                      }`}
+                    >
+                      {(page as any)[language]}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <List className="hidden lg:flex md:text-xs w-[68%] justify-center">
-              {pages.map((page) => (
-                <Link
-                  href={`/${
-                    language == "UR" ? page.EN : language + "/" + page.EN
-                  }`}
-                  key={page.EN}
-                >
-                  {/* language == "UR"? page.EN: language + "/" + */}
-                  <ListItem button>
-                    <ListItemText
-                      primary={page[language as Language]}
-                      className="text-[#984A02]"
-                    />
-                  </ListItem>
-                </Link>
-              ))}
-            </List>
             {/* Language Select */}
             <div className="m-2 border-[#984A02] text-[#984A02] ">
               <select
                 id="langChange"
                 value={language}
                 onChange={onLangChange}
-                className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none pb-[11px]"
+                className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none "
               >
                 <option className="bg-[#F0D586]" value="UR">
                   Urdu
@@ -157,7 +157,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* donation button  */}
             <Link
               href="/donate"
-              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-2 rounded-sm mr-3 w-32 text-[1rem] pb-[13px]"
+              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-2 rounded-sm mr-3 w-32 text-[1rem]"
             >
               <button>Donate Us</button>
             </Link>

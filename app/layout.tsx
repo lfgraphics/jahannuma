@@ -53,14 +53,9 @@ export default function RootLayout({children,}:{children: React.ReactNode;}) {
     <html lang="en">
       <head>
         <title>{pageTitle}</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
         <meta name="theme-color" content="#F0D586" />
       </head>
       <body className="bg-[#ffff] dark:bg-white text-black font-noto-nastaliq">
