@@ -4,10 +4,13 @@ import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
 import { useEffect, useState } from "react";
 
-export default function RootLayout({children,}:{children: React.ReactNode;}) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [language, setLanguage] = useState<string>("UR");
   const [pageTitle, setPageTitle] = useState("Jahan Numa");
-
 
   const changeLang = () => {
     if (typeof window !== "undefined" && window.localStorage) {
@@ -53,14 +56,17 @@ export default function RootLayout({children,}:{children: React.ReactNode;}) {
     <html lang="en">
       <head>
         <title>{pageTitle}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/logo.svg" />
         <meta name="theme-color" content="#F0D586" />
       </head>
-      <body className="bg-[#ffff] dark:bg-white text-black font-noto-nastaliq">
+      <body className="bg-[#ffff] dark:bg-white text-black font-noto-nastaliq ">
         <Navbar language={language} onLangChange={langChange} />
-        <div className="mt-[4.5rem]">{children}</div>
+        {children}
         <Footer language={language} />
       </body>
     </html>

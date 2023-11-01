@@ -85,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   }, [language]);
 
   return (
-    <div className="fixed w-screen z-50 top-0 font-noto-nastaliq">
+    <div className="sticky w-screen z-50 top-0 font-noto-nastaliq">
       <AppBar
         position="static"
         className="bg-[#F0D586] text-[#984A02] shadow-none"
@@ -141,23 +141,23 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 id="langChange"
                 value={language}
                 onChange={onLangChange}
-                className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none "
+                className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-center"
               >
                 <option className="bg-[#F0D586]" value="UR">
-                  Urdu
+                  اردو
                 </option>
                 <option className="bg-[#F0D586]" value="EN">
                   English
                 </option>
                 <option className="bg-[#F0D586]" value="HI">
-                  Hindi
+                  हिंदी
                 </option>
               </select>
             </div>
             {/* donation button  */}
             <Link
               href="/donate"
-              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all p-2 rounded-sm mr-3 w-32 text-[1rem]"
+              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem] pb-1"
             >
               <button>Donate Us</button>
             </Link>

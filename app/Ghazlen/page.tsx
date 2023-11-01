@@ -12,7 +12,7 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
-import { Filter } from "react-feather";
+import { Filter, Search } from "react-feather";
 import Image from "next/image";
 
 interface Shaer {
@@ -30,11 +30,11 @@ const Ashaar: React.FC<{}> = () => {
 
   const [dataItems, setDataItems] = useState<Shaer[]>([]); // Specify the type explicitly as Shaer[]
 
- useEffect(() => {
-   // This effect runs when the component mounts
-   const shuffledData = shuffleArray(data.getAllShaers());
-   setDataItems(shuffledData);
- }, []);
+  useEffect(() => {
+    // This effect runs when the component mounts
+    const shuffledData = shuffleArray(data.getAllShaers());
+    setDataItems(shuffledData);
+  }, []);
 
   function shuffleArray(array: Shaer[]) {
     // Shuffle the array as before
@@ -51,9 +51,13 @@ const Ashaar: React.FC<{}> = () => {
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
     let xMark = document.getElementById("searchClear");
+    let sMark = document.getElementById("searchIcon");
     value === ""
       ? xMark?.classList.add("hidden")
       : xMark?.classList.remove("hidden");
+    value === ""
+      ? sMark?.classList.add("hidden")
+      : sMark?.classList.remove("hidden");
     setSearchText(value);
 
     // Call the filterDataBySearch function to filter the data
@@ -65,8 +69,11 @@ const Ashaar: React.FC<{}> = () => {
   const clearSearch = () => {
     let input = document.getElementById("searchBox") as HTMLInputElement;
     let xMark = document.getElementById("searchClear");
+    let sMark = document.getElementById("searchIcon");
+
     input.value = "";
     xMark?.classList.add("hidden");
+    sMark?.classList.add("hidden");
 
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
@@ -194,10 +201,16 @@ const Ashaar: React.FC<{}> = () => {
     const modalElement = document.getElementById("modal"); // Add an ID to your modal
     if (modalElement) {
       animateModalOpen(modalElement);
+      if(typeof window !== undefined){
+        document.getElementById("modlBtn")?.classList.remove("hidden");
+      }
     }
   };
 
   const handleCloseModal = (): void => {
+    if (typeof window !== undefined) {
+      document.getElementById("modlBtn")?.classList.add("hidden");
+    }
     // Animate modal close
     const modalElement = document.getElementById("modal");
     if (modalElement) {
@@ -266,12 +279,12 @@ const Ashaar: React.FC<{}> = () => {
   return (
     <div>
       <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center relative">
-        <div
+        {/* <div
           onClick={toggleFilter}
           className="cursor-pointer filter-btn flex-[20%] flex justify-center text-[#984A02]"
         >
           <Filter></Filter>
-        </div>
+        </div> */}
         <div className="filter-btn flex-[90%] text-center justify-center flex">
           <div className="flex justify-center basis-[95%] h-auto">
             <input
@@ -282,7 +295,13 @@ const Ashaar: React.FC<{}> = () => {
               onKeyUp={handleSearchKeyUp}
             />
             <div
-              className="justify-center bg-white h-[100%] pr-3 items-center flex w-11 border border-l-0 border-black"
+              className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-black"
+              // onClick={handleSearchKeyUp}
+            >
+              <Search id="searchIcon" className="hidden"></Search>
+            </div>
+            <div
+              className="justify-center bg-white h-[100%] items-center flex w-11 border border-l-0 border-black"
               onClick={clearSearch}
             >
               <Image
@@ -381,7 +400,7 @@ const Ashaar: React.FC<{}> = () => {
                     className="text-[#984A02] font-semibold m-3"
                     onClick={() => handleCardClick(shaerData)}
                   >
-                    View More
+                   غزل دیکهین
                   </button>
                 </div>
               </div>
@@ -393,34 +412,39 @@ const Ashaar: React.FC<{}> = () => {
       </div>
 
       {selectedCard && (
+        <button
+          style={{ overflow: "hidden" }}
+          id="modlBtn"
+          className="transition-all duration-500 ease-in-out fixed bottom-12 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
+          onClick={handleCloseModal}
+        >
+          <FontAwesomeIcon
+            icon={faTimes}
+            className="text-[#984A02] text-2xl hover:text-white"
+          />
+        </button>
+      )}
+
+      {selectedCard && (
         // <div className="justify-center w-max h-max">
         <div
           onClick={handleCloseModal}
           id="modal"
-          className="bg-black bg-opacity-50 h-[100vh] w-[100vw] fixed top-0 z-50 overflow-hidden"
+          className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
         >
           <div
             style={{ lineHeight: "normal" }}
             dir="rtl"
             className="opacity-100 fixed bottom-0 left-0 right-0 bg-white p-4 transition-all ease-in-out min-h-[50vh] max-h-[70vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
-            <button
-              className="absolute bottom-12 left-5 z-50"
-              onClick={handleCloseModal}
-            >
-              <FontAwesomeIcon
-                icon={faTimes}
-                className="text-[#984A02] text-2xl"
-              />
-            </button>
-            <h2 className="text-black font-2xl font-bold p-1 border-b-2">
+            <h2 className="text-black text-2xl top-0 bg-white sticky p-1 border-b-2 mb-3">
               {selectedCard.shaer}
             </h2>
             {selectedCard.wholeSher.map((line, index) => (
               <p
                 style={{ lineHeight: "normal" }}
                 key={index}
-                className="text-black"
+                className="text-black pb-3"
               >
                 {line}
               </p>
