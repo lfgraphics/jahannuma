@@ -27,11 +27,11 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pages = [
-    { EN: "Shaer", UR: "شاعر", HI: "शेयर" },
+    { EN: "Shaer", UR: "شعرا", HI: "शेयर" },
     { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
     { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
     { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
-    { EN: "E-Books", UR: "ای بکس", HI: "ई-बुक्स" },
+    { EN: "E-Books", UR: "ای-بکس", HI: "ई-बुक्स" },
     { EN: "Blogs", UR: "بلاگز", HI: "ब्लॉग्स" },
     { EN: "Interviews", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
     { EN: "Faviorites", UR: "پسندیدہ", HI: "पसंदीदा" },
@@ -156,8 +156,8 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             </div>
             {/* donation button  */}
             <Link
-              href="/donate"
-              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem] pb-1"
+              href={`${language == "UR" ? "/Donate" : language + "/Donate"}`}
+              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem]"
             >
               <button>Donate Us</button>
             </Link>
@@ -235,23 +235,19 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             >
               <div>
                 <h3 className="text-black font-bold">Navs</h3>
-                <List id="navelems" className="flex flex-col">
+                <ul id="navelems" className="flex flex-col gap-3 text-center w-[80px]">
                   {pages.map((page, index) => (
                     <Link
+                    className="hover:text-white hover:bg-yellow-900 p-1 rounded-sm"
                       key={index}
                       href={`/${
                         language == "UR" ? page.EN : language + "/" + page.EN
                       }`}
                     >
-                      <ListItem button>
-                        <ListItemText
-                          primary={page[language as Language]}
-                          className="text-[#984A02]"
-                        />
-                      </ListItem>
+                      <li>{page[language as Language]}</li>
                     </Link>
                   ))}
-                </List>
+                </ul>
               </div>
               <div>
                 <h3 className="text-black font-bold">More</h3>

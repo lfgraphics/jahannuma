@@ -1,134 +1,88 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import React, { useState, useEffect } from "react";
 
-const Carousel1: React.FC = () => {
+const Carousel: React.FC = () => {
   const [images] = useState([
-    { src: "/carousel/josh.jpeg", link: "/" },
-    { src: "/carousel/jnd.jpeg", link: "/" },
+    "/carousel/jnd.jpeg",
+    "/carousel/josh.jpeg",
+    "/carousel/caroselcheck.png",
   ]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  const nextSlide = () => {
+    setCurrentSlide((currentSlide + 1) % images.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((currentSlide - 1 + images.length) % images.length);
+  };
+
   useEffect(() => {
-    const carouselInterval = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length);
-    }, 5000);
+    const interval = setInterval(nextSlide, 5000);
 
     return () => {
-      clearInterval(carouselInterval);
+      clearInterval(interval);
     };
-  }, [images]);
-
-  const handleSlideClick = (index: number) => {
-    setCurrentSlide(index);
-  };
-
-  const renderCarouselItems = () => {
-    return images.map((image, index) => (
-      <div
-        key={index}
-        className={`duration-700 ease-in-out ${
-          index === currentSlide ? "" : "hidden"
-        }`}
-        data-carousel-item
-      >
-        <Link href={image.link}>
-            <Image
-              src={image.src}
-              className="absolute block w-full h-auto -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-              alt={`Carousel Item ${index + 1}`}
-              height={100}
-              width={100}
-            />
-        </Link>
-      </div>
-    ));
-  };
+  }, [currentSlide]);
 
   return (
-    <div
-      id="default-carousel"
-      className="relative w-full h-auto"
-      data-carousel="slide"
-    >
-      <div className=" relative overflow-hidden pb-[40%]">
-        {renderCarouselItems()}
-      </div>
-      <div className="absolute z-30 flex space-x-3 -translate-x-1/2 bottom-5 left-1/2">
-        {images.map((_, index) => (
-          <button
+    <div className="flex flex-col items-center relative">
+      <div className="carousel flex justify-center">
+        {images.map((image, index) => (
+          <div
             key={index}
-            type="button"
-            className={`w-2 h-2 rounded-full ${
-              index === currentSlide ? "bg-white" : "bg-gray-500"
+            className={`slide transition-all  duration-1000 ${
+              index === currentSlide ? "opacity-100" : "opacity-0"
             }`}
-            aria-current={index === currentSlide}
-            aria-label={`Slide ${index + 1}`}
-            data-carousel-slide-to={index}
-            onClick={() => handleSlideClick(index)}
-          ></button>
+          >
+            <Image
+              src={image}
+              alt={`Slide ${index + 1}`}
+              width={1920}
+              height={1080}
+              className={`${index === currentSlide ? " w-screen" : "w-0"}`}
+            />
+          </div>
         ))}
       </div>
-      <button
-        type="button"
-        className="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-        data-carousel-prev
-        onClick={() =>
-          setCurrentSlide((prevSlide) =>
-            prevSlide === 0 ? images.length - 1 : prevSlide - 1
-          )
-        }
-      >
-        <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-          <svg
-            className="w-4 h-4 text-white"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 6 10"
+      <div className="navigationsetc absolute bottom-0 mb-3 flex justify-center flex-col">
+        <div className="buttons flex justify-between w-screen">
+          <button
+            className="prev-button p-4 text-white text-5xl hover:bg-black hover:bg-opacity-20 rounded-sm rounded-l-none transition-all duration-500"
+            onClick={prevSlide}
           >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 1 1 5l4 4"
-            />
-          </svg>
-          <span className="sr-only">Previous</span>
-        </span>
-      </button>
-      <button
-        type="button"
-        className="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-        data-carousel-next
-        onClick={() =>
-          setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length)
-        }
-      >
-        <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-          <svg
-            className="w-4 h-4 text-white "
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 6 10"
+            &#8249;
+          </button>
+          <button
+            className="next-button p-4 text-white text-5xl hover:bg-black hover:bg-opacity-20 rounded-sm rounded-r-none transition-all duration-500"
+            onClick={nextSlide}
           >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="m1 9 4-4-4-4"
-            />
-          </svg>
-          <span className="sr-only">Next</span>
-        </span>
-      </button>
+            &#8250;
+          </button>
+        </div>
+        <div className="indicators">
+          <div className="flex justify-center">
+            <div className="indicators flex flex-col mt-4">
+              <div className="flex flex-row gap-2 items-center justify-center w-screen">
+                {images.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`indicator transition-all duration-500 ease-in-out h-2 rounded-full ${
+                      index === currentSlide
+                        ? "bg-white w-3"
+                        : "bg-black bg-opacity-50 w-2"
+                    }`}
+                  ></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Carousel1;
+export default Carousel;
