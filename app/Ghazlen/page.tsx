@@ -14,6 +14,7 @@ import {
 import html2canvas from "html2canvas";
 import { Filter, Search } from "react-feather";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Shaer {
   shaer: string;
@@ -201,7 +202,7 @@ const Ashaar: React.FC<{}> = () => {
     const modalElement = document.getElementById("modal"); // Add an ID to your modal
     if (modalElement) {
       animateModalOpen(modalElement);
-      if(typeof window !== undefined){
+      if (typeof window !== undefined) {
         document.getElementById("modlBtn")?.classList.remove("hidden");
       }
     }
@@ -279,12 +280,6 @@ const Ashaar: React.FC<{}> = () => {
   return (
     <div>
       <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center relative">
-        {/* <div
-          onClick={toggleFilter}
-          className="cursor-pointer filter-btn flex-[20%] flex justify-center text-[#984A02]"
-        >
-          <Filter></Filter>
-        </div> */}
         <div className="filter-btn flex-[90%] text-center justify-center flex">
           <div className="flex justify-center basis-[95%] h-auto">
             <input
@@ -354,9 +349,11 @@ const Ashaar: React.FC<{}> = () => {
                 id={`card${index}`}
                 className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
               >
-                <h2 className="text-black text-2xl font-bold mb-4">
-                  {shaerData.shaer}
-                </h2>
+                <Link href={`/Shaer/${shaerData.shaer.replace(" ", "-")}`}>
+                  <h2 className="text-black text-2xl font-bold mb-4">
+                    {shaerData.shaer}
+                  </h2>
+                </Link>
                 {/* Display a snippet of the ghazal data here */}
                 {shaerData.sherHead.map((lin, index) => (
                   <p
@@ -400,7 +397,7 @@ const Ashaar: React.FC<{}> = () => {
                     className="text-[#984A02] font-semibold m-3"
                     onClick={() => handleCardClick(shaerData)}
                   >
-                   غزل دیکهین
+                    غزل دیکهین
                   </button>
                 </div>
               </div>

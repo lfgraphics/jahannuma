@@ -33,7 +33,7 @@ const data: Shaer[] = [
     tag: ["Breakup"],
   },
   {
-    shaer: "فرحت انصاری",
+    shaer: "Farhat Ansari",
     sherHead: ["دل نے بھی یہ سوچا ہوگا", "راہِ جنوں میں کیا کیا ہوگا"],
     wholeSher: [
       "دغا بازوں کا مسئلہ آرہا ہے",
@@ -52,7 +52,7 @@ const data: Shaer[] = [
     tag: ["Breakup"],
   },
   {
-    shaer: "فرحت انصاری",
+    shaer: "Farhat Ansari",
     sherHead: ["دغا بازوں کا مسئلہ آرہا ہے", "ہوا ختم اک دوسرا آرہا ہے"],
     wholeSher: [
       "دغا بازوں کا مسئلہ آرہا ہے",
@@ -71,7 +71,7 @@ const data: Shaer[] = [
     tag: ["Breakup"],
   },
   {
-    shaer: "فرحت انصاری",
+    shaer: "Farhat Ansari",
     sherHead: [
       "تیرے بغیر دل لگے کیسے بہار میں",
       "شعلے لپک رہے ہیں یہاں انتظار میں",
@@ -93,7 +93,7 @@ const data: Shaer[] = [
     tag: ["Breakup"],
   },
   {
-    shaer: "فرحت انصاری",
+    shaer: "Farhat Ansari",
     sherHead: ["راہِ بر اختیار مت کرنا", "زندگانی کو خار مت کرنا"],
     wholeSher: [
       "راہِ بر اختیار مت کرنا",
@@ -112,7 +112,7 @@ const data: Shaer[] = [
     tag: ["Stay away from love"],
   },
   {
-    shaer: "فرحت انصاری",
+    shaer: "Farhat Ansari",
     sherHead: ["جدا جب سے ہوۓ ہیں کارواں سے", "ابھی تک پھر رہے ہیں بے اماں سے"],
     wholeSher: [
       "جدا جب سے ہوۓ ہیں کارواں سے",
@@ -135,7 +135,7 @@ const data: Shaer[] = [
     tag: ["Breakup"],
   },
   {
-    shaer: "فرحت انصاری",
+    shaer: "Farhat Ansari",
     sherHead: [
       "دھرتی پے رہنے والے ذرا آسمان دیکھ",
       "گر دیکھنا ہے تجھ کو تو اونچی اڑان دیکھ",
