@@ -6,6 +6,7 @@ import { faDownload, faShare } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
 import Loader from "./Loader";
 import { ArrowDown } from "react-feather";
+import Link from "next/link";
 
 interface Shaer {
   shaer: string;
@@ -86,7 +87,7 @@ const RandCard: React.FC<{}> = () => {
   return (
     <div className="justify-center flex flex-col items-center m-4">
       <h4
-        className="text-xl m-4 font-semibold text-[#984A02] tracking-[5px]"
+        className="text-xl m-4 font-semibold text-gray-600 tracking-[5px]"
         // style={{ letterSpacing: "5px" }}
       >
         Random sher
@@ -97,17 +98,19 @@ const RandCard: React.FC<{}> = () => {
           id={"sherCard"}
           className="bg-white p-4 rounded-sm w-[95vw] justify-center flex flex-col items-center"
         >
-          <h2
-            className="text-black text-2xl font-bold mb-2"
-            style={{ lineHeight: "normal" }}
-          >
-            {randomData.shaer}
-          </h2>
+          <Link href={`/Shaer/${randomData.shaer}`}>
+            <h2
+              className="text-black text-3xl mb-2"
+              style={{ lineHeight: "normal" }}
+            >
+              {randomData.shaer}
+            </h2>
+          </Link>
           {randomData.sherHead.map((line, index) => (
             <p
               key={index}
-              className="text-black text-center"
-              style={{ lineHeight: "normal" }}
+              className="text-black text-center leading-7"
+              // style={{ lineHeight: "normal" }}
             >
               {line}
             </p>
@@ -120,7 +123,7 @@ const RandCard: React.FC<{}> = () => {
                 onClick={() => handleShareClick(randomData, "sherCard")}
               >
                 <FontAwesomeIcon icon={faShare} style={{ color: "#984A02" }} />
-                <p className="pb-[11px]">Share this</p>
+                <p>Share this</p>
               </button>
               <button
                 className="m-3 flex gap-2 items-center"
@@ -130,16 +133,8 @@ const RandCard: React.FC<{}> = () => {
                   icon={faDownload}
                   style={{ color: "#984A02" }}
                 />
-                <p className="pb-[11px]">Download this</p>
+                <p>Download this</p>
               </button>
-              {/* <button
-                className="m-3 text-[20px] flex gap-2 items-center"
-                onClick={() => handleDownload("sherCard")}
-              >
-                <ArrowDown
-                  style={{ color: "#984A02" }}
-                />
-              </button> */}
             </div>
           </div>
         </div>

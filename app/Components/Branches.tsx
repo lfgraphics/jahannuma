@@ -6,27 +6,27 @@ import React from "react";
 const Branches = () => {
   return (
     <div>
-      <div className=" bg-gray-100 h-[620px]">
-        <p className="pt-7 text-xl font-semibold text-center text-[#984A02] tracking-[5px] pb-[13px]">
-          Jahannuma Branches
+      <div className=" bg-gray-100 h-[540px]">
+        <p className="pt-7 text-2xl text-center text-gray-700">
+          جہاں نما کی شاخیں
         </p>
         <div className=" p-4 w-screen overflow-x-auto">
           <div className="flex flex-row w-max">
-            <div className="rounded-lg overflow-hidden border-2 border-[#F0D586] w-[300px] h-[max-content] m-3">
+            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
               <Link href="/bazmeurdu">
                 <Image
                   src="/branches/urdu.jpeg"
                   alt="Bazme urdu Image"
-                  width="100"
-                  height="400"
+                  width={300}
+                  height={450}
                   className="w-full h-auto"
                 ></Image>
-                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold pb-[11px]">
-                  <p>Bazm-e-Urdu</p>
+                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-white text-gray-900 p-4 hover:h-32 hover:text-2xl text-xl ">
+                  <p>بزم اردو</p>
                 </div>
               </Link>
             </div>
-            <div className="rounded-lg overflow-hidden border-2 border-[#F0D586] w-[300px] h-[max-content] m-3">
+            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
               <Link href="/bazmehindi">
                 <Image
                   src="/branches/hindi.jpeg"
@@ -35,12 +35,12 @@ const Branches = () => {
                   height="400"
                   className="w-full h-auto"
                 ></Image>
-                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold pb-[11px]">
-                  <p>Bazm-e-Hindi</p>
+                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-white text-gray-900 p-4 hover:h-32 hover:text-2xl text-xl ">
+                  <p>بزم ھندی</p>
                 </div>
               </Link>
             </div>
-            <div className="rounded-lg overflow-hidden border-2 border-[#F0D586] w-[300px] h-[max-content] m-3">
+            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
               <Link href="/blogs">
                 <Image
                   src="/branches/blog.jpeg"
@@ -49,8 +49,8 @@ const Branches = () => {
                   height="400"
                   className="w-full h-auto"
                 ></Image>
-                <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold pb-[11px]">
-                  <p>Blogs</p>
+                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-white text-gray-900 p-4 hover:h-32 hover:text-2xl text-xl ">
+                  <p>بلاگز</p>
                 </div>
               </Link>
             </div>

@@ -25,9 +25,7 @@ interface Shaer {
 
 const Ashaar: React.FC<{}> = () => {
   const [searchText, setSearchText] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("");
   const [selectedCard, setSelectedCard] = useState<Shaer | null>(null);
-  const allTags = data.getAllUniqueTags();
 
   const [dataItems, setDataItems] = useState<Shaer[]>([]); // Specify the type explicitly as Shaer[]
 
@@ -84,7 +82,6 @@ const Ashaar: React.FC<{}> = () => {
   // Function to check if a Shaer matches the selected filter and search text
   const isShaerMatch = (shaerData: Shaer) => {
     return (
-      (selectedFilter === "" || shaerData.tag.includes(selectedFilter)) &&
       (shaerData.shaer.toLowerCase().includes(searchText) ||
         shaerData.sherHead.some((line) =>
           line.toLowerCase().includes(searchText)
@@ -219,40 +216,7 @@ const Ashaar: React.FC<{}> = () => {
     }
   };
 
-  const handleDownload = (elementId: string) => {
-    console.log("download is clicked");
-    document.querySelectorAll(".icons").forEach(function (icon) {
-      icon.classList.add("hidden");
-    });
-
-    const element = document.getElementById(elementId);
-    if (element) {
-      html2canvas(element).then(function (canvas) {
-        var anchorTag = document.createElement("a");
-        document.body.appendChild(anchorTag);
-        anchorTag.download = `${prompt("Enter file name to save")}.png`;
-        anchorTag.href = canvas.toDataURL();
-        anchorTag.target = "_blank";
-        anchorTag.click();
-        document.querySelectorAll(".icons").forEach(function (icon) {
-          icon.classList.remove("hidden");
-        });
-      });
-    }
-    document.querySelectorAll(".icons").forEach(function (icon) {
-      icon.classList.remove("hidden");
-    });
-  };
-  const toggleFilter = () => {
-    document.getElementById("filtersListBox")?.classList.toggle("max-h-0");
-  };
-
-  const filterData = (tag: string) => {
-    setSelectedFilter(tag);
-  };
-
   useEffect(() => {
-    // Check if the cardData is in localStorage
     if (window !== undefined && window.localStorage) {
       const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
@@ -279,24 +243,21 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center relative">
+      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
         <div className="filter-btn flex-[90%] text-center justify-center flex">
-          <div className="flex justify-center basis-[95%] h-auto">
+          <div dir="rtl" className="flex justify-center basis-[95%] h-auto">
             <input
               type="text"
-              placeholder="Search what you want"
-              className="text-black border border-black focus:outline-none focus:border-r-0 border-r-0 p-2 w-64"
+              placeholder="لکه ک تلاش کرین"
+              className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
               id="searchBox"
               onKeyUp={handleSearchKeyUp}
             />
-            <div
-              className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-black"
-              // onClick={handleSearchKeyUp}
-            >
+            <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-black">
               <Search id="searchIcon" className="hidden"></Search>
             </div>
             <div
-              className="justify-center bg-white h-[100%] items-center flex w-11 border border-l-0 border-black"
+              className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-black"
               onClick={clearSearch}
             >
               <Image
@@ -312,32 +273,6 @@ const Ashaar: React.FC<{}> = () => {
         </div>
       </div>
       <div
-        id="filtersListBox"
-        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-white absolute transition-all left-8 shadow-md border-t-0 z-50"
-      >
-        <ul className="p-2 text-black select-none" onClick={toggleFilter}>
-          <li
-            className={`border-b-2 m-2 cursor-pointer ${
-              selectedFilter === "" ? "font-bold text-[#984A02]" : ""
-            }`}
-            onClick={() => filterData("")}
-          >
-            All
-          </li>
-          {allTags.map((tag) => (
-            <li
-              key={tag}
-              className={`border-b-2 m-2 cursor-pointer ${
-                tag === selectedFilter ? "font-bold text-[#984A02]" : ""
-              }`}
-              onClick={() => filterData(tag)}
-            >
-              {tag}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div
         dir="rtl"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
       >
@@ -350,7 +285,7 @@ const Ashaar: React.FC<{}> = () => {
                 className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
               >
                 <Link href={`/Shaer/${shaerData.shaer.replace(" ", "-")}`}>
-                  <h2 className="text-black text-2xl font-bold mb-4">
+                  <h2 className="text-black text-3xl mb-4">
                     {shaerData.shaer}
                   </h2>
                 </Link>
@@ -359,14 +294,15 @@ const Ashaar: React.FC<{}> = () => {
                   <p
                     style={{ lineHeight: "normal" }}
                     key={index}
-                    className="text-black line-normal"
+                    className="text-black line-normal hover:text-xl"
+                    onClick={() => handleCardClick(shaerData)}
                   >
                     {lin}
                   </p>
                 ))}
                 <div className="felx text-center icons">
                   <button
-                    className={`m-3 text-gray-500 `}
+                    className={`m-3 text-gray-500 transition-all duration-500`}
                     onClick={() =>
                       handleHeartClick(shaerData, index, `heart-icon-${index}`)
                     }
@@ -383,16 +319,6 @@ const Ashaar: React.FC<{}> = () => {
                       style={{ color: "#984A02" }}
                     />
                   </button>
-                  <button
-                    className="m-3"
-                    onClick={() => handleDownload(`card${index}`)}
-                  >
-                    <FontAwesomeIcon
-                      icon={faDownload}
-                      style={{ color: "#984A02" }}
-                    />
-                  </button>
-
                   <button
                     className="text-[#984A02] font-semibold m-3"
                     onClick={() => handleCardClick(shaerData)}
@@ -430,19 +356,14 @@ const Ashaar: React.FC<{}> = () => {
           className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
         >
           <div
-            style={{ lineHeight: "normal" }}
             dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0 bg-white p-4 transition-all ease-in-out min-h-[50vh] max-h-[70vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
+            className="opacity-100 fixed bottom-0 left-0 right-0 bg-white p-4 transition-all ease-in-out min-h-[75vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
-            <h2 className="text-black text-2xl top-0 bg-white sticky p-1 border-b-2 mb-3">
+            <h2 className="text-black text-2xl top-0 bg-white sticky m-1 border-b-2 mb-3">
               {selectedCard.shaer}
             </h2>
             {selectedCard.wholeSher.map((line, index) => (
-              <p
-                style={{ lineHeight: "normal" }}
-                key={index}
-                className="text-black pb-3"
-              >
+              <p key={index} className="text-black pb-3">
                 {line}
               </p>
             ))}
