@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Intro from "@/app/Components/shaer/Intro"
 // let datatype = {
 //   fields: {
 //     location: 'گورکھپور',
@@ -24,9 +25,9 @@ const Page = ({ params }) => {
     const fetchData = async () => {
       try {
         const API_KEY =
-          "patQEExbucK5XVDEL.01c280724c437bee768825c0d8d8fa39b993534749a8dbd46256028b86edff5d";
+          "patozzsZAsH1XSXny.f8e69e6d2e9a4781f92b68dd353ea2cdf37bfe64c00103355b69fed9e2c653a2";
         const BASE_ID = "appgWv81tu4RT3uRB";
-        const TABLE_NAME = decodedName
+        const TABLE_NAME = "Intro"
 
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         const headers = {
@@ -37,11 +38,18 @@ const Page = ({ params }) => {
         const result = await response.json();
 
         const records = result.records || [];
-        const fields = records.map((record) => record.fields);
+        const filteredRecord = records.find((record) => record.fields.takhallus.trim() == decodedName);
 
-        console.log(records[0])
+        if (filteredRecord) {
+          // console.log(filteredRecord);
 
-        setData(fields[0]);
+          setData(filteredRecord.fields);
+        } else {
+          console.log(`No record found for takhallus: ${decodedName}`);
+          setData(null); // or set an empty object as per your requirement
+        }
+
+
       } catch (error) {
         console.error(`Failed to fetch data: ${error}`);
       }
@@ -54,7 +62,7 @@ const Page = ({ params }) => {
   return (
     <div>
       <h1>This is dynamic data of: {name}</h1>
-      {data.name}
+      <Intro data={data} ></Intro>
     </div>
   );
 };
