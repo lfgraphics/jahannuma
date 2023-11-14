@@ -41,22 +41,22 @@ const Carousel: React.FC = () => {
               src={image}
               alt={`Slide ${index + 1}`}
               width={1920}
-              height={1080}
+              height={560}
               className={`${index === currentSlide ? " w-screen" : "w-0"}`}
             />
           </div>
         ))}
       </div>
       <div className="navigationsetc absolute bottom-0 mb-3 flex justify-center flex-col">
-        <div className="buttons flex justify-between w-screen">
+        <div className="buttons flex items-center h-full mb-[11%] justify-between w-screen">
           <button
-            className="prev-button p-4 text-white text-5xl hover:bg-black hover:bg-opacity-20 rounded-sm rounded-l-none transition-all duration-500"
+            className="prev-button text-left w-[40vw] h-[80px] p-4 text-white text-5xl transition-all duration-500"
             onClick={prevSlide}
           >
             &#8249;
           </button>
           <button
-            className="next-button p-4 text-white text-5xl hover:bg-black hover:bg-opacity-20 rounded-sm rounded-r-none transition-all duration-500"
+            className="next-button text-right w-[40vw] h-[80px] p-4 text-white text-5xl transition-all duration-500"
             onClick={nextSlide}
           >
             &#8250;
