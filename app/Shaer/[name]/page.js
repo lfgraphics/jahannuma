@@ -29,21 +29,25 @@ const Page = ({ params }) => {
         const BASE_ID = "appgWv81tu4RT3uRB";
         const TABLE_NAME = "Intro"
 
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({takhallus}='${decodedName.trim()}')`;
         const headers = {
           Authorization: `Bearer ${API_KEY}`,
         };
 
+        
         const response = await fetch(url, { method: "GET", headers });
         const result = await response.json();
-
+        
         const records = result.records || [];
-        const filteredRecord = records.find((record) => record.fields.takhallus.trim() == decodedName);
+        const filteredRecord = records;
+        console.log(decodedName.trim())
+        console.log(result)
+        // console.log(filteredRecord)
 
         if (filteredRecord) {
           // console.log(filteredRecord);
 
-          setData(filteredRecord.fields);
+          setData(result.records[0].fields);
         } else {
           console.log(`No record found for takhallus: ${decodedName}`);
           setData(null); // or set an empty object as per your requirement

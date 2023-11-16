@@ -36,14 +36,15 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
       <h1 className="text-3xl font-bold mb-4">انک کے بارے میں</h1>
       {data && insideBrowser && (
         <div className="poet-intro">
-          {/* {data.photo?.length > 0 && (
+          {data && insideBrowser && data.photo?.length > 0 && (
             <Image
               alt={data.photo[0].filename}
               src={data.photo[0].url}
               height={data.photo[0].height}
               width={data.photo[0].width}
+              loading="lazy" // Add lazy loading
             />
-          )} */}
+          )}
 
           <p>
             <strong>نام:</strong> {data.name}
