@@ -1,26 +1,27 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import * as data from "./data";
-import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
+// import * as data from "./data";
+// import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
 
 import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faDownload,
-  faHeart,
-  faShare,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
-import html2canvas from "html2canvas";
-import { Filter, Search } from "react-feather";
+import { faHeart, faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { Search } from "react-feather";
 import Image from "next/image";
 import Link from "next/link";
 
 interface Shaer {
-  shaer: string;
-  sherHead: string[];
-  wholeSher: string[];
-  tag: string[];
+  fields: {
+    ghazal: string[];
+    ghazalHead: string[];
+    shaer: string;
+  };
+  id: string;
+  createdTime: string;
+}
+interface Pagination {
+  offset: string | null;
+  pageSize: number;
 }
 
 const Ashaar: React.FC<{}> = () => {
@@ -29,22 +30,57 @@ const Ashaar: React.FC<{}> = () => {
 
   const [dataItems, setDataItems] = useState<Shaer[]>([]); // Specify the type explicitly as Shaer[]
 
-  useEffect(() => {
-    // This effect runs when the component mounts
-    const shuffledData = shuffleArray(data.getAllShaers());
-    setDataItems(shuffledData);
-  }, []);
+  const [pagination, setPagination] = useState<Pagination>({
+    offset: null,
+    pageSize: 4, // Set the page size to 15
+  });
+  const fetchData = async (direction: "next" | "previous") => {
+    try {
+      const API_KEY =
+        "patpWvd49NVJhHOVr.73ebeea33c6733900c098b73f0d71a60114061896d4051a451e7e24d59351cef";
+      const BASE_ID = "appvzkf6nX376pZy6";
+      const TABLE_NAME = "ghazlen";
+      const { offset, pageSize } = pagination;
 
-  function shuffleArray(array: Shaer[]) {
-    // Shuffle the array as before
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+      if (direction === "next" && offset) {
+        url += `&offset=${offset}`;
+      } else if (direction === "previous" && offset) {
+        url += `&offset=${offset}&direction=back`;
+      }
+      const headers = {
+        Authorization: `Bearer ${API_KEY}`,
+      };
+
+      const response = await fetch(url, { method: "GET", headers });
+      const result = await response.json();
+
+      const records = result.records || [];
+      if (records.length > 0) {
+        setPagination({ offset: result.offset, pageSize });
+      }
+      // Convert ghazal and ghazalHead fields to arrays
+      const formattedRecords = records.map(
+        (record: { fields: { ghazal: string; ghazalHead: string } }) => ({
+          ...record,
+          fields: {
+            ...record.fields,
+            ghazal: record.fields.ghazal.split("\n"),
+            ghazalHead: record.fields.ghazalHead.split("\n"),
+          },
+        })
+      );
+
+      setDataItems(formattedRecords);
+
+      // console.log(filteredRecord)
+    } catch (error) {
+      console.error(`Failed to fetch data: ${error}`);
     }
-    return array;
-  }
-
-  // Now dataItems is set with the shuffled data when the component mounts
+  };
+  useEffect(() => {
+    fetchData("next");
+  }, []); // Fetch data only once when the component mounts
 
   // Function to handle search input change
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -58,10 +94,6 @@ const Ashaar: React.FC<{}> = () => {
       ? sMark?.classList.add("hidden")
       : sMark?.classList.remove("hidden");
     setSearchText(value);
-
-    // Call the filterDataBySearch function to filter the data
-    const filteredData = filterDataBySearch(value);
-    setDataItems(filteredData);
   };
 
   // Function to clear the search input
@@ -76,95 +108,89 @@ const Ashaar: React.FC<{}> = () => {
 
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
-    setDataItems(data.getAllShaers()); // Restore the original data
+    // setDataItems(data.getAllShaers()); // Restore the original data
   };
 
   // Function to check if a Shaer matches the selected filter and search text
   const isShaerMatch = (shaerData: Shaer) => {
     return (
-      (shaerData.shaer.toLowerCase().includes(searchText) ||
-        shaerData.sherHead.some((line) =>
-          line.toLowerCase().includes(searchText)
-        ) ||
-        shaerData.wholeSher.some((line) =>
-          line.toLowerCase().includes(searchText)
-        ) ||
-        shaerData.tag.some((tag) => tag.toLowerCase().includes(searchText)))
+      shaerData.fields.shaer.toLowerCase().includes(searchText) ||
+      shaerData.fields.ghazalHead.some((line) =>
+        line.toLowerCase().includes(searchText)
+      ) ||
+      shaerData.fields.ghazal.some((line) =>
+        line.toLowerCase().includes(searchText)
+      )
     );
   };
 
   const handleHeartClick = (shaerData: Shaer, index: any, id: string): void => {
-    if (typeof window !== undefined && window.localStorage) {
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ashaar");
+  if (typeof window !== undefined && window.localStorage) {
+    try {
+      // Get the existing data from Local Storage (if any)
+      const existingDataJSON = localStorage.getItem("Ashaar");
 
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Shaer[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
+      // Parse the existing data into an array or initialize an empty array if it doesn't exist
+      const existingData: Shaer[] = existingDataJSON
+        ? JSON.parse(existingDataJSON)
+        : [];
 
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.shaer === shaerData.shaer
+      // Check if the shaerData is already in the existing data
+      const isDuplicate = existingData.some(
+        (data) => data.id === shaerData.id
+      );
+
+      if (!isDuplicate) {
+        // Add the new shaerData to the existing data array
+        existingData.push(shaerData);
+
+        // Serialize the updated data back to JSON
+        const updatedDataJSON = JSON.stringify(existingData);
+
+        // Toggle the color between "#984A02" and "grey" based on the current color
+        document.getElementById(`${id}`)!.classList.remove("text-gray-500");
+        document.getElementById(`${id}`)!.classList.add("text-red-600");
+
+        localStorage.setItem("Ashaar", updatedDataJSON);
+        // Optionally, you can update the UI or show a success message
+        console.log("Data added to Local Storage successfully.");
+      } else {
+        // Remove the shaerData from the existing data array
+        const updatedData = existingData.filter(
+          (data) => data.id !== shaerData.id
         );
 
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
+        // Serialize the updated data back to JSON
+        const updatedDataJSON = JSON.stringify(updatedData);
 
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
+        // Toggle the color between "#984A02" and "grey" based on the current color
+        document.getElementById(`${id}`)!.classList.remove("text-red-600");
+        document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-          // document.getElementById(`${id}`)!.style.color = "#984A02";
+        localStorage.setItem("Ashaar", updatedDataJSON);
 
-          localStorage.setItem("Ashaar", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          console.log("Data added to Local Storage successfully.");
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.shaer !== shaerData.shaer
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Store the updated data in Local Storage
-
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Ashaar", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          document.getElementById(`${id}`)?.classList.remove("text-red-600");
-          console.log("Data removed from Local Storage successfully.");
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
+        // Optionally, you can update the UI or show a success message
+        console.log("Data removed from Local Storage successfully.");
       }
+    } catch (error) {
+      // Handle any errors that may occur when working with Local Storage
+      console.error("Error adding/removing data to/from Local Storage:", error);
     }
-  };
+  }
+};
+
 
   const handleShareClick = (shaerData: Shaer, id: String): void => {
-    // console.log(shaerData.sherHead);
+    // console.log(shaerData.ghazalHead);
     try {
       if (navigator.share) {
         navigator
           .share({
-            title: shaerData.shaer, // Use the shaer's name as the title
+            title: shaerData.fields.shaer, // Use the shaer's name as the title
             text:
-              shaerData.sherHead.map((line) => line).join("\n") +
-              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join sherHead lines with line breaks
-            url: window.location.href, // Get the current page's URL
+              shaerData.fields.ghazalHead.map((line) => line).join("\n") +
+              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
+            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
           })
 
           .then(() => console.log("Successful share"))
@@ -216,30 +242,36 @@ const Ashaar: React.FC<{}> = () => {
     }
   };
 
-  useEffect(() => {
-    if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Ashaar");
-      if (storedData) {
+useEffect(() => {
+  if (window !== undefined && window.localStorage) {
+    const storedData = localStorage.getItem("Ashaar");
+    if (storedData) {
+      try {
         const parsedData = JSON.parse(storedData);
         dataItems.forEach((shaerData, index) => {
-          const cardData = shaerData.wholeSher.map((line) => line).join("|"); // Serialize the card data
+          const shaerId = shaerData.id; // Get the id of the current shaerData
 
-          if (
-            parsedData.some(
-              (data: { wholeSher: any[] }) =>
-                data.wholeSher.join("|") === cardData
-            )
-          ) {
-            // If card data exists in the stored data, update the card's appearance
-            const cardElement = document.getElementById(`heart-icon-${index}`);
+          // Check if the shaerId exists in the stored data
+          const storedShaer = parsedData.find(
+            (data: { id: string }) => data.id === shaerId
+          );
+
+          if (storedShaer) {
+            // If shaerId exists in the stored data, update the card's appearance
+            const cardElement = document.getElementById(shaerId);
             if (cardElement) {
               cardElement.classList.add("text-red-600");
             }
           }
         });
+      } catch (error) {
+        console.error("Error parsing stored data:", error);
       }
     }
-  }, [dataItems]);
+  }
+}, [dataItems]);
+
+
 
   return (
     <div>
@@ -277,6 +309,9 @@ const Ashaar: React.FC<{}> = () => {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
       >
         {dataItems.map((shaerData, index) => {
+          // Inside the map function
+          console.log("Rendering Data:", shaerData);
+
           if (isShaerMatch(shaerData)) {
             return (
               <div
@@ -284,13 +319,15 @@ const Ashaar: React.FC<{}> = () => {
                 id={`card${index}`}
                 className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
               >
-                <Link href={`/Shaer/${shaerData.shaer.replace(" ", "-")}`}>
+                <Link
+                  href={`/Shaer/${shaerData.fields.shaer.replace(" ", "-")}`}
+                >
                   <h2 className="text-black text-3xl mb-4">
-                    {shaerData.shaer}
+                    {shaerData.fields.shaer}
                   </h2>
                 </Link>
                 {/* Display a snippet of the ghazal data here */}
-                {shaerData.sherHead.map((lin, index) => (
+                {shaerData.fields.ghazalHead.map((lin, index) => (
                   <p
                     style={{ lineHeight: "normal" }}
                     key={index}
@@ -304,9 +341,9 @@ const Ashaar: React.FC<{}> = () => {
                   <button
                     className={`m-3 text-gray-500 transition-all duration-500`}
                     onClick={() =>
-                      handleHeartClick(shaerData, index, `heart-icon-${index}`)
+                      handleHeartClick(shaerData, index, `${shaerData.id}`)
                     }
-                    id={`heart-icon-${index}`}
+                    id={`${shaerData.id}`}
                   >
                     <FontAwesomeIcon icon={faHeart} />
                   </button>
@@ -332,6 +369,26 @@ const Ashaar: React.FC<{}> = () => {
             return null; // Skip rendering this Shaer
           }
         })}
+      </div>
+      <div dir="ltr" className="w-[300px] block mx-auto">
+        <div className="flex justify-between m-4">
+          <button
+            onClick={() => fetchData("previous")}
+            disabled={!pagination.offset}
+            className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+          >
+            Previous Page
+          </button>
+          <button
+            onClick={() => fetchData("next")}
+            disabled={
+              !pagination.offset || dataItems.length < pagination.pageSize
+            }
+            className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+          >
+            Next Page
+          </button>
+        </div>
       </div>
 
       {selectedCard && (
@@ -360,9 +417,9 @@ const Ashaar: React.FC<{}> = () => {
             className="opacity-100 fixed bottom-0 left-0 right-0 bg-white p-4 transition-all ease-in-out min-h-[75vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
             <h2 className="text-black text-2xl top-0 bg-white sticky m-1 border-b-2 mb-3">
-              {selectedCard.shaer}
+              {selectedCard.fields.shaer}
             </h2>
-            {selectedCard.wholeSher.map((line, index) => (
+            {selectedCard.fields.ghazal.map((line, index) => (
               <p key={index} className="text-black pb-3">
                 {line}
               </p>
