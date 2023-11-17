@@ -9,7 +9,6 @@ import { faHeart, faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Search } from "react-feather";
 import Image from "next/image";
 import Link from "next/link";
-import { data } from "../Components/doyoouknow/data";
 
 interface Shaer {
   fields: {
