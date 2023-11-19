@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 // import * as data from "../Ghazlen/data";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faShare } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEye, faShare } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
 import Loader from "./Loader";
 import { ArrowDown } from "react-feather";
@@ -173,8 +173,15 @@ const RandCard: React.FC<{}> = () => {
                 onClick={() => handleShareClick(randomData!, "sherCard")}
               >
                 <FontAwesomeIcon icon={faShare} style={{ color: "#984A02" }} />
-                <p>Share this</p>
+                <p>شیر کریں</p>
               </button>
+              <Link href={`/Ghazlen/${randomData?.id}`}
+                className="m-3 flex gap-2 items-center"
+                onClick={() => handleShareClick(randomData!, "sherCard")}
+              >
+                <FontAwesomeIcon icon={faEye} style={{ color: "#984A02" }} />
+                <p>غزل پڑھیں</p>
+              </Link>
               <button
                 className="m-3 flex gap-2 items-center"
                 onClick={() => handleDownload("sherCard")}
@@ -183,7 +190,7 @@ const RandCard: React.FC<{}> = () => {
                   icon={faDownload}
                   style={{ color: "#984A02" }}
                 />
-                <p>Download this</p>
+                <p>ڈائنلوڈ کریں</p>
               </button>
             </div>
           </div>

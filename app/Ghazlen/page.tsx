@@ -32,7 +32,7 @@ const Ashaar: React.FC<{}> = () => {
 
   const [pagination, setPagination] = useState<Pagination>({
     offset: null,
-    pageSize: 4, // Set the page size to 15
+    pageSize: 15, // Set the page size to 15
   });
   const fetchData = async (direction: "next" | "previous") => {
     try {
@@ -309,9 +309,6 @@ useEffect(() => {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
       >
         {dataItems.map((shaerData, index) => {
-          // Inside the map function
-          console.log("Rendering Data:", shaerData);
-
           if (isShaerMatch(shaerData)) {
             return (
               <div
@@ -331,7 +328,7 @@ useEffect(() => {
                   <p
                     style={{ lineHeight: "normal" }}
                     key={index}
-                    className="text-black line-normal hover:text-xl"
+                    className="text-black line-normal text-xl"
                     onClick={() => handleCardClick(shaerData)}
                   >
                     {lin}
@@ -414,16 +411,18 @@ useEffect(() => {
         >
           <div
             dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0 bg-white p-4 transition-all ease-in-out min-h-[75vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
+            className="opacity-100 fixed bottom-0 left-0 right-0 bg-white transition-all ease-in-out min-h-[75svh] max-h-[80svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
-            <h2 className="text-black text-2xl top-0 bg-white sticky m-1 border-b-2 mb-3">
-              {selectedCard.fields.shaer}
-            </h2>
-            {selectedCard.fields.ghazal.map((line, index) => (
-              <p key={index} className="text-black pb-3">
-                {line}
-              </p>
-            ))}
+            <div className="p-4">
+              <h2 className="text-black text-4xl top-0 bg-white sticky p-3 border-b-2 mb-3">
+                {selectedCard.fields.shaer}
+              </h2>
+              {selectedCard.fields.ghazal.map((line, index) => (
+                <p key={index} className="text-black pb-3 text-2xl">
+                  {line}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       )}
