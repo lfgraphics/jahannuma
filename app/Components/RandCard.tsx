@@ -2,10 +2,9 @@
 import React, { useEffect, useState } from "react";
 // import * as data from "../Ghazlen/data";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faEye, faShare } from "@fortawesome/free-solid-svg-icons";
+import { faArrowUp, faDownLong, faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
 import Loader from "./Loader";
-import { ArrowDown } from "react-feather";
 import Link from "next/link";
 
 interface Shaer {
@@ -137,10 +136,10 @@ const RandCard: React.FC<{}> = () => {
   return (
     <div className="justify-center flex flex-col items-center m-4">
       <h4
-        className="text-xl m-4 font-semibold text-gray-600 "
+        className="text-2xl mt-4 text-gray-600 "
         // style={{ letterSpacing: "5px" }}
       >
-        ایک شعر
+        ایک منتخب شعر
       </h4>
       {!insideBrowser && <Loader></Loader>}
       {insideBrowser && (
@@ -159,7 +158,7 @@ const RandCard: React.FC<{}> = () => {
           {randomData?.fields.ghazalHead.map((line, index) => (
             <p
               key={index}
-              className="text-black text-center leading-7"
+              className="text-black text-xl text-center leading-7"
               // style={{ lineHeight: "normal" }}
             >
               {line}
@@ -172,14 +171,13 @@ const RandCard: React.FC<{}> = () => {
                 className="m-3 flex gap-2 items-center"
                 onClick={() => handleShareClick(randomData!, "sherCard")}
               >
-                <FontAwesomeIcon icon={faShare} style={{ color: "#984A02" }} />
+                <FontAwesomeIcon icon={faShareNodes} style={{ color: "#984A02", WebkitTextStroke:"2px white" }} />
                 <p>شیر کریں</p>
               </button>
               <Link href={`/Ghazlen/${randomData?.id}`}
                 className="m-3 flex gap-2 items-center"
-                onClick={() => handleShareClick(randomData!, "sherCard")}
               >
-                <FontAwesomeIcon icon={faEye} style={{ color: "#984A02" }} />
+                <FontAwesomeIcon icon={faArrowUp} style={{ color: "#984A02" }} className="rotate-45"/>
                 <p>غزل پڑھیں</p>
               </Link>
               <button
@@ -187,7 +185,7 @@ const RandCard: React.FC<{}> = () => {
                 onClick={() => handleDownload("sherCard")}
               >
                 <FontAwesomeIcon
-                  icon={faDownload}
+                  icon={faDownLong}
                   style={{ color: "#984A02" }}
                 />
                 <p>ڈائنلوڈ کریں</p>
