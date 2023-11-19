@@ -1,11 +1,16 @@
 "use client";
 import React, { useEffect, useState } from "react";
+
 // import * as data from "./data";
 // import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
 
 import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart, faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHeart,
+  faShareNodes,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { Search } from "react-feather";
 import Image from "next/image";
 import Link from "next/link";
@@ -349,7 +354,7 @@ useEffect(() => {
                     onClick={() => handleShareClick(shaerData, `card${index}`)}
                   >
                     <FontAwesomeIcon
-                      icon={faShare}
+                      icon={faShareNodes}
                       style={{ color: "#984A02" }}
                     />
                   </button>

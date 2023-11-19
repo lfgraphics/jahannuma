@@ -48,7 +48,7 @@ const Carousel: React.FC = () => {
         ))}
       </div>
       <div className="navigationsetc absolute bottom-0 mb-3 flex justify-center flex-col">
-        <div className="buttons flex items-center h-full mb-[11%] justify-between w-screen">
+        <div className="buttons flex items-center h-full justify-between w-screen">
           <button
             className="prev-button text-left w-[40vw] h-[80px] p-4 text-white text-5xl transition-all duration-500"
             onClick={prevSlide}

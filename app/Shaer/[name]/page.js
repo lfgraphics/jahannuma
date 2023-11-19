@@ -1,26 +1,21 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Intro from "@/app/Components/shaer/Intro"
-// let datatype = {
-//   fields: {
-//     location: 'گورکھپور',
-//     dob: '1/7/2003',
-//     takhalllus: 'فرحت انصاری',
-//     name: 'محمد فرقان انصاری',
-//     tafseel: 'نام۔ محمد فرقان انصاری \nتخلص ۔ فرحت انصاری \nوالد ک…5996214\nجی میل اکاؤنٹ ۔ farhatansari373@gmail.com'
-//   },
-//   id: "recHYdjtb24y9jN1q"
-// }
+import Intro2 from "@/app/Components/shaer/Intro2"
+import './shaer.css';
 
 const Page = ({ params }) => {
   const [data, setData] = useState([]);
-  const [name, setName] = useState("");
+  const [activeNav, setActiveNav] = useState('تعارف'); // Set the default active nav
+
+  const handleNavClick = (nav) => {
+    setActiveNav(nav);
+  };
 
   useEffect(() => {
 
     const encodedName = params.name;
     const decodedName = decodeURIComponent(encodedName).replace("-", " ");
-    setName(decodedName);
 
     const fetchData = async () => {
       try {
@@ -34,39 +29,81 @@ const Page = ({ params }) => {
           Authorization: `Bearer ${API_KEY}`,
         };
 
-        
+
         const response = await fetch(url, { method: "GET", headers });
         const result = await response.json();
-        
+
         const records = result.records || [];
-        const filteredRecord = records;
-        console.log(decodedName.trim())
-        console.log(result)
-        // console.log(filteredRecord)
-
-        if (filteredRecord) {
-          // console.log(filteredRecord);
-
-          setData(result.records[0].fields);
-        } else {
-          console.log(`No record found for takhallus: ${decodedName}`);
-          setData(null); // or set an empty object as per your requirement
-        }
-
+        setData(records[0].fields);
+        console.log(records[0].fields);
 
       } catch (error) {
         console.error(`Failed to fetch data: ${error}`);
       }
     };
-
-
     fetchData();
   }, [params.name]);
 
   return (
-    <div>
-      <h1>This is dynamic data of: {name}</h1>
+    <div dir="rtl" className="flex flex-col">
       <Intro data={data} ></Intro>
+      <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 mb-4 border-b-2 self-center p-4">
+        <div
+          className={`nav-item ${activeNav === 'تعارف' ? 'active' : ''} min-w-[40px] text-center`}
+          onClick={() => handleNavClick('تعارف')}
+        >
+          تعارف
+        </div>
+        {data.ghazlen && data.ghazlen === true && (
+          <div
+            className={`nav-item ${activeNav === 'غزلیں' ? 'active' : ''} min-w-[40px] text-center`}
+            onClick={() => handleNavClick('غزلیں')}
+          >
+            غزلیں
+          </div>
+        )}
+        {data.ashaar && data.ashaar === true && (
+          <div
+            className={`nav-item ${activeNav === 'نظمیں' ? 'active' : ''} min-w-[40px] text-center`}
+            onClick={() => handleNavClick('نظمیں')}
+          >
+            نظمیں
+          </div>
+        )}
+        {data.ashaar && data.ashaar === true && (
+          <div
+            className={`nav-item ${activeNav === 'اشعار' ? 'active' : ''} min-w-[40px] text-center`}
+            onClick={() => handleNavClick('اشعار')}
+          >
+            اشعار
+          </div>
+        )}
+        {data.eBooks && data.eBooks === true && (
+          <div
+            className={`nav-item ${activeNav === 'ئی - بکس' ? 'active' : ''} min-w-[40px] text-center`}
+            onClick={() => handleNavClick('ئی - بکس')}
+          >
+            ئی - بکس
+          </div>
+        )}
+
+      </div>
+      {activeNav === "تعارف" && (
+        <Intro2 data={data} ></Intro2>
+      )}
+      {activeNav === "غزلیں" && (
+        <Intro2 data={data} ></Intro2>
+      )}
+      {activeNav === "نظمیں" && (
+        <Intro2 data={data} ></Intro2>
+      )}
+      {activeNav === "اشعار" && (
+        <Intro2 data={data} ></Intro2>
+      )}
+      {activeNav === "ئی - بکس" && (
+        <Intro2 data={data} ></Intro2>
+      )}
+
     </div>
   );
 };

@@ -27,7 +27,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pages = [
-    { EN: "Shaer", UR: "شعرا", HI: "शेयर" },
+    { EN: "Shaer", UR: "شعراء", HI: "शेयर" },
     { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
     { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
     { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
