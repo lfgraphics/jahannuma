@@ -39,7 +39,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
       className="container flex flex-col justify-center p-5 pt-0 md:px-36 lg:px-36"
     >
       {data && insideBrowser && (
-        <div className="poet-intro">
+        <div className="poet-intro text-lg">
           <p>
             <strong>نام:</strong> {data.name}
           </p>
