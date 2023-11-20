@@ -19,8 +19,7 @@ const Page = ({ params }) => {
 
     const fetchData = async () => {
       try {
-        const API_KEY =
-          "patozzsZAsH1XSXny.f8e69e6d2e9a4781f92b68dd353ea2cdf37bfe64c00103355b69fed9e2c653a2";
+        const API_KEY = "patyHB0heKhiIC1GW.010be231355721357449b8a2ea7a11e38534e329e517722b42090e0d87fd7946";
         const BASE_ID = "appgWv81tu4RT3uRB";
         const TABLE_NAME = "Intro"
 
@@ -35,7 +34,6 @@ const Page = ({ params }) => {
 
         const records = result.records || [];
         setData(records[0].fields);
-        console.log(records[0].fields);
 
       } catch (error) {
         console.error(`Failed to fetch data: ${error}`);

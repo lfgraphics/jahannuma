@@ -13,8 +13,8 @@ const Page = ({ params }) => {
       try {
         const API_KEY =
           "patyHB0heKhiIC1GW.010be231355721357449b8a2ea7a11e38534e329e517722b42090e0d87fd7946";
-        const BASE_ID = "appvzkf6nX376pZy6";
-        const TABLE_NAME = "Ghazlen";
+        const BASE_ID = "app5Y2OsuDgpXeQdz";
+        const TABLE_NAME = "nazmen";
 
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
         const headers = {
@@ -23,7 +23,7 @@ const Page = ({ params }) => {
 
         const response = await fetch(url, { method: "GET", headers });
         const result = await response.json();
-
+        
         setData(result.records[0].fields)
       } catch (error) {
         console.error(`Failed to fetch data: ${error}`);
@@ -32,14 +32,14 @@ const Page = ({ params }) => {
 
     fetchData();
   }, [id]);
-  const ghazalLines = data.ghazal?.split('\n');
+  const nazmLines = data.nazm?.split('\n');
 
 
   return (
     <div dir="rtl">
       <div className="p-4 mt-3">
         <div className="ghazalHead text-4xl text-black mb-2" style={{ lineHeight: "46px" }}>
-          <h2>{data.ghazalHead?.replace("\n", "،")}</h2>
+          <h2>{data.displayLine?.replace("\n", "،")}</h2>
         </div>
         <div className="ghazalHead mb-3 text-[#984A02]">
           <Link href={`/Shaer/${data.shaer}`}>
@@ -48,7 +48,7 @@ const Page = ({ params }) => {
         </div>
         <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
         <div className="text-2xl">
-          {ghazalLines?.map((line, index) => (
+          {nazmLines?.map((line, index) => (
             <p style={{ lineHeight: "normal" }} key={index}>{line}</p>
           ))}
         </div>
