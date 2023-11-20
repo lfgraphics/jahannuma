@@ -42,9 +42,9 @@ const Ashaar: React.FC<{}> = () => {
   const fetchData = async (direction: "next" | "previous") => {
     try {
       const API_KEY =
-        "patpWvd49NVJhHOVr.73ebeea33c6733900c098b73f0d71a60114061896d4051a451e7e24d59351cef";
+        "patyHB0heKhiIC1GW.010be231355721357449b8a2ea7a11e38534e329e517722b42090e0d87fd7946";
       const BASE_ID = "appvzkf6nX376pZy6";
-      const TABLE_NAME = "ghazlen";
+      const TABLE_NAME = "Ghazlen";
       const { offset, pageSize } = pagination;
 
       let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;

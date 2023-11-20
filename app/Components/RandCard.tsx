@@ -23,7 +23,7 @@ const RandCard: React.FC<{}> = () => {
   const fetchData = async () => {
     try {
       const API_KEY =
-        "patpWvd49NVJhHOVr.73ebeea33c6733900c098b73f0d71a60114061896d4051a451e7e24d59351cef";
+        "patyHB0heKhiIC1GW.010be231355721357449b8a2ea7a11e38534e329e517722b42090e0d87fd7946";
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "ghazlen";
 
@@ -110,7 +110,7 @@ const RandCard: React.FC<{}> = () => {
               shaerData.fields.ghazalHead.map((line) => line).join("\n") +
               `\nFound this on Jahan Numa website\nCheckout there webpage here>>\n `, // Join sherHead lines with line breaks
 
-            url: window.location.href + `/#${id}`,
+            url: window.location.href + `/${shaerData.id}`,
           })
           .then(() => console.log("Successful share"))
           .catch((error) => console.log("Error sharing", error));

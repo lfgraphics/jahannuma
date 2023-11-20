@@ -1,10 +1,7 @@
 import {
   faCalendarAlt,
   faLocationDot,
-  faShareAlt,
-  faShareAltSquare,
-  faShareFromSquare,
-  faShareNodes,
+  faShareAlt
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
@@ -69,7 +66,7 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
         className="bg-cover bg-center h-32 lg:h-52 w-full"
       >
         <div
-          dir="ltr"
+          dir="rtl"
           style={{ filter: "backGroundBlur(10px)" }}
           className="h-full w-full bg-black bg-opacity-70 flex items-center justify-center"
         >
@@ -83,10 +80,10 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
               />
             )}
           </div>
-          <div className="mini_intro ml-5 text-white">
+          <div className="mini_intro mr-5 text-white">
             <p className="text-4xl">{data?.takhallus}</p>
             <p className="mt-3">
-              <span className="icon mr-2">
+              <span className="icon ml-2">
                 <FontAwesomeIcon
                   icon={faCalendarAlt}
                   style={{ color: "white" }}
