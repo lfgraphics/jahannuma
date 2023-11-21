@@ -9,11 +9,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHeart,
   faShareNodes,
+  faTag,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { Search } from "react-feather";
 import Image from "next/image";
 import Link from "next/link";
+import { faArrowCircleDown } from "@fortawesome/free-solid-svg-icons/faArrowCircleDown";
+import { faArrowCircleUp } from "@fortawesome/free-solid-svg-icons/faArrowCircleUp";
 
 interface Shaer {
   fields: {
@@ -286,6 +289,12 @@ const Nazm: React.FC<{}> = () => {
     }
   }, [dataItems]);
 
+  const [openanaween, setOpenanaween] = useState<string | null>(null);
+
+  const toggleanaween = (cardId: string) => {
+    setOpenanaween((prev) => (prev === cardId ? null : cardId));
+  };
+
   return (
     <div>
       <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
@@ -329,7 +338,10 @@ const Nazm: React.FC<{}> = () => {
                 id={`card${index}`}
                 className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
               >
-                <div dir="ltr" className="w-full flex justify-between items-center mx-5 mr-0">
+                <div
+                  dir="ltr"
+                  className="w-full flex justify-between items-center mx-5 mr-0"
+                >
                   <Link
                     href={`/Shaer/${shaerData.fields.shaer.replace(" ", "-")}`}
                   >
@@ -337,16 +349,6 @@ const Nazm: React.FC<{}> = () => {
                       {shaerData.fields.shaer}
                     </h2>
                   </Link>
-                  <div className="anaaween">
-                    {shaerData.fields.unwaan?.map((unwaan, index) => (
-                      <span
-                        key={index}
-                        className="text-md text-[#984A02]"
-                      >
-                        {unwaan}
-                      </span>
-                    ))}
-                  </div>
                 </div>
                 {shaerData.fields.displayLine.map((lin, index) => (
                   <p
@@ -358,6 +360,29 @@ const Nazm: React.FC<{}> = () => {
                     {lin}
                   </p>
                 ))}
+                <div className="relative">
+                  <div
+                    className="anaween-container flex flex-col items-center justify-center absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
+                    style={{
+                      height: openanaween === `card${index}` ? "120px" : "0",
+                    }}
+                  >
+                    {shaerData.fields.unwaan?.map((unwaan, index) => (
+                      <span key={index} className="text-md text-[#984A02] p-2">
+                        {unwaan}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    className="text-[#984A02] mt-2 justify-start flex items-end flex-row-reverse "
+                    onClick={() => toggleanaween(`card${index}`)}
+                  >
+                    موضوعات
+                    <span>
+                      <FontAwesomeIcon icon={faTag} className="ml-2" />
+                    </span>
+                  </button>
+                </div>
 
                 {/* Display a snippet of the ghazal data here */}
 

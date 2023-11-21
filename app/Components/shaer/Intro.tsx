@@ -12,6 +12,7 @@ interface IntroProps {
     name: string;
     takhallus: string;
     dob: string;
+    description: string;
     location: string;
     tafseel: string;
     photo: {
@@ -40,6 +41,7 @@ interface IntroProps {
       };
     }[];
     ghazalen: boolean;
+    nazmen: boolean;
     ashaar: boolean;
     eBooks: boolean;
   } | null;
