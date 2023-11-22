@@ -1,44 +1,17 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import {
-//   faCalendarAlt,
-//   faMapMarkerAlt,
-// } from "@fortawesome/free-regular-svg-icons";
 import {
   faCalendarAlt,
-  faInfoCircle,
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { Camera } from "react-feather"; // You can replace this with your actual description component
-import MuiTypography from "@mui/material/Typography"; // Import Mui Typography component
 import Link from "next/link";
 import Image from "next/image";
 
-interface CardProps {
-  data: {
-    takhallus: string;
-    dob: string;
-    location: string;
-    description: string;
-    photo: {
-      thumbnails: {
-        full: {
-          url: string;
-          height: number;
-          width: number;
-        };
-      }[];
-    }[]
-    ;
-    tafseel: string;
-  };
-}
-
-const Card: React.FC<CardProps> = ({ data }) => {
+const Card = ({ data }) => {
   const { takhallus, dob, location, photo, description } = data;
 
   // Function to format date (assuming dob is in MM/DD/YYYY format)
-  const formatDate = (dateString: string | number | Date) => {
+  const formatDate = (dateString) => {
     const date = new Date(dateString);
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
@@ -82,9 +55,7 @@ const Card: React.FC<CardProps> = ({ data }) => {
           </div>
 
           {/* Description Icon */}
-          <div className="flex items-center mb-2">
-            {description}
-          </div>
+          <div className="flex items-center mb-2">{description}</div>
         </div>
       </div>
     </Link>

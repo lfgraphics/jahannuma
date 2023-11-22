@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/Shaer/[name]/[page].js", "app/Shaer/[name]/page.jsx", "app/Components/shaer/Ghazlen.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/Shaer/[name]/[page].js", "app/Shaer/[name]/page.jsx", "app/Components/shaer/Ghazlen.jsx", "app/Components/shaer/Profilecard.jsx"],
   "exclude": ["node_modules"]
 }
