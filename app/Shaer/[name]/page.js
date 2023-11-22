@@ -1,13 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Intro from "@/app/Components/shaer/Intro"
-import Intro2 from "@/app/Components/shaer/Intro2"
+import Intro from "@/app/Components/shaer/IntroPhoto"
+import Intro2 from "@/app/Components/shaer/Intro"
+import Ghazlen from "@/app/Components/shaer/Ghazlen"
 import './shaer.css';
 
 const Page = ({ params }) => {
   const [data, setData] = useState([]);
   const [activeNav, setActiveNav] = useState('تعارف'); // Set the default active nav
 
+ 
   const handleNavClick = (nav) => {
     setActiveNav(nav);
   };
@@ -90,7 +92,7 @@ const Page = ({ params }) => {
         <Intro2 data={data} ></Intro2>
       )}
       {activeNav === "غزلیں" && (
-        <Intro2 data={data} ></Intro2>
+        <Ghazlen takhallus={data.takhallus}></Ghazlen>
       )}
       {activeNav === "نظمیں" && (
         <Intro2 data={data} ></Intro2>
