@@ -1,7 +1,7 @@
 import {
   faCalendarAlt,
   faLocationDot,
-  faShareAlt
+  faShareAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
@@ -50,34 +50,30 @@ interface IntroProps {
 const Intro: React.FC<IntroProps> = ({ data }) => {
   const [insideBrowser, setInsideBrowser] = useState(false);
 
- const handleShareClick = () => {
-   try {
-     if (navigator.share) {
-       // Customize the title, decoding the URL, and formatting the text
-       const title = data?.takhallus || "Default Title"; // Replace 'Default Title' with your desired default title
-       const text = (data?.tafseel || "").trim(); // Keep multiple lines
-       const decodedUrl = decodeURIComponent(window.location.href);
+  const handleShareClick = () => {
+    try {
+      if (navigator.share) {
+        const title = data?.takhallus || "Default Title"; // Replace 'Default Title' with your desired default title
+        const text = (data?.tafseel || "").trim(); // Keep multiple lines
+        const decodedUrl = decodeURIComponent(window.location.href);
 
-       navigator
-         .share({
-           title: title,
-           text:
-             text !== ""
-               ? `${text}\nFound this on Jahannuma webpage`
-               : "Found this on Jahannuma webpage",
-           url: decodedUrl,
-         })
-         .then(() => console.log("Successful share"))
-         .catch((error) => console.log("Error sharing", error));
-     } else {
-       console.log("Web Share API is not supported.");
-     }
-   } catch (error) {
-     // Handle any errors that may occur when using the Web Share API
-     console.error("Error sharing:", error);
-   }
- };
-
+        navigator
+          .share({
+            text: `${title}\n\n${
+              text !== "" ? `${text}\n` : ""
+            }Found this on Jahannuma webpage\nVisit it here\n`,
+            url: decodedUrl,
+          })
+          .then(() => console.log("Successful share"))
+          .catch((error) => console.log("Error sharing", error));
+      } else {
+        console.log("Web Share API is not supported.");
+      }
+    } catch (error) {
+      // Handle any errors that may occur when using the Web Share API
+      console.error("Error sharing:", error);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -130,10 +126,7 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
               {data?.location}
             </p>
           </div>
-          <div
-            className="navs"
-            onClick={() => handleShareClick()}
-          >
+          <div className="navs" onClick={() => handleShareClick()}>
             <FontAwesomeIcon
               icon={faShareAlt}
               style={{ color: "white" }}
