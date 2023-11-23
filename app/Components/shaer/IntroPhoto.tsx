@@ -50,31 +50,33 @@ interface IntroProps {
 const Intro: React.FC<IntroProps> = ({ data }) => {
   const [insideBrowser, setInsideBrowser] = useState(false);
 
-   const handleShareClick = () => {
-     // console.log(shaerData.ghazalHead);
-     try {
-       if (navigator.share) {
-         navigator
-           .share({
-             title: data?.takhallus, // Use the shaer's name as the title
-             text:
-               data?.tafseel
-                 ?.split("\n")
-                 .map((line, index) => <li key={index}>{line}</li>) +
-               `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-             url: `${window.location.href}`, // Get the current page's URL
-           })
+ const handleShareClick = () => {
+   try {
+     if (navigator.share) {
+       // Customize the title, decoding the URL, and formatting the text
+       const title = data?.takhallus || "Default Title"; // Replace 'Default Title' with your desired default title
+       const text = (data?.tafseel || "").trim(); // Keep multiple lines
+       const decodedUrl = decodeURIComponent(window.location.href);
 
-           .then(() => console.log("Successful share"))
-           .catch((error) => console.log("Error sharing", error));
-       } else {
-         console.log("Web Share API is not supported.");
-       }
-     } catch (error) {
-       // Handle any errors that may occur when using the Web Share API
-       console.error("Error sharing:", error);
+       navigator
+         .share({
+           title: title,
+           text:
+             text !== ""
+               ? `${text}\nFound this on Jahannuma webpage`
+               : "Found this on Jahannuma webpage",
+           url: decodedUrl,
+         })
+         .then(() => console.log("Successful share"))
+         .catch((error) => console.log("Error sharing", error));
+     } else {
+       console.log("Web Share API is not supported.");
      }
-   };
+   } catch (error) {
+     // Handle any errors that may occur when using the Web Share API
+     console.error("Error sharing:", error);
+   }
+ };
 
 
   useEffect(() => {

@@ -33,7 +33,29 @@ const Page = ({ params }) => {
     fetchData();
   }, [id]);
   const ghazalLines = data.ghazal?.split('\n');
+  const anaween = data.unwan?.split('\n');
 
+  const visitGhazlen = () => {
+    if (typeof window !== undefined) {
+      const referrer = document.referrer || '';
+      // Check if the referrer is not coming from /Ghazlen
+      if (!referrer.includes('/Ghazlen')) {
+        window.location.href = `${window.location.origin}/Ghazlen`; // Replace with your desired URL
+      } else {
+        window.history.back();
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Attach the custom back navigation handler to the popstate event
+    window.addEventListener('popstate', visitGhazlen);
+
+    // Cleanup the event listener when the component is unmounted
+    return () => {
+      window.removeEventListener('popstate', visitGhazlen);
+    };
+  }, []); // Empty dependency array to ensure the effect runs only once
 
   return (
     <div dir="rtl">
@@ -47,11 +69,25 @@ const Page = ({ params }) => {
           </Link>
         </div>
         <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
-        <div className="text-2xl">
+        <div className="text-2xl mb-4">
           {ghazalLines?.map((line, index) => (
             <p style={{ lineHeight: "normal" }} key={index}>{line}</p>
           ))}
         </div>
+        <div className="flex gap-5 text-md mb-4 justify-center">
+          {anaween?.map((unwan, index) => (
+            <p className="text-[#984A02] cursor-pointer" style={{ lineHeight: "normal" }} key={index}>{unwan}</p>
+          ))}
+        </div>
+        <div className="mazeed ">
+          <button
+            onClick={visitGhazlen}
+            className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+          >
+            مزید غزلیں
+          </button>
+        </div>
+        {/* <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div> */}
       </div>
     </div>
   );
