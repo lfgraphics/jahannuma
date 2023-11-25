@@ -45,8 +45,6 @@ const Ashaar: React.FC<{}> = () => {
   });
   const fetchData = async (direction: "next" | "previous") => {
     try {
-      const API_KEY =
-        "patyHB0heKhiIC1GW.010be231355721357449b8a2ea7a11e38534e329e517722b42090e0d87fd7946";
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "Ghazlen";
       const { offset, pageSize } = pagination;
@@ -58,7 +56,7 @@ const Ashaar: React.FC<{}> = () => {
         url += `&offset=${offset}&direction=back`;
       }
       const headers = {
-        Authorization: `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
 
       const response = await fetch(url, { method: "GET", headers });

@@ -11,19 +11,17 @@ const Page = ({ params }) => {
 
     const fetchData = async () => {
       try {
-        const API_KEY =
-          "patyHB0heKhiIC1GW.010be231355721357449b8a2ea7a11e38534e329e517722b42090e0d87fd7946";
         const BASE_ID = "app5Y2OsuDgpXeQdz";
         const TABLE_NAME = "nazmen";
 
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
         const headers = {
-          Authorization: `Bearer ${API_KEY}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
         };
 
         const response = await fetch(url, { method: "GET", headers });
         const result = await response.json();
-        
+
         setData(result.records[0].fields)
       } catch (error) {
         console.error(`Failed to fetch data: ${error}`);

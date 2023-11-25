@@ -7,14 +7,15 @@ const Page = ({ params }) => {
   const [id, setId] = useState("");
 
   useEffect(() => {
-    setId(params.id);
+    const encodedName = params.name;
+    const decodedName = decodeURIComponent(encodedName).replace("-", " ");
 
     const fetchData = async () => {
       try {
         const BASE_ID = "appvzkf6nX376pZy6";
         const TABLE_NAME = "Ghazlen";
 
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({takhallus}='${decodedName}')`;
         const headers = {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
         };
@@ -22,9 +23,30 @@ const Page = ({ params }) => {
         const response = await fetch(url, { method: "GET", headers });
         const result = await response.json();
 
-        setData(result.records[0].fields)
+        const records = result.records || [];
+        if (records.length > 0) {
+          setPagination({ offset: result.offset, pageSize });
+        }
+        // Convert ghazal and ghazalHead fields to arrays
+        const formattedRecords = records.map(
+          (record) => ({
+            ...record,
+            fields: {
+              ...record.fields,
+              ghazal: record.fields.ghazal.split("\n"),
+              ghazalHead: record.fields.ghazalHead.split("\n"),
+              unwan: record.fields.unwan.split("\n"),
+            },
+          })
+        );
+
+        setDataItems(formattedRecords);
+        setLoading(false);
+
+        // console.log(filteredRecord)
       } catch (error) {
         console.error(`Failed to fetch data: ${error}`);
+        setLoading(false);
       }
     };
 
@@ -32,28 +54,6 @@ const Page = ({ params }) => {
   }, [id]);
   const ghazalLines = data.ghazal?.split('\n');
   const anaween = data.unwan?.split('\n');
-
-  const visitGhazlen = () => {
-    if (typeof window !== undefined) {
-      const referrer = document.referrer || '';
-      // Check if the referrer is not coming from /Ghazlen
-      if (!referrer.includes('/Ghazlen')) {
-        window.location.href = `${window.location.origin}/Ghazlen`; // Replace with your desired URL
-      } else {
-        window.history.back();
-      }
-    }
-  };
-
-  useEffect(() => {
-    // Attach the custom back navigation handler to the popstate event
-    window.addEventListener('popstate', visitGhazlen);
-
-    // Cleanup the event listener when the component is unmounted
-    return () => {
-      window.removeEventListener('popstate', visitGhazlen);
-    };
-  }, []); // Empty dependency array to ensure the effect runs only once
 
   return (
     <div dir="rtl">

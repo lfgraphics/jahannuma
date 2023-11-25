@@ -45,8 +45,6 @@ const Nazm: React.FC<{}> = () => {
   });
   const fetchData = async (direction: "next" | "previous") => {
     try {
-      const API_KEY =
-        "patyHB0heKhiIC1GW.010be231355721357449b8a2ea7a11e38534e329e517722b42090e0d87fd7946";
       const BASE_ID = "app5Y2OsuDgpXeQdz";
       const TABLE_NAME = "nazmen";
       const { offset, pageSize } = pagination;
@@ -58,7 +56,7 @@ const Nazm: React.FC<{}> = () => {
         url += `&offset=${offset}&direction=back`;
       }
       const headers = {
-        Authorization: `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
 
       const response = await fetch(url, { method: "GET", headers });
