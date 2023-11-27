@@ -1,12 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
-// import * as data from "./data";
-// import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
-
 import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faCommentAlt,
   faHeart,
   faShareNodes,
   faTag,
@@ -16,6 +13,9 @@ import { Search } from "react-feather";
 import Image from "next/image";
 import Link from "next/link";
 import Loader from "../Components/Loader";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import CommentSection from "../Components/CommentSection";
 
 interface Shaer {
   fields: {
@@ -23,26 +23,94 @@ interface Shaer {
     ghazalHead: string[];
     shaer: string;
     unwan: string[];
+    id: string;
   };
   id: string;
   createdTime: string;
+}
+interface ApiResponse {
+  records: any[]; // Replace 'any[]' with the actual type of your records
+  offset: string | null; // Adjust the type based on what your API returns for offset
 }
 interface Pagination {
   offset: string | null;
   pageSize: number;
 }
+type Offsets = {
+  previous: string | null;
+  next: string | null;
+};
+
+const SkeletonLoader = () => (
+  <div className="flex flex-col items-center">
+    <div className="w-80 h-12 bg-gray-300 mb-8 rounded-md mt-4"></div>{" "}
+    {/* Search Bar Skeleton */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
+      {[...Array(12)].map((_, index) => (
+        <div
+          key={index}
+          role="status"
+          className="flex items-center justify-center h-56 w-[350px] max-w-sm bg-gray-300 rounded-lg animate-pulse dark:bg-gray-700"
+        ></div>
+      ))}
+    </div>
+  </div>
+);
 
 const Ashaar: React.FC<{}> = () => {
   const [searchText, setSearchText] = useState("");
-  const [selectedCard, setSelectedCard] = useState<Shaer | null>(null);
+  const [commentCard, setCommentCard] = React.useState<{ id: string } | null>(
+    null
+  );
+
+  const [selectedCommentId, setSelectedCommentId] = React.useState<
+    string | null
+  >(null);
+
+  const [selectedCard, setSelectedCard] = React.useState<{
+    id: string;
+    fields: { shaer: string; ghazal: string[]; id: string };
+  } | null>(null);
+
   const [loading, setLoading] = useState(true); // New state for loading
 
   const [dataItems, setDataItems] = useState<Shaer[]>([]); // Specify the type explicitly as Shaer[]
 
   const [pagination, setPagination] = useState<Pagination>({
     offset: null,
-    pageSize: 15, // Set the page size to 15
+    pageSize: 100,
   });
+  const openComments = (dataId: string) => {
+    // Toggle the selectedCard state to show/hide the comment section
+    setCommentCard((prevSelectedCard) =>
+      prevSelectedCard && prevSelectedCard.id === dataId ? null : { id: dataId }
+    );
+  };
+  const closeComments = () => {
+    setCommentCard(null);
+  };
+
+  useEffect(() => {
+    AOS.init({
+      offset: 200, // offset (in px) from the original trigger point
+      delay: 0, // values from 0 to 3000, with step 50ms
+      duration: 500,
+    });
+  });
+  function scrollToTop() {
+    if (typeof window !== undefined) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth", // Optional: adds smooth scrolling effect
+      });
+    }
+  }
+
+  let offsets: Offsets = {
+    previous: null,
+    next: null,
+  };
+
   const fetchData = async (direction: "next" | "previous") => {
     try {
       const BASE_ID = "appvzkf6nX376pZy6";
@@ -55,13 +123,18 @@ const Ashaar: React.FC<{}> = () => {
       } else if (direction === "previous" && offset) {
         url += `&offset=${offset}&direction=back`;
       }
+      console.log(offset);
       const headers = {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
 
       const response = await fetch(url, { method: "GET", headers });
-      const result = await response.json();
-
+      const result: ApiResponse = await response.json();
+      offsets = {
+        previous: direction === "next" ? offsets.next : result.offset,
+        next: direction === "next" ? result.offset : offsets.previous,
+      };
+      console.log(result);
       const records = result.records || [];
       if (records.length > 0) {
         setPagination({ offset: result.offset, pageSize });
@@ -69,7 +142,13 @@ const Ashaar: React.FC<{}> = () => {
       // Convert ghazal and ghazalHead fields to arrays
       const formattedRecords = records.map(
         (record: {
-          fields: { ghazal: string; ghazalHead: string; unwan: string };
+          fields: {
+            ghazal: string;
+            ghazalHead: string;
+            shaer: string;
+            unwan: string;
+            id: string;
+          };
         }) => ({
           ...record,
           fields: {
@@ -82,8 +161,8 @@ const Ashaar: React.FC<{}> = () => {
       );
 
       setDataItems(formattedRecords);
+      scrollToTop();
       setLoading(false);
-
       // console.log(filteredRecord)
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
@@ -140,7 +219,7 @@ const Ashaar: React.FC<{}> = () => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ashaar");
+        const existingDataJSON = localStorage.getItem("Ghazlen");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData: Shaer[] = existingDataJSON
@@ -163,7 +242,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
-          localStorage.setItem("Ashaar", updatedDataJSON);
+          localStorage.setItem("Ghazlen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           console.log("Data added to Local Storage successfully.");
         } else {
@@ -179,7 +258,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          localStorage.setItem("Ashaar", updatedDataJSON);
+          localStorage.setItem("Ghazlen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           console.log("Data removed from Local Storage successfully.");
@@ -233,7 +312,14 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   const handleCardClick = (shaerData: Shaer): void => {
-    setSelectedCard(shaerData);
+    setSelectedCard({
+      id: shaerData.id,
+      fields: {
+        shaer: shaerData.fields.shaer,
+        ghazal: shaerData.fields.ghazal,
+        id: shaerData.fields.id,
+      },
+    });
 
     // Animate modal open
     const modalElement = document.getElementById("modal"); // Add an ID to your modal
@@ -293,7 +379,7 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      {loading && <Loader></Loader>}
+      {loading && <SkeletonLoader />}
       {!loading && (
         <div>
           <div>
@@ -330,13 +416,17 @@ const Ashaar: React.FC<{}> = () => {
               </div>
             </div>
             <div
+              // onClick={() => closeComments()}
               dir="rtl"
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
-             >
+            >
               {dataItems.map((shaerData, index) => {
                 if (isShaerMatch(shaerData)) {
                   return (
                     <div
+                      data-aos={`${
+                        index % 2 == 0 ? "fade-right" : "fade-left"
+                      }`}
                       key={index}
                       id={`card${index}`}
                       className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
@@ -391,7 +481,10 @@ const Ashaar: React.FC<{}> = () => {
                               " اور "
                             : ""}
                           <span>
-                            <FontAwesomeIcon icon={faTag} className="ml-2" />
+                            <FontAwesomeIcon
+                              icon={faTag}
+                              className="ml-2 text-yellow-400"
+                            />
                           </span>
                         </button>
                       </div>
@@ -409,6 +502,15 @@ const Ashaar: React.FC<{}> = () => {
                           id={`${shaerData.id}`}
                         >
                           <FontAwesomeIcon icon={faHeart} />
+                        </button>
+                        <button
+                          className="text-[#984A02] font-semibold m-3"
+                          onClick={() => openComments(shaerData.id)}
+                        >
+                          <FontAwesomeIcon
+                            icon={faCommentAlt}
+                            className="ml-2"
+                          />
                         </button>
                         <button
                           className="m-3"
@@ -435,26 +537,29 @@ const Ashaar: React.FC<{}> = () => {
                 }
               })}
             </div>
-            <div dir="ltr" className="w-[300px] block mx-auto">
-              <div className="flex justify-between m-4">
-                <button
-                  onClick={() => fetchData("previous")}
-                  disabled={!pagination.offset}
-                  className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
-                >
-                  Previous Page
-                </button>
-                <button
-                  onClick={() => fetchData("next")}
-                  disabled={
-                    !pagination.offset || dataItems.length < pagination.pageSize
-                  }
-                  className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
-                >
-                  Next Page
-                </button>
+            {pagination.offset && (
+              <div dir="ltr" className="w-[300px] block mx-auto">
+                <div className="flex justify-between m-4">
+                  <button
+                    onClick={() => fetchData("previous")}
+                    disabled={!pagination.offset}
+                    className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+                  >
+                    Previous Page
+                  </button>
+                  <button
+                    onClick={() => fetchData("next")}
+                    disabled={
+                      !pagination.offset ||
+                      dataItems.length < pagination.pageSize
+                    }
+                    className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+                  >
+                    Next Page
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {selectedCard && (
               <button
@@ -468,6 +573,18 @@ const Ashaar: React.FC<{}> = () => {
                   className="text-[#984A02] text-2xl hover:text-white"
                 />
               </button>
+            )}
+
+            {commentCard && (
+              <div
+                className="button text-white bg-[#984A02] w-20 text-right p-5 pb-4 text-4xl fixed rounded-lg bottom-16 -left-2 z-50"
+                onClick={() => closeComments()}
+              >
+                <button className="text-white">X</button>
+              </div>
+            )}
+            {commentCard && commentCard.id && (
+              <CommentSection dataId={selectedCommentId || commentCard.id} />
             )}
 
             {selectedCard && (

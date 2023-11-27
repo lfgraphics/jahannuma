@@ -63,3 +63,19 @@ body {
 .font-noto-nastaliq {
   font-family: 'Mehr_nastaliq', serif !important;
 }
+
+@keyframes shimmer {
+  0% {
+    background-position: -200%;
+  }
+
+  100% {
+    background-position: 200%;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1s infinite linear;
+  background: linear-gradient(90deg, #eee 25%, #ccc 50%, #eee 75%);
+  background-size: 200% 100%;
+}
