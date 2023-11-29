@@ -3,8 +3,26 @@ import { format, formatDistanceToNow } from "date-fns";
 import React, { useState, useEffect } from "react";
 
 interface CommentSectionProps {
-  dataId: string; // Assuming dataId is a string, adjust it according to your actual type
+  dataId: string; // Adjust the type as needed
+  shaerData: Shaer; // Replace YourShaerDataType with the actual type of shaerData
+  setDataItems: React.Dispatch<React.SetStateAction<Shaer>>; // Replace YourDataItemsType
+  index: number;
 }
+interface Shaer {
+  fields: {
+    ghazal: string[];
+    ghazalHead: string[];
+    shaer: string;
+    unwan: string[];
+    likes: number;
+    comments: number;
+    shares: number;
+    id: string;
+  };
+  id: string;
+  createdTime: string;
+}
+
 interface Comment {
   dataId: string;
   commentorName: string | null;
@@ -144,6 +162,51 @@ const CommentSection: React.FC<CommentSectionProps> = ({ dataId }) => {
 
         // Clear the input field
         setNewComment("");
+          //  try {
+          //    // Make API request to update the record's "Likes" field
+          //    const updatedShares = shaerData.fields.shares + 1;
+          //    const updateData = {
+          //      records: [
+          //        {
+          //          id: dataId,
+          //          fields: {
+          //            shares: updatedShares,
+          //          },
+          //        },
+          //      ],
+          //    };
+
+          //    const updateHeaders = {
+          //      Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
+          //      "Content-Type": "application/json",
+          //    };
+
+          //    const updateResponse = fetch(
+          //      `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+          //      {
+          //        method: "PATCH",
+          //        headers: updateHeaders,
+          //        body: JSON.stringify(updateData),
+          //      }
+          //    );
+
+          //    if (updateResponse.ok) {
+          //      // Update local state to reflect the change in likes
+          //      setDataItems((prevDataItems) => {
+          //        const updatedDataItems = [...prevDataItems];
+          //        updatedDataItems[index].fields.shares = updatedShares;
+          //        return updatedDataItems;
+          //      });
+          //      console.log("added sahre");
+          //      console.log("share updated successfully.");
+          //    } else {
+          //      console.error(
+          //        `Failed to update shares: ${updateResponse.status}`
+          //      );
+          //    }
+          //  } catch (error) {
+          //    console.error("Error updating shres:", error);
+          //  }
       } else {
         console.error(`Failed to add comment: ${response.statusText}`);
       }
@@ -151,6 +214,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ dataId }) => {
       console.error(`Error adding comment: ${error}`);
     }
   };
+
 
   return (
     <div
