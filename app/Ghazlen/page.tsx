@@ -15,7 +15,7 @@ import Link from "next/link";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { format, formatDistanceToNow } from "date-fns";
-import { AlertProps } from "@mui/material/Alert";
+import ToastComponent from "../Components/Toast";
 
 interface Shaer {
   fields: {
@@ -87,23 +87,38 @@ const Ashaar: React.FC<{}> = () => {
   const [dataId, setDataId] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
   //snackbar
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] =
-    useState<AlertProps["severity"]>("success");
+  const [toast, setToast] = useState<React.ReactNode | null>(null);
+  const [hideAnimation, setHideAnimation] = useState(false);
 
-  const handleSnackbarClose = (event: React.SyntheticEvent, reason: string) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
+  const showToast = (
+    msgtype: "success" | "error" | "invalid",
+    message: string
+  ) => {
+    setToast(
+      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
+        <ToastComponent
+          msgtype={msgtype}
+          message={message}
+          onHide={() => {
+            setHideAnimation(true);
+            setTimeout(() => {
+              setHideAnimation(false);
+              setToast(null); // Move setToast(null) here
+            }, 500);
+          }}
+        />
+      </div>
+    );
+
+    setTimeout(() => {
+      setHideAnimation(true);
+      setTimeout(() => {
+        setHideAnimation(false);
+        setToast(null); // Move setToast(null) here
+      }, 500); // Time for hide animation to complete
+    }, 6000); // Hide after 5 seconds
   };
 
-  const showSnackbar = (message: string, severity: AlertProps["severity"]) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
   //AOS initialization
   useEffect(() => {
     AOS.init({
@@ -261,6 +276,7 @@ const Ashaar: React.FC<{}> = () => {
 
           localStorage.setItem("Ghazlen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
+          showToast("success", "Data added to Local Storage successfully");
           console.log("Data added to Local Storage successfully.");
           try {
             // Make API request to update the record's "Likes" field
@@ -319,6 +335,7 @@ const Ashaar: React.FC<{}> = () => {
           localStorage.setItem("Ghazlen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
+          showToast("invalid", "Data removed from Local Storage successfully.");
           console.log("Data removed from Local Storage successfully.");
           try {
             // Make API request to update the record's "Likes" field
@@ -731,6 +748,14 @@ const Ashaar: React.FC<{}> = () => {
       {!loading && (
         <div>
           <div>
+            {/* ${hideAnimation ? "toast hide " : ""} w-[400px] overflow-x-hidden */}
+            <div
+              className={`toast-container ${
+                hideAnimation ? " hide " : ""
+              } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+            >
+              {toast}
+            </div>
             <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
               <div className="filter-btn flex-[90%] text-center justify-center flex">
                 <div
@@ -906,7 +931,6 @@ const Ashaar: React.FC<{}> = () => {
                   : "Load More"}
               </button>
             </div>
-
             {selectedCard && (
               <button
                 style={{ overflow: "hidden" }}
@@ -920,7 +944,6 @@ const Ashaar: React.FC<{}> = () => {
                 />
               </button>
             )}
-
             {selectedCard && (
               // <div className="justify-center w-max h-max">
               <div
@@ -945,9 +968,7 @@ const Ashaar: React.FC<{}> = () => {
                 </div>
               </div>
             )}
-
             {/* //commetcard */}
-
             {selectedCommentId && (
               <button
                 style={{ overflow: "hidden" }}
