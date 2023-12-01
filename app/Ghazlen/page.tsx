@@ -90,10 +90,18 @@ const Ashaar: React.FC<{}> = () => {
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
 
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
+    // Clear the previous timeout if it exists
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      // showToast(msgtype, message);
+    }
+
     setToast(
       <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
         <ToastComponent
@@ -103,20 +111,23 @@ const Ashaar: React.FC<{}> = () => {
             setHideAnimation(true);
             setTimeout(() => {
               setHideAnimation(false);
-              setToast(null); // Move setToast(null) here
+              setToast(null);
             }, 500);
           }}
         />
       </div>
     );
 
-    setTimeout(() => {
+    // Set a new timeout
+    const newTimeoutId = setTimeout(() => {
       setHideAnimation(true);
       setTimeout(() => {
         setHideAnimation(false);
-        setToast(null); // Move setToast(null) here
-      }, 500); // Time for hide animation to complete
-    }, 6000); // Hide after 5 seconds
+        setToast(null);
+      }, 500);
+    }, 6000);
+
+    setTimeoutId(newTimeoutId);
   };
 
   //AOS initialization
