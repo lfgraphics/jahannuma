@@ -10,7 +10,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [language, setLanguage] = useState<string>("UR");
-  const [pageTitle, setPageTitle] = useState("Jahan Numa");
+  // const [pageTitle, setPageTitle] = useState("Jahan Numa");
 
   const changeLang = () => {
     if (typeof window !== "undefined" && window.localStorage) {
@@ -55,13 +55,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>{pageTitle}</title>
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+          content="width=device-width, initial-scale=1.0"
         />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/logo.svg" />
         <meta name="theme-color" content="#F0D586" />
       </head>
       <body className="bg-[#ffff] dark:bg-white text-black font-noto-nastaliq ">

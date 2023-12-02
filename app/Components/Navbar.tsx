@@ -114,7 +114,13 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
               )}
             </IconButton>
             <Link href={language !== "UR" ? `/${language}` : "/"}>
-              <Image src="/logo.svg" alt="Logo" width="80" height="60" />
+              <Image
+                src="/logo.svg"
+                alt="Logo"
+                width="80"
+                height="60"
+                priority
+              />
             </Link>
             <div className="w-0 lg:w-[100%]">
               <ul className="hidden lg:flex md:text-xs justify-center font-noto-nastaliq space-x-4">
@@ -235,10 +241,13 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             >
               <div>
                 <h3 className="text-black font-bold">Navs</h3>
-                <ul id="navelems" className="flex flex-col gap-3 text-center w-[80px]">
+                <ul
+                  id="navelems"
+                  className="flex flex-col gap-3 text-center w-[80px]"
+                >
                   {pages.map((page, index) => (
                     <Link
-                    className="hover:text-white hover:bg-yellow-900 p-1 rounded-sm"
+                      className="hover:text-white hover:bg-yellow-900 p-1 rounded-sm"
                       key={index}
                       href={`/${
                         language == "UR" ? page.EN : language + "/" + page.EN
