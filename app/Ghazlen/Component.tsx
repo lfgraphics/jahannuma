@@ -5,12 +5,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCommentAlt,
   faHeart,
-  faPhoneVolume,
   faShareNodes,
   faTag,
   faTimes,
-  faVolumeLow,
-  faVolumeUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { Search } from "react-feather";
 import Image from "next/image";
@@ -19,7 +16,6 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { format, formatDistanceToNow } from "date-fns";
 import ToastComponent from "../Components/Toast";
-import { borderTopWidth } from "html2canvas/dist/types/css/property-descriptors/border-width";
 
 interface Shaer {
   fields: {
@@ -53,7 +49,6 @@ interface Comment {
 
 const SkeletonLoader = () => (
   <div className="flex flex-col items-center">
-    <div className="w-80 h-12 bg-gray-300 mb-8 rounded-sm mt-4"></div>{" "}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
       {[...Array(12)].map((_, index) => (
         <div
@@ -79,7 +74,6 @@ const Ashaar: React.FC<{}> = () => {
     pageSize: 30,
   });
   const [searchText, setSearchText] = useState("");
-  const [isModleOpen, setIsModleOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
@@ -89,49 +83,11 @@ const Ashaar: React.FC<{}> = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [commentorName, setCommentorName] = useState<string | null>(null);
-  const [dataId, setDataId] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-
-  const [speech, setSpeech] = useState<SpeechSynthesisUtterance | null>(null);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [isSupported, setIsSupported] = useState<boolean>(false);
-
-  useEffect(() => {
-    const initSpeechSynthesis = () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        setIsSupported(true);
-
-        // Fetch voices when the component mounts
-        setVoices(window.speechSynthesis.getVoices());
-
-        // Update voices when they change
-        window.speechSynthesis.onvoiceschanged = () => {
-          setVoices(window.speechSynthesis.getVoices());
-          // Set the default voice to the first one (English India)
-          setSpeech((prevSpeech) => ({
-            ...prevSpeech!,
-            voice: voices[0],
-          }));
-        };
-      }
-    };
-
-    initSpeechSynthesis();
-  }, [voices]); // Only update voices when it changes
-
-  const readAloud = (textArray: string[]) => {
-    if (speech) {
-      textArray.forEach((text) => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.voice = speech.voice; // Set the voice
-        window.speechSynthesis.speak(utterance);
-      });
-    }
-  };
 
   //function ot show toast
   const showToast = (
@@ -143,7 +99,6 @@ const Ashaar: React.FC<{}> = () => {
       clearTimeout(timeoutId);
       // showToast(msgtype, message);
     }
-
     setToast(
       <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
         <ToastComponent
@@ -159,7 +114,6 @@ const Ashaar: React.FC<{}> = () => {
         />
       </div>
     );
-
     // Set a new timeout
     const newTimeoutId = setTimeout(() => {
       setHideAnimation(true);
@@ -281,18 +235,20 @@ const Ashaar: React.FC<{}> = () => {
     setSearchText(""); // Clear the searchText state
     // setDataItems(data.getAllShaers()); // Restore the original data
   };
+
   // a part of search match
-  const isShaerMatch = (shaerData: Shaer) => {
-    return (
-      shaerData.fields.shaer.toLowerCase().includes(searchText) ||
-      shaerData.fields.ghazalHead.some((line) =>
-        line.toLowerCase().includes(searchText)
-      ) ||
-      shaerData.fields.ghazal.some((line) =>
-        line.toLowerCase().includes(searchText)
-      )
-    );
-  };
+  // const isShaerMatch = (shaerData: Shaer) => {
+  //   return (
+  //     shaerData?.fields?.shaer?.toLowerCase().includes(searchText) ||
+  //     shaerData?.fields?.ghazalHead?.some((line) =>
+  //       line.toLowerCase().includes(searchText)
+  //     ) ||
+  //     shaerData?.fields?.ghazal?.some((line) =>
+  //       line.toLowerCase().includes(searchText)
+  //     )
+  //   );
+  // };
+
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
     shaerData: Shaer,
@@ -533,7 +489,6 @@ const Ashaar: React.FC<{}> = () => {
 
     const modalElement = document.getElementById("modal"); // Add an ID to your modal
     if (modalElement) {
-      setIsModleOpen(true);
       animateModalOpen(modalElement);
       if (typeof window !== undefined) {
         document.getElementById("modlBtn")?.classList.remove("hidden");
@@ -541,7 +496,6 @@ const Ashaar: React.FC<{}> = () => {
     }
   };
   const handleCloseModal = (): void => {
-    setIsModleOpen(false);
     if (typeof window !== undefined) {
       document.getElementById("modlBtn")?.classList.add("hidden");
     }
@@ -584,7 +538,7 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-
+  
   const fetchComments = async (dataId: string) => {
     const storedName = localStorage.getItem("commentorName");
     try {
@@ -610,7 +564,6 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      setDataId(dataId);
       const BASE_ID = "appzB656cMxO0QotZ";
       const TABLE_NAME = "Comments";
       const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
@@ -643,7 +596,6 @@ const Ashaar: React.FC<{}> = () => {
       console.error(`Failed to fetch comments: ${error}`);
     }
   };
-
   const handleCommentSubmit = async (dataId: string) => {
     // Check if the user has provided a name
     if (typeof window !== "undefined") {
@@ -796,59 +748,58 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      {loading && <SkeletonLoader />}
-      {!loading && (
+      <div>
         <div>
-          <div>
-            {/* ${hideAnimation ? "toast hide " : ""} w-[400px] overflow-x-hidden */}
-            <div
-              className={`toast-container ${
-                hideAnimation ? " hide " : ""
-              } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-            >
-              {toast}
-            </div>
-            <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
-              <div className="filter-btn flex-[90%] text-center justify-center flex">
+          <div
+            className={`toast-container ${
+              hideAnimation ? " hide " : ""
+            } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+          >
+            {toast}
+          </div>
+          <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
+            <div className="filter-btn flex-[90%] text-center justify-center flex">
+              <div
+                dir="rtl"
+                className="flex justify-center basis-[95%] h-auto pt-2"
+              >
+                <input
+                  type="text"
+                  placeholder="لکه ک تلاش کرین"
+                  className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
+                  id="searchBox"
+                  onKeyUp={handleSearchKeyUp}
+                />
                 <div
-                  dir="rtl"
-                  className="flex justify-center basis-[95%] h-auto"
+                  className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
+                  onClick={clearSearch}
                 >
-                  <input
-                    type="text"
-                    placeholder="لکه ک تلاش کرین"
-                    className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
-                    id="searchBox"
-                    onKeyUp={handleSearchKeyUp}
-                  />
-                  <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-black">
-                    <Search id="searchIcon" className="hidden"></Search>
-                  </div>
-                  <div
-                    className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-black"
-                    onClick={clearSearch}
-                  >
-                    <Image
-                      id="searchClear"
-                      src="/icons/x.svg"
-                      alt="x icon"
-                      width="20"
-                      height="20"
-                      className="hidden text-[#984A02]"
-                    ></Image>
-                  </div>
+                  <Image
+                    id="searchClear"
+                    src="/icons/x.svg"
+                    alt="x icon"
+                    width="20"
+                    height="20"
+                    className="hidden text-[#984A02]"
+                  ></Image>
+                </div>
+                <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
+                  <Search id="searchIcon" className="hidden"></Search>
                 </div>
               </div>
             </div>
-            <div
-              // onClick={() => closeComments()}
-              //   ${isModleOpen ? "pointer-events-none " : "pointer-events-auto "}
-              dir="rtl"
-              className={`
+          </div>
+          {loading && <SkeletonLoader />}
+          {!loading && (
+            <section>
+              <div
+                //   ${isModleOpen ? "pointer-events-none " : "pointer-events-auto "}
+                dir="rtl"
+                className={`
               grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
-            >
-              {dataItems.map((shaerData, index) => {
-                if (isShaerMatch(shaerData)) {
+              >
+                {dataItems.map((shaerData, index) => {
+                  // if (isShaerMatch(shaerData)) {
                   return (
                     <div
                       data-aos={"fade-up"}
@@ -962,139 +913,135 @@ const Ashaar: React.FC<{}> = () => {
                         >
                           غزل پڑھیں
                         </button>
-                        {isSupported && shaerData.fields.listenable && (
-                          <button
-                            onClick={() => readAloud(shaerData.fields.ghazal)}
-                          >
-                            <FontAwesomeIcon
-                              className="text-gray-500 rotate-180 active:text-[#984A02] hover:text-[#984A02]"
-                              icon={faVolumeUp}
-                              //   style={{ color: "#984A02" }}
-                            />
-                          </button>
-                        )}
                       </div>
                     </div>
                   );
-                } else {
-                  return null; // Skip rendering this Shaer
-                }
-              })}
-            </div>
-            <div className="flex justify-center text-lg m-5">
-              <button
-                onClick={handleLoadMore}
-                disabled={noMoreData}
-                className="text-[#984A02] disabled:text-gray-500 cursor-pointer"
-              >
-                {moreloading
-                  ? "Loading..."
-                  : noMoreData
-                  ? "No More Data"
-                  : "Load More"}
-              </button>
-            </div>
-            {selectedCard && (
-              <button
-                style={{ overflow: "hidden" }}
-                id="modlBtn"
-                className="transition-all duration-500 ease-in-out fixed bottom-12 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
-                onClick={handleCloseModal}
-              >
-                <FontAwesomeIcon
-                  icon={faTimes}
-                  className="text-[#984A02] text-2xl hover:text-white"
-                />
-              </button>
-            )}
-            {selectedCard && (
-              // <div className="justify-center w-max h-max">
-              <div
-                onClick={handleCloseModal}
-                id="modal"
-                className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
-              >
-                <div
-                  dir="rtl"
-                  className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
-                >
-                  <div className="p-4">
-                    <h2 className="text-black text-4xl top-0 bg-white sticky p-3 border-b-2 mb-3">
-                      {selectedCard.fields.shaer}
-                    </h2>
-                    {selectedCard.fields.ghazal.map((line, index) => (
-                      <p key={index} className="text-black pb-3 text-2xl">
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                </div>
+                  // } else {
+                  //   return null; // Skip rendering this Shaer
+                  // }
+                })}
               </div>
-            )}
-            {/* //commetcard */}
-            {selectedCommentId && (
-              <button
-                style={{ overflow: "hidden" }}
-                id="modlBtn"
-                className="transition-all duration-500 ease-in-out fixed bottom-16 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
-                onClick={() => closeComments()}
-              >
-                <FontAwesomeIcon
-                  icon={faTimes}
-                  className="text-[#984A02] text-2xl hover:text-white"
-                />
-              </button>
-            )}
-            {selectedCommentId && (
+              <div className="flex justify-center text-lg m-5">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={noMoreData}
+                  className="text-[#984A02] disabled:text-gray-500 cursor-pointer"
+                >
+                  {moreloading
+                    ? "Loading..."
+                    : noMoreData
+                    ? "No More Data"
+                    : "Load More"}
+                </button>
+              </div>
+            </section>
+          )}
+          {selectedCard && (
+            <button
+              style={{ overflow: "hidden" }}
+              id="modlBtn"
+              className="transition-all duration-500 ease-in-out fixed bottom-12 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
+              onClick={handleCloseModal}
+            >
+              <FontAwesomeIcon
+                icon={faTimes}
+                className="text-[#984A02] text-2xl hover:text-white"
+              />
+            </button>
+          )}
+          {selectedCard && (
+            // <div className="justify-center w-max h-max">
+            <div
+              onClick={handleCloseModal}
+              id="modal"
+              className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
+            >
               <div
                 dir="rtl"
-                className="sticky w-screen bottom-0 z-10 shadow-lg min-h-[60svh] max-h-[70svh] overflow-y-scroll border-spacing-1 border-t-4 mt-4 pb-7 p-4 bg-white text-lg"
-                style={{ borderTop: "6px groove" }}
+                className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
               >
-                {commentLoading && <div>Loading.....</div>}
-                {comments.map((comment, index) => (
-                  <div
-                    key={index}
-                    className="mb-8"
-                    onClick={() => closeComments()}
-                  >
-                    <div className="flex items-center justify-start gap-3 m-3">
-                      <span className="font-semibold">
-                        {comment.commentorName}
-                      </span>
-                      <span className="text-gray-500 text-md">
-                        {formatDistanceToNow(new Date(comment.timestamp), {
-                          addSuffix: true,
-                        })}
-                      </span>
-                    </div>
-                    <p>{comment.comment}</p>
-                    <div className="border-b my-2"></div>
-                  </div>
-                ))}
-
-                <div className="fixed justify-around bottom-0 pb-3 bg-white text-black flex w-[100vw] px-5">
-                  <input
-                    type="text"
-                    placeholder="آپکا تبصرہ۔۔۔"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="w-[70%] border-b-2 p-2 focus:outline-none text-right"
-                  />
-                  <button
-                    //newComment !== "" &&
-                    disabled={newComment.length < 4}
-                    onClick={async () => handleCommentSubmit(selectedCommentId)}
-                    className="bg-[#984A02] text-white p-2 rounded disabled:bg-gray-500 disabled:cursor-not-allowed"
-                  >
-                    تبصرہ کریں
-                  </button>
+                <div className="p-4">
+                  <h2 className="text-black text-4xl top-0 bg-white sticky p-3 border-b-2 mb-3">
+                    {selectedCard.fields.shaer}
+                  </h2>
+                  {selectedCard.fields.ghazal.map((line, index) => (
+                    <p key={index} className="text-black pb-3 text-2xl">
+                      {line}
+                    </p>
+                  ))}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+          {/* //commetcard */}
+          {selectedCommentId && (
+            <button
+              style={{ overflow: "hidden" }}
+              id="modlBtn"
+              className="transition-all duration-500 ease-in-out fixed bottom-16 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
+              onClick={() => closeComments()}
+            >
+              <FontAwesomeIcon
+                icon={faTimes}
+                className="text-[#984A02] text-2xl hover:text-white"
+              />
+            </button>
+          )}
+          {selectedCommentId && (
+            <div
+              dir="rtl"
+              className="sticky w-screen bottom-0 z-10 shadow-lg min-h-[60svh] max-h-[70svh] overflow-y-scroll border-spacing-1 border-t-4 mt-4 pb-7 p-4 bg-white text-lg"
+              style={{ borderTop: "6px groove" }}
+            >
+              {commentLoading && (
+                <div className="flex items-center justify-center">
+                  <div className="w-6 h-6 border-t-4 border-[#984A02] m-3 rounded-full animate-spin"></div>
+                  <div className="ml-2 text-lg text-[#984A02]">Loading</div>
+                </div>
+              )}
+
+              {comments.map((comment, index) => (
+                <div
+                  key={index}
+                  className="mb-8"
+                  onClick={() => closeComments()}
+                >
+                  <div className="flex items-center justify-start gap-3 m-3">
+                    <span className="font-semibold">
+                      {comment.commentorName}
+                    </span>
+                    <span className="text-gray-500 text-md">
+                      {formatDistanceToNow(new Date(comment.timestamp), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </div>
+                  <p>{comment.comment}</p>
+                  <div className="border-b my-2"></div>
+                </div>
+              ))}
+
+              <div className="fixed justify-around bottom-0 pb-3 bg-white text-black flex w-[100vw] px-5">
+                <input
+                  type="text"
+                  placeholder="آپکا تبصرہ۔۔۔"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-[70%] border-b-2 p-2 focus:outline-none text-right"
+                />
+                <button
+                  //newComment !== "" &&
+                  disabled={newComment.length < 4}
+                  onClick={async () => handleCommentSubmit(selectedCommentId)}
+                  className="bg-[#984A02] text-white p-2 rounded disabled:bg-gray-500 disabled:cursor-not-allowed"
+                >
+                  تبصرہ کریں
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
