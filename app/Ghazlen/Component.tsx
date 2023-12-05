@@ -16,6 +16,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { format, formatDistanceToNow } from "date-fns";
 import ToastComponent from "../Components/Toast";
+import CommentSection from "../Components/CommentSection";
 
 interface Shaer {
   fields: {
@@ -80,14 +81,18 @@ const Ashaar: React.FC<{}> = () => {
   const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   //comments
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState("");
+
   const [commentorName, setCommentorName] = useState<string | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [newComment, setNewComment] = useState("");
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const handleNewCommentChange = (comment: string) => {
+    setNewComment(comment);
+  };
 
   //function ot show toast
   const showToast = (
@@ -230,24 +235,10 @@ const Ashaar: React.FC<{}> = () => {
     input.value = "";
     xMark?.classList.add("hidden");
     sMark?.classList.add("hidden");
-
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
     // setDataItems(data.getAllShaers()); // Restore the original data
   };
-
-  // a part of search match
-  // const isShaerMatch = (shaerData: Shaer) => {
-  //   return (
-  //     shaerData?.fields?.shaer?.toLowerCase().includes(searchText) ||
-  //     shaerData?.fields?.ghazalHead?.some((line) =>
-  //       line.toLowerCase().includes(searchText)
-  //     ) ||
-  //     shaerData?.fields?.ghazal?.some((line) =>
-  //       line.toLowerCase().includes(searchText)
-  //     )
-  //   );
-  // };
 
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
@@ -538,7 +529,7 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-  
+
   const fetchComments = async (dataId: string) => {
     const storedName = localStorage.getItem("commentorName");
     try {
@@ -742,7 +733,6 @@ const Ashaar: React.FC<{}> = () => {
     // setIsModleOpen(true);
   };
   const closeComments = () => {
-    // setIsModleOpen(false);
     setSelectedCommentId(null);
   };
 
@@ -978,7 +968,7 @@ const Ashaar: React.FC<{}> = () => {
             <button
               style={{ overflow: "hidden" }}
               id="modlBtn"
-              className="transition-all duration-500 ease-in-out fixed bottom-16 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
+              className="transition-all duration-500 ease-in-out fixed bottom-24 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
               onClick={() => closeComments()}
             >
               <FontAwesomeIcon
@@ -988,57 +978,15 @@ const Ashaar: React.FC<{}> = () => {
             </button>
           )}
           {selectedCommentId && (
-            <div
-              dir="rtl"
-              className="sticky w-screen bottom-0 z-10 shadow-lg min-h-[60svh] max-h-[70svh] overflow-y-scroll border-spacing-1 border-t-4 mt-4 pb-7 p-4 bg-white text-lg"
-              style={{ borderTop: "6px groove" }}
-            >
-              {commentLoading && (
-                <div className="flex items-center justify-center">
-                  <div className="w-6 h-6 border-t-4 border-[#984A02] m-3 rounded-full animate-spin"></div>
-                  <div className="ml-2 text-lg text-[#984A02]">Loading</div>
-                </div>
-              )}
-
-              {comments.map((comment, index) => (
-                <div
-                  key={index}
-                  className="mb-8"
-                  onClick={() => closeComments()}
-                >
-                  <div className="flex items-center justify-start gap-3 m-3">
-                    <span className="font-semibold">
-                      {comment.commentorName}
-                    </span>
-                    <span className="text-gray-500 text-md">
-                      {formatDistanceToNow(new Date(comment.timestamp), {
-                        addSuffix: true,
-                      })}
-                    </span>
-                  </div>
-                  <p>{comment.comment}</p>
-                  <div className="border-b my-2"></div>
-                </div>
-              ))}
-
-              <div className="fixed justify-around bottom-0 pb-3 bg-white text-black flex w-[100vw] px-5">
-                <input
-                  type="text"
-                  placeholder="آپکا تبصرہ۔۔۔"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="w-[70%] border-b-2 p-2 focus:outline-none text-right"
-                />
-                <button
-                  //newComment !== "" &&
-                  disabled={newComment.length < 4}
-                  onClick={async () => handleCommentSubmit(selectedCommentId)}
-                  className="bg-[#984A02] text-white p-2 rounded disabled:bg-gray-500 disabled:cursor-not-allowed"
-                >
-                  تبصرہ کریں
-                </button>
-              </div>
-            </div>
+            <CommentSection
+              dataId={selectedCommentId}
+              comments={comments}
+              onCommentSubmit={handleCommentSubmit}
+              commentLoading={commentLoading}
+              newComment={newComment}
+              onNewCommentChange={handleNewCommentChange}
+              onCloseComments={closeComments}
+            />
           )}
         </div>
       </div>
