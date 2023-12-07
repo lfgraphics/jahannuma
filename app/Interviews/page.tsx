@@ -1,7 +1,12 @@
 import React from "react";
+import Commingsoon from "../Components/Commingsoon";
 
-const Interviews = () => {
-  return <div>Interviews</div>;
+const page = () => {
+  return (
+    <div>
+      <Commingsoon />
+    </div>
+  );
 };
 
-export default Interviews;
+export default page;

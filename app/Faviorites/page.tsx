@@ -1,9 +1,12 @@
-import * as React from "react";
+import React from "react";
+import Commingsoon from "../Components/Commingsoon";
 
-export default function Faviorites() {
+const page = () => {
   return (
     <div>
-      Faviorites
+      <Commingsoon />
     </div>
   );
-}
+};
+
+export default page;

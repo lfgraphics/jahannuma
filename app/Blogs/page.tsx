@@ -1,11 +1,12 @@
-import React from 'react'
+import React from "react";
+import Commingsoon from "../Components/Commingsoon";
 
-const Blogs = () => {
+const page = () => {
   return (
     <div>
-      Blogs
+      <Commingsoon />
     </div>
-  )
-}
+  );
+};
 
-export default Blogs
+export default page;

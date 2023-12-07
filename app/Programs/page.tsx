@@ -1,9 +1,12 @@
-import * as React from "react";
+import React from "react";
+import Commingsoon from "../Components/Commingsoon";
 
-export default function Programs() {
+const page = () => {
   return (
     <div>
-      Programs
+      <Commingsoon />
     </div>
   );
-}
+};
+
+export default page;

@@ -1,5 +1,12 @@
-import * as React from "react";
+import React from "react";
+import Commingsoon from "../Components/Commingsoon";
 
-export default function Bazmehindi() {
-  return <div>Bazme Hindi</div>;
-}
+const page = () => {
+  return (
+    <div>
+      <Commingsoon />
+    </div>
+  );
+};
+
+export default page;
