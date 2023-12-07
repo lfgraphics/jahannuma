@@ -78,6 +78,7 @@ const Ashaar: React.FC<{}> = () => {
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
+  const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
   const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   //comments
@@ -90,9 +91,6 @@ const Ashaar: React.FC<{}> = () => {
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const handleNewCommentChange = (comment: string) => {
-    setNewComment(comment);
-  };
 
   //function ot show toast
   const showToast = (
@@ -148,7 +146,8 @@ const Ashaar: React.FC<{}> = () => {
     }
   }
   // func to fetch and load more data
-  const fetchData = async (offset: string | null) => {
+  const fetchData = async (offset: string | null, userQuery: boolean) => {
+    userQuery && setLoading(true);
     try {
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "Ghazlen";
@@ -159,6 +158,21 @@ const Ashaar: React.FC<{}> = () => {
       };
       //airtable fetch url and methods
       let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+
+      if (userQuery) {
+        // Encode the formula with OR condition
+        const encodedFormula = encodeURIComponent(
+          `OR(
+          FIND('${searchText}', LOWER({shaer})),
+          FIND('${searchText}', LOWER({ghazalHead})),
+          FIND('${searchText}', LOWER({ghazal})),
+          FIND('${searchText}', LOWER({unwan}))
+        )`
+        );
+
+        url += `&filterByFormula=${encodedFormula}`;
+      }
+
       if (offset) {
         url += `&offset=${offset}`;
       }
@@ -183,13 +197,25 @@ const Ashaar: React.FC<{}> = () => {
         },
       }));
       // seting the data in variable and updating the variable by checking if it's fetched first or not
-      !offset
-        ? setDataItems(formattedRecords)
-        : setDataItems((prevDataItems) => [
-            ...prevDataItems,
-            ...formattedRecords,
-          ]);
-      !offset ? scrollToTop() : null;
+      console.log(dataItems);
+      if (!offset) {
+        if (userQuery) {
+          setInitialdDataItems(dataItems);
+          setDataItems(formattedRecords);
+        } else {
+          setDataItems(formattedRecords);
+        }
+      } else {
+        setDataItems((prevDataItems) => [
+          ...prevDataItems,
+          ...formattedRecords,
+        ]);
+      }
+
+      !offset && scrollToTop();
+      console.log(userQuery);
+      userQuery && console.log(searchText);
+      userQuery && console.log(formattedRecords);
       // seting pagination depending on the response
       setPagination({
         offset: result.offset,
@@ -207,12 +233,16 @@ const Ashaar: React.FC<{}> = () => {
   // fetching more data by load more data button
   const handleLoadMore = () => {
     setMoreLoading(true);
-    fetchData(pagination.offset);
+    fetchData(pagination.offset, false);
   };
   // Fetch the initial set of records
   useEffect(() => {
-    fetchData(null);
+    fetchData(null, false);
   }, []);
+
+  const searchQuery = () => {
+    fetchData(null, true);
+  };
   //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
@@ -587,6 +617,9 @@ const Ashaar: React.FC<{}> = () => {
       console.error(`Failed to fetch comments: ${error}`);
     }
   };
+  const handleNewCommentChange = (comment: string) => {
+    setNewComment(comment);
+  };
   const handleCommentSubmit = async (dataId: string) => {
     // Check if the user has provided a name
     if (typeof window !== "undefined") {
@@ -761,7 +794,7 @@ const Ashaar: React.FC<{}> = () => {
                   onKeyUp={handleSearchKeyUp}
                 />
                 <div
-                  className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
+                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
                   onClick={clearSearch}
                 >
                   <Image
@@ -773,9 +806,23 @@ const Ashaar: React.FC<{}> = () => {
                     className="hidden text-[#984A02]"
                   ></Image>
                 </div>
-                <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
+                <div
+                  onClick={searchQuery}
+                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
+                >
                   <Search id="searchIcon" className="hidden"></Search>
                 </div>
+                {initialDataItems.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setDataItems(initialDataItems);
+                      setInitialdDataItems([]);
+                    }}
+                    disabled={!searchText}
+                  >
+                    Reset Search
+                  </button>
+                )}
               </div>
             </div>
           </div>

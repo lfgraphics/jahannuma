@@ -85,7 +85,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           onChange={(e) => onNewCommentChange(e.target.value)}
           className="w-[70%] h-[3rem] bg-gray-400 text-white rounded-sm focus:border-black placeholder:text-white p-2 focus:outline-none text-right"
           style={{
-
             padding: "5px",
             outline: "none",
             resize: "none", // Disable textarea resizing
