@@ -34,7 +34,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   return (
     <div
       dir="rtl"
-      className="sticky w-screen bottom-0 z-10 pb-16 shadow-lg min-h-[40svh] max-h-[55svh] overflow-y-scroll border-spacing-1 border-t-4 mt-4 p-4 bg-white text-lg"
+      className="fixed w-screen bottom-0 pr-0 z-10 pb-16 shadow-lg min-h-[40svh] max-h-[55svh] overflow-y-scroll border-t-4 mt-4 p-4 bg-white text-lg"
       style={{ borderTop: "6px groove" }}
     >
       {commentLoading && (
@@ -43,26 +43,31 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           <div className="ml-2 text-lg text-[#984A02]">Loading</div>
         </div>
       )}
-      {comments.length === 0 && <div style={{lineHeight:'normal'}}>اس غزل پر اب تک کوئی تبصرہ نہیں ہے<br /> اس پر تبصرہ کر کے آپ تبصرہ کرنے والے پہلے شخص بنیں</div>}
-
-      {comments.map((comment, index) => (
-        <div key={index} className="mb-8" onClick={onCloseComments}>
-          <div className="flex items-center justify-start gap-3 m-3">
-            <span className="font-semibold text-md">
-              {comment.commentorName}
-            </span>{" "}
-            <span className="bg-gray-500 h-2 w-2 rounded-full"></span>
-            <span className="text-gray-500 text-md">
-              {formatDistanceToNow(new Date(comment.timestamp), {
-                addSuffix: true,
-              })}
-            </span>
+      <div className="pr-4">
+        {comments.length === 0 && (
+          <div style={{ lineHeight: "normal" }}>
+            اس غزل پر اب تک کوئی تبصرہ نہیں ہے
+            <br /> اس پر تبصرہ کر کے آپ تبصرہ کرنے والے پہلے شخص بنیں
           </div>
-          <p>{comment.comment}</p>
-          <div className="border-b my-2"></div>
-        </div>
-      ))}
-
+        )}
+        {comments.map((comment, index) => (
+          <div key={index} className="mb-4">
+            <div className="flex items-center justify-start gap-3 m-3">
+              <span className="font-semibold text-md">
+                {comment.commentorName}
+              </span>{" "}
+              <span className="bg-gray-500 h-1 w-1 rounded-full"></span>
+              <span className="text-gray-500 text-md">
+                {formatDistanceToNow(new Date(comment.timestamp), {
+                  addSuffix: true,
+                })}
+              </span>
+            </div>
+            <p>{comment.comment}</p>
+            <div className="border-b my-2"></div>
+          </div>
+        ))}
+      </div>
       <div className="fixed z-40 justify-around items-end bottom-0 p-3 border-t bg-white flex w-[100vw] px-5">
         <textarea
           placeholder="آپ کا تبصرہ۔۔۔"

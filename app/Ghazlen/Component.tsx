@@ -5,18 +5,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCommentAlt,
   faHeart,
+  faSearch,
   faShareNodes,
   faTag,
   faTimes,
+  faTimesCircle,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { Search } from "react-feather";
-import Image from "next/image";
 import Link from "next/link";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
+import ShaerCard from "../Components/ShaerCard";
 
 interface Shaer {
   fields: {
@@ -75,6 +77,7 @@ const Ashaar: React.FC<{}> = () => {
     pageSize: 30,
   });
   const [searchText, setSearchText] = useState("");
+  const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
@@ -242,6 +245,9 @@ const Ashaar: React.FC<{}> = () => {
 
   const searchQuery = () => {
     fetchData(null, true);
+    if (typeof window !== undefined) {
+      setScrolledPosition(window.scrollY);
+    }
   };
   //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -305,8 +311,8 @@ const Ashaar: React.FC<{}> = () => {
 
           localStorage.setItem("Ghazlen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
-          showToast("success", "Data added to Local Storage successfully");
-          console.log("Data added to Local Storage successfully.");
+          showToast("success", "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ");
+          console.log("آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ .");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes + 1;
@@ -364,8 +370,8 @@ const Ashaar: React.FC<{}> = () => {
           localStorage.setItem("Ghazlen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
-          showToast("invalid", "Data removed from Local Storage successfully.");
-          console.log("Data removed from Local Storage successfully.");
+          showToast("invalid", "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
+          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
@@ -559,7 +565,6 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-
   const fetchComments = async (dataId: string) => {
     const storedName = localStorage.getItem("commentorName");
     try {
@@ -768,275 +773,175 @@ const Ashaar: React.FC<{}> = () => {
   const closeComments = () => {
     setSelectedCommentId(null);
   };
+  const resetSearch = () => {
+    setDataItems(initialDataItems);
+    clearSearch();
+    if (typeof window !== undefined) {
+      window.scrollTo({
+        top: scrolledPosition,
+        behavior: "smooth",
+      });
+    }
+    setInitialdDataItems([]);
+  };
 
   return (
     <div>
-      <div>
-        <div>
+      <div
+        className={`toast-container ${
+          hideAnimation ? " hide " : ""
+        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+      >
+        {toast}
+      </div>
+      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
+        <div className="filter-btn flex-[90%] text-center justify-center flex">
           <div
-            className={`toast-container ${
-              hideAnimation ? " hide " : ""
-            } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+            dir="rtl"
+            className="flex justify-center basis-[95%] h-auto pt-2"
           >
-            {toast}
-          </div>
-          <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
-            <div className="filter-btn flex-[90%] text-center justify-center flex">
-              <div
-                dir="rtl"
-                className="flex justify-center basis-[95%] h-auto pt-2"
-              >
-                <input
-                  type="text"
-                  placeholder="لکه ک تلاش کرین"
-                  className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
-                  id="searchBox"
-                  onKeyUp={handleSearchKeyUp}
-                />
-                <div
-                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
-                  onClick={clearSearch}
-                >
-                  <Image
-                    id="searchClear"
-                    src="/icons/x.svg"
-                    alt="x icon"
-                    width="20"
-                    height="20"
-                    className="hidden text-[#984A02]"
-                  ></Image>
-                </div>
-                <div
-                  onClick={searchQuery}
-                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
-                >
-                  <Search id="searchIcon" className="hidden"></Search>
-                </div>
-                {initialDataItems.length > 0 && (
-                  <button
-                    onClick={() => {
-                      setDataItems(initialDataItems);
-                      setInitialdDataItems([]);
-                    }}
-                    disabled={!searchText}
-                  >
-                    Reset Search
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          {loading && <SkeletonLoader />}
-          {!loading && (
-            <section>
-              <div
-                //   ${isModleOpen ? "pointer-events-none " : "pointer-events-auto "}
-                dir="rtl"
-                className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
-              >
-                {dataItems.map((shaerData, index) => {
-                  // if (isShaerMatch(shaerData)) {
-                  return (
-                    <div
-                      data-aos={"fade-up"}
-                      key={index}
-                      id={`card${index}`}
-                      className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
-                    >
-                      <Link
-                        href={`/Shaer/${shaerData.fields.shaer.replace(
-                          " ",
-                          "-"
-                        )}`}
-                      >
-                        <h2 className="text-black text-3xl mb-4">
-                          {shaerData.fields.shaer}
-                        </h2>
-                      </Link>
-                      {/* Display a snippet of the ghazal data here */}
-                      {shaerData.fields.ghazalHead.map((lin, index) => (
-                        <p
-                          style={{ lineHeight: "normal" }}
-                          key={index}
-                          className="text-black line-normal text-xl"
-                          onClick={() => handleCardClick(shaerData)}
-                        >
-                          {lin}
-                        </p>
-                      ))}
-
-                      <div className="relative">
-                        <div
-                          className="anaween-container flex flex-col items-center  absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
-                          style={{
-                            height:
-                              openanaween === `card${index}` ? "120px" : "0",
-                          }}
-                        >
-                          {shaerData.fields.unwan?.map((unwaan, index) => (
-                            <span
-                              key={index}
-                              className="text-md text-[#984A02] p-2"
-                            >
-                              {unwaan}
-                            </span>
-                          ))}
-                        </div>
-                        <button
-                          className="text-[#984A02] mt-2 justify-start flex items-end flex-row-reverse "
-                          onClick={() => toggleanaween(`card${index}`)}
-                        >
-                          موضوعات: {shaerData.fields.unwan?.[0]}
-                          {shaerData.fields.unwan?.length > 1
-                            ? " ، " +
-                              (shaerData.fields.unwan?.length - 1) +
-                              " اور "
-                            : ""}
-                          <span>
-                            <FontAwesomeIcon
-                              icon={faTag}
-                              className="ml-2 text-yellow-400"
-                            />
-                          </span>
-                        </button>
-                      </div>
-
-                      <div className="felx text-center icons">
-                        <button
-                          className={`m-3 text-gray-500 transition-all duration-500`}
-                          onClick={() =>
-                            handleHeartClick(
-                              shaerData,
-                              index,
-                              `${shaerData.id}`
-                            )
-                          }
-                          id={`${shaerData.id}`}
-                        >
-                          <FontAwesomeIcon icon={faHeart} />{" "}
-                          <span className="text-gray-500 text-sm">
-                            {shaerData.fields.likes}
-                          </span>
-                        </button>
-                        <button
-                          className="m-3"
-                          onClick={() => openComments(shaerData.id)}
-                        >
-                          <FontAwesomeIcon
-                            icon={faCommentAlt}
-                            style={{ color: "#984A02" }}
-                            className="ml-2"
-                          />{" "}
-                          <span className="text-gray-500 text-sm">
-                            {shaerData.fields.comments}
-                          </span>
-                        </button>
-                        <button
-                          className="m-3"
-                          onClick={() => handleShareClick(shaerData, index)}
-                        >
-                          <FontAwesomeIcon
-                            icon={faShareNodes}
-                            style={{ color: "#984A02" }}
-                          />{" "}
-                          <span className="text-gray-500 text-sm">
-                            {shaerData.fields.shares}
-                          </span>
-                        </button>
-                        <button
-                          className="text-[#984A02] font-semibold m-3"
-                          onClick={() => handleCardClick(shaerData)}
-                        >
-                          غزل پڑھیں
-                        </button>
-                      </div>
-                    </div>
-                  );
-                  // } else {
-                  //   return null; // Skip rendering this Shaer
-                  // }
-                })}
-              </div>
-              <div className="flex justify-center text-lg m-5">
-                <button
-                  onClick={handleLoadMore}
-                  disabled={noMoreData}
-                  className="text-[#984A02] disabled:text-gray-500 cursor-pointer"
-                >
-                  {moreloading
-                    ? "Loading..."
-                    : noMoreData
-                    ? "No More Data"
-                    : "Load More"}
-                </button>
-              </div>
-            </section>
-          )}
-          {selectedCard && (
-            <button
-              style={{ overflow: "hidden" }}
-              id="modlBtn"
-              className="transition-all duration-500 ease-in-out fixed bottom-12 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
-              onClick={handleCloseModal}
-            >
-              <FontAwesomeIcon
-                icon={faTimes}
-                className="text-[#984A02] text-2xl hover:text-white"
-              />
-            </button>
-          )}
-          {selectedCard && (
-            // <div className="justify-center w-max h-max">
-            <div
-              onClick={handleCloseModal}
-              id="modal"
-              className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
-            >
-              <div
-                dir="rtl"
-                className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
-              >
-                <div className="p-4">
-                  <h2 className="text-black text-4xl top-0 bg-white sticky p-3 border-b-2 mb-3">
-                    {selectedCard.fields.shaer}
-                  </h2>
-                  {selectedCard.fields.ghazal.map((line, index) => (
-                    <p key={index} className="text-black pb-3 text-2xl">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-          {/* //commetcard */}
-          {selectedCommentId && (
-            <button
-              style={{ overflow: "hidden" }}
-              id="modlBtn"
-              className="transition-all duration-500 ease-in-out fixed bottom-24 left-7 z-50 rounded-full border h-10 w-10 pt-2 hover:bg-[#984A02] hover:text-white"
-              onClick={() => closeComments()}
-            >
-              <FontAwesomeIcon
-                icon={faTimes}
-                className="text-[#984A02] text-2xl hover:text-white"
-              />
-            </button>
-          )}
-          {selectedCommentId && (
-            <CommentSection
-              dataId={selectedCommentId}
-              comments={comments}
-              onCommentSubmit={handleCommentSubmit}
-              commentLoading={commentLoading}
-              newComment={newComment}
-              onNewCommentChange={handleNewCommentChange}
-              onCloseComments={closeComments}
+            <input
+              type="text"
+              placeholder="لکه ک تلاش کرین"
+              className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
+              id="searchBox"
+              onKeyUp={handleSearchKeyUp}
             />
-          )}
+            <div
+              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
+              onClick={clearSearch}
+            >
+              <FontAwesomeIcon
+                id="searchClear"
+                icon={faXmark}
+                className="hidden text-[#984A02] text-2xl"
+              />
+            </div>
+            <div
+              onClick={searchQuery}
+              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
+            >
+              <FontAwesomeIcon
+                id="searchIcon"
+                icon={faSearch}
+                className="hidden text-[#984A02] text-xl"
+              />
+            </div>
+          </div>
         </div>
       </div>
+      {loading && <SkeletonLoader />}
+      {initialDataItems.length > 0 && dataItems.length == 0 && (
+        <div className="block mx-auto text-center my-3 text-2xl">
+          سرچ میں کچھ نہیں ملا
+        </div>
+      )}
+      {initialDataItems.length > 0 && (
+        <button
+          className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+          onClick={resetSearch}
+          disabled={!searchText}
+        >
+          تلاش ریسیٹ کریں
+        </button>
+      )}
+      {!loading && (
+        <section>
+          <div
+            dir="rtl"
+            className={`
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
+          >
+            {dataItems.map((shaerData, index) => (
+              <ShaerCard
+                key={index}
+                shaerData={shaerData}
+                index={index}
+                handleCardClick={handleCardClick}
+                toggleanaween={toggleanaween}
+                openanaween={openanaween}
+                handleHeartClick={handleHeartClick}
+                handleShareClick={handleShareClick}
+                openComments={openComments}
+              />
+            ))}
+          </div>
+          <div className="flex justify-center text-lg m-5">
+            <button
+              onClick={handleLoadMore}
+              disabled={noMoreData}
+              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+            >
+              {moreloading
+                ? "Loading..."
+                : noMoreData
+                ? "مزید غزلیں نہیں ہیں"
+                : "Load More"}
+            </button>
+          </div>
+        </section>
+      )}
+      {selectedCard && (
+        <button
+          style={{ overflow: "hidden" }}
+          id="modlBtn"
+          className="fixed bottom-12 left-7 z-50"
+          onClick={handleCloseModal}
+        >
+          <FontAwesomeIcon
+            icon={faTimesCircle}
+            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
+          />
+        </button>
+      )}
+      {selectedCard && (
+        <div
+          onClick={handleCloseModal}
+          id="modal"
+          className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
+        >
+          <div
+            dir="rtl"
+            className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
+          >
+            <div className="p-4">
+              <h2 className="text-black text-4xl top-0 bg-white sticky p-3 border-b-2 mb-3">
+                {selectedCard.fields.shaer}
+              </h2>
+              {selectedCard.fields.ghazal.map((line, index) => (
+                <p key={index} className="text-black pb-3 text-2xl">
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* //commetcard */}
+      {selectedCommentId && (
+        <button
+          // style={{ overflow: "hidden" }}
+          className=" fixed bottom-24 left-7 z-50 rounded-full  h-10 w-10 pt-2 "
+          id="modlBtn"
+          onClick={() => closeComments()}
+        >
+          <FontAwesomeIcon
+            icon={faTimesCircle}
+            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
+          />
+        </button>
+      )}
+      {selectedCommentId && (
+        <CommentSection
+          dataId={selectedCommentId}
+          comments={comments}
+          onCommentSubmit={handleCommentSubmit}
+          commentLoading={commentLoading}
+          newComment={newComment}
+          onNewCommentChange={handleNewCommentChange}
+          onCloseComments={closeComments}
+        />
+      )}
     </div>
   );
 };
