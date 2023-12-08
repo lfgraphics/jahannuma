@@ -3,16 +3,10 @@ import React, { useEffect, useState } from "react";
 import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCommentAlt,
-  faHeart,
   faSearch,
-  faShareNodes,
-  faTag,
-  faTimes,
   faTimesCircle,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import Link from "next/link";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { format } from "date-fns";
