@@ -11,14 +11,9 @@ export const metadata = {
       "en-US": "/EN/Ghazlen",
       "hi-IN": "/HI/Ghazlen",
     },
-    openGraph: {
-      images: [
-        {
-          url: "/metaImages/ghazlen.jpg",
-          alt: "Ghazlen Image Alt Text",
-        },
-      ],
-    },
+     openGraph: {
+    images: ["/metaImages/ghazlen.jpg"],
+  },
     icons: {
       icon: "/logo.png"
       // shortcut: "/shortcut-icon.png",
