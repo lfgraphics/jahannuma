@@ -11,11 +11,13 @@ export const metadata = {
       "en-US": "/EN/Ghazlen",
       "hi-IN": "/HI/Ghazlen",
     },
-     openGraph: {
-    images: ["/metaImages/ghazlen.jpg"],
+   openGraph: {
+    images: [
+      "https://ideogram.ai/api/images/direct/Ae4f4__3TN6LFbWUkBcGQw.jpg",
+    ],
   },
-    icons: {
-      icon: "/logo.png"
+    // icons: {
+    //   icon: "/logo.png"
       // shortcut: "/shortcut-icon.png",
       // apple: "/apple-icon.png",
       // other: {
