@@ -231,7 +231,6 @@ const Ashaar: React.FC<{}> = () => {
   useEffect(() => {
     fetchData(null, false);
   }, []);
-
   const searchQuery = () => {
     fetchData(null, true);
     if (typeof window !== undefined) {
@@ -264,7 +263,6 @@ const Ashaar: React.FC<{}> = () => {
     setSearchText(""); // Clear the searchText state
     // setDataItems(data.getAllShaers()); // Restore the original data
   };
-
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
     shaerData: Shaer,
@@ -563,7 +561,6 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-
   const hideDialog = () => {
     setShowDialog(false);
   };
@@ -814,11 +811,11 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
-        <div className="filter-btn flex-[90%] text-center justify-center flex">
+      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14 z-10">
+        <div className="filter-btn basis-[75%] text-center justify-center flex">
           <div
             dir="rtl"
-            className="flex justify-center items-center basis-[95%] h-auto pt-2"
+            className="flex items-center basis-[100%] h-auto pt-2"
           >
             <FontAwesomeIcon
               icon={faHome}
@@ -837,14 +834,10 @@ const Ashaar: React.FC<{}> = () => {
               className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
               id="searchBox"
               onKeyUp={(e) => {
-                handleSearchKeyUp(e); // Note the parentheses to invoke the function with the event parameter
-                // Check if the Enter key is pressed (key code 13) without the Shift key
+                handleSearchKeyUp(e);
                 if (e.key === "Enter") {
-                  // Check if the text field is in focus and meets the minimum length requirement
                   if (document.activeElement === e.target) {
-                    // Prevent the default Enter key behavior (creating a new line)
                     e.preventDefault();
-                    // Call searchQuery
                     searchQuery();
                   }
                 }
