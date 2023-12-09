@@ -80,7 +80,8 @@ const Ashaar: React.FC<{}> = () => {
   const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   //comments
-
+  const [showDialog, setShowDialog] = useState(false);
+  const [nameInput, setNameInput] = useState("");
   const [commentorName, setCommentorName] = useState<string | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
@@ -562,28 +563,24 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
+
+  const hideDialog = () => {
+    setShowDialog(false);
+  };
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNameInput(event.target.value);
+  };
+  const handleNameSubmission = () => {
+    localStorage.setItem("commentorName", nameInput);
+    setCommentorName(nameInput);
+    hideDialog();
+  };
   const fetchComments = async (dataId: string) => {
     const storedName = localStorage.getItem("commentorName");
     try {
       setCommentLoading(true);
       if (!commentorName && storedName === null) {
-        // Prompt the user for their name
-        const name = prompt(
-          `براہ کرم اپنا نام درج کریں\nہم ےہ نام صرف آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سع دکھانے کے لیے کریں ے`
-        );
-
-        if (name !== null) {
-          // Save the name to localStorage first
-          localStorage.setItem("commentorName", name);
-
-          // Then set the state
-          setCommentorName(name);
-        } else if (name === null) {
-          alert(
-            "آپ کا نام آپ کے آلے میں ہی محفوظ رہے گا، ہم اسکا استعمال نہیں کریں گے"
-          );
-          return;
-        }
+        setShowDialog(true);
       } else {
         setCommentorName(commentorName || storedName);
       }
@@ -626,25 +623,8 @@ const Ashaar: React.FC<{}> = () => {
     // Check if the user has provided a name
     if (typeof window !== "undefined") {
       const storedName = localStorage.getItem("commentorName");
-
       if (!commentorName && storedName === null) {
-        // Prompt the user for their name
-        const name = prompt(
-          `براہ کرم اپنا نام درج کریں\nہم ےہ نام صرف آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سع دکھانے کے لیے کریں ے`
-        );
-
-        if (name !== null) {
-          // Save the name to localStorage first
-          localStorage.setItem("commentorName", name);
-
-          // Then set the state
-          setCommentorName(name);
-        } else if (name === null) {
-          alert(
-            "آپ کا نام آپ کے آلے میں ہی محفوظ رہے گا، ہم اسکا استعمال نہیں کریں گے"
-          );
-          return;
-        }
+        setShowDialog(true);
       } else {
         setCommentorName(commentorName || storedName);
       }
@@ -799,6 +779,41 @@ const Ashaar: React.FC<{}> = () => {
       >
         {toast}
       </div>
+      {showDialog && (
+        <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
+          <div
+            dir="rtl"
+            className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white"
+          >
+            <div className="dialog-content">
+              <p className="text-lg font-bold pb-3 border-b">
+                براہ کرم اپنا نام درج کریں
+              </p>
+              <p className="pt-2">
+                ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے
+                استعمال کریں گے
+              </p>
+              <input
+                type="text"
+                id="nameInput"
+                className="mt-2 p-2 border"
+                value={nameInput}
+                onChange={handleNameChange}
+              />
+              <div className=" mt-4">
+                <button
+                  id="submitBtn"
+                  disabled={nameInput.length < 4}
+                  className="px-4 py-2 bg-[#984A02] disabled:bg-gray-500 text-white rounded"
+                  onClick={handleNameSubmission}
+                >
+                  محفوظ کریں
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center sticky top-14 z-10">
         <div className="filter-btn flex-[90%] text-center justify-center flex">
           <div

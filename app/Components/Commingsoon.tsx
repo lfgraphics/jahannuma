@@ -1,4 +1,6 @@
 "use client"
+import { backgroundPosition } from "html2canvas/dist/types/css/property-descriptors/background-position";
+import { backgroundRepeat } from "html2canvas/dist/types/css/property-descriptors/background-repeat";
 import React, { useEffect } from "react";
 
 const Commingsoon = () => {
@@ -37,7 +39,16 @@ const Commingsoon = () => {
   }, []);
   return (
     <div>
-      <div className="h-screen flex justify-center items-center px-2 bg-gradient-to-tr from-sky-300 via-sky-400 to-blue-500">
+      <div
+        className="h-screen flex justify-center items-center px-2"
+        style={{
+          background: "url(/bg.jpeg)",
+          backgroundRepeat: "repeat-x",
+          backgroundSize: "cover", // or "contain" depending on your preference
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed", // or "scroll" depending on your preference
+        }}
+      >
         <div className="max-w-lg mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
           <div className="py-4 px-6">
             <h2 className="text-4xl font-bold text-gray-800">Coming Soon</h2>
