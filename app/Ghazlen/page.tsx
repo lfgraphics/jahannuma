@@ -13,7 +13,7 @@ export const metadata = {
       "hi-IN": "/HI/Ghazlen",
     },
     openGraph: {
-      images: "/metaImages/ghazlen.jpg",
+      images: ["/metaImages/ghazlen.jpg"],
     },
   },
 };
