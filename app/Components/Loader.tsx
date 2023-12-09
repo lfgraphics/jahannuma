@@ -4,9 +4,9 @@ import React from "react";
 const Loader = () => {
   return (
     <div className="grid w-screen h-[220px] max-h-screen items-center bg-opacity-50 bg-white">
-      <div className="w-100vw h-[220px] flex items-center justify-center">
+      <div className="w-100vw h-[220px]  max-h-screen flex items-center justify-center">
         <Image
-          src="/logo.svg" // Replace with your logo file path
+          src="/logo.png" // Replace with your logo file path
           alt="Logo"
           height={100}
           width={100}

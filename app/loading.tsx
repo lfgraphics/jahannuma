@@ -1,9 +1,10 @@
 import React from 'react'
+import Loader from './Components/Loader'
 
 const loading = () => {
   return (
     <div>
-      The page is loading bitch!
+      <Loader />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faHome,
   faSearch,
   faTimesCircle,
   faXmark,
@@ -160,13 +161,12 @@ const Ashaar: React.FC<{}> = () => {
         // Encode the formula with OR condition
         const encodedFormula = encodeURIComponent(
           `OR(
-          FIND('${searchText}', LOWER({shaer})),
-          FIND('${searchText}', LOWER({ghazalHead})),
-          FIND('${searchText}', LOWER({ghazal})),
-          FIND('${searchText}', LOWER({unwan}))
+          FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
         )`
         );
-
         url += `&filterByFormula=${encodedFormula}`;
       }
 
@@ -193,8 +193,6 @@ const Ashaar: React.FC<{}> = () => {
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
-      // seting the data in variable and updating the variable by checking if it's fetched first or not
-      console.log(dataItems);
       if (!offset) {
         if (userQuery) {
           setInitialdDataItems(dataItems);
@@ -208,11 +206,7 @@ const Ashaar: React.FC<{}> = () => {
           ...formattedRecords,
         ]);
       }
-
       !offset && scrollToTop();
-      console.log(userQuery);
-      userQuery && console.log(searchText);
-      userQuery && console.log(formattedRecords);
       // seting pagination depending on the response
       setPagination({
         offset: result.offset,
@@ -262,7 +256,7 @@ const Ashaar: React.FC<{}> = () => {
     let xMark = document.getElementById("searchClear");
     let sMark = document.getElementById("searchIcon");
 
-    input.value = "";
+    input.value ? (input.value = "") : null;
     xMark?.classList.add("hidden");
     sMark?.classList.add("hidden");
     // Clear the searched data and show all data again
@@ -777,8 +771,8 @@ const Ashaar: React.FC<{}> = () => {
     setSelectedCommentId(null);
   };
   const resetSearch = () => {
+    searchText && clearSearch();
     setDataItems(initialDataItems);
-    clearSearch();
     if (typeof window !== undefined) {
       let section = document.getElementById("section");
       section!.scrollTo({
@@ -788,15 +782,11 @@ const Ashaar: React.FC<{}> = () => {
     }
     setInitialdDataItems([]);
   };
+
   // Check if the initialDataItems.length is greater than 0
   if (initialDataItems.length > 0) {
-    // Listen for the popstate event
     window.addEventListener("popstate", () => {
-      // Call your resetSearch function
       resetSearch();
-      // If you want to prevent the default behavior (going back in history)
-      // Uncomment the following line
-      // window.history.forward();
     });
   }
 
@@ -813,14 +803,37 @@ const Ashaar: React.FC<{}> = () => {
         <div className="filter-btn flex-[90%] text-center justify-center flex">
           <div
             dir="rtl"
-            className="flex justify-center basis-[95%] h-auto pt-2"
+            className="flex justify-center items-center basis-[95%] h-auto pt-2"
           >
+            <FontAwesomeIcon
+              icon={faHome}
+              className="text-[#984A02] text-2xl ml-3"
+              onClick={() => {
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = "/";
+                }
+              }}
+            />
             <input
               type="text"
               placeholder="لکه ک تلاش کرین"
               className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
               id="searchBox"
-              onKeyUp={handleSearchKeyUp}
+              onKeyUp={(e) => {
+                handleSearchKeyUp(e); // Note the parentheses to invoke the function with the event parameter
+                // Check if the Enter key is pressed (key code 13) without the Shift key
+                if (e.key === "Enter") {
+                  // Check if the text field is in focus and meets the minimum length requirement
+                  if (document.activeElement === e.target) {
+                    // Prevent the default Enter key behavior (creating a new line)
+                    e.preventDefault();
+                    // Call searchQuery
+                    searchQuery();
+                  }
+                }
+              }}
             />
             <div
               className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
@@ -855,7 +868,7 @@ const Ashaar: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          disabled={!searchText}
+          // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
@@ -893,10 +906,10 @@ const Ashaar: React.FC<{}> = () => {
               className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
             >
               {moreloading
-                ? "Loading..."
+                ? "لوڈ ہو رہا ہے۔۔۔"
                 : noMoreData
                 ? "مزید غزلیں نہیں ہیں"
-                : "Load More"}
+                : "اور غزلیں لعڈ کریں"}
             </button>
           </div>
         </section>

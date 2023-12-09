@@ -74,7 +74,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           value={newComment}
           onKeyUp={(e) => {
             // Check if the Enter key is pressed (key code 13) without the Shift key
-            if (e.key === "Enter" && !e.shiftKey) {
+            if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 490) {
               // Check if the text field is in focus and meets the minimum length requirement
               if (
                 document.activeElement === e.target &&
