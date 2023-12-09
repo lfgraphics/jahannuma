@@ -240,7 +240,7 @@ const Ashaar: React.FC<{}> = () => {
   const searchQuery = () => {
     fetchData(null, true);
     if (typeof window !== undefined) {
-      setScrolledPosition(window.scrollY);
+      setScrolledPosition(document!.getElementById("section")!.scrollTop);
     }
   };
   //search keyup handeling
@@ -305,8 +305,13 @@ const Ashaar: React.FC<{}> = () => {
 
           localStorage.setItem("Ghazlen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
-          showToast("success", "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ");
-          console.log("آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ .");
+          showToast(
+            "success",
+            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
+          );
+          console.log(
+            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
+          );
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes + 1;
@@ -364,7 +369,10 @@ const Ashaar: React.FC<{}> = () => {
           localStorage.setItem("Ghazlen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
-          showToast("invalid", "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
+          showToast(
+            "invalid",
+            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+          );
           console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
@@ -525,6 +533,7 @@ const Ashaar: React.FC<{}> = () => {
     if (modalElement) {
       animateModalClose(modalElement);
     }
+    setSelectedCard(null);
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
@@ -771,13 +780,25 @@ const Ashaar: React.FC<{}> = () => {
     setDataItems(initialDataItems);
     clearSearch();
     if (typeof window !== undefined) {
-      window.scrollTo({
+      let section = document.getElementById("section");
+      section!.scrollTo({
         top: scrolledPosition,
         behavior: "smooth",
       });
     }
     setInitialdDataItems([]);
   };
+  // Check if the initialDataItems.length is greater than 0
+  if (initialDataItems.length > 0) {
+    // Listen for the popstate event
+    window.addEventListener("popstate", () => {
+      // Call your resetSearch function
+      resetSearch();
+      // If you want to prevent the default behavior (going back in history)
+      // Uncomment the following line
+      // window.history.forward();
+    });
+  }
 
   return (
     <div>
@@ -842,9 +863,14 @@ const Ashaar: React.FC<{}> = () => {
       {!loading && (
         <section>
           <div
+            id="section"
             dir="rtl"
             className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 h-screen ${
+                selectedCommentId !== null || selectedCard !== null
+                  ? "overflow-y-hidden"
+                  : "overflow-y-scroll"
+              }`}
           >
             {dataItems.map((shaerData, index) => (
               <ShaerCard
@@ -898,12 +924,12 @@ const Ashaar: React.FC<{}> = () => {
             dir="rtl"
             className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
-            <div className="p-4">
-              <h2 className="text-black text-4xl top-0 bg-white sticky p-3 border-b-2 mb-3">
+            <div className="p-4 pr-0">
+              <h2 className="text-black text-4xl top-0 bg-white sticky px-0 pr-4 p-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}
               </h2>
               {selectedCard.fields.ghazal.map((line, index) => (
-                <p key={index} className="text-black pb-3 text-2xl">
+                <p key={index} className="text-black pb-3 pr-4 text-2xl">
                   {line}
                 </p>
               ))}

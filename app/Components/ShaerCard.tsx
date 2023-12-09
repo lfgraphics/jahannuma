@@ -46,7 +46,7 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
 }) => {
   return (
     <div
-      data-aos={"fade-up"}
+      // data-aos={"fade-up"}
       key={index}
       id={`card${index}`}
       className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
@@ -72,7 +72,7 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
           }}
         >
           {shaerData.fields.unwan?.map((unwaan, index) => (
-            <span key={index} className="text-md text-[#984A02] p-2">
+            <span key={index} className="text-md text-blue-500 underline p-2">
               <Link href={`/Ghazlen/mozu/${unwaan}`}>{unwaan}</Link>
             </span>
           ))}
@@ -83,11 +83,17 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
           onClick={() => toggleanaween(`card${index}`)}
         >
           <span>
-          :موضوعات{" "}
-            <FontAwesomeIcon icon={faTag} className="ml-2 text-yellow-400 cursor-pointer" />
+            :موضوعات{" "}
+            <FontAwesomeIcon
+              icon={faTag}
+              className="ml-2 text-yellow-400 cursor-pointer"
+            />
           </span>
           {
-            <Link href={`/Ghazlen/mozu/${shaerData.fields.unwan?.[0]}`}>
+            <Link
+              className="text-blue-500 underline"
+              href={`/Ghazlen/mozu/${shaerData.fields.unwan?.[0]}`}
+            >
               {shaerData.fields.unwan?.[0]}
             </Link>
           }
