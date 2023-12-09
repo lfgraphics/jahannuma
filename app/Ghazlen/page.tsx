@@ -24,7 +24,7 @@ export const metadata = {
       //   rel: "apple-touch-icon-precomposed",
       //   url: "/apple-touch-icon-precomposed.png",
       // },
-    },
+    // },
   },
 };
 
