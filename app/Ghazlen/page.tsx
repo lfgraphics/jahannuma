@@ -1,6 +1,7 @@
 import React from "react";
 import Ashaar from "./Component";
 export const metadata = {
+  metadataBase: new URL("https://jahannuma.vercel.app"),
   title: "Ghazlen | Jahannuma",
   description: "This page has ghazlen of all young shaers of Goraphur",
   openGraph: {
