@@ -15,6 +15,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
 import Image from "next/image";
+import InstallPWAButton from "./InstallApp";
 
 // export const [language, setLanguage] = useState("EN");
 interface NavbarProps {
@@ -115,7 +116,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             </IconButton>
             <Link href={language !== "UR" ? `/${language}` : "/"}>
               <Image
-              className="lg:w-20 md:w-16"
+                className="lg:w-20 md:w-16"
                 src="/logo.png"
                 alt="Logo"
                 height={80}
@@ -258,6 +259,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                     </Link>
                   ))}
                 </ul>
+                <InstallPWAButton />
               </div>
               <div>
                 <h3 className="text-black font-bold">More</h3>
