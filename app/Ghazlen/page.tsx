@@ -1,30 +1,10 @@
 import React from "react";
 import Ashaar from "./Component";
 export const metadata = {
-  metadataBase: new URL("https://jahannuma.vercel.app"),
   title: "Ghazlen | Jahannuma",
-  description: "This page has ghazlen of all young shaers of Gorakhpur",
-  locale: "ur_IN",
-  type: "website",
-  alternates: {
-    languages: {
-      "en-US": "/EN/Ghazlen",
-      "hi-IN": "/HI/Ghazlen",
-    },
-   openGraph: {
-    images: [
-      "https://ideogram.ai/api/images/direct/Ae4f4__3TN6LFbWUkBcGQw.jpg",
-    ],
-  },
-    // icons: {
-    //   icon: "/logo.png"
-      // shortcut: "/shortcut-icon.png",
-      // apple: "/apple-icon.png",
-      // other: {
-      //   rel: "apple-touch-icon-precomposed",
-      //   url: "/apple-touch-icon-precomposed.png",
-      // },
-    // },
+  description: "This page has ghazlen of all young shaers of Goraphur",
+  openGraph: {
+    images: ["https://jahannuma.vercel.app/metaImages/ghazlen.jpg"],
   },
 };
 

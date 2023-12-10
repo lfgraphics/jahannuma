@@ -5,6 +5,10 @@ import Carousel1 from "./Components/Carosel_m";
 import RandCard from "./Components/RandCard";
 import DoYouKnow from "./Components/doyoouknow/DoYouKnow";
 
+export const metadata = {
+  manifest: "https://nextjs.org/manifest.json",
+};
+
 export default function Home() {
   return (
     <>

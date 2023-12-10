@@ -3,7 +3,14 @@ const nextConfig = {
     reactStrictMode: true,
     images: {
         domains: ['v5.airtableusercontent.com'],
-    },
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'jahannuma.vercel.app',
+                port: '',
+                pathname: '/metaimages/**',
+            },
+        ],    },
     typescript: {
         // !! WARN !!
         // Dangerously allow production builds to successfully complete even if

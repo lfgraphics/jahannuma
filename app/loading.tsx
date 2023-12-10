@@ -3,7 +3,7 @@ import Loader from './Components/Loader'
 
 const loading = () => {
   return (
-    <div>
+    <div className='h-[90vh] w-screen flex items-center justify-center'>
       <Loader />
     </div>
   )

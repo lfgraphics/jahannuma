@@ -1,42 +1,42 @@
 "use client"
-import { backgroundPosition } from "html2canvas/dist/types/css/property-descriptors/background-position";
-import { backgroundRepeat } from "html2canvas/dist/types/css/property-descriptors/background-repeat";
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const Commingsoon = () => {
+const ComingSoon: React.FC = () => {
+  const [countdown, setCountdown] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
   useEffect(() => {
-    // Set the date we're counting down to
-    var countDownDate = new Date("Feb 1, 2024 00:00:00").getTime();
+    const countDownDate = new Date("Feb 1, 2024 00:00:00").getTime();
 
-    // Update the countdown every 1 second
-    var x = setInterval(function () {
-      // Get today's date and time
-      var now = new Date().getTime();
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const distance = countDownDate - now;
 
-      // Find the distance between now and the count down date
-      var distance = countDownDate - now;
-
-      // Time calculations for days, hours, minutes and seconds
-      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      var hours = Math.floor(
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
         (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
       );
-      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      // Display the result in the corresponding elements
-      document!.getElementById("days")!.textContent = days + "d";
-      document!.getElementById("hours")!.textContent = hours + "h";
-      document!.getElementById("minutes")!.textContent = minutes + "m";
-      document!.getElementById("seconds")!.textContent = seconds + "s";
+      setCountdown({ days, hours, minutes, seconds });
 
-      // If the count down is over, write some text
       if (distance < 0) {
-        clearInterval(x);
-        document!.getElementById("countdown")!.innerHTML = "EXPIRED";
+        clearInterval(interval);
       }
-    }, 1000);
+    };
+
+    // Update the countdown every 1 second
+    const interval = setInterval(updateCountdown, 1000);
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(interval);
   }, []);
+
   return (
     <div>
       <div
@@ -44,9 +44,9 @@ const Commingsoon = () => {
         style={{
           background: "url(/bg.jpeg)",
           backgroundRepeat: "repeat-x",
-          backgroundSize: "cover", // or "contain" depending on your preference
+          backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed", // or "scroll" depending on your preference
+          backgroundAttachment: "fixed",
         }}
       >
         <div className="max-w-lg mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
@@ -60,28 +60,24 @@ const Commingsoon = () => {
           <div className="py-4 px-6">
             <div className="flex flex-wrap gap-4 justify-center items-center">
               <div className="border rounded-lg px-4 py-2">
-                <div
-                  id="days"
-                  className="font-bold font-mono text-2xl text-gray-800"
-                ></div>
+                <div className="font-bold font-mono text-2xl text-gray-800">
+                  {countdown.days}d
+                </div>
               </div>
               <div className="border rounded-lg px-4 py-2">
-                <div
-                  id="hours"
-                  className="font-bold font-mono text-2xl text-gray-800"
-                ></div>
+                <div className="font-bold font-mono text-2xl text-gray-800">
+                  {countdown.hours}h
+                </div>
               </div>
               <div className="border rounded-lg px-4 py-2">
-                <div
-                  id="minutes"
-                  className="font-bold font-mono text-2xl text-gray-800"
-                ></div>
+                <div className="font-bold font-mono text-2xl text-gray-800">
+                  {countdown.minutes}m
+                </div>
               </div>
               <div className="border rounded-lg px-4 py-2">
-                <div
-                  id="seconds"
-                  className="font-bold font-mono text-2xl text-gray-800"
-                ></div>
+                <div className="font-bold font-mono text-2xl text-gray-800">
+                  {countdown.seconds}s
+                </div>
               </div>
             </div>
           </div>
@@ -91,4 +87,4 @@ const Commingsoon = () => {
   );
 };
 
-export default Commingsoon;
+export default ComingSoon;

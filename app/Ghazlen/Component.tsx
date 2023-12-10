@@ -813,19 +813,12 @@ const Ashaar: React.FC<{}> = () => {
       )}
       <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14 z-10">
         <div className="filter-btn basis-[75%] text-center justify-center flex">
-          <div
-            dir="rtl"
-            className="flex items-center basis-[100%] h-auto pt-2"
-          >
+          <div dir="rtl" className="flex items-center basis-[100%] h-auto pt-2">
             <FontAwesomeIcon
               icon={faHome}
               className="text-[#984A02] text-2xl ml-3"
               onClick={() => {
-                if (window.history.length > 1) {
-                  window.history.back();
-                } else {
-                  window.location.href = "/";
-                }
+                window.location.href = "/";
               }}
             />
             <input

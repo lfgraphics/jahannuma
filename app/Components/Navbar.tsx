@@ -115,6 +115,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             </IconButton>
             <Link href={language !== "UR" ? `/${language}` : "/"}>
               <Image
+              className="lg:w-20 md:w-16"
                 src="/logo.png"
                 alt="Logo"
                 height={80}
