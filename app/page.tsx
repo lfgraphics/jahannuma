@@ -17,8 +17,10 @@ export default function Home() {
         {/* <GoogleSearch></GoogleSearch> */}
         <Carousel1></Carousel1>
         <RandCard></RandCard>
-        {/* <InstallPWAButton /> */}
         <Branches></Branches>
+        <div className="w-screen flex justify-center m-3">
+        <InstallPWAButton />
+        </div>
         <Ads></Ads>
         <DoYouKnow></DoYouKnow>
       </div>
