@@ -111,7 +111,7 @@ const Page = ({ params }) => {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
 
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=FIND('${encodedUnwan}', ARRAYJOIN({unwan}, ' '))`;
+      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=FIND('${decodedUnwan}', ARRAYJOIN({unwan}, ' '))`;
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
       const records = result.records || [];
@@ -668,6 +668,7 @@ const Page = ({ params }) => {
   };
   const closeComments = () => {
     setSelectedCommentId(null);
+    setComments([])
   };
   const resetSearch = () => {
     searchText && clearSearch();
@@ -732,53 +733,8 @@ const Page = ({ params }) => {
           </div>
         </div>
       )}
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14 z-10">
-        <div className="filter-btn basis-[75%] text-center justify-center flex">
-          <div dir="rtl" className="flex items-center basis-[100%] h-auto pt-2">
-            <FontAwesomeIcon
-              icon={faHome}
-              className="text-[#984A02] text-2xl ml-3"
-              onClick={() => {
-                window.location.href = "/";
-              }}
-            />
-            <input
-              type="text"
-              placeholder="لکه ک تلاش کرین"
-              className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
-              id="searchBox"
-              onKeyUp={(e) => {
-                handleSearchKeyUp(e);
-                if (e.key === "Enter") {
-                  if (document.activeElement === e.target) {
-                    e.preventDefault();
-                    searchQuery();
-                  }
-                }
-              }}
-            />
-            <div
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
-              onClick={clearSearch}
-            >
-              <FontAwesomeIcon
-                id="searchClear"
-                icon={faXmark}
-                className="hidden text-[#984A02] text-2xl"
-              />
-            </div>
-            <div
-              onClick={searchQuery}
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
-            >
-              <FontAwesomeIcon
-                id="searchIcon"
-                icon={faSearch}
-                className="hidden text-[#984A02] text-xl"
-              />
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center">
+        <div className="text-4xl m-5">{`غزلیں بعنوان : ${decodedUnwan}`}</div>
       </div>
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
@@ -823,7 +779,7 @@ const Page = ({ params }) => {
           <div className="flex justify-center text-lg m-5">
             <button
               onClick={handleLoadMore}
-              disabled={noMoreData}
+              disabled={noMoreData || loading || moreloading}
               className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
             >
               {moreloading

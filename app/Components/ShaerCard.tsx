@@ -49,16 +49,16 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
       // data-aos={"fade-up"}
       key={index}
       id={`card${index}`}
-      className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
+      className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[250px]"
     >
       <Link href={`/Shaer/${shaerData.fields.shaer.replace(" ", "-")}`}>
         <h2 className="text-black text-3xl mb-4">{shaerData.fields.shaer}</h2>
       </Link>
       {shaerData.fields.ghazalHead.map((lin, index) => (
         <p
-          style={{ lineHeight: "normal" }}
+          // style={{ lineHeight: "normal" }}
           key={index}
-          className="text-black line-normal text-xl cursor-default"
+          className="text-black  text-lg cursor-default"
           onClick={() => handleCardClick(shaerData)}
         >
           {lin}

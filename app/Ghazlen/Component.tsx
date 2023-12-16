@@ -8,8 +8,15 @@ import {
   faTimesCircle,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import AOS from "aos";
-import "aos/dist/aos.css";
+import {
+  useQuery,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import axios from "axios";
+
 import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
@@ -127,14 +134,7 @@ const Ashaar: React.FC<{}> = () => {
 
     setTimeoutId(newTimeoutId);
   };
-  //AOS initialization
-  useEffect(() => {
-    AOS.init({
-      offset: 75, // offset (in px) from the original trigger point
-      delay: 0, // values from 0 to 3000, with step 50ms
-      duration: 500,
-    });
-  });
+
   //function ot scroll to the top
   function scrollToTop() {
     if (typeof window !== undefined) {

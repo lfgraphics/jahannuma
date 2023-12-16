@@ -1,4 +1,6 @@
-/** @type {import('next').NextConfig} */
+const path = require('path');
+const withPWA = require('next-pwa');
+
 const nextConfig = {
     reactStrictMode: true,
     images: {
@@ -10,14 +12,23 @@ const nextConfig = {
                 port: '',
                 pathname: '/metaimages/**',
             },
-        ],    },
+        ],
+    },
     typescript: {
-        // !! WARN !!
-        // Dangerously allow production builds to successfully complete even if
-        // your project has type errors.
-        // !! WARN !!
         ignoreBuildErrors: true,
     },
+    // Your existing configurations here...
+
+    // Additional configurations for next-pwa
+    ...withPWA({
+        pwa: {
+            dest: 'public',
+            register: true,
+            skipWaiting: true,
+            disable: process.env.NODE_ENV === 'development',
+            // You can add more PWA-specific configurations here if needed
+        },
+    }),
 };
 
 module.exports = nextConfig;

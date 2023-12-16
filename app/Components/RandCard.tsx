@@ -65,7 +65,6 @@ const RandCard: React.FC<{}> = () => {
       );
 
       setDataItems(formattedRecords);
-      console.log(formattedRecords);
       setLoading(false); // Set loading to false when fetching is done
 
       // console.log(filteredRecord)
