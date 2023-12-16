@@ -239,7 +239,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             {/* Navigation Links (Mobile) */}
             <div
               className="flex gap-7"
-              onClick={() => setMobileMenuOpen(false)}
+              // onClick={() => setMobileMenuOpen(false)}
             >
               <div>
                 <h3 className="text-black font-bold">Navs</h3>
@@ -254,6 +254,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                       href={`/${
                         language == "UR" ? page.EN : language + "/" + page.EN
                       }`}
+                      onClick={() => setMobileMenuOpen(false)}
                     >
                       <li>{page[language as Language]}</li>
                     </Link>

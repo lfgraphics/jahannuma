@@ -16,8 +16,8 @@ export default function Home() {
       <div>
         {/* <GoogleSearch></GoogleSearch> */}
         <Carousel1></Carousel1>
-        {/* <RandCard></RandCard> */}
-        <InstallPWAButton />
+        <RandCard></RandCard>
+        {/* <InstallPWAButton /> */}
         <Branches></Branches>
         <Ads></Ads>
         <DoYouKnow></DoYouKnow>
