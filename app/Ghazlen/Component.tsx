@@ -880,7 +880,7 @@ const Ashaar: React.FC<{}> = () => {
             id="section"
             dir="rtl"
             className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 h-screen ${
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
                 selectedCommentId !== null || selectedCard !== null
                   ? "overflow-y-hidden"
                   : "overflow-y-scroll"
