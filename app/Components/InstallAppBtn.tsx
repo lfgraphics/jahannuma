@@ -45,7 +45,7 @@ const InstallPWAButton: React.FC = () => {
   return (
     <button
       onClick={handleInstallPrompt}
-      className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem]"
+      className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem] standalone:hidden"
     >
       Install App
     </button>
