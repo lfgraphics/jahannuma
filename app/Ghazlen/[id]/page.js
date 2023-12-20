@@ -7,6 +7,14 @@ const Page = ({ params }) => {
   const [id, setId] = useState("");
 
   useEffect(() => {
+    // if (document !== undefined) {
+    //   const elements = [...document.querySelectorAll('.langChange')];
+    //   elements.forEach((element) => element.classList.add('hidden'));
+    //   window.addEventListener('beforeunload', function () {
+    //     console.log('Beforeunload event triggered!');
+    //     elements.forEach((element) => element.classList.remove('hidden'));
+    //   });
+    // }
     setId(params.id);
 
     const fetchData = async () => {

@@ -85,6 +85,46 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
     }
   }, [language]);
 
+    useEffect(() => {
+    const handlePopstate = () => {
+      // Get the current pathname
+      const pathname = window.location.pathname;
+
+      // Check if the pathname includes "/EN" or "/HI"
+      const isLanguagePath = pathname.includes('/EN') || pathname.includes('/HI');
+
+      // Check the allowed number of slashes based on whether it's a language path
+      const allowedSlashCount = isLanguagePath ? 3 : 2;
+
+      // Check if the pathname has the allowed number of slashes
+      const hasAllowedSlashes = pathname.split('/').length === allowedSlashCount;
+
+      // Get the element with the class 'langChange'
+      const langChangeElement = document.querySelector('.langChange');
+
+      // If it's a language path and includes the allowed number of slashes, hide the 'langChange'; otherwise, show it
+      if (langChangeElement) {
+        if (isLanguagePath && hasAllowedSlashes) {
+          langChangeElement.classList.add('hidden');
+        } else {
+          langChangeElement.classList.remove('hidden');
+        }
+      }
+    };
+
+    // Add event listener for popstate (browser back/forward)
+    window.addEventListener('popstate', handlePopstate);
+
+    // Run the initial check
+    handlePopstate();
+
+    // Remove the event listener on component unmount
+    return () => {
+      window.removeEventListener('popstate', handlePopstate);
+    };
+  }, []);
+
+
   return (
     <div className="sticky w-screen z-50 top-0 font-noto-nastaliq">
       <AppBar
@@ -149,7 +189,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 id="langChange"
                 value={language}
                 onChange={onLangChange}
-                className="bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-center"
+                className="langChange bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-center"
               >
                 <option className="bg-[#F0D586]" value="UR">
                   اردو
@@ -203,7 +243,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             }}
           >
             {/* langchange */}
-            <div className="grid grid-flow-col gap-2 mt-12">
+            <div className="langChange grid grid-flow-col gap-2 mt-12">
               <span
                 onClick={() => handleLanguageChange("EN")}
                 className={`${

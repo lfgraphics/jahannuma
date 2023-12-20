@@ -33,8 +33,6 @@ const Page = ({ params }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState(null);
   const [selectedCard, setSelectedCard] = React.useState(null);
   const [pagination, setPagination] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [scrolledPosition, setScrolledPosition] = useState();
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState([]);
@@ -158,7 +156,7 @@ const Page = ({ params }) => {
   // fetching more data by load more data button
   const handleLoadMore = () => {
     setMoreLoading(true);
-    fetchData(pagination.offset, false);
+    fetchData(null, false);
   };
   // Fetch the initial set of records
   useEffect(() => {
@@ -169,32 +167,6 @@ const Page = ({ params }) => {
     if (typeof window !== undefined) {
       setScrolledPosition(document.getElementById("section").scrollTop);
     }
-  };
-  //search keyup handeling
-  const handleSearchKeyUp = (event) => {
-    const value = event.currentTarget.value.toLowerCase();
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-    value === ""
-      ? xMark?.classList.add("hidden")
-      : xMark?.classList.remove("hidden");
-    value === ""
-      ? sMark?.classList.add("hidden")
-      : sMark?.classList.remove("hidden");
-    setSearchText(value);
-  };
-  //clear search box handeling
-  const clearSearch = () => {
-    let input = document.getElementById("searchBox");
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-
-    input.value ? (input.value = "") : null;
-    xMark?.classList.add("hidden");
-    sMark?.classList.add("hidden");
-    // Clear the searched data and show all data again
-    setSearchText(""); // Clear the searchText state
-    // setDataItems(data.getAllShaers()); // Restore the original data
   };
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
@@ -361,7 +333,7 @@ const Page = ({ params }) => {
             text:
               shaerData.fields.ghazalHead.map((line) => line).join("\n") +
               `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
+            url: `${window.location.href.split("/Ghazlen/")[0] + "/Ghazlen/" + shaerData.id}`, // Get the current page's URL
           })
 
           .then(() => console.info("Successful share"))
@@ -459,6 +431,14 @@ const Page = ({ params }) => {
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
+    // if (document !== undefined) {
+    //   const elements = [...document.querySelectorAll('.langChange')];
+    //   elements.forEach((element) => element.classList.add('hidden'));
+    //   window.addEventListener('beforeunload', function () {
+    //     console.log('Beforeunload event triggered!');
+    //     elements.forEach((element) => element.classList.remove('hidden'));
+    //   });
+    // }
     if (window !== undefined && window.localStorage) {
       const storedData = localStorage.getItem("Ghazlen");
       if (storedData) {
@@ -670,25 +650,6 @@ const Page = ({ params }) => {
     setSelectedCommentId(null);
     setComments([])
   };
-  const resetSearch = () => {
-    searchText && clearSearch();
-    setDataItems(initialDataItems);
-    if (typeof window !== undefined) {
-      let section = document.getElementById("section");
-      section.scrollTo({
-        top: scrolledPosition,
-        behavior: "smooth",
-      });
-    }
-    setInitialdDataItems([]);
-  };
-
-  // Check if the initialDataItems.length is greater than 0
-  if (initialDataItems.length > 0) {
-    window.addEventListener("popstate", () => {
-      resetSearch();
-    });
-  }
 
   return (
     <div>
