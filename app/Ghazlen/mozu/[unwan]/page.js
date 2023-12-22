@@ -12,7 +12,7 @@ import "aos/dist/aos.css";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
-import ShaerCard from "../../../Components/ShaerCard";
+import GhazalCard from "../../../Components/GhazalCard";
 
 const SkeletonLoader = () => (
   <div className="flex flex-col items-center">
@@ -724,7 +724,7 @@ const Page = ({ params }) => {
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <ShaerCard
+              <GhazalCard
                 key={index}
                 shaerData={shaerData}
                 index={index}
