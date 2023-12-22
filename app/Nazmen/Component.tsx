@@ -11,7 +11,7 @@ import {
 import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
-import GhazalCard from "../Components/GhazalCard";
+import NazamCard from "../Components/NazamCard";
 
 interface Shaer {
   fields: {
@@ -139,8 +139,8 @@ const Ashaar: React.FC<{}> = () => {
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
     try {
-      const BASE_ID = "appvzkf6nX376pZy6";
-      const TABLE_NAME = "Ghazlen";
+      const BASE_ID = "app5Y2OsuDgpXeQdz";
+      const TABLE_NAME = "nazmen";
       const pageSize = 30;
       const headers = {
         //authentication with environment variable
@@ -154,8 +154,8 @@ const Ashaar: React.FC<{}> = () => {
         const encodedFormula = encodeURIComponent(
           `OR(
           FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({displayLine})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({nazm})),
           FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
         )`
         );
@@ -180,8 +180,8 @@ const Ashaar: React.FC<{}> = () => {
         ...record,
         fields: {
           ...record.fields,
-          ghazal: record.fields?.ghazal.split("\n"),
-          ghazalHead: record.fields?.ghazalHead.split("\n"),
+          ghazal: record.fields?.nazm.split("\n"),
+          ghazalHead: record.fields?.displayLine.split("\n"),
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
@@ -314,9 +314,8 @@ const Ashaar: React.FC<{}> = () => {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
               "Content-Type": "application/json",
             };
-
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -378,7 +377,7 @@ const Ashaar: React.FC<{}> = () => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -448,7 +447,7 @@ const Ashaar: React.FC<{}> = () => {
           };
 
           const updateResponse = await fetch(
-            `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+            `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
             {
               method: "PATCH",
               headers: updateHeaders,
@@ -572,7 +571,7 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appzB656cMxO0QotZ";
+      const BASE_ID = "appjF9QvJeKAM9c9F";
       const TABLE_NAME = "Comments";
       const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
       const headers = {
@@ -619,7 +618,7 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appzB656cMxO0QotZ";
+        const BASE_ID = "appjF9QvJeKAM9c9F";
         const TABLE_NAME = "Comments";
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         const headers = {
@@ -694,8 +693,8 @@ const Ashaar: React.FC<{}> = () => {
           });
 
           try {
-            const BASE_ID = "appvzkf6nX376pZy6";
-            const TABLE_NAME = "Ghazlen";
+            const BASE_ID = "app5Y2OsuDgpXeQdz";
+            const TABLE_NAME = "nazmen";
             const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
             const headers = {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -871,14 +870,14 @@ const Ashaar: React.FC<{}> = () => {
             id="section"
             dir="rtl"
             className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
+              grid md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
                 selectedCommentId !== null || selectedCard !== null
                   ? "overflow-y-hidden"
                   : "overflow-y-scroll"
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <GhazalCard
+              <NazamCard
                 key={index}
                 shaerData={shaerData}
                 index={index}

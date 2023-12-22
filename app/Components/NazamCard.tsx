@@ -34,7 +34,7 @@ interface ShaerCardProps {
   openComments: (id: string) => void;
 }
 
-const ShaerCard: React.FC<ShaerCardProps> = ({
+const NazamCard: React.FC<ShaerCardProps> = ({
   shaerData,
   index,
   handleCardClick,
@@ -46,25 +46,23 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
 }) => {
   return (
     <div
-      // data-aos={"fade-up"}
       key={index}
       id={`card${index}`}
-      className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[250px]"
+      className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[150px]"
     >
-      <Link href={`/Shaer/${shaerData.fields.shaer.replace(" ", "-")}`}>
-        <h2 className="text-black text-3xl mb-4">{shaerData.fields.shaer}</h2>
-      </Link>
-      {shaerData.fields.ghazalHead.map((lin, index) => (
-        <p
-          // style={{ lineHeight: "normal" }}
-          key={index}
-          className="text-black  text-lg cursor-default"
-          onClick={() => handleCardClick(shaerData)}
-        >
-          {lin}
+      <div className="flex justify-between mx-7 items-end">
+        <p className="text-4xl mb-4 text-[#984A02]">
+          {shaerData.fields.unwan?.[0]}
         </p>
-      ))}
-      <div className="relative">
+        <Link href={`/Shaer/${shaerData.fields.shaer.replace(" ", "-")}`}>
+          <h2 className="text-black text-xl">{shaerData.fields.shaer}</h2>
+        </Link>
+      </div>
+      {/* ghzl ki phli line starts */}
+
+      {/* ghzl ki phli line ends */}
+      {/* Anaween/ mozooaat starts */}
+      {/* <div className="relative">
         <div
           className="anaween-container flex flex-col items-center  absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
           style={{
@@ -73,7 +71,7 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
         >
           {shaerData.fields.unwan?.map((unwaan, index) => (
             <span key={index} className="text-md text-blue-500 underline p-2">
-              <Link href={`/Ghazlen/mozu/${unwaan}`}>{unwaan}</Link>
+              <Link href={`/Nazmen/mozu/${unwaan}`}>{unwaan}</Link>
             </span>
           ))}
         </div>
@@ -92,7 +90,7 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
           {
             <Link
               className="text-blue-500 underline"
-              href={`/Ghazlen/mozu/${shaerData.fields.unwan?.[0]}`}
+              href={`/Nazmen/mozu/${shaerData.fields.unwan?.[0]}`}
             >
               {shaerData.fields.unwan?.[0]}
             </Link>
@@ -103,8 +101,24 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
               : ""}
           </span>
         </button>
-      </div>
-      <div className="felx text-center icons">
+      </div> */}
+      {/* Anaween/ mozooaat ends */}
+      <div className="flex items-center justify-center text-center icons">
+        {shaerData.fields.ghazalHead.map((lin, index) => (
+          <p
+            key={index}
+            className="text-black  text-lg cursor-default"
+            onClick={() => handleCardClick(shaerData)}
+          >
+            {lin} <span>۔۔۔</span>
+          </p>
+        ))}
+        <button
+          className="text-[#984A02] font-semibold m-3"
+          onClick={() => handleCardClick(shaerData)}
+        >
+          پڑھیں۔۔۔
+        </button>
         <button
           className={`m-3 text-gray-500 transition-all duration-500`}
           onClick={() => handleHeartClick(shaerData, index, `${shaerData.id}`)}
@@ -134,15 +148,9 @@ const ShaerCard: React.FC<ShaerCardProps> = ({
             {shaerData.fields.shares}
           </span>
         </button>
-        <button
-          className="text-[#984A02] font-semibold m-3"
-          onClick={() => handleCardClick(shaerData)}
-        >
-          غزل پڑھیں
-        </button>
       </div>
     </div>
   );
 };
 
-export default ShaerCard;
+export default NazamCard;
