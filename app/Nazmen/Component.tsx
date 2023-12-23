@@ -813,7 +813,7 @@ const Ashaar: React.FC<{}> = () => {
             />
             <input
               type="text"
-              placeholder="لکه ک تلاش کرین"
+              placeholder="لکھ کر تلاش کرین"
               className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
               id="searchBox"
               onKeyUp={(e) => {
@@ -899,8 +899,8 @@ const Ashaar: React.FC<{}> = () => {
               {moreloading
                 ? "لوڈ ہو رہا ہے۔۔۔"
                 : noMoreData
-                ? "مزید غزلیں نہیں ہیں"
-                : "اور غزلیں لعڈ کریں"}
+                ? "مزید نظمیں نہیں ہیں"
+                : "اور نظمیں لعڈ کریں"}
             </button>
           </div>
         </section>

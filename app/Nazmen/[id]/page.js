@@ -15,6 +15,8 @@ const Page = ({ params }) => {
     //     elements.forEach((element) => element.classList.remove('hidden'));
     //   });
     // }
+
+    
     setId(params.id);
 
     const fetchData = async () => {
@@ -90,7 +92,7 @@ const Page = ({ params }) => {
             onClick={visitGhazlen}
             className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           >
-            مزید غزلیں
+            مزید نظمیں
           </button>
         </div>
         {/* <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div> */}
