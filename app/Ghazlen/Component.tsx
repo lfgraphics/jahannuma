@@ -814,7 +814,7 @@ const Ashaar: React.FC<{}> = () => {
             />
             <input
               type="text"
-              placeholder="لکه ک تلاش کرین"
+              placeholder="لکھ کر تلاش کریں"
               className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
               id="searchBox"
               onKeyUp={(e) => {
