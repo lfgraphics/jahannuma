@@ -19,7 +19,6 @@ interface Shaer {
     ghazalHead: string[];
     ghazal: string[];
     unwan: string[];
-    listenable: boolean;
     likes: number;
     comments: number;
     shares: number;
@@ -147,7 +146,7 @@ const Ashaar: React.FC<{}> = () => {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
 
       if (userQuery) {
         // Encode the formula with OR condition

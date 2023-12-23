@@ -14,7 +14,6 @@ interface Shaer {
     ghazalHead: string[];
     ghazal: string[];
     unwan: string[];
-    listenable: boolean;
     likes: number;
     comments: number;
     shares: number;
