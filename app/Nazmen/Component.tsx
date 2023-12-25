@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
 import NazamCard from "../Components/NazamCard";
+import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
@@ -42,20 +43,6 @@ interface Comment {
   timestamp: string;
   comment: string;
 }
-
-const SkeletonLoader = () => (
-  <div className="flex flex-col items-center">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
-      {[...Array(12)].map((_, index) => (
-        <div
-          key={index}
-          role="status"
-          className="flex items-center justify-center h-56 w-[350px] max-w-sm bg-gray-300 rounded-lg animate-pulse dark:bg-gray-700"
-        ></div>
-      ))}
-    </div>
-  </div>
-);
 
 const Ashaar: React.FC<{}> = () => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
@@ -147,7 +134,7 @@ const Ashaar: React.FC<{}> = () => {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=displayLine&fields%5B%5D=nazm&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
 
       if (userQuery) {
         // Encode the formula with OR condition

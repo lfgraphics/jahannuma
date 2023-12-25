@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
 import GhazalCard from "../Components/GhazalCard";
+import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
@@ -41,20 +42,6 @@ interface Comment {
   timestamp: string;
   comment: string;
 }
-
-const SkeletonLoader = () => (
-  <div className="flex flex-col items-center">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
-      {[...Array(12)].map((_, index) => (
-        <div
-          key={index}
-          role="status"
-          className="flex items-center justify-center h-56 w-[350px] max-w-sm bg-gray-300 rounded-lg animate-pulse dark:bg-gray-700"
-        ></div>
-      ))}
-    </div>
-  </div>
-);
 
 const Ashaar: React.FC<{}> = () => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
