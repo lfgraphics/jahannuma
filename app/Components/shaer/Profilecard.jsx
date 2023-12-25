@@ -8,7 +8,8 @@ import Link from "next/link";
 import Image from "next/image";
 
 const Card = ({ data }) => {
-  const { takhallus, dob, location, photo, description } = data;
+  const { fields } = data;
+  const { takhallus, dob, location, photo, tafseel } = fields;
 
   // Function to format date (assuming dob is in MM/DD/YYYY format)
   const formatDate = (dateString) => {
@@ -17,15 +18,18 @@ const Card = ({ data }) => {
   };
 
   return (
-    <Link href={`/Shaer/${takhallus.replace(" ", "-")}`}>
+    <Link href={`/Shaer/${takhallus?.replace(" ", "-")}`}>
       <div className="rounded overflow-hidden shadow-lg mx-auto my-1">
         {/* Photo */}
-        <div className="relative">
+        <div
+          className="relative bg-cover bg-center"
+          style={{ backgroundImage: `url(/poets/loadingpic.gif)` }}
+        >
           <Image
             className="w-full h-64 object-cover object-center"
-            src={photo[0].thumbnails.full.url}
-            height={photo[0].thumbnails.full.height}
-            width={photo[0].thumbnails.full.width}
+            src={photo?.[0].thumbnails?.full?.url}
+            height={photo?.[0].thumbnails?.full?.height}
+            width={photo?.[0].thumbnails?.full?.width}
             alt="Poet's Photo"
           />
           {/* Takhallus */}
@@ -55,7 +59,7 @@ const Card = ({ data }) => {
           </div>
 
           {/* Description Icon */}
-          <div className="flex items-center mb-2">{description}</div>
+          {/* <div className="flex items-center mb-2">{tafseel}</div> */}
         </div>
       </div>
     </Link>

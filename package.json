@@ -31,7 +31,8 @@
     "react-dom": "latest",
     "react-feather": "^2.0.10",
     "swiper": "^11.0.5",
-    "tailwindcss-displaymodes": "^1.0.8"
+    "tailwindcss-displaymodes": "^1.0.8",
+    "tailwindcss-filters": "^3.0.0"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.12.1",

@@ -19,6 +19,7 @@ const config: Config = {
   plugins: [
     // ... other plugins
     require("tailwindcss-displaymodes"),
+    require("tailwindcss-filters"),
   ],
 };
 

@@ -79,3 +79,7 @@ body {
   background: linear-gradient(90deg, #eee 25%, #ccc 50%, #eee 75%);
   background-size: 200% 100%;
 }
+
+.liked {
+  transform: scale(1.5) rotate(-10deg);
+}
