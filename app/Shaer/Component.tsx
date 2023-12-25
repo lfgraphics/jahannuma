@@ -424,7 +424,7 @@ const Page: React.FC<{}> = () => {
                 onClick={(e) => handleHeartClick(e, item, index, `${item.id}`)}
                 id={`${item.id}`}
               >
-                <FontAwesomeIcon icon={faHeart} className="text-2xl ml-3" />
+                <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
                 <span className="text-black">{`${item.fields?.likes}`}</span>
               </div>
               <Card data={item} />
