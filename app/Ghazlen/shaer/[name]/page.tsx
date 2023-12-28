@@ -11,7 +11,7 @@ import {
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
-import NazamCard from "../../../Components/NazamCard";
+import GhazalCard from "../../../Components/GhazalCard";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 
 interface Shaer {
@@ -20,7 +20,6 @@ interface Shaer {
     ghazalHead: string[];
     ghazal: string[];
     unwan: string[];
-    listenable: boolean;
     likes: number;
     comments: number;
     shares: number;
@@ -32,6 +31,10 @@ interface Shaer {
 interface ApiResponse {
   records: any[];
   offset: string | null;
+}
+interface Pagination {
+  offset: string | null;
+  pageSize: number;
 }
 interface Comment {
   dataId: string | null;
@@ -48,11 +51,17 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
+  const [pagination, setPagination] = useState<Pagination>({
+    offset: null,
+    pageSize: 30,
+  });
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
+  const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
   const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
+  const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   //comments
   const [showDialog, setShowDialog] = useState(false);
@@ -116,26 +125,25 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
     try {
-      const BASE_ID = "app5Y2OsuDgpXeQdz";
-      const TABLE_NAME = "nazmen";
+      const BASE_ID = "appvzkf6nX376pZy6";
+      const TABLE_NAME = "Ghazlen";
+      const pageSize = 30;
       const headers = {
         //authentication with environment variable
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      // &fields%5B%5D=shaer&fields%5B%5D=displayLine&fields%5B%5D=nazm&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${params.name.replace(
-        "_",
-        " "
-      )}')`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${decodeURIComponent(
+        params.name
+      ).replace("_", " ")}')`;
 
       if (userQuery) {
         // Encode the formula with OR condition
         const encodedFormula = encodeURIComponent(
           `OR(
           FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({displayLine})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({nazm})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
           FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
         )`
         );
@@ -151,17 +159,17 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
 
       if (!result.offset) {
         // No more data, disable the button
-        // setNoMoreData(true);
+        setNoMoreData(true);
         setLoading(false);
-        // setMoreLoading(false);
+        setMoreLoading(false);
       }
       // formating result to match the mock data type for ease of development
       const formattedRecords = records.map((record: any) => ({
         ...record,
         fields: {
           ...record.fields,
-          ghazal: record.fields?.nazm.split("\n"),
-          ghazalHead: record.fields?.displayLine.split("\n"),
+          ghazal: record.fields?.ghazal.split("\n"),
+          ghazalHead: record.fields?.ghazalHead.split("\n"),
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
@@ -179,15 +187,24 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         ]);
       }
       !offset && scrollToTop();
-
+      // seting pagination depending on the response
+      setPagination({
+        offset: result.offset,
+        pageSize: pageSize,
+      });
       // seting the loading state to false to show the data
       setLoading(false);
-      // setMoreLoading(false);
+      setMoreLoading(false);
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
       setLoading(false);
-      // setMoreLoading(false);
+      setMoreLoading(false);
     }
+  };
+  // fetching more data by load more data button
+  const handleLoadMore = () => {
+    setMoreLoading(true);
+    fetchData(pagination.offset, false);
   };
   // Fetch the initial set of records
   useEffect(() => {
@@ -235,7 +252,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Nazmen");
+        const existingDataJSON = localStorage.getItem("Ghazlen");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData: Shaer[] = existingDataJSON
@@ -258,7 +275,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ghazlen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -285,8 +302,9 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
               "Content-Type": "application/json",
             };
+
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -320,7 +338,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ghazlen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -348,7 +366,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -418,7 +436,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           };
 
           const updateResponse = await fetch(
-            `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+            `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
             {
               method: "PATCH",
               headers: updateHeaders,
@@ -492,7 +510,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Nazmen");
+      const storedData = localStorage.getItem("Ghazlen");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -542,7 +560,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appjF9QvJeKAM9c9F";
+      const BASE_ID = "appzB656cMxO0QotZ";
       const TABLE_NAME = "Comments";
       const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
       const headers = {
@@ -589,7 +607,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appjF9QvJeKAM9c9F";
+        const BASE_ID = "appzB656cMxO0QotZ";
         const TABLE_NAME = "Comments";
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         const headers = {
@@ -664,8 +682,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           });
 
           try {
-            const BASE_ID = "app5Y2OsuDgpXeQdz";
-            const TABLE_NAME = "nazmen";
+            const BASE_ID = "appvzkf6nX376pZy6";
+            const TABLE_NAME = "Ghazlen";
             const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
             const headers = {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -773,7 +791,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         </div>
       )}
       <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">
-        {`${decodeURIComponent(params.name).replace("_", " ")} کی نظمیں`}
+        {`${decodeURIComponent(params.name).replace("_", " ")} کی غزلیں`}
       </div>
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
@@ -796,14 +814,14 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
             id="section"
             dir="rtl"
             className={`
-              grid md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
                 selectedCommentId !== null || selectedCard !== null
                   ? "overflow-y-hidden"
                   : "overflow-y-scroll"
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <NazamCard
+              <GhazalCard
                 key={index}
                 shaerData={shaerData}
                 index={index}
@@ -816,7 +834,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               />
             ))}
           </div>
-          {/* <div className="flex justify-center text-lg m-5">
+          <div className="flex justify-center text-lg m-5">
             <button
               onClick={handleLoadMore}
               disabled={noMoreData}
@@ -825,10 +843,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               {moreloading
                 ? "لوڈ ہو رہا ہے۔۔۔"
                 : noMoreData
-                ? "مزید نظمیں نہیں ہیں"
-                : "اور نظمیں لعڈ کریں"}
+                ? "مزید غزلیں نہیں ہیں"
+                : "مزید غزلیں لوڈ کریں"}
             </button>
-          </div> */}
+          </div>
         </section>
       )}
       {selectedCard && (
