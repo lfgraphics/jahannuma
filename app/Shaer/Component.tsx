@@ -1,7 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Card from "../Components/shaer/Profilecard";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHeart,
+  faHome,
+  faSearch,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ToastComponent from "../Components/Toast";
 import SkeletonLoader from "../Components/SkeletonLoader";
@@ -66,6 +71,7 @@ interface Pagination {
 const Page: React.FC<{}> = () => {
   const [data, setData] = useState<FormattedRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [searchText, setSearchText] = useState("");
   const [moreloading, setMoreLoading] = useState(true);
   const [initialDataItems, setInitialdDataItems] = useState<FormattedRecord[]>(
@@ -81,107 +87,107 @@ const Page: React.FC<{}> = () => {
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    const fetchData = async (offset: string | null, userQuery: boolean) => {
-      userQuery && setLoading(true);
-      try {
-        const BASE_ID = "appgWv81tu4RT3uRB";
-        const TABLE_NAME = "Intro";
-        const pageSize = 30;
-        const headers = {
-          //authentication with environment variable
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-        };
-        //airtable fetch url and methods
-        let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+  const fetchData = async (offset: string | null, userQuery: boolean) => {
+    userQuery && setLoading(true);
+    try {
+      const BASE_ID = "appgWv81tu4RT3uRB";
+      const TABLE_NAME = "Intro";
+      const pageSize = 30;
+      const headers = {
+        //authentication with environment variable
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
+      };
+      //airtable fetch url and methods
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
 
-        if (userQuery) {
-          // Encode the formula with OR condition
-          const encodedFormula = encodeURIComponent(
-            `OR(
-          FIND('${searchText.trim().toLowerCase()}', LOWER({takhallus})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({name})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({dob})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({location})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({tafseel})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({searchKeys})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({enTakhallus})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({hiTakhallus})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({enName})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({hiName})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({enLocation})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({hiLocation}))
-        )`
-          );
-          url += `&filterByFormula=${encodedFormula}`;
-        }
-
-        if (offset) {
-          url += `&offset=${offset}`;
-        }
-        const response = await fetch(url, { method: "GET", headers });
-        const result: ApiResponse = await response.json();
-        const records = result.records || [];
-
-        if (!result.offset) {
-          // No more data, disable the button
-          setNoMoreData(true);
-          setLoading(false);
-          setMoreLoading(false);
-        }
-        console.log("results are>");
-        console.log(result.records);
-        setData(result.records);
-        // formating result to match the mock data type for ease of development
-        const formattedRecords: FormattedRecord[] = result.records.map(
-          (record: any) => ({
-            ...record,
-            fields: {
-              ...record.fields,
-              tafseel: record.fields?.tafseel.split("\n"),
-              searchKeys: record.fields?.searchKeys.split("\n"),
-              enTakhallus: record.fields?.enTakhallus.split("\n"),
-              hiTakhallus: record.fields?.hiTakhallus.split("\n"),
-              enName: record.fields?.enName.split("\n"),
-              hiName: record.fields?.hiName.split("\n"),
-              enLocation: record.fields?.enLocation.split("\n"),
-              hiLocation: record.fields?.hiLocation.split("\n"),
-              ghazal: record.fields?.ghazal,
-              eBooks: record.fields?.eBooks,
-              nazmen: record.fields?.nazmen,
-              likes: record.fields?.likes,
-            },
-          })
+      if (userQuery) {
+        // Encode the formula with OR condition
+        const encodedFormula = encodeURIComponent(
+          `OR(
+        FIND('${searchText.trim().toLowerCase()}', LOWER({takhallus})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({name})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({dob})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({location})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({tafseel})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({searchKeys})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({enTakhallus})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({hiTakhallus})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({enName})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({hiName})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({enLocation})),
+        FIND('${searchText.trim().toLowerCase()}', LOWER({hiLocation}))
+      )`
         );
-        // console.log(result);
-        console.log("formated records are >" + formattedRecords);
-        if (!offset) {
-          if (userQuery) {
-            setInitialdDataItems(data);
-            setData(formattedRecords);
-            console.log(result);
-          } else {
-            setData(formattedRecords);
-            console.log(result);
-          }
-        } else {
-          setData((prevDataItems) => [...prevDataItems, ...formattedRecords]);
-          console.log(result);
-        }
-        // seting pagination depending on the response
-        setPagination({
-          offset: result.offset,
-          pageSize: pageSize,
-        });
-        // seting the loading state to false to show the data
-        setLoading(false);
-        setMoreLoading(false);
-      } catch (error) {
-        console.error(`Failed to fetch data: ${error}`);
+        url += `&filterByFormula=${encodedFormula}`;
+      }
+
+      if (offset) {
+        url += `&offset=${offset}`;
+      }
+      const response = await fetch(url, { method: "GET", headers });
+      const result: ApiResponse = await response.json();
+      const records = result.records || [];
+
+      if (!result.offset) {
+        // No more data, disable the button
+        setNoMoreData(true);
         setLoading(false);
         setMoreLoading(false);
       }
-    };
+      console.log("results are>");
+      console.log(result.records);
+      setData(result.records);
+      // formating result to match the mock data type for ease of development
+      const formattedRecords: FormattedRecord[] = result.records.map(
+        (record: any) => ({
+          ...record,
+          fields: {
+            ...record.fields,
+            tafseel: record.fields?.tafseel.split("\n"),
+            searchKeys: record.fields?.searchKeys.split("\n"),
+            enTakhallus: record.fields?.enTakhallus.split("\n"),
+            hiTakhallus: record.fields?.hiTakhallus.split("\n"),
+            enName: record.fields?.enName.split("\n"),
+            hiName: record.fields?.hiName.split("\n"),
+            enLocation: record.fields?.enLocation.split("\n"),
+            hiLocation: record.fields?.hiLocation.split("\n"),
+            ghazal: record.fields?.ghazal,
+            eBooks: record.fields?.eBooks,
+            nazmen: record.fields?.nazmen,
+            likes: record.fields?.likes,
+          },
+        })
+      );
+      // console.log(result);
+      // console.log("formated records are >" + formattedRecords);
+      if (!offset) {
+        if (userQuery) {
+          setInitialdDataItems(data);
+          setData(formattedRecords);
+          // console.log(result);
+        } else {
+          setData(formattedRecords);
+          // console.log(result);
+        }
+      } else {
+        setData((prevDataItems) => [...prevDataItems, ...formattedRecords]);
+        // console.log(result);
+      }
+      // seting pagination depending on the response
+      setPagination({
+        offset: result.offset,
+        pageSize: pageSize,
+      });
+      // seting the loading state to false to show the data
+      setLoading(false);
+      setMoreLoading(false);
+    } catch (error) {
+      console.error(`Failed to fetch data: ${error}`);
+      setLoading(false);
+      setMoreLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchData(null, false);
   }, []);
   const showToast = (
@@ -226,7 +232,7 @@ const Page: React.FC<{}> = () => {
     shaerData: FormattedRecord,
     index: any,
     id: string
-    ): Promise<void> => {
+  ): Promise<void> => {
     //for reference of double click to like: these are to be completed
     console.log("Event object:", e.detail);
 
@@ -408,28 +414,160 @@ const Page: React.FC<{}> = () => {
     }
   }, [data]);
 
+  const searchQuery = () => {
+    fetchData(null, true);
+    if (typeof window !== undefined) {
+      setScrolledPosition(document!.getElementById("section")!.scrollTop);
+    }
+  };
+  //search keyup handeling
+  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value.toLowerCase();
+    let xMark = document.getElementById("searchClear");
+    let sMark = document.getElementById("searchIcon");
+    value === ""
+      ? xMark?.classList.add("hidden")
+      : xMark?.classList.remove("hidden");
+    value === ""
+      ? sMark?.classList.add("hidden")
+      : sMark?.classList.remove("hidden");
+    setSearchText(value);
+  };
+  //clear search box handeling
+  const clearSearch = () => {
+    let input = document.getElementById("searchBox") as HTMLInputElement;
+    let xMark = document.getElementById("searchClear");
+    let sMark = document.getElementById("searchIcon");
+
+    input.value ? (input.value = "") : null;
+    xMark?.classList.add("hidden");
+    sMark?.classList.add("hidden");
+    // Clear the searched data and show all data again
+    setSearchText(""); // Clear the searchText state
+    // setDataItems(data.getAllShaers()); // Restore the original data
+  };
+  const resetSearch = () => {
+    searchText && clearSearch();
+    setData(initialDataItems);
+    if (typeof window !== undefined) {
+      let section = document.getElementById("section");
+      section!.scrollTo({
+        top: scrolledPosition,
+        behavior: "smooth",
+      });
+    }
+    setInitialdDataItems([]);
+  };
+   const handleLoadMore = () => {
+     setMoreLoading(true);
+     fetchData(pagination.offset, false);
+   };
+
   return (
     <>
       {toast}
       {loading && <SkeletonLoader />}
-      {!loading && (
-        <div
-          dir="rtl"
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
+      {initialDataItems.length > 0 && data.length == 0 && (
+        <div className="block mx-auto text-center my-3 text-2xl">
+          سرچ میں کچھ نہیں ملا
+        </div>
+      )}
+      {initialDataItems.length > 0 && (
+        <button
+          className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+          onClick={resetSearch}
+          // disabled={!searchText}
         >
-          {data.map((item, index) => (
-            <div className="relative" key={index}>
+          تلاش ریسیٹ کریں
+        </button>
+      )}
+      {!loading && (
+        <div>
+          <div className="z-20 flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14">
+            <div className="filter-btn basis-[75%] text-center justify-center flex">
               <div
-                className="heart cursor-pointer text-gray-500 pr-3 absolute top-0 right-0 w-[110px] max-w-[150px] h-14 flex items-center justify-center border rounded-full m-2 bg-white bg-opacity-40 backdrop-blur-sm z-20"
-                onClick={(e) => handleHeartClick(e, item, index, `${item.id}`)}
-                id={`${item.id}`}
+                dir="rtl"
+                className="flex items-center basis-[100%] h-auto pt-2"
               >
-                <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
-                <span className="text-black">{`${item.fields?.likes}`}</span>
+                <FontAwesomeIcon
+                  icon={faHome}
+                  className="text-[#984A02] text-2xl ml-3"
+                  onClick={() => {
+                    window.location.href = "/";
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="لکھ کر تلاش کریں"
+                  className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
+                  id="searchBox"
+                  onKeyUp={(e) => {
+                    handleSearchKeyUp(e);
+                    if (e.key === "Enter") {
+                      if (document.activeElement === e.target) {
+                        e.preventDefault();
+                        searchQuery();
+                      }
+                    }
+                  }}
+                />
+                <div
+                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
+                  onClick={clearSearch}
+                >
+                  <FontAwesomeIcon
+                    id="searchClear"
+                    icon={faXmark}
+                    className="hidden text-[#984A02] text-2xl"
+                  />
+                </div>
+                <div
+                  onClick={searchQuery}
+                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
+                >
+                  <FontAwesomeIcon
+                    id="searchIcon"
+                    icon={faSearch}
+                    className="hidden text-[#984A02] text-xl"
+                  />
+                </div>
               </div>
-              <Card data={item} />
             </div>
-          ))}
+          </div>
+          <div
+            id="section"
+            dir="rtl"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
+          >
+            {data.map((item, index) => (
+              <div className="relative" key={index}>
+                <div
+                  className="heart cursor-pointer text-gray-500 pr-3 absolute top-0 right-0 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-full m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
+                  onClick={(e) =>
+                    handleHeartClick(e, item, index, `${item.id}`)
+                  }
+                  id={`${item.id}`}
+                >
+                  <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
+                  <span className="text-black">{`${item.fields?.likes}`}</span>
+                </div>
+                <Card data={item} />
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center text-lg m-5">
+            <button
+              onClick={handleLoadMore}
+              disabled={noMoreData}
+              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+            >
+              {moreloading
+                ? "لوڈ ہو رہا ہے۔۔۔"
+                : noMoreData
+                ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
+                : "مزید شعراء کی تفصیات لوڈ کریں"}
+            </button>
+          </div>
         </div>
       )}
     </>

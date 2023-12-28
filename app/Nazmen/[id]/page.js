@@ -91,16 +91,17 @@ const Page = ({ params }) => {
           </div>
           <div className="flex gap-5 text-md mb-4 justify-center">
             {anaween?.map((unwan, index) => (
-              <Link href={`/Ghazlen/mozu/${unwan}`} className="text-blue-500 underline cursor-pointer" style={{ lineHeight: "normal" }} key={index}>{unwan}</Link>
+              <Link href={`/Nazmen/mozu/${unwan}`} className="text-blue-500 underline cursor-pointer" style={{ lineHeight: "normal" }} key={index}>{unwan}</Link>
             ))}
           </div>
-          <div className="mazeed ">
+          <div className="mazeed flex justify-around">
             <button
               onClick={visitGhazlen}
               className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
             >
               مزید غزلیں
             </button>
+            <Link href={`/Nazmen/shaer/${data.shaer.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
           </div>
           {/* <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div> */}
         </div>

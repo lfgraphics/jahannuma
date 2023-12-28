@@ -9,10 +9,10 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
-import ToastComponent from "../Components/Toast";
-import CommentSection from "../Components/CommentSection";
-import GhazalCard from "../Components/GhazalCard";
-import SkeletonLoader from "../Components/SkeletonLoader";
+import ToastComponent from "../../../Components/Toast";
+import CommentSection from "../../../Components/CommentSection";
+import NazamCard from "../../../Components/NazamCard";
+import SkeletonLoader from "../../../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
@@ -20,6 +20,7 @@ interface Shaer {
     ghazalHead: string[];
     ghazal: string[];
     unwan: string[];
+    listenable: boolean;
     likes: number;
     comments: number;
     shares: number;
@@ -32,10 +33,6 @@ interface ApiResponse {
   records: any[];
   offset: string | null;
 }
-interface Pagination {
-  offset: string | null;
-  pageSize: number;
-}
 interface Comment {
   dataId: string | null;
   commentorName: string | null;
@@ -43,7 +40,7 @@ interface Comment {
   comment: string;
 }
 
-const Ashaar: React.FC<{}> = () => {
+const Ashaar = ({ params }: { params: { name: string } }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
@@ -51,17 +48,11 @@ const Ashaar: React.FC<{}> = () => {
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
-  const [pagination, setPagination] = useState<Pagination>({
-    offset: null,
-    pageSize: 30,
-  });
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
-  const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
   const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
-  const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   //comments
   const [showDialog, setShowDialog] = useState(false);
@@ -125,23 +116,26 @@ const Ashaar: React.FC<{}> = () => {
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
     try {
-      const BASE_ID = "appvzkf6nX376pZy6";
-      const TABLE_NAME = "Ghazlen";
-      const pageSize = 30;
+      const BASE_ID = "app5Y2OsuDgpXeQdz";
+      const TABLE_NAME = "nazmen";
       const headers = {
         //authentication with environment variable
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
+      // &fields%5B%5D=shaer&fields%5B%5D=displayLine&fields%5B%5D=nazm&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${params.name.replace(
+        "_",
+        " "
+      )}')`;
 
       if (userQuery) {
         // Encode the formula with OR condition
         const encodedFormula = encodeURIComponent(
           `OR(
           FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({displayLine})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({nazm})),
           FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
         )`
         );
@@ -157,17 +151,17 @@ const Ashaar: React.FC<{}> = () => {
 
       if (!result.offset) {
         // No more data, disable the button
-        setNoMoreData(true);
+        // setNoMoreData(true);
         setLoading(false);
-        setMoreLoading(false);
+        // setMoreLoading(false);
       }
       // formating result to match the mock data type for ease of development
       const formattedRecords = records.map((record: any) => ({
         ...record,
         fields: {
           ...record.fields,
-          ghazal: record.fields?.ghazal.split("\n"),
-          ghazalHead: record.fields?.ghazalHead.split("\n"),
+          ghazal: record.fields?.nazm.split("\n"),
+          ghazalHead: record.fields?.displayLine.split("\n"),
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
@@ -185,24 +179,15 @@ const Ashaar: React.FC<{}> = () => {
         ]);
       }
       !offset && scrollToTop();
-      // seting pagination depending on the response
-      setPagination({
-        offset: result.offset,
-        pageSize: pageSize,
-      });
+
       // seting the loading state to false to show the data
       setLoading(false);
-      setMoreLoading(false);
+      // setMoreLoading(false);
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
       setLoading(false);
-      setMoreLoading(false);
+      // setMoreLoading(false);
     }
-  };
-  // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(pagination.offset, false);
   };
   // Fetch the initial set of records
   useEffect(() => {
@@ -300,9 +285,8 @@ const Ashaar: React.FC<{}> = () => {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
               "Content-Type": "application/json",
             };
-
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -364,7 +348,7 @@ const Ashaar: React.FC<{}> = () => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -434,7 +418,7 @@ const Ashaar: React.FC<{}> = () => {
           };
 
           const updateResponse = await fetch(
-            `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+            `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
             {
               method: "PATCH",
               headers: updateHeaders,
@@ -558,7 +542,7 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appzB656cMxO0QotZ";
+      const BASE_ID = "appjF9QvJeKAM9c9F";
       const TABLE_NAME = "Comments";
       const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
       const headers = {
@@ -605,7 +589,7 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appzB656cMxO0QotZ";
+        const BASE_ID = "appjF9QvJeKAM9c9F";
         const TABLE_NAME = "Comments";
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         const headers = {
@@ -680,8 +664,8 @@ const Ashaar: React.FC<{}> = () => {
           });
 
           try {
-            const BASE_ID = "appvzkf6nX376pZy6";
-            const TABLE_NAME = "Ghazlen";
+            const BASE_ID = "app5Y2OsuDgpXeQdz";
+            const TABLE_NAME = "nazmen";
             const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
             const headers = {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -857,14 +841,14 @@ const Ashaar: React.FC<{}> = () => {
             id="section"
             dir="rtl"
             className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
+              grid md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
                 selectedCommentId !== null || selectedCard !== null
                   ? "overflow-y-hidden"
                   : "overflow-y-scroll"
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <GhazalCard
+              <NazamCard
                 key={index}
                 shaerData={shaerData}
                 index={index}
@@ -877,7 +861,7 @@ const Ashaar: React.FC<{}> = () => {
               />
             ))}
           </div>
-          <div className="flex justify-center text-lg m-5">
+          {/* <div className="flex justify-center text-lg m-5">
             <button
               onClick={handleLoadMore}
               disabled={noMoreData}
@@ -886,10 +870,10 @@ const Ashaar: React.FC<{}> = () => {
               {moreloading
                 ? "لوڈ ہو رہا ہے۔۔۔"
                 : noMoreData
-                ? "مزید غزلیں نہیں ہیں"
-                : "مزید غزلیں لوڈ کریں"}
+                ? "مزید نظمیں نہیں ہیں"
+                : "اور نظمیں لعڈ کریں"}
             </button>
-          </div>
+          </div> */}
         </section>
       )}
       {selectedCard && (
