@@ -251,7 +251,7 @@ const Ashaar: React.FC<{}> = () => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ghazlen");
+        const existingDataJSON = localStorage.getItem("Nazmen");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData: Shaer[] = existingDataJSON
@@ -274,7 +274,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
-          localStorage.setItem("Ghazlen", updatedDataJSON);
+          localStorage.setItem("Nazmen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -336,7 +336,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          localStorage.setItem("Ghazlen", updatedDataJSON);
+          localStorage.setItem("Nazmen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -508,7 +508,7 @@ const Ashaar: React.FC<{}> = () => {
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Ghazlen");
+      const storedData = localStorage.getItem("Nazmen");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);

@@ -98,7 +98,7 @@ const Page = ({ params }) => {
             >
               مزید غزلیں
             </button>
-            <Link href={`/Ghazlen/shaer/${data.shaer.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
+            <Link href={`/Ghazlen/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
           </div>
           {/* <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div> */}
         </div>

@@ -3,17 +3,18 @@ import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
-const Ghazlen = ({ takhallus }) => {
+const Nazmen = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
 
   console.log(takhallus);
 
   const fetchData = async () => {
     try {
-      const BASE_ID = "appvzkf6nX376pZy6";
-      const TABLE_NAME = "Ghazlen";
+      const BASE_ID = "app5Y2OsuDgpXeQdz";
+      const TABLE_NAME = "nazmen";
 
       let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${takhallus}')`;
+      console.log(takhallus);
       const headers = {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
@@ -21,18 +22,22 @@ const Ghazlen = ({ takhallus }) => {
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
 
+      console.log(response);
       const records = result.records || [];
+      console.log(records);
       // Convert ghazal and ghazalHead fields to arrays
       const formattedRecords = records.map((record) => ({
         ...record,
         fields: {
           ...record.fields,
-          ghazalHead: record.fields.ghazalHead.split("\n"),
+          ghazalHead: record.fields.displayLine.split("\n"),
           id: record.fields.id,
         },
       }));
 
       setDataItems(formattedRecords);
+      console.log(records);
+      console.log(formattedRecords);
       // setLoading(false);
 
       // console.log(filteredRecord)
@@ -44,10 +49,9 @@ const Ghazlen = ({ takhallus }) => {
   useEffect(() => {
     fetchData();
   }, []);
-
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Ghazlen");
+      const storedData = localStorage.getItem("Nazmen");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -55,9 +59,7 @@ const Ghazlen = ({ takhallus }) => {
             const shaerId = shaerData.id; // Get the id of the current shaerData
 
             // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data) => data.id === shaerId
-            );
+            const storedShaer = parsedData.find((data) => data.id === shaerId);
 
             if (storedShaer) {
               // If shaerId exists in the stored data, update the card's appearance
@@ -83,7 +85,7 @@ const Ghazlen = ({ takhallus }) => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ghazlen");
+        const existingDataJSON = localStorage.getItem("Nazmen");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData = existingDataJSON
@@ -106,7 +108,7 @@ const Ghazlen = ({ takhallus }) => {
           document.getElementById(`${id}`)?.classList.remove("text-gray-500");
           document.getElementById(`${id}`)?.classList.add("text-red-600");
 
-          localStorage.setItem("Ghazlen", updatedDataJSON);
+          localStorage.setItem("Nazmen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -134,7 +136,7 @@ const Ghazlen = ({ takhallus }) => {
               "Content-Type": "application/json",
             };
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/Ghazlen`,
+              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -168,7 +170,7 @@ const Ghazlen = ({ takhallus }) => {
           document.getElementById(`${id}`)?.classList.remove("text-red-600");
           document.getElementById(`${id}`)?.classList.add("text-gray-500");
 
-          localStorage.setItem("Ghazlen", updatedDataJSON);
+          localStorage.setItem("Nazmen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -196,7 +198,7 @@ const Ghazlen = ({ takhallus }) => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/Ghazlen`,
+              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -239,7 +241,7 @@ const Ghazlen = ({ takhallus }) => {
           >
             <div className="flex justify-between items-center">
               <div className="mr-5">
-                <Link href={"/Ghazlen/" + shaerData.id}>
+                <Link href={"/Nazmen/" + shaerData.id}>
                   {shaerData.fields.ghazalHead.map((lin, index) => (
                     <p
                       style={{ lineHeight: "normal" }}
@@ -271,4 +273,4 @@ const Ghazlen = ({ takhallus }) => {
   );
 };
 
-export default Ghazlen;
+export default Nazmen;

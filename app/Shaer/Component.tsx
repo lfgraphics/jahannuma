@@ -458,10 +458,10 @@ const Page: React.FC<{}> = () => {
     }
     setInitialdDataItems([]);
   };
-   const handleLoadMore = () => {
-     setMoreLoading(true);
-     fetchData(pagination.offset, false);
-   };
+  const handleLoadMore = () => {
+    setMoreLoading(true);
+    fetchData(pagination.offset, false);
+  };
 
   return (
     <>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Intro from "@/app/Components/shaer/IntroPhoto"
 import Intro2 from "@/app/Components/shaer/Intro"
 import Ghazlen from "@/app/Components/shaer/Ghazlen"
+import Nazmen from "@/app/Components/shaer/Nazmen"
 import './shaer.css';
 
 const Page = ({ params }) => {
@@ -93,14 +94,14 @@ const Page = ({ params }) => {
       )}
       {activeNav === "غزلیں" && (
         <Ghazlen takhallus={data.takhallus}></Ghazlen>
-      )}
+        )}
       {activeNav === "نظمیں" && (
-        <Intro2 data={data} ></Intro2>
+        <Nazmen takhallus={data.takhallus}></Nazmen>
       )}
       {activeNav === "اشعار" && (
         <Intro2 data={data} ></Intro2>
       )}
-      {activeNav === "ئی - بکس" && (
+      {activeNav === "ای - بکس" && (
         <Intro2 data={data} ></Intro2>
       )}
 
