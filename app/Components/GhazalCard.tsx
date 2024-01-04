@@ -1,15 +1,18 @@
 // ShaerCard.tsx
-import React from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHeart,
   faCommentAlt,
   faShareNodes,
   faTag,
+  faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
+import DynamicDownloadHandler from "./Download";
 interface Shaer {
   fields: {
+    sher: string[];
     shaer: string;
     ghazalHead: string[];
     ghazal: string[];
@@ -25,6 +28,7 @@ interface Shaer {
 interface ShaerCardProps {
   shaerData: Shaer; // Replace Shaer with the actual type of shaerData
   index: number;
+  download: boolean;
   handleCardClick: (shaerData: Shaer) => void; // Replace Shaer with the actual type
   toggleanaween: (cardId: string | null) => void;
   openanaween: string | null; // Updated type
@@ -36,6 +40,7 @@ interface ShaerCardProps {
 const GhazalCard: React.FC<ShaerCardProps> = ({
   shaerData,
   index,
+  download,
   handleCardClick,
   toggleanaween,
   openanaween,
@@ -43,6 +48,15 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
   handleShareClick,
   openComments,
 }) => {
+  // const [openDownloadHandler, setOpenDownloadHandler] =
+  //   useState<boolean>(false);
+  const [selectedShaer, setSelectedShaer] = useState<Shaer | null>(null);
+
+  const cancelDownload = () => {
+    // Reset the selectedShaer state to null
+    setSelectedShaer(null);
+  };
+
   return (
     <div
       // data-aos={"fade-up"}
@@ -139,7 +153,18 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
         >
           غزل پڑھیں
         </button>
+        {download && (
+          <button className="m-3" onClick={() => setSelectedShaer(shaerData)}>
+            <FontAwesomeIcon icon={faDownload} style={{ color: "#984A02" }} />
+          </button>
+        )}
       </div>
+      {/* openDownloadHandler && */}
+      {download && selectedShaer && (
+        <div className="fixed z-50 ">
+          <DynamicDownloadHandler data={shaerData} onCancel={cancelDownload} />
+        </div>
+      )}
     </div>
   );
 };

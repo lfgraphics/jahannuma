@@ -9,10 +9,10 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
-import ToastComponent from "../Components/Toast";
-import CommentSection from "../Components/CommentSection";
-import NazamCard from "../Components/NazamCard";
-import SkeletonLoader from "../Components/SkeletonLoader";
+import ToastComponent from "../../../Components/Toast";
+import CommentSection from "../../../Components/CommentSection";
+import GhazalCard from "../../../Components/GhazalCard";
+import SkeletonLoader from "../../../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
@@ -20,7 +20,6 @@ interface Shaer {
     ghazalHead: string[];
     ghazal: string[];
     unwan: string[];
-    listenable: boolean;
     likes: number;
     comments: number;
     shares: number;
@@ -44,7 +43,7 @@ interface Comment {
   comment: string;
 }
 
-const Ashaar: React.FC<{}> = () => {
+const Ashaar = ({ params }: { params: { name: string } }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
@@ -126,23 +125,25 @@ const Ashaar: React.FC<{}> = () => {
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
     try {
-      const BASE_ID = "app5Y2OsuDgpXeQdz";
-      const TABLE_NAME = "nazmen";
+      const BASE_ID = "appvzkf6nX376pZy6";
+      const TABLE_NAME = "Ghazlen";
       const pageSize = 30;
       const headers = {
         //authentication with environment variable
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=displayLine&fields%5B%5D=nazm&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${decodeURIComponent(
+        params.name
+      ).replace("_", " ")}')`;
 
       if (userQuery) {
         // Encode the formula with OR condition
         const encodedFormula = encodeURIComponent(
           `OR(
           FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({displayLine})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({nazm})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
           FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
         )`
         );
@@ -167,8 +168,8 @@ const Ashaar: React.FC<{}> = () => {
         ...record,
         fields: {
           ...record.fields,
-          ghazal: record.fields?.nazm.split("\n"),
-          ghazalHead: record.fields?.displayLine.split("\n"),
+          ghazal: record.fields?.ghazal.split("\n"),
+          ghazalHead: record.fields?.ghazalHead.split("\n"),
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
@@ -212,7 +213,7 @@ const Ashaar: React.FC<{}> = () => {
   const searchQuery = () => {
     fetchData(null, true);
     if (typeof window !== undefined) {
-      setScrolledPosition(window.scrollY);
+      setScrolledPosition(document!.getElementById("section")!.scrollTop);
     }
   };
   //search keyup handeling
@@ -251,7 +252,7 @@ const Ashaar: React.FC<{}> = () => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Nazmen");
+        const existingDataJSON = localStorage.getItem("Ghazlen");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData: Shaer[] = existingDataJSON
@@ -274,7 +275,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ghazlen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -301,8 +302,9 @@ const Ashaar: React.FC<{}> = () => {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
               "Content-Type": "application/json",
             };
+
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -336,7 +338,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ghazlen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -364,7 +366,7 @@ const Ashaar: React.FC<{}> = () => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -434,7 +436,7 @@ const Ashaar: React.FC<{}> = () => {
           };
 
           const updateResponse = await fetch(
-            `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+            `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
             {
               method: "PATCH",
               headers: updateHeaders,
@@ -508,7 +510,7 @@ const Ashaar: React.FC<{}> = () => {
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Nazmen");
+      const storedData = localStorage.getItem("Ghazlen");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -558,7 +560,7 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appjF9QvJeKAM9c9F";
+      const BASE_ID = "appzB656cMxO0QotZ";
       const TABLE_NAME = "Comments";
       const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
       const headers = {
@@ -605,7 +607,7 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appjF9QvJeKAM9c9F";
+        const BASE_ID = "appzB656cMxO0QotZ";
         const TABLE_NAME = "Comments";
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         const headers = {
@@ -680,8 +682,8 @@ const Ashaar: React.FC<{}> = () => {
           });
 
           try {
-            const BASE_ID = "app5Y2OsuDgpXeQdz";
-            const TABLE_NAME = "nazmen";
+            const BASE_ID = "appvzkf6nX376pZy6";
+            const TABLE_NAME = "Ghazlen";
             const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
             const headers = {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -728,7 +730,7 @@ const Ashaar: React.FC<{}> = () => {
     searchText && clearSearch();
     setDataItems(initialDataItems);
     if (typeof window !== undefined) {
-      let section = window;
+      let section = document.getElementById("section");
       section!.scrollTo({
         top: scrolledPosition,
         behavior: "smooth",
@@ -788,53 +790,8 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14 z-10">
-        <div className="filter-btn basis-[75%] text-center justify-center flex">
-          <div dir="rtl" className="flex items-center basis-[100%] h-auto pt-2">
-            <FontAwesomeIcon
-              icon={faHome}
-              className="text-[#984A02] text-2xl ml-3"
-              onClick={() => {
-                window.location.href = "/";
-              }}
-            />
-            <input
-              type="text"
-              placeholder="لکھ کر تلاش کریں"
-              className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
-              id="searchBox"
-              onKeyUp={(e) => {
-                handleSearchKeyUp(e);
-                if (e.key === "Enter") {
-                  if (document.activeElement === e.target) {
-                    e.preventDefault();
-                    searchQuery();
-                  }
-                }
-              }}
-            />
-            <div
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
-              onClick={clearSearch}
-            >
-              <FontAwesomeIcon
-                id="searchClear"
-                icon={faXmark}
-                className="hidden text-[#984A02] text-2xl"
-              />
-            </div>
-            <div
-              onClick={searchQuery}
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
-            >
-              <FontAwesomeIcon
-                id="searchIcon"
-                icon={faSearch}
-                className="hidden text-[#984A02] text-xl"
-              />
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">
+        {`${decodeURIComponent(params.name).replace("_", " ")} کی غزلیں`}
       </div>
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
@@ -857,10 +814,14 @@ const Ashaar: React.FC<{}> = () => {
             id="section"
             dir="rtl"
             className={`
-              grid md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
+                selectedCommentId !== null || selectedCard !== null
+                  ? "overflow-y-hidden"
+                  : "overflow-y-scroll"
+              }`}
           >
             {dataItems.map((shaerData, index) => (
-              <NazamCard
+              <GhazalCard
                 key={index}
                 shaerData={shaerData}
                 index={index}
@@ -872,19 +833,19 @@ const Ashaar: React.FC<{}> = () => {
                 openComments={openComments}
               />
             ))}
-            <div className="flex justify-center text-lg m-5">
-              <button
-                onClick={handleLoadMore}
-                disabled={noMoreData}
-                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-              >
-                {moreloading
-                  ? "لوڈ ہو رہا ہے۔۔۔"
-                  : noMoreData
-                  ? "مزید نظمیں نہیں ہیں"
-                  : "اور نظمیں لعڈ کریں"}
-              </button>
-            </div>
+          </div>
+          <div className="flex justify-center text-lg m-5">
+            <button
+              onClick={handleLoadMore}
+              disabled={noMoreData}
+              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+            >
+              {moreloading
+                ? "لوڈ ہو رہا ہے۔۔۔"
+                : noMoreData
+                ? "مزید غزلیں نہیں ہیں"
+                : "مزید غزلیں لوڈ کریں"}
+            </button>
           </div>
         </section>
       )}

@@ -8,78 +8,53 @@ import {
   faTimesCircle,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import "aos/dist/aos.css";
 import { format } from "date-fns";
-import ToastComponent from "../Components/Toast";
-import CommentSection from "../Components/CommentSection";
-import NazamCard from "../Components/NazamCard";
-import SkeletonLoader from "../Components/SkeletonLoader";
+import ToastComponent from "../../../Components/Toast";
+import CommentSection from "../../../Components/CommentSection";
+import GhazalCard from "../../../Components/GhazalCard";
 
-interface Shaer {
-  fields: {
-    shaer: string;
-    ghazalHead: string[];
-    ghazal: string[];
-    unwan: string[];
-    listenable: boolean;
-    likes: number;
-    comments: number;
-    shares: number;
-    id: string;
-  };
-  id: string;
-  createdTime: string;
-}
-interface ApiResponse {
-  records: any[];
-  offset: string | null;
-}
-interface Pagination {
-  offset: string | null;
-  pageSize: number;
-}
-interface Comment {
-  dataId: string | null;
-  commentorName: string | null;
-  timestamp: string;
-  comment: string;
-}
-
-const Ashaar: React.FC<{}> = () => {
-  const [selectedCommentId, setSelectedCommentId] = React.useState<
-    string | null
-  >(null);
-  const [selectedCard, setSelectedCard] = React.useState<{
-    id: string;
-    fields: { shaer: string; ghazal: string[]; id: string };
-  } | null>(null);
-  const [pagination, setPagination] = useState<Pagination>({
-    offset: null,
-    pageSize: 30,
-  });
-  const [searchText, setSearchText] = useState("");
-  const [scrolledPosition, setScrolledPosition] = useState<number>();
+const SkeletonLoader = () => (
+  <div className="flex flex-col items-center">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
+      {[...Array(12)].map((_, index) => (
+        <div
+          key={index}
+          role="status"
+          className="flex items-center justify-center h-56 w-[350px] max-w-sm bg-gray-300 rounded-lg animate-pulse dark:bg-gray-700"
+        ></div>
+      ))}
+    </div>
+  </div>
+);
+const Page = ({ params }) => {
+  const encodedUnwan = params.unwan;
+  const decodedUnwan = decodeURIComponent(encodedUnwan);
+  const [selectedCommentId, setSelectedCommentId] = React.useState(null);
+  const [selectedCard, setSelectedCard] = React.useState(null);
+  const [pagination, setPagination] = useState([]);
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
-  const [dataItems, setDataItems] = useState<Shaer[]>([]);
-  const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
+  const [dataItems, setDataItems] = useState([]);
+  const [initialDataItems, setInitialdDataItems] = useState([]);
   const [noMoreData, setNoMoreData] = useState(false);
-  const [openanaween, setOpenanaween] = useState<string | null>(null);
+  const [openanaween, setOpenanaween] = useState(null);
   //comments
   const [showDialog, setShowDialog] = useState(false);
   const [nameInput, setNameInput] = useState("");
-  const [commentorName, setCommentorName] = useState<string | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentorName, setCommentorName] = useState(null);
+  const [comments, setComments] = useState([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
   //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
+  const [toast, setToast] = useState(null);
   const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [timeoutId, setTimeoutId] = useState(null);
 
   //function ot show toast
   const showToast = (
-    msgtype: "success" | "error" | "invalid",
-    message: string
+    msgtype,
+    message
   ) => {
     // Clear the previous timeout if it exists
     if (timeoutId) {
@@ -123,39 +98,21 @@ const Ashaar: React.FC<{}> = () => {
     }
   }
   // func to fetch and load more data
-  const fetchData = async (offset: string | null, userQuery: boolean) => {
+  const fetchData = async (offset, userQuery) => {
     userQuery && setLoading(true);
     try {
-      const BASE_ID = "app5Y2OsuDgpXeQdz";
-      const TABLE_NAME = "nazmen";
-      const pageSize = 30;
+      const BASE_ID = "appeI2xzzyvUN5bR7";
+      const TABLE_NAME = "Ashaar";
+
       const headers = {
-        //authentication with environment variable
+
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=displayLine&fields%5B%5D=nazm&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
 
-      if (userQuery) {
-        // Encode the formula with OR condition
-        const encodedFormula = encodeURIComponent(
-          `OR(
-          FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({displayLine})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({nazm})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
-        )`
-        );
-        url += `&filterByFormula=${encodedFormula}`;
-      }
-
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
+      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=FIND('${decodedUnwan}', ARRAYJOIN({unwan}, ' '))`;
       const response = await fetch(url, { method: "GET", headers });
-      const result: ApiResponse = await response.json();
+      const result = await response.json();
       const records = result.records || [];
-
       if (!result.offset) {
         // No more data, disable the button
         setNoMoreData(true);
@@ -163,12 +120,12 @@ const Ashaar: React.FC<{}> = () => {
         setMoreLoading(false);
       }
       // formating result to match the mock data type for ease of development
-      const formattedRecords = records.map((record: any) => ({
+      const formattedRecords = records.map((record) => ({
         ...record,
         fields: {
           ...record.fields,
-          ghazal: record.fields?.nazm.split("\n"),
-          ghazalHead: record.fields?.displayLine.split("\n"),
+          ghazal: record.fields?.body.split("\n"),
+          ghazalHead: record.fields?.sher.split("\n"),
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
@@ -187,10 +144,6 @@ const Ashaar: React.FC<{}> = () => {
       }
       !offset && scrollToTop();
       // seting pagination depending on the response
-      setPagination({
-        offset: result.offset,
-        pageSize: pageSize,
-      });
       // seting the loading state to false to show the data
       setLoading(false);
       setMoreLoading(false);
@@ -203,7 +156,7 @@ const Ashaar: React.FC<{}> = () => {
   // fetching more data by load more data button
   const handleLoadMore = () => {
     setMoreLoading(true);
-    fetchData(pagination.offset, false);
+    fetchData(null, false);
   };
   // Fetch the initial set of records
   useEffect(() => {
@@ -212,49 +165,23 @@ const Ashaar: React.FC<{}> = () => {
   const searchQuery = () => {
     fetchData(null, true);
     if (typeof window !== undefined) {
-      setScrolledPosition(window.scrollY);
+      setScrolledPosition(document.getElementById("section").scrollTop);
     }
-  };
-  //search keyup handeling
-  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value.toLowerCase();
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-    value === ""
-      ? xMark?.classList.add("hidden")
-      : xMark?.classList.remove("hidden");
-    value === ""
-      ? sMark?.classList.add("hidden")
-      : sMark?.classList.remove("hidden");
-    setSearchText(value);
-  };
-  //clear search box handeling
-  const clearSearch = () => {
-    let input = document.getElementById("searchBox") as HTMLInputElement;
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-
-    input.value ? (input.value = "") : null;
-    xMark?.classList.add("hidden");
-    sMark?.classList.add("hidden");
-    // Clear the searched data and show all data again
-    setSearchText(""); // Clear the searchText state
-    // setDataItems(data.getAllShaers()); // Restore the original data
   };
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
-    shaerData: Shaer,
-    index: any,
-    id: string
-  ): Promise<void> => {
+    shaerData,
+    index,
+    id
+  ) => {
     toggleanaween(null);
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Nazmen");
+        const existingDataJSON = localStorage.getItem("Ashaaar");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Shaer[] = existingDataJSON
+        const existingData = existingDataJSON
           ? JSON.parse(existingDataJSON)
           : [];
 
@@ -271,17 +198,14 @@ const Ashaar: React.FC<{}> = () => {
           const updatedDataJSON = JSON.stringify(existingData);
 
           // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
+          document.getElementById(`${id}`).classList.remove("text-gray-500");
+          document.getElementById(`${id}`).classList.add("text-red-600");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ashaaar", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
             "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
-          console.log(
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
           try {
             // Make API request to update the record's "Likes" field
@@ -301,8 +225,9 @@ const Ashaar: React.FC<{}> = () => {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
               "Content-Type": "application/json",
             };
+
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appeI2xzzyvUN5bR7/Ashaar`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -333,17 +258,16 @@ const Ashaar: React.FC<{}> = () => {
           const updatedDataJSON = JSON.stringify(updatedData);
 
           // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
+          document.getElementById(`${id}`).classList.remove("text-red-600");
+          document.getElementById(`${id}`).classList.add("text-gray-500");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ashaaar", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
             "invalid",
             "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
@@ -364,7 +288,7 @@ const Ashaar: React.FC<{}> = () => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appeI2xzzyvUN5bR7/Ashaar`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -397,9 +321,9 @@ const Ashaar: React.FC<{}> = () => {
   };
   //handeling sahre
   const handleShareClick = async (
-    shaerData: Shaer,
-    index: number
-  ): Promise<void> => {
+    shaerData,
+    index
+  ) => {
     toggleanaween(null);
     try {
       if (navigator.share) {
@@ -409,7 +333,7 @@ const Ashaar: React.FC<{}> = () => {
             text:
               shaerData.fields.ghazalHead.map((line) => line).join("\n") +
               `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
+            url: `${window.location.href.split("/Ashaaar/")[0] + "/Ashaaar/" + shaerData.id}`, // Get the current page's URL
           })
 
           .then(() => console.info("Successful share"))
@@ -434,7 +358,7 @@ const Ashaar: React.FC<{}> = () => {
           };
 
           const updateResponse = await fetch(
-            `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+            `https://api.airtable.com/v0/appeI2xzzyvUN5bR7/Ashaar`,
             {
               method: "PATCH",
               headers: updateHeaders,
@@ -464,18 +388,18 @@ const Ashaar: React.FC<{}> = () => {
     }
   };
   //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
+  const animateModalOpen = (modalElement) => {
     gsap.fromTo(
       modalElement,
       { y: "100vh" },
       { y: 0, duration: 0.2, ease: "power2.inOut" }
     );
   };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
+  const animateModalClose = (modalElement) => {
     gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
   };
   //opening and closing ghazal
-  const handleCardClick = (shaerData: Shaer): void => {
+  const handleCardClick = (shaerData) => {
     toggleanaween(null);
     setSelectedCard({
       id: shaerData.id,
@@ -494,7 +418,7 @@ const Ashaar: React.FC<{}> = () => {
       }
     }
   };
-  const handleCloseModal = (): void => {
+  const handleCloseModal = () => {
     if (typeof window !== undefined) {
       document.getElementById("modlBtn")?.classList.add("hidden");
     }
@@ -507,8 +431,16 @@ const Ashaar: React.FC<{}> = () => {
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
+    // if (document !== undefined) {
+    //   const elements = [...document.querySelectorAll('.langChange')];
+    //   elements.forEach((element) => element.classList.add('hidden'));
+    //   window.addEventListener('beforeunload', function () {
+    //     console.log('Beforeunload event triggered!');
+    //     elements.forEach((element) => element.classList.remove('hidden'));
+    //   });
+    // }
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Nazmen");
+      const storedData = localStorage.getItem("Ashaaar");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -517,7 +449,7 @@ const Ashaar: React.FC<{}> = () => {
 
             // Check if the shaerId exists in the stored data
             const storedShaer = parsedData.find(
-              (data: { id: string }) => data.id === shaerId
+              (data) => data.id === shaerId
             );
 
             if (storedShaer) {
@@ -535,13 +467,13 @@ const Ashaar: React.FC<{}> = () => {
     }
   }, [dataItems]);
   //toggling anaween box
-  const toggleanaween = (cardId: string | null) => {
+  const toggleanaween = (cardId) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
   const hideDialog = () => {
     setShowDialog(false);
   };
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNameChange = (event) => {
     setNameInput(event.target.value);
   };
   const handleNameSubmission = () => {
@@ -549,7 +481,7 @@ const Ashaar: React.FC<{}> = () => {
     setCommentorName(nameInput);
     hideDialog();
   };
-  const fetchComments = async (dataId: string) => {
+  const fetchComments = async (dataId) => {
     const storedName = localStorage.getItem("commentorName");
     try {
       setCommentLoading(true);
@@ -558,7 +490,7 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appjF9QvJeKAM9c9F";
+      const BASE_ID = "appzB656cMxO0QotZ";
       const TABLE_NAME = "Comments";
       const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
       const headers = {
@@ -569,14 +501,7 @@ const Ashaar: React.FC<{}> = () => {
       const result = await response.json();
 
       const fetchedComments = result.records.map(
-        (record: {
-          fields: {
-            dataId: string;
-            commentorName: string | null;
-            timestamp: string | Date;
-            comment: string;
-          };
-        }) => ({
+        (record) => ({
           dataId: record.fields.dataId,
           commentorName: record.fields.commentorName,
           timestamp: record.fields.timestamp,
@@ -590,10 +515,10 @@ const Ashaar: React.FC<{}> = () => {
       console.error(`Failed to fetch comments: ${error}`);
     }
   };
-  const handleNewCommentChange = (comment: string) => {
+  const handleNewCommentChange = (comment) => {
     setNewComment(comment);
   };
-  const handleCommentSubmit = async (dataId: string) => {
+  const handleCommentSubmit = async (dataId) => {
     // Check if the user has provided a name
     if (typeof window !== "undefined") {
       const storedName = localStorage.getItem("commentorName");
@@ -605,7 +530,7 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appjF9QvJeKAM9c9F";
+        const BASE_ID = "appzB656cMxO0QotZ";
         const TABLE_NAME = "Comments";
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         const headers = {
@@ -633,7 +558,7 @@ const Ashaar: React.FC<{}> = () => {
 
         if (response.ok) {
           // Update the UI with the new comment
-          setComments((prevComments: Comment[]) => [
+          setComments((prevComments) => [
             ...prevComments,
             commentData,
           ]);
@@ -661,7 +586,7 @@ const Ashaar: React.FC<{}> = () => {
 
           if (!dataItemToUpdate?.fields.comments) {
             // If the comments field is not present, add it with the value 1
-            dataItemToUpdate!.fields.comments = 1;
+            dataItemToUpdate.fields.comments = 1;
           }
           setDataItems((prevDataItems) => {
             return prevDataItems.map((prevItem) => {
@@ -680,8 +605,8 @@ const Ashaar: React.FC<{}> = () => {
           });
 
           try {
-            const BASE_ID = "app5Y2OsuDgpXeQdz";
-            const TABLE_NAME = "nazmen";
+            const BASE_ID = "appeI2xzzyvUN5bR7";
+            const TABLE_NAME = "Ashaar";
             const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
             const headers = {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -693,7 +618,7 @@ const Ashaar: React.FC<{}> = () => {
               headers,
               body: JSON.stringify({
                 fields: {
-                  comments: dataItemToUpdate!.fields.comments,
+                  comments: dataItemToUpdate.fields.comments,
                 },
               }),
             });
@@ -715,7 +640,7 @@ const Ashaar: React.FC<{}> = () => {
       }
     }
   };
-  const openComments = (dataId: string) => {
+  const openComments = (dataId) => {
     toggleanaween(null);
     setSelectedCommentId(dataId);
     fetchComments(dataId);
@@ -723,33 +648,14 @@ const Ashaar: React.FC<{}> = () => {
   };
   const closeComments = () => {
     setSelectedCommentId(null);
+    setComments([])
   };
-  const resetSearch = () => {
-    searchText && clearSearch();
-    setDataItems(initialDataItems);
-    if (typeof window !== undefined) {
-      let section = window;
-      section!.scrollTo({
-        top: scrolledPosition,
-        behavior: "smooth",
-      });
-    }
-    setInitialdDataItems([]);
-  };
-
-  // Check if the initialDataItems.length is greater than 0
-  if (initialDataItems.length > 0) {
-    window.addEventListener("popstate", () => {
-      resetSearch();
-    });
-  }
 
   return (
     <div>
       <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+        className={`toast-container ${hideAnimation ? " hide " : ""
+          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
       >
         {toast}
       </div>
@@ -788,53 +694,8 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14 z-10">
-        <div className="filter-btn basis-[75%] text-center justify-center flex">
-          <div dir="rtl" className="flex items-center basis-[100%] h-auto pt-2">
-            <FontAwesomeIcon
-              icon={faHome}
-              className="text-[#984A02] text-2xl ml-3"
-              onClick={() => {
-                window.location.href = "/";
-              }}
-            />
-            <input
-              type="text"
-              placeholder="لکھ کر تلاش کریں"
-              className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
-              id="searchBox"
-              onKeyUp={(e) => {
-                handleSearchKeyUp(e);
-                if (e.key === "Enter") {
-                  if (document.activeElement === e.target) {
-                    e.preventDefault();
-                    searchQuery();
-                  }
-                }
-              }}
-            />
-            <div
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
-              onClick={clearSearch}
-            >
-              <FontAwesomeIcon
-                id="searchClear"
-                icon={faXmark}
-                className="hidden text-[#984A02] text-2xl"
-              />
-            </div>
-            <div
-              onClick={searchQuery}
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
-            >
-              <FontAwesomeIcon
-                id="searchIcon"
-                icon={faSearch}
-                className="hidden text-[#984A02] text-xl"
-              />
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center">
+        <div className="text-4xl m-5">{`غزلیں بعنوان : ${decodedUnwan}`}</div>
       </div>
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
@@ -846,7 +707,7 @@ const Ashaar: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          // disabled={!searchText}
+        // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
@@ -857,10 +718,13 @@ const Ashaar: React.FC<{}> = () => {
             id="section"
             dir="rtl"
             className={`
-              grid md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${selectedCommentId !== null || selectedCard !== null
+                ? "overflow-y-hidden"
+                : "overflow-y-scroll"
+              }`}
           >
             {dataItems.map((shaerData, index) => (
-              <NazamCard
+              <GhazalCard
                 key={index}
                 shaerData={shaerData}
                 index={index}
@@ -872,19 +736,19 @@ const Ashaar: React.FC<{}> = () => {
                 openComments={openComments}
               />
             ))}
-            <div className="flex justify-center text-lg m-5">
-              <button
-                onClick={handleLoadMore}
-                disabled={noMoreData}
-                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-              >
-                {moreloading
-                  ? "لوڈ ہو رہا ہے۔۔۔"
-                  : noMoreData
-                  ? "مزید نظمیں نہیں ہیں"
-                  : "اور نظمیں لعڈ کریں"}
-              </button>
-            </div>
+          </div>
+          <div className="flex justify-center text-lg m-5">
+            <button
+              onClick={handleLoadMore}
+              disabled={noMoreData || loading || moreloading}
+              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+            >
+              {moreloading
+                ? "لوڈ ہو رہا ہے۔۔۔"
+                : noMoreData
+                  ? "مزید غزلیں نہیں ہیں"
+                  : "اور غزلیں لعڈ کریں"}
+            </button>
           </div>
         </section>
       )}
@@ -952,5 +816,4 @@ const Ashaar: React.FC<{}> = () => {
     </div>
   );
 };
-
-export default Ashaar;
+export default Page;

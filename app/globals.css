@@ -83,3 +83,15 @@ body {
 .liked {
   transform: scale(1.5) rotate(-10deg);
 }
+
+/* styles.css or your global styles */
+p.text-center,p.justif {
+  line-height: normal;
+  text-align-last: justify;
+}
+
+
+p.justif{
+  line-height: normal;
+
+}

@@ -16,6 +16,7 @@ import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
+    sher: string[];
     shaer: string;
     ghazalHead: string[];
     ghazal: string[];
@@ -211,7 +212,7 @@ const Ashaar: React.FC<{}> = () => {
   const searchQuery = () => {
     fetchData(null, true);
     if (typeof window !== undefined) {
-      setScrolledPosition(document!.getElementById("section")!.scrollTop);
+      setScrolledPosition(window.scrollY);
     }
   };
   //search keyup handeling
@@ -728,7 +729,7 @@ const Ashaar: React.FC<{}> = () => {
     searchText && clearSearch();
     setDataItems(initialDataItems);
     if (typeof window !== undefined) {
-      let section = document.getElementById("section");
+      let section = window;
       section!.scrollTo({
         top: scrolledPosition,
         behavior: "smooth",
@@ -857,14 +858,12 @@ const Ashaar: React.FC<{}> = () => {
             id="section"
             dir="rtl"
             className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${
-                selectedCommentId !== null || selectedCard !== null
-                  ? "overflow-y-hidden"
-                  : "overflow-y-scroll"
-              }`}
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3
+              `}
           >
             {dataItems.map((shaerData, index) => (
               <GhazalCard
+                download={false}
                 key={index}
                 shaerData={shaerData}
                 index={index}
@@ -876,19 +875,19 @@ const Ashaar: React.FC<{}> = () => {
                 openComments={openComments}
               />
             ))}
-          </div>
-          <div className="flex justify-center text-lg m-5">
-            <button
-              onClick={handleLoadMore}
-              disabled={noMoreData}
-              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-            >
-              {moreloading
-                ? "لوڈ ہو رہا ہے۔۔۔"
-                : noMoreData
-                ? "مزید غزلیں نہیں ہیں"
-                : "مزید غزلیں لوڈ کریں"}
-            </button>
+            <div className="flex justify-center text-lg m-5">
+              <button
+                onClick={handleLoadMore}
+                disabled={noMoreData}
+                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+              >
+                {moreloading
+                  ? "لوڈ ہو رہا ہے۔۔۔"
+                  : noMoreData
+                  ? "مزید غزلیں نہیں ہیں"
+                  : "مزید غزلیں لوڈ کریں"}
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -919,11 +918,14 @@ const Ashaar: React.FC<{}> = () => {
               <h2 className="text-black text-4xl top-0 bg-white sticky px-0 pr-4 p-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}
               </h2>
-              {selectedCard.fields.ghazal.map((line, index) => (
-                <p key={index} className="text-black pb-3 pr-4 text-2xl">
-                  {line}
-                </p>
-              ))}
+              <p className="text-2xl text-justify">
+                {selectedCard.fields.ghazal.map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </p>
             </div>
           </div>
         </div>

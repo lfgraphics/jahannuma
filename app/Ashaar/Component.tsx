@@ -11,16 +11,16 @@ import {
 import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
-import NazamCard from "../Components/NazamCard";
+import GhazalCard from "../Components/GhazalCard";
 import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
+    sher: string[];
     shaer: string;
     ghazalHead: string[];
     ghazal: string[];
     unwan: string[];
-    listenable: boolean;
     likes: number;
     comments: number;
     shares: number;
@@ -126,23 +126,23 @@ const Ashaar: React.FC<{}> = () => {
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
     try {
-      const BASE_ID = "app5Y2OsuDgpXeQdz";
-      const TABLE_NAME = "nazmen";
+      const BASE_ID = "appeI2xzzyvUN5bR7";
+      const TABLE_NAME = "Ashaar";
       const pageSize = 30;
       const headers = {
         //authentication with environment variable
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=displayLine&fields%5B%5D=nazm&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=sher&fields%5B%5D=body&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
 
       if (userQuery) {
         // Encode the formula with OR condition
         const encodedFormula = encodeURIComponent(
           `OR(
           FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({displayLine})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({nazm})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({sher})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({body})),
           FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
         )`
         );
@@ -167,8 +167,8 @@ const Ashaar: React.FC<{}> = () => {
         ...record,
         fields: {
           ...record.fields,
-          ghazal: record.fields?.nazm.split("\n"),
-          ghazalHead: record.fields?.displayLine.split("\n"),
+          ghazal: record.fields?.body.split("\n"),
+          ghazalHead: record.fields?.sher.split("\n"),
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
@@ -251,7 +251,7 @@ const Ashaar: React.FC<{}> = () => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Nazmen");
+        const existingDataJSON = localStorage.getItem("Ashaar");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData: Shaer[] = existingDataJSON
@@ -274,7 +274,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ashaar", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -301,8 +301,9 @@ const Ashaar: React.FC<{}> = () => {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
               "Content-Type": "application/json",
             };
+
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appeI2xzzyvUN5bR7/Ashaar`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -336,7 +337,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ashaar", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -364,7 +365,7 @@ const Ashaar: React.FC<{}> = () => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appeI2xzzyvUN5bR7/Ashaar`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -434,7 +435,7 @@ const Ashaar: React.FC<{}> = () => {
           };
 
           const updateResponse = await fetch(
-            `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+            `https://api.airtable.com/v0/appeI2xzzyvUN5bR7/Ashaar`,
             {
               method: "PATCH",
               headers: updateHeaders,
@@ -508,7 +509,7 @@ const Ashaar: React.FC<{}> = () => {
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Nazmen");
+      const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -558,8 +559,8 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appjF9QvJeKAM9c9F";
-      const TABLE_NAME = "Comments";
+      const BASE_ID = "appkb5lm483FiRD54";
+      const TABLE_NAME = "comments";
       const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
       const headers = {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -605,8 +606,8 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appjF9QvJeKAM9c9F";
-        const TABLE_NAME = "Comments";
+        const BASE_ID = "appkb5lm483FiRD54";
+        const TABLE_NAME = "comments";
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         const headers = {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -680,8 +681,8 @@ const Ashaar: React.FC<{}> = () => {
           });
 
           try {
-            const BASE_ID = "app5Y2OsuDgpXeQdz";
-            const TABLE_NAME = "nazmen";
+            const BASE_ID = "appeI2xzzyvUN5bR7";
+            const TABLE_NAME = "Ashaar";
             const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
             const headers = {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -857,10 +858,11 @@ const Ashaar: React.FC<{}> = () => {
             id="section"
             dir="rtl"
             className={`
-              grid md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
           >
             {dataItems.map((shaerData, index) => (
-              <NazamCard
+              <GhazalCard
+                download={true}
                 key={index}
                 shaerData={shaerData}
                 index={index}
@@ -881,8 +883,8 @@ const Ashaar: React.FC<{}> = () => {
                 {moreloading
                   ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                  ? "مزید نظمیں نہیں ہیں"
-                  : "اور نظمیں لعڈ کریں"}
+                  ? "مزید غزلیں نہیں ہیں"
+                  : "مزید غزلیں لوڈ کریں"}
               </button>
             </div>
           </div>
@@ -916,7 +918,7 @@ const Ashaar: React.FC<{}> = () => {
                 {selectedCard.fields.shaer}
               </h2>
               {selectedCard.fields.ghazal.map((line, index) => (
-                <p key={index} className="text-black pb-3 pr-4 text-2xl">
+                <p key={index} className="justif text-black pb-3 pr-4 text-2xl">
                   {line}
                 </p>
               ))}
