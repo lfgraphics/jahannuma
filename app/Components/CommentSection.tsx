@@ -34,7 +34,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   return (
     <div
       dir="rtl"
-      className="fixed w-screen bottom-0 pr-0 z-10 pb-16 shadow-lg min-h-[40svh] max-h-[55svh] overflow-y-scroll border-t-4 mt-4 p-4 bg-white text-lg"
+      className="fixed w-screen bottom-0 pr-0 pt-10 z-10 pb-16 shadow-lg min-h-[55svh] max-h-[55svh] overflow-y-scroll border-t-4 mt-4 p-4 bg-white text-lg"
       style={{ borderTop: "6px groove" }}
     >
       {commentLoading && (

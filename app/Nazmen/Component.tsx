@@ -928,7 +928,7 @@ const Ashaar: React.FC<{}> = () => {
       {selectedCommentId && (
         <button
           // style={{ overflow: "hidden" }}
-          className=" fixed bottom-24 left-7 z-50 rounded-full  h-10 w-10 pt-2 "
+          className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
           id="modlBtn"
           onClick={() => closeComments()}
         >

@@ -765,8 +765,9 @@ const Ashaar: React.FC<{}> = () => {
                 براہ کرم اپنا نام درج کریں
               </p>
               <p className="pt-2">
-                ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے
-                استعمال کریں گے
+                {" "}
+                آپ کا نام۔صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے استعمال
+                کریں گے۔
               </p>
               <input
                 type="text"
@@ -918,14 +919,14 @@ const Ashaar: React.FC<{}> = () => {
               <h2 className="text-black text-4xl top-0 bg-white sticky px-0 pr-4 p-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}
               </h2>
-              <p className="text-2xl text-justify">
-                {selectedCard.fields.ghazal.map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    <br />
-                  </React.Fragment>
-                ))}
-              </p>
+              {selectedCard.fields.ghazal.map((line, index) => (
+                <p
+                  key={index}
+                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
+                >
+                  {line}
+                </p>
+              ))}
             </div>
           </div>
         </div>
@@ -934,7 +935,7 @@ const Ashaar: React.FC<{}> = () => {
       {selectedCommentId && (
         <button
           // style={{ overflow: "hidden" }}
-          className=" fixed bottom-24 left-7 z-50 rounded-full  h-10 w-10 pt-2 "
+          className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
           id="modlBtn"
           onClick={() => closeComments()}
         >

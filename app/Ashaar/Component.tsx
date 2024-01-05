@@ -918,7 +918,10 @@ const Ashaar: React.FC<{}> = () => {
                 {selectedCard.fields.shaer}
               </h2>
               {selectedCard.fields.ghazal.map((line, index) => (
-                <p key={index} className="justif text-black pb-3 pr-4 text-2xl">
+                <p
+                  key={index}
+                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
+                >
                   {line}
                 </p>
               ))}
@@ -930,7 +933,7 @@ const Ashaar: React.FC<{}> = () => {
       {selectedCommentId && (
         <button
           // style={{ overflow: "hidden" }}
-          className=" fixed bottom-24 left-7 z-50 rounded-full  h-10 w-10 pt-2 "
+          className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
           id="modlBtn"
           onClick={() => closeComments()}
         >
