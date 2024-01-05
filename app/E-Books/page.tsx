@@ -1,10 +1,18 @@
 import React from "react";
-import Commingsoon from "../Components/Commingsoon";
+import Page from "./Component";
+export const metadata = {
+  metadataBase: new URL("https://jahannuma.vercel.app/Shaer"),
+  title: "Shu'ra | Jahannuma",
+  description: "This page has pen data of all young shaers of Goraphur",
+  openGraph: {
+    images: ["https://jahannuma.vercel.app/metaImages/shu'ra.jpg"],
+  },
+};
 
 const page = () => {
   return (
     <div>
-      <Commingsoon />
+      <Page />
     </div>
   );
 };

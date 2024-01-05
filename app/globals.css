@@ -94,3 +94,8 @@ p.text-center,p.justif {
 p.justif{
   line-height: normal;
 }
+
+/* Custom CSS to hide the popout button */
+.gdocs-viewer-toolstrip {
+  display: none !important;
+}
