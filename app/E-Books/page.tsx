@@ -1,5 +1,6 @@
 import React from "react";
 import Page from "./Component";
+// import PdfViewer from "../Components/PdfKitPdfViwer";
 export const metadata = {
   metadataBase: new URL("https://jahannuma.vercel.app/Shaer"),
   title: "Shu'ra | Jahannuma",
@@ -13,6 +14,7 @@ const page = () => {
   return (
     <div>
       <Page />
+      {/* <PdfViewer />  */}
     </div>
   );
 };

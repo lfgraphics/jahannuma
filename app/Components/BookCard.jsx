@@ -1,15 +1,10 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCalendarAlt,
-  faMapMarkerAlt,
-} from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
 
 const Card = ({ data }) => {
   const { fields } = data;
-  const { takhallus, dob, location, photo, tafseel } = fields;
+  const { bookName, publishingDate, writer, book, desc, id } = fields;
 
   // Function to format date (assuming dob is in MM/DD/YYYY format)
   const formatDate = (dateString) => {
@@ -18,48 +13,43 @@ const Card = ({ data }) => {
   };
 
   return (
-    <Link href={`/Shaer/${takhallus?.replace(" ", "-")}`}>
+    <Link href={`/E-Books/${id}`}>
       <div className="rounded overflow-hidden shadow-lg mx-auto my-1">
         {/* Photo */}
         <div
-          className="relative bg-cover bg-center"
-          style={{ backgroundImage: `url(/poets/loadingpic.gif)` }}
+          className="relative bg-cover bg-center min-w-[200px] min-h-[300px]"
+          style={{
+            backgroundImage: `url(/poets/loadingpic.gif)`,
+          }}
         >
           <Image
-            className="w-full h-64 object-cover object-center"
+            className="h-full w-full"
             src={book?.[0].thumbnails?.large?.url}
             height={book?.[0].thumbnails?.large?.height}
             width={book?.[0].thumbnails?.large?.width}
             alt="Poet's Photo"
+            loading="lazy"
           />
-          {/* Takhallus */}
-          <div className="absolute bottom-0 w-full text-center p-2 bg-black bg-opacity-75 text-white">
-            {takhallus}
-          </div>
+          {/* <div className="absolute bottom-0 w-full text-center p-2 bg-black bg-opacity-75 text-white">
+            {bookName}
+          </div> */}
         </div>
         {/* Card Content */}
         <div className="px-6 py-4">
-          {/* Date of Birth */}
+          {/* bookName */}
+          <div className="mb-2">{bookName}</div>
+          {/* writer */}
+          <div className="flex items-center mb-2">{writer}</div>
+          {/* Publishing data */}
           <div className="date_location">
             <div className="flex items-center mb-2">
-              <FontAwesomeIcon
-                icon={faCalendarAlt}
-                className="ml-2 text-gray-600"
-              />
-              {formatDate(dob)}
-            </div>
-            {/* Location */}
-            <div className="flex items-center mb-2">
-              <FontAwesomeIcon
-                icon={faMapMarkerAlt}
-                className="ml-2 text-gray-600"
-              />
-              {location}
+              {formatDate(publishingDate)}
             </div>
           </div>
-
-          {/* Description Icon */}
-          {/* <div className="flex items-center mb-2">{tafseel}</div> */}
+          {/* Description */}
+          <div className="date_location">
+            <div className="text-center mb-2">{desc}</div>
+          </div>
         </div>
       </div>
     </Link>
