@@ -38,17 +38,9 @@ const Card = ({ data }) => {
         <div className="px-6 py-4">
           {/* bookName */}
           <div className="mb-2">{bookName}</div>
-          {/* writer */}
-          <div className="flex items-center mb-2">{writer}</div>
           {/* Publishing data */}
-          <div className="date_location">
-            <div className="flex items-center mb-2">
-              {formatDate(publishingDate)}
-            </div>
-          </div>
-          {/* Description */}
-          <div className="date_location">
-            <div className="text-center mb-2">{desc}</div>
+          <div className="flex items-center mb-2">
+            {formatDate(publishingDate)}
           </div>
         </div>
       </div>

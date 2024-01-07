@@ -3,10 +3,10 @@ import Page from "./Component";
 // import PdfViewer from "../Components/PdfKitPdfViwer";
 export const metadata = {
   metadataBase: new URL("https://jahannuma.vercel.app/Shaer"),
-  title: "Shu'ra | Jahannuma",
-  description: "This page has pen data of all young shaers of Goraphur",
+  title: "E-Books | Jahannuma",
+  description: "This page has book data of all young shaers of Goraphur",
   openGraph: {
-    images: ["https://jahannuma.vercel.app/metaImages/shu'ra.jpg"],
+    images: ["https://jahannuma.vercel.app/metaImages/ebooks.jpg"],
   },
 };
 

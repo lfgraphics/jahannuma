@@ -10,10 +10,6 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ToastComponent from "../Components/Toast";
 import SkeletonLoader from "../Components/SkeletonLoader";
-interface ApiResponse {
-  records: any[];
-  offset: string | null;
-}
 
 interface Book {
   filename: string;
