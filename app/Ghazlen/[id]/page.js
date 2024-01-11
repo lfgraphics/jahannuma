@@ -46,27 +46,27 @@ const Page = ({ params }) => {
   const ghazalLines = data.ghazal?.split('\n');
   const anaween = data.unwan?.split('\n');
 
-  const visitGhazlen = () => {
-    if (typeof window !== undefined) {
-      const referrer = document.referrer || '';
-      // Check if the referrer is not coming from /Ghazlen
-      if (!referrer.includes('/Ghazlen')) {
-        window.location.href = `${window.location.origin}/Ghazlen`; // Replace with your desired URL
-      } else {
-        window.history.back();
-      }
-    }
-  };
+  // const visitGhazlen = () => {
+  //   if (typeof window !== undefined) {
+  //     const referrer = document.referrer || '';
+  //     // Check if the referrer is not coming from /Ghazlen
+  //     if (!referrer.includes('/Ghazlen')) {
+  //       window.location.href = `${window.location.origin}/Ghazlen`; // Replace with your desired URL
+  //     } else {
+  //       window.history.back();
+  //     }
+  //   }
+  // };
 
-  useEffect(() => {
-    // Attach the custom back navigation handler to the popstate event
-    window.addEventListener('popstate', visitGhazlen);
+  // useEffect(() => {
+  //   // Attach the custom back navigation handler to the popstate event
+  //   window.addEventListener('popstate', visitGhazlen);
 
-    // Cleanup the event listener when the component is unmounted
-    return () => {
-      window.removeEventListener('popstate', visitGhazlen);
-    };
-  }, []); // Empty dependency array to ensure the effect runs only once
+  //   // Cleanup the event listener when the component is unmounted
+  //   return () => {
+  //     window.removeEventListener('popstate', visitGhazlen);
+  //   };
+  // }, []); // Empty dependency array to ensure the effect runs only once
 
   return (
     <div dir="rtl" className="flex justify-center">

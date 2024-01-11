@@ -4,6 +4,9 @@ import Intro from "@/app/Components/shaer/IntroPhoto"
 import Intro2 from "@/app/Components/shaer/Intro"
 import Ghazlen from "@/app/Components/shaer/Ghazlen"
 import Nazmen from "@/app/Components/shaer/Nazmen"
+import Ashaar from "@/app/Components/shaer/Ashaar"
+import EBkooks from "@/app/Components/shaer/EBooks"
+
 import './shaer.css';
 
 const Page = ({ params }) => {
@@ -99,10 +102,10 @@ const Page = ({ params }) => {
         <Nazmen takhallus={data.takhallus}></Nazmen>
       )}
       {activeNav === "اشعار" && (
-        <Intro2 data={data} ></Intro2>
+        <Ashaar takhallus={data.takhallus} ></Ashaar>
       )}
-      {activeNav === "ای - بکس" && (
-        <Intro2 data={data} ></Intro2>
+      {activeNav === "ئی - بکس" && (
+        <EBkooks takhallus={data.takhallus} ></EBkooks>
       )}
 
     </div>

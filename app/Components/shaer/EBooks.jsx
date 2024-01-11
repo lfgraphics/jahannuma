@@ -2,22 +2,21 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import Card from "../../Components/BookCard";
 import ComponentsLoader from "./ComponentsLoader";
 
-const Nazmen = ({ takhallus }) => {
+const EBooks = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
   const [loading, setLoading] = useState(true);
-
   console.log(takhallus);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const BASE_ID = "app5Y2OsuDgpXeQdz";
-      const TABLE_NAME = "nazmen";
+      const BASE_ID = "appXcBoNMGdIaSUyA";
+      const TABLE_NAME = "E-Books";
 
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${takhallus}')`;
-      console.log(takhallus);
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({writer}='${takhallus}')`;
       const headers = {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
@@ -25,25 +24,26 @@ const Nazmen = ({ takhallus }) => {
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
 
-      console.log(response);
       const records = result.records || [];
-      console.log(records);
       // Convert ghazal and ghazalHead fields to arrays
-      const formattedRecords = records.map((record) => ({
+      const formattedRecords = result.records.map((record) => ({
         ...record,
         fields: {
           ...record.fields,
-          ghazalHead: record.fields.displayLine.split("\n"),
-          id: record.fields.id,
+          bookName: record.fields?.bookName,
+          writer: record.fields?.writer,
+          publishingData: record.fields?.publishingData,
+          tafseel: record.fields?.desc,
+          book: record.fields?.book,
+          likes: record.fields?.likes,
         },
       }));
 
       setDataItems(formattedRecords);
-      console.log(records);
-      console.log(formattedRecords);
       setLoading(false);
 
-      // console.log(filteredRecord)
+      console.log("filtered records are", formattedRecords);
+      console.log("filtered records are", dataItems);
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
       setLoading(false);
@@ -52,9 +52,10 @@ const Nazmen = ({ takhallus }) => {
   useEffect(() => {
     fetchData();
   }, []);
+
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Nazmen");
+      const storedData = localStorage.getItem("Books");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -79,12 +80,11 @@ const Nazmen = ({ takhallus }) => {
     }
   }, [dataItems]);
 
-  const [heartColors, setHeartColors] = useState([]);
   const handleHeartClick = async (shaerData, index, id) => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Nazmen");
+        const existingDataJSON = localStorage.getItem("Books");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData = existingDataJSON
@@ -107,14 +107,14 @@ const Nazmen = ({ takhallus }) => {
           document.getElementById(`${id}`)?.classList.remove("text-gray-500");
           document.getElementById(`${id}`)?.classList.add("text-red-600");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ghazlen", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
+            "آپ کی پروفائل میں یہ کتاب کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
           );
           console.log(
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
+            "آپ کی پروفائل میں یہ کتاب کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
           try {
             // Make API request to update the record's "Likes" field
@@ -135,7 +135,7 @@ const Nazmen = ({ takhallus }) => {
               "Content-Type": "application/json",
             };
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appXcBoNMGdIaSUyA/E-Books`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -169,14 +169,16 @@ const Nazmen = ({ takhallus }) => {
           document.getElementById(`${id}`)?.classList.remove("text-red-600");
           document.getElementById(`${id}`)?.classList.add("text-gray-500");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ghazlen", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
             "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+            "آپ کی پروفائل سے یہ کتاب کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
+          console.log(
+            "آپ کی پروفائل سے یہ کتاب کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+          );
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
@@ -197,7 +199,7 @@ const Nazmen = ({ takhallus }) => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appXcBoNMGdIaSUyA/E-Books`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -230,47 +232,31 @@ const Nazmen = ({ takhallus }) => {
   };
 
   return (
-    <div>
+    <>
       {loading && <ComponentsLoader />}
-      {dataItems.map((shaerData, index) => {
-        return (
-          <div
-            key={index}
-            id={`card${index}`}
-            className="bg-white rounded-sm border-b relative flex flex-col justify-between m-5 pt-0 md:mx-36 lg:mx-36"
-          >
-            <div className="flex justify-between items-center">
-              <div className="mr-5">
-                <Link href={"/Nazmen/" + shaerData.id}>
-                  {shaerData.fields.ghazalHead.map((lin, index) => (
-                    <p
-                      style={{ lineHeight: "normal" }}
-                      key={index}
-                      className="text-black line-normal text-xl"
-                    >
-                      {lin}
-                    </p>
-                  ))}
-                </Link>
-              </div>
+      {!loading && (
+        <div
+          id="section"
+          dir="rtl"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
+        >
+          {dataItems.map((item, index) => (
+            <div className="relative" key={index}>
               <div
-                id={`${shaerData.id}`}
-                className="btn ml-5 text-gray-500 transition-all duration-500 text-lg"
-                onClick={() =>
-                  handleHeartClick(shaerData, index, `${shaerData.id}`)
-                }
+                className="heart cursor-pointer text-gray-500 pr-3 absolute top-0 right-0 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-full m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
+                onClick={(e) => handleHeartClick(e, item, index, `${item.id}`)}
+                id={`${item.id}`}
               >
-                <FontAwesomeIcon
-                  icon={faHeart}
-                  style={{ color: heartColors[index] }}
-                />
+                <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
+                <span className="text-black">{`${item.fields?.likes}`}</span>
               </div>
+              <Card data={item} />
             </div>
-          </div>
-        );
-      })}
-    </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 };
 
-export default Nazmen;
+export default EBooks;

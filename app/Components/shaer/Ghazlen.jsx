@@ -2,13 +2,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import ComponentsLoader from "./ComponentsLoader";
 
 const Ghazlen = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
-
+  const [loading, setLoading] = useState(true);
   console.log(takhallus);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "Ghazlen";
@@ -33,12 +35,12 @@ const Ghazlen = ({ takhallus }) => {
       }));
 
       setDataItems(formattedRecords);
-      // setLoading(false);
+      setLoading(false);
 
       // console.log(filteredRecord)
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
-      // setLoading(false);
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -55,9 +57,7 @@ const Ghazlen = ({ takhallus }) => {
             const shaerId = shaerData.id; // Get the id of the current shaerData
 
             // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data) => data.id === shaerId
-            );
+            const storedShaer = parsedData.find((data) => data.id === shaerId);
 
             if (storedShaer) {
               // If shaerId exists in the stored data, update the card's appearance
@@ -75,11 +75,7 @@ const Ghazlen = ({ takhallus }) => {
   }, [dataItems]);
 
   const [heartColors, setHeartColors] = useState([]);
-   const handleHeartClick = async (
-    shaerData,
-    index,
-    id
-  ) => {
+  const handleHeartClick = async (shaerData, index, id) => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
@@ -230,6 +226,7 @@ const Ghazlen = ({ takhallus }) => {
 
   return (
     <div>
+      {loading && <ComponentsLoader />}
       {dataItems.map((shaerData, index) => {
         return (
           <div

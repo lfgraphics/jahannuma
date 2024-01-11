@@ -4,20 +4,18 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
 
-const Nazmen = ({ takhallus }) => {
+const Ashaar = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
   const [loading, setLoading] = useState(true);
-
   console.log(takhallus);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const BASE_ID = "app5Y2OsuDgpXeQdz";
-      const TABLE_NAME = "nazmen";
+      const BASE_ID = "appeI2xzzyvUN5bR7";
+      const TABLE_NAME = "Ashaar";
 
       let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${takhallus}')`;
-      console.log(takhallus);
       const headers = {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
@@ -25,22 +23,18 @@ const Nazmen = ({ takhallus }) => {
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
 
-      console.log(response);
       const records = result.records || [];
-      console.log(records);
       // Convert ghazal and ghazalHead fields to arrays
       const formattedRecords = records.map((record) => ({
         ...record,
         fields: {
           ...record.fields,
-          ghazalHead: record.fields.displayLine.split("\n"),
+          ghazalHead: record.fields.sher.split("\n"),
           id: record.fields.id,
         },
       }));
 
       setDataItems(formattedRecords);
-      console.log(records);
-      console.log(formattedRecords);
       setLoading(false);
 
       // console.log(filteredRecord)
@@ -52,9 +46,10 @@ const Nazmen = ({ takhallus }) => {
   useEffect(() => {
     fetchData();
   }, []);
+
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Nazmen");
+      const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -84,7 +79,7 @@ const Nazmen = ({ takhallus }) => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Nazmen");
+        const existingDataJSON = localStorage.getItem("Ashaar");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData = existingDataJSON
@@ -107,14 +102,14 @@ const Nazmen = ({ takhallus }) => {
           document.getElementById(`${id}`)?.classList.remove("text-gray-500");
           document.getElementById(`${id}`)?.classList.add("text-red-600");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ashaar", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
+            "آپ کی پروفائل میں یہ شعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
           );
           console.log(
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
+            "آپ کی پروفائل میں یہ شعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
           try {
             // Make API request to update the record's "Likes" field
@@ -135,7 +130,7 @@ const Nazmen = ({ takhallus }) => {
               "Content-Type": "application/json",
             };
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appeI2xzzyvUN5bR7/Ashaar`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -169,14 +164,14 @@ const Nazmen = ({ takhallus }) => {
           document.getElementById(`${id}`)?.classList.remove("text-red-600");
           document.getElementById(`${id}`)?.classList.add("text-gray-500");
 
-          localStorage.setItem("Nazmen", updatedDataJSON);
+          localStorage.setItem("Ashaar", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
             "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+            "آپ کی پروفائل سے یہ شعر کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
+          console.log("آپ کی پروفائل سے یہ شعر کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
@@ -197,7 +192,7 @@ const Nazmen = ({ takhallus }) => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+              `https://api.airtable.com/v0/appeI2xzzyvUN5bR7/Ashaar`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -241,7 +236,7 @@ const Nazmen = ({ takhallus }) => {
           >
             <div className="flex justify-between items-center">
               <div className="mr-5">
-                <Link href={"/Nazmen/" + shaerData.id}>
+                <Link href={"/Ashaar/" + shaerData.id}>
                   {shaerData.fields.ghazalHead.map((lin, index) => (
                     <p
                       style={{ lineHeight: "normal" }}
@@ -273,4 +268,4 @@ const Nazmen = ({ takhallus }) => {
   );
 };
 
-export default Nazmen;
+export default Ashaar;

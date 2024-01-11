@@ -16,6 +16,7 @@ import SkeletonLoader from "../../../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
+    sher: string[];
     shaer: string;
     ghazalHead: string[];
     ghazal: string[];
@@ -822,6 +823,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           >
             {dataItems.map((shaerData, index) => (
               <GhazalCard
+                download={false}
                 key={index}
                 shaerData={shaerData}
                 index={index}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ComponentsLoader from "./ComponentsLoader";
 
 interface IntroProps {
   data: {
@@ -36,6 +37,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
       dir="rtl"
       className="container flex flex-col justify-center p-5 pt-0 md:px-36 lg:px-36"
     >
+      {!data && <ComponentsLoader />}
       {data && insideBrowser && (
         <div className="poet-intro text-lg">
           <p>
