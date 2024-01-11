@@ -31,7 +31,8 @@
     ".next/types/**/*.ts",
     "app/**/*.ts",
     "app/**/*.tsx",
-    "app/E-Books/[id]/page.jsx"
+    "app/E-Books/[id]/page.jsx",
+    "app/Components/Donate.jsx"
   ],
   "exclude": ["node_modules"]
 }
