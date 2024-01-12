@@ -12,7 +12,6 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
-import { Filter } from "react-feather";
 import Image from "next/image";
 
 interface Shaer {
@@ -271,7 +270,7 @@ const Ashaar: React.FC<{}> = () => {
           onClick={toggleFilter}
           className="cursor-pointer filter-btn flex-[20%] flex justify-center text-[#984A02]"
         >
-          <Filter></Filter>
+          {/* <Filter></Filter> */}
         </div>
         <div className="filter-btn flex-[90%] text-center justify-center flex">
           <div className="flex justify-center basis-[95%] h-auto">

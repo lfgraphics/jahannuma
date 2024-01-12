@@ -8,7 +8,6 @@ import {
   faTimesCircle,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import "aos/dist/aos.css";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
