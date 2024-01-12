@@ -50,8 +50,8 @@ const Page = ({ params }) => {
     if (typeof window !== undefined) {
       const referrer = document.referrer || '';
       // Check if the referrer is not coming from /Ghazlen
-      if (!referrer.includes('/Ghazlen')) {
-        window.location.href = `${window.location.origin}/Ghazlen`; // Replace with your desired URL
+      if (!referrer.includes('/Ashaar')) {
+        window.location.href = `${window.location.origin}/Ashaar`; // Replace with your desired URL
       } else {
         window.history.back();
       }

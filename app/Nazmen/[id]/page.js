@@ -53,8 +53,8 @@ const Page = ({ params }) => {
     if (typeof window !== undefined) {
       const referrer = document.referrer || '';
       // Check if the referrer is not coming from /Ghazlen
-      if (!referrer.includes('/Ghazlen')) {
-        window.location.href = `${window.location.origin}/Ghazlen`; // Replace with your desired URL
+      if (!referrer.includes('/Nazmen')) {
+        window.location.href = `${window.location.origin}/Nazmen`; // Replace with your desired URL
       } else {
         window.history.back();
       }
@@ -101,7 +101,7 @@ const Page = ({ params }) => {
             >
               مزید غزلیں
             </button>
-            <Link href={`/Nazmen/shaer/${data.shaer.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
+            <Link href={`/Nazmen/shaer/${data.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
           </div>
           {/* <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div> */}
         </div>
