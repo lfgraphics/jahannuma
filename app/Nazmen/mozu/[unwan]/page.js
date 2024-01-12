@@ -2,13 +2,7 @@
 import React, { useEffect, useState } from "react";
 import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHome,
-  faSearch,
-  faTimesCircle,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
-import "aos/dist/aos.css";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
