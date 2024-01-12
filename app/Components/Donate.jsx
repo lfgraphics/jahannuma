@@ -1,5 +1,5 @@
 "use client";
-import { PayPalButton } from "react-paypal-button-v2";
+// import { PayPalButton } from "react-paypal-button-v2";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -97,20 +97,21 @@ const Donate = () => {
         <p dir="rtl">ہندوستانی روپیہ : {(amount / exchangeRate).toFixed(2)}</p>
       </div>
       {scriptLoaded ? (
-        <PayPalButton
-          amount={amount}
-          onSuccess={(details, data) => {
-            alert("Transaction completed by " + details.payer.name.given_name);
+        // <PayPalButton
+        //   amount={amount}
+        //   onSuccess={(details, data) => {
+        //     alert("Transaction completed by " + details.payer.name.given_name);
 
-            // OPTIONAL: Call your server to save the transaction
-            return fetch("/paypal-transaction-complete", {
-              method: "post",
-              body: JSON.stringify({
-                orderID: data.orderID,
-              }),
-            });
-          }}
-        />
+        //     // OPTIONAL: Call your server to save the transaction
+        //     return fetch("/paypal-transaction-complete", {
+        //       method: "post",
+        //       body: JSON.stringify({
+        //         orderID: data.orderID,
+        //       }),
+        //     });
+        //   }}
+        // />
+        <p>Paypal button isn't working shift the code to Paytm checkout</p>
       ) : (
         <span className="">Loading...</span>
       )}

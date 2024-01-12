@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { data } from "./data";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "react-feather";
+// import { ChevronLeft, ChevronRight } from "react-feather";
 
 const DoYouKnow: React.FC = () => {
   const [cards, setCards] = useState(data.cards);
@@ -32,7 +32,8 @@ const DoYouKnow: React.FC = () => {
           }`}
           onClick={scrollLeft}
         >
-          <ChevronLeft size={20} />
+          {/* <ChevronLeft size={20} /> */}
+          {/* use fontawesome buttons instead */}
         </div>
         <div
           className="flex basis-[90%] justify-center overflow-hidden rounded-lg shadow-md h-[30rem] overflow-y-auto"
@@ -68,7 +69,8 @@ const DoYouKnow: React.FC = () => {
           }`}
           onClick={scrollRight}
         >
-          <ChevronRight size={20} />
+          {/* <ChevronRight size={20} /> */}
+          {/* use fontawesome buttons instead */}
         </div>
       </div>
     </div>

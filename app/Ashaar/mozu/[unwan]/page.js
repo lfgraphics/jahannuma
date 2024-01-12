@@ -3,12 +3,8 @@ import React, { useEffect, useState } from "react";
 import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faHome,
-  faSearch,
   faTimesCircle,
-  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import "aos/dist/aos.css";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
@@ -32,7 +28,6 @@ const Page = ({ params }) => {
   const decodedUnwan = decodeURIComponent(encodedUnwan);
   const [selectedCommentId, setSelectedCommentId] = React.useState(null);
   const [selectedCard, setSelectedCard] = React.useState(null);
-  const [pagination, setPagination] = useState([]);
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState([]);
@@ -725,6 +720,7 @@ const Page = ({ params }) => {
           >
             {dataItems.map((shaerData, index) => (
               <GhazalCard
+                download={false}
                 key={index}
                 shaerData={shaerData}
                 index={index}
