@@ -53,14 +53,14 @@ const Page = ({ params }) => {
       <Intro data={data} ></Intro>
       <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 mb-4 border-b-2 self-center p-4 text-xl">
         <div
-          className={`nav-item ${activeNav === 'تعارف' ? 'active' : ''} min-w-[40px] text-center`}
+          className={`nav-item ${activeNav === 'تعارف' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
           onClick={() => handleNavClick('تعارف')}
         >
           تعارف
         </div>
         {data.ghazlen && data.ghazlen === true && (
           <div
-            className={`nav-item ${activeNav === 'غزلیں' ? 'active' : ''} min-w-[40px] text-center`}
+            className={`nav-item ${activeNav === 'غزلیں' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
             onClick={() => handleNavClick('غزلیں')}
           >
             غزلیں
@@ -68,7 +68,7 @@ const Page = ({ params }) => {
         )}
         {data.ashaar && data.ashaar === true && (
           <div
-            className={`nav-item ${activeNav === 'نظمیں' ? 'active' : ''} min-w-[40px] text-center`}
+            className={`nav-item ${activeNav === 'نظمیں' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
             onClick={() => handleNavClick('نظمیں')}
           >
             نظمیں
@@ -76,7 +76,7 @@ const Page = ({ params }) => {
         )}
         {data.ashaar && data.ashaar === true && (
           <div
-            className={`nav-item ${activeNav === 'اشعار' ? 'active' : ''} min-w-[40px] text-center`}
+            className={`nav-item ${activeNav === 'اشعار' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
             onClick={() => handleNavClick('اشعار')}
           >
             اشعار
@@ -84,7 +84,7 @@ const Page = ({ params }) => {
         )}
         {data.eBooks && data.eBooks === true && (
           <div
-            className={`nav-item ${activeNav === 'ئی - بکس' ? 'active' : ''} min-w-[40px] text-center`}
+            className={`nav-item ${activeNav === 'ئی - بکس' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
             onClick={() => handleNavClick('ئی - بکس')}
           >
             ئی - بکس

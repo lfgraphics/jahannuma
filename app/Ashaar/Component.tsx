@@ -278,10 +278,10 @@ const Ashaar: React.FC<{}> = () => {
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
+            "آپ کی پروفائل میں یہ شعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
           );
           console.log(
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
+            "آپ کی پروفائل میں یہ شعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
           try {
             // Make API request to update the record's "Likes" field
@@ -342,9 +342,9 @@ const Ashaar: React.FC<{}> = () => {
           // Optionally, you can update the UI or show a success message
           showToast(
             "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+            "آپ کی پروفائل سے یہ شعر کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
+          console.log("آپ کی پروفائل سے یہ شعر کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
@@ -883,8 +883,8 @@ const Ashaar: React.FC<{}> = () => {
                 {moreloading
                   ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                  ? "مزید غزلیں نہیں ہیں"
-                  : "مزید غزلیں لوڈ کریں"}
+                  ? "مزید اشعار نہیں ہیں"
+                  : "مزید اشعار لوڈ کریں"}
               </button>
             </div>
           </div>

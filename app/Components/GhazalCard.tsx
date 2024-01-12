@@ -86,7 +86,9 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
         >
           {shaerData.fields.unwan?.map((unwaan, index) => (
             <span key={index} className="text-md text-blue-500 underline p-2">
-              <Link href={`/Ghazlen/mozu/${unwaan}`}>{unwaan}</Link>
+              <Link href={`/${download ? "Ashaar" : "Ghazlen"}/mozu/${unwaan}`}>
+                {unwaan}
+              </Link>
             </span>
           ))}
         </div>
@@ -105,7 +107,9 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           {
             <Link
               className="text-blue-500 underline"
-              href={`/Ghazlen/mozu/${shaerData.fields.unwan?.[0]}`}
+              href={`/${download ? "Ashaar" : "Ghazlen"}/mozu/${
+                shaerData.fields.unwan?.[0]
+              }`}
             >
               {shaerData.fields.unwan?.[0]}
             </Link>

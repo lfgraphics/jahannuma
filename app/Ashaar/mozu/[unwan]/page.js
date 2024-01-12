@@ -124,6 +124,7 @@ const Page = ({ params }) => {
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
+      console.log(formattedRecords)
       if (!offset) {
         if (userQuery) {
           setInitialdDataItems(dataItems);
@@ -690,7 +691,7 @@ const Page = ({ params }) => {
         </div>
       )}
       <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center">
-        <div className="text-4xl m-5">{`غزلیں بعنوان : ${decodedUnwan}`}</div>
+        <div className="text-4xl m-5">{`اشعار بعنوان : ${decodedUnwan}`}</div>
       </div>
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
@@ -776,7 +777,8 @@ const Page = ({ params }) => {
                 {selectedCard.fields.shaer}
               </h2>
               {selectedCard.fields.ghazal.map((line, index) => (
-                <p key={index} className="text-black pb-3 pr-4 text-2xl">
+                <p key={index} className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
+                >
                   {line}
                 </p>
               ))}

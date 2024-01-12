@@ -275,10 +275,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
+            "آپ کی پروفائل میں یہ شعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
           );
           console.log(
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
+            "آپ کی پروفائل میں یہ شعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
           try {
             // Make API request to update the record's "Likes" field
@@ -339,9 +339,9 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           // Optionally, you can update the UI or show a success message
           showToast(
             "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+            "آپ کی پروفائل سے یہ شعر کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
+          console.log("آپ کی پروفائل سے یہ شعر کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
@@ -787,7 +787,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         </div>
       )}
       <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">
-        {`${decodeURIComponent(params.name).replace("_", " ")} کی غزلیں`}
+        {`${decodeURIComponent(params.name).replace("_", " ")} کے اشعار`}
       </div>
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
@@ -840,8 +840,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               {moreloading
                 ? "لوڈ ہو رہا ہے۔۔۔"
                 : noMoreData
-                ? "مزید غزلیں نہیں ہیں"
-                : "مزید غزلیں لوڈ کریں"}
+                ? "مزید اشعار نہیں ہیں"
+                : "مزید اشعار لوڈ کریں"}
             </button>
           </div>
         </section>

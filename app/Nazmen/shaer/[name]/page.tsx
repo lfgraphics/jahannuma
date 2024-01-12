@@ -262,10 +262,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
+            "آپ کی پروفائل میں یہ نظم کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
           );
           console.log(
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
+            "آپ کی پروفائل میں یہ نظم کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
           try {
             // Make API request to update the record's "Likes" field
@@ -325,9 +325,9 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           // Optionally, you can update the UI or show a success message
           showToast(
             "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+            "آپ کی پروفائل سے یہ نظم کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
+          console.log("آپ کی پروفائل سے یہ نظم کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;

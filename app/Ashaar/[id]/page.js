@@ -83,12 +83,14 @@ const Page = ({ params }) => {
           <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
           <div className="text-2xl mb-4">
             {ghazalLines?.map((line, index) => (
-              <p style={{ lineHeight: "normal" }} key={index}>{line}</p>
+              <p style={{ lineHeight: "normal" }} key={index}
+                className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
+              >{line}</p>
             ))}
           </div>
           <div className="flex gap-5 text-md mb-4 justify-center">
             {anaween?.map((unwan, index) => (
-              <Link href={`/Ghazlen/mozu/${unwan}`} className="text-blue-500 underline cursor-pointer" style={{ lineHeight: "normal" }} key={index}>{unwan}</Link>
+              <Link href={`/Ashaar/mozu/${unwan}`} className="text-blue-500 underline cursor-pointer" style={{ lineHeight: "normal" }} key={index}>{unwan}</Link>
             ))}
           </div>
           <div className="mazeed flex justify-around">
@@ -96,9 +98,9 @@ const Page = ({ params }) => {
               onClick={visitGhazlen}
               className="bg-white text-[#984A02] border active:bg-[#984a02ac] active:text-white border-[#984A02] px-4 py-2 rounded-md"
             >
-              مزید غزلیں
+              مزید اشعار
             </button>
-            <Link href={`/Ghazlen/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
+            <Link href={`/Ashaaar/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
           </div>
           {/* <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div> */}
         </div>
