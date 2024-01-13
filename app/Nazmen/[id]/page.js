@@ -99,7 +99,7 @@ const Page = ({ params }) => {
               onClick={visitGhazlen}
               className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
             >
-              مزید غزلیں
+              مزید نظمیں
             </button>
             <Link href={`/Nazmen/shaer/${data.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
           </div>
