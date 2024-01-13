@@ -83,9 +83,12 @@ const Page = ({ params }) => {
           <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
           <div className="text-2xl mb-4">
             {ghazalLines?.map((line, index) => (
-              <p style={{ lineHeight: "normal" }} key={index}
+              <p
+                key={index}
                 className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
-              >{line}</p>
+              >
+                {line}
+              </p>
             ))}
           </div>
           <div className="flex gap-5 text-md mb-4 justify-center">
@@ -100,7 +103,7 @@ const Page = ({ params }) => {
             >
               مزید اشعار
             </button>
-            <Link href={`/Ashaaar/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
+            <Link href={`/Ashaaar/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کے مزید اشعار</Link>
           </div>
           {/* <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div> */}
         </div>

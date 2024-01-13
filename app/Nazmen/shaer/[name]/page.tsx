@@ -835,7 +835,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         <button
           style={{ overflow: "hidden" }}
           id="modlBtn"
-          className="fixed bottom-12 left-7 z-50"
+          className="fixed bottom-[63svh] right-7 z-50"
           onClick={handleCloseModal}
         >
           <FontAwesomeIcon
@@ -855,7 +855,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
             className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
             <div className="p-4 pr-0">
-              <h2 className="text-black text-4xl top-0 bg-white sticky px-0 pr-4 p-3 border-b-2 mb-3">
+              <h2 className="text-black text-4xl text-center top-0 bg-white sticky px-0 pr-4 p-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}
               </h2>
               {selectedCard.fields.ghazal.map((line, index) => (

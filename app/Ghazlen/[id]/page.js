@@ -83,7 +83,12 @@ const Page = ({ params }) => {
           <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
           <div className="text-2xl mb-4">
             {ghazalLines?.map((line, index) => (
-              <p style={{ lineHeight: "normal" }} key={index}>{line}</p>
+              <p
+                key={index}
+                className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
+              >
+                {line}
+              </p>
             ))}
           </div>
           <div className="flex gap-5 text-md mb-4 justify-center">
