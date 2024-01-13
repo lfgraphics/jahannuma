@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import GhazalCard from "./GhazalCard";
+import gsap from "gsap";
+import LocalGhazalCard from "./LocalGhazalCard";
 import ToastComponent from "./Toast";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 // import React {useEffect} from 'react'
 interface Shaer {
@@ -26,17 +29,7 @@ const Ghazlen = () => {
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
-  const [selectedCommentId, setSelectedCommentId] = useState<string | null>(
-    null
-  );
   const [openanaween, setOpenanaween] = useState<string | null>(null);
-  //comments
-  const [showDialog, setShowDialog] = useState(false);
-  const [nameInput, setNameInput] = useState("");
-  const [commentorName, setCommentorName] = useState<string | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [commentLoading, setCommentLoading] = useState(false);
-  const [newComment, setNewComment] = useState("");
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
@@ -46,50 +39,7 @@ const Ghazlen = () => {
     let retrivedData = localStorage.getItem("Ghazlen");
     let parsedData = JSON.parse(retrivedData!);
     setData(parsedData);
-    console.log(parsedData);
-  },[]);
-
-  const fetchComments = async (dataId: string) => {
-    const storedName = localStorage.getItem("commentorName");
-    try {
-      setCommentLoading(true);
-      if (!commentorName && storedName === null) {
-        setShowDialog(true);
-      } else {
-        setCommentorName(commentorName || storedName);
-      }
-      const BASE_ID = "appzB656cMxO0QotZ";
-      const TABLE_NAME = "Comments";
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-
-      const response = await fetch(url, { headers });
-      const result = await response.json();
-
-      const fetchedComments = result.records.map(
-        (record: {
-          fields: {
-            dataId: string;
-            commentorName: string | null;
-            timestamp: string | Date;
-            comment: string;
-          };
-        }) => ({
-          dataId: record.fields.dataId,
-          commentorName: record.fields.commentorName,
-          timestamp: record.fields.timestamp,
-          comment: record.fields.comment,
-        })
-      );
-      setCommentLoading(false);
-      setComments(fetchedComments);
-    } catch (error) {
-      setCommentLoading(false);
-      console.error(`Failed to fetch comments: ${error}`);
-    }
-  };
+  }, []);
 
   const showToast = (
     msgtype: "success" | "error" | "invalid",
@@ -210,66 +160,32 @@ const Ghazlen = () => {
             console.error("Error updating likes:", error);
           }
         } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.id !== shaerData.id
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Ghazlen", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
-          try {
-            // Make API request to update the record's "Likes" field
-            const updatedLikes = shaerData.fields.likes - 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
+          if (
+            confirm(
+              "کیا آپ سچ میں اس غزل کو اپنے پسندیدہ میں سے ہٹانا چاہتے ہیں؟"
+            )
+          ) {
+            const updatedData = existingData.filter(
+              (data) => data.id !== shaerData.id
             );
 
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setData((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
-          } catch (error) {
-            console.error("Error updating likes:", error);
+            // Serialize the updated data back to JSON
+            const updatedDataJSON = JSON.stringify(updatedData);
+
+            // Toggle the color between "#984A02" and "grey" based on the current color
+            document.getElementById(`${id}`)!.classList.remove("text-red-600");
+            document.getElementById(`${id}`)!.classList.add("text-gray-500");
+
+            localStorage.setItem("Ghazlen", updatedDataJSON);
+
+            // Optionally, you can update the UI or show a success message
+            showToast(
+              "invalid",
+              "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+            );
+            console.log(
+              "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+            );
           }
         }
       } catch (error) {
@@ -295,7 +211,7 @@ const Ghazlen = () => {
             text:
               shaerData.fields.ghazalHead.map((line) => line).join("\n") +
               `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
+            url: `${window.location.origin + "/Ghazlen" + shaerData.id}`, // Get the current page's URL
           })
 
           .then(() => console.info("Successful share"))
@@ -350,15 +266,6 @@ const Ghazlen = () => {
     }
     setSelectedCard(null);
   };
-  const openComments = (dataId: string) => {
-    toggleanaween(null);
-    setSelectedCommentId(dataId);
-    fetchComments(dataId);
-    // setIsModleOpen(true);
-  };
-  const closeComments = () => {
-    setSelectedCommentId(null);
-  };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
@@ -392,14 +299,12 @@ const Ghazlen = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-  const hideDialog = () => {
-    setShowDialog(false);
-  };
 
   return (
     <>
+      {toast}
       {data.map((shaerData, index) => (
-        <GhazalCard
+        <LocalGhazalCard
           download={false}
           key={index}
           shaerData={shaerData}
@@ -409,9 +314,47 @@ const Ghazlen = () => {
           openanaween={openanaween}
           handleHeartClick={handleHeartClick}
           handleShareClick={handleShareClick}
-          openComments={openComments}
         />
       ))}
+      {selectedCard && (
+        <button
+          style={{ overflow: "hidden" }}
+          id="modlBtn"
+          className="fixed bottom-[63svh] right-7 z-50"
+          onClick={handleCloseModal}
+        >
+          <FontAwesomeIcon
+            icon={faTimesCircle}
+            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
+          />
+        </button>
+      )}
+      {selectedCard && (
+        <div
+          onClick={handleCloseModal}
+          id="modal"
+          className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
+        >
+          <div
+            dir="rtl"
+            className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
+          >
+            <div className="p-4 pr-0">
+              <h2 className="text-black text-4xl text-center top-0 bg-white sticky px-0 pr-4 p-3 border-b-2 mb-3">
+                {selectedCard.fields.shaer}
+              </h2>
+              {selectedCard.fields.ghazal.map((line, index) => (
+                <p
+                  key={index}
+                  className="justif max-w-[360px] text-black pb-3 pr-4 text-2xl"
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
