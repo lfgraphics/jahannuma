@@ -85,45 +85,46 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
     }
   }, [language]);
 
-    useEffect(() => {
+  useEffect(() => {
     const handlePopstate = () => {
       // Get the current pathname
       const pathname = window.location.pathname;
 
       // Check if the pathname includes "/EN" or "/HI"
-      const isLanguagePath = pathname.includes('/EN') || pathname.includes('/HI');
+      const isLanguagePath =
+        pathname.includes("/EN") || pathname.includes("/HI");
 
       // Check the allowed number of slashes based on whether it's a language path
       const allowedSlashCount = isLanguagePath ? 3 : 2;
 
       // Check if the pathname has the allowed number of slashes
-      const hasAllowedSlashes = pathname.split('/').length === allowedSlashCount;
+      const hasAllowedSlashes =
+        pathname.split("/").length === allowedSlashCount;
 
       // Get the element with the class 'langChange'
-      const langChangeElement = document.querySelector('.langChange');
+      const langChangeElement = document.querySelector(".langChange");
 
       // If it's a language path and includes the allowed number of slashes, hide the 'langChange'; otherwise, show it
       if (langChangeElement) {
         if (isLanguagePath && hasAllowedSlashes) {
-          langChangeElement.classList.add('hidden');
+          langChangeElement.classList.add("hidden");
         } else {
-          langChangeElement.classList.remove('hidden');
+          langChangeElement.classList.remove("hidden");
         }
       }
     };
 
     // Add event listener for popstate (browser back/forward)
-    window.addEventListener('popstate', handlePopstate);
+    window.addEventListener("popstate", handlePopstate);
 
     // Run the initial check
     handlePopstate();
 
     // Remove the event listener on component unmount
     return () => {
-      window.removeEventListener('popstate', handlePopstate);
+      window.removeEventListener("popstate", handlePopstate);
     };
   }, []);
-
 
   return (
     <div className="sticky w-screen z-50 top-0 font-noto-nastaliq">
@@ -164,8 +165,8 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 priority
               />
             </Link>
-            <div className="w-0 lg:w-[100%]">
-              <ul className="hidden lg:flex md:text-xs justify-center font-noto-nastaliq space-x-4">
+            <div dir="rtl" className="w-0 lg:w-[100%]">
+              <ul className="hidden lg:flex md:text-xs justify-center gap-4">
                 {pages.map((page) => (
                   <li
                     key={page.EN}
@@ -207,7 +208,13 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
               href={`https://rzp.io/l/QpiIjiU`}
               className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem]"
             >
-              <button>Donate Us</button>
+              <button>
+                {language === "UR"
+                  ? "ہمیں عطیہ کریں"
+                  : language == "EN"
+                  ? "Donate Us"
+                  : "हमें दान करें"}
+              </button>
             </Link>
           </Toolbar>
         </Container>

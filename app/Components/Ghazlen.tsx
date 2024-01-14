@@ -303,24 +303,30 @@ const Ghazlen = () => {
   return (
     <>
       {toast}
-      {data.map((shaerData, index) => (
-        <LocalGhazalCard
-          download={false}
-          key={index}
-          shaerData={shaerData}
-          index={index}
-          handleCardClick={handleCardClick}
-          toggleanaween={toggleanaween}
-          openanaween={openanaween}
-          handleHeartClick={handleHeartClick}
-          handleShareClick={handleShareClick}
-        />
-      ))}
+      <div
+        id="section"
+        dir="rtl"
+        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
+      >
+        {data.map((shaerData, index) => (
+          <LocalGhazalCard
+            download={false}
+            key={index}
+            shaerData={shaerData}
+            index={index}
+            handleCardClick={handleCardClick}
+            toggleanaween={toggleanaween}
+            openanaween={openanaween}
+            handleHeartClick={handleHeartClick}
+            handleShareClick={handleShareClick}
+          />
+        ))}
+      </div>
       {selectedCard && (
         <button
           style={{ overflow: "hidden" }}
           id="modlBtn"
-          className="fixed bottom-[63svh] right-7 z-50"
+          className="fixed bottom-[63dvh] right-7 z-50"
           onClick={handleCloseModal}
         >
           <FontAwesomeIcon

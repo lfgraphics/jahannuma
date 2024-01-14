@@ -43,8 +43,8 @@ const YourPage = () => {
   let navs = ["غزلیں", "نظمیں", "اشعار", "شعرا", "ئی-بکس"];
 
   return (
-    <div>
-      <label>
+    <div className="flex flex-col justify-center items-center">
+      <label className="m-6">
         Your Name:{" "}
         {isEditingName ? (
           <>
@@ -82,11 +82,13 @@ const YourPage = () => {
           </div>
         ))}
       </div>
-      {activeNav === "غزلیں" && <Ghazlen />}
-      {activeNav === "نظمیں" && <Nazmen />}
-      {activeNav === "اشعار" && <Ashaar />}
-      {activeNav === "شعرا" && <Shura />}
-      {activeNav === "ئی-بکس" && <EBooks />}
+      <div className="offline_content w-full">
+        {activeNav === "غزلیں" && <Ghazlen />}
+        {activeNav === "نظمیں" && <Nazmen />}
+        {activeNav === "اشعار" && <Ashaar />}
+        {activeNav === "شعرا" && <Shura />}
+        {activeNav === "ئی-بکس" && <EBooks />}
+      </div>
     </div>
   );
 };
