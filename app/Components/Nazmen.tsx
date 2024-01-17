@@ -262,11 +262,13 @@ const Nazmen = () => {
   return (
     <>
       {toast}
-      {!data || data.length == 0 && (
-        <div className="w-screen h-screen grid place-items-center">
-          آپ کے پسندیدہ میں کوئی نظم موجود نہیں ہیں
-        </div>
-      )}
+      {!data ||
+        data == null ||
+        (data.length == 0 && (
+          <div className="w-screen h-screen grid place-items-center">
+            آپ کے پسندیدہ میں کوئی نظم موجود نہیں ہیں
+          </div>
+        ))}
       <div
         id="section"
         dir="rtl"

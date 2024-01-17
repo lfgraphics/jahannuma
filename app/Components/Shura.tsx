@@ -186,6 +186,7 @@ const Shura = () => {
     <>
       {toast}
       {!data ||
+        data == null ||
         (data.length == 0 && (
           <div className="w-screen h-screen grid place-items-center">
             آپ کے پسندیدہ میں کوئی شاعر موجود نہیں ہیں
