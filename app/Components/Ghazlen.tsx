@@ -118,47 +118,6 @@ const Ghazlen = () => {
           console.log(
             "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
-          try {
-            // Make API request to update the record's "Likes" field
-            const updatedLikes = shaerData.fields.likes + 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setData((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
         } else {
           if (
             confirm(
