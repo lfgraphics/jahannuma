@@ -28,13 +28,16 @@ const EBooks = () => {
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [insideBrowser, setInsideBrowser] = useState(false);
 
   useEffect(() => {
     let retrivedData = localStorage.getItem("Books");
     let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);
   }, []);
-
+  useEffect(() => {
+    setInsideBrowser(true);
+  }, []);
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
@@ -184,7 +187,7 @@ const EBooks = () => {
   return (
     <>
       {toast}
-      {!data ||
+      {(insideBrowser && !data) ||
         data == null ||
         (data.length == 0 && (
           <div className="w-screen h-screen grid place-items-center">
@@ -196,7 +199,8 @@ const EBooks = () => {
         dir="rtl"
         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
       >
-        {data &&
+        {insideBrowser &&
+          data &&
           data.map((item, index) => (
             <div className="relative" key={index}>
               <div

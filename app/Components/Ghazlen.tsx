@@ -33,12 +33,16 @@ const Ghazlen = () => {
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [insideBrowser, setInsideBrowser] = useState(false);
 
   useEffect(() => {
     let retrivedData = localStorage.getItem("Ghazlen");
     let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);
     console.log(parsedData.length);
+  }, []);
+  useEffect(() => {
+    setInsideBrowser(true);
   }, []);
 
   const showToast = (
@@ -232,22 +236,23 @@ const Ghazlen = () => {
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
-          data && data.forEach((shaerData, index) => {
-            const shaerId = shaerData.id; // Get the id of the current shaerData
+          data &&
+            data.forEach((shaerData, index) => {
+              const shaerId = shaerData.id; // Get the id of the current shaerData
 
-            // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data: { id: string }) => data.id === shaerId
-            );
+              // Check if the shaerId exists in the stored data
+              const storedShaer = parsedData.find(
+                (data: { id: string }) => data.id === shaerId
+              );
 
-            if (storedShaer) {
-              // If shaerId exists in the stored data, update the card's appearance
-              const cardElement = document.getElementById(shaerId);
-              if (cardElement) {
-                cardElement.classList.add("text-red-600");
+              if (storedShaer) {
+                // If shaerId exists in the stored data, update the card's appearance
+                const cardElement = document.getElementById(shaerId);
+                if (cardElement) {
+                  cardElement.classList.add("text-red-600");
+                }
               }
-            }
-          });
+            });
         } catch (error) {
           console.error("Error parsing stored data:", error);
         }
@@ -262,7 +267,7 @@ const Ghazlen = () => {
   return (
     <>
       {toast}
-      {!data ||
+      {(insideBrowser && !data) ||
         data == null ||
         (data.length == 0 && (
           <div className="w-screen h-screen grid place-items-center">
@@ -274,7 +279,8 @@ const Ghazlen = () => {
         dir="rtl"
         className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
       >
-        {data &&
+        {insideBrowser &&
+          data &&
           data.map((shaerData, index) => (
             <LocalGhazalCard
               page="ghazal"

@@ -33,6 +33,7 @@ const Ashaar = () => {
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
+  const [insideBrowser, setInsideBrowser] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -40,7 +41,9 @@ const Ashaar = () => {
     let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);
   }, []);
-
+  useEffect(() => {
+    setInsideBrowser(true);
+  }, []);
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
@@ -263,7 +266,7 @@ const Ashaar = () => {
   return (
     <>
       {toast}
-      {!data ||
+      {(insideBrowser && !data) ||
         data == null ||
         (data.length == 0 && (
           <div className="w-screen h-screen grid place-items-center">
@@ -275,7 +278,8 @@ const Ashaar = () => {
         dir="rtl"
         className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
       >
-        {data &&
+        {insideBrowser &&
+          data &&
           data.map((shaerData, index) => (
             <LocalGhazalCard
               page="ashaar"
