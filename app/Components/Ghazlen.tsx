@@ -267,13 +267,11 @@ const Ghazlen = () => {
   return (
     <>
       {toast}
-      {(insideBrowser && !data) ||
-        data == null ||
-        (data.length == 0 && (
-          <div className="w-screen h-screen grid place-items-center">
-            آپ کے پسندیدہ میں کوئی غزلیں موجود نہیں ہیں
-          </div>
-        ))}
+      {insideBrowser && (data === null || data.length === 0) && (
+        <div className="w-screen h-screen grid place-items-center">
+          آپ کے پسندیدہ میں کوئی نظم موجود نہیں ہیں
+        </div>
+      )}
       <div
         id="section"
         dir="rtl"
