@@ -262,11 +262,12 @@ const Ghazlen = () => {
   return (
     <>
       {toast}
-      {data && data.length == 0 && (
-        <div className="w-screen h-screen grid place-items-center">
-          آپ کے پسندیدہ میں کوئی غزلیں موجود نہیں ہیں
-        </div>
-      )}
+      {!data ||
+        (data.length == 0 && (
+          <div className="w-screen h-screen grid place-items-center">
+            آپ کے پسندیدہ میں کوئی غزلیں موجود نہیں ہیں
+          </div>
+        ))}
       <div
         id="section"
         dir="rtl"
