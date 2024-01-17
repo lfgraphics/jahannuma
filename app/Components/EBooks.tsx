@@ -23,7 +23,7 @@ interface Shaer {
 }
 
 const EBooks = () => {
-  const [data, setData] = useState<Shaer[]>([]);
+  const [data, setData] = useState<Shaer[] | null>(null);
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
@@ -31,7 +31,7 @@ const EBooks = () => {
 
   useEffect(() => {
     let retrivedData = localStorage.getItem("Books");
-    let parsedData = JSON.parse(retrivedData!);
+    let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);
   }, []);
 
@@ -157,22 +157,23 @@ const EBooks = () => {
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
-          data.forEach((shaerData, index) => {
-            const shaerId = shaerData.id; // Get the id of the current shaerData
+          data &&
+            data.forEach((shaerData, index) => {
+              const shaerId = shaerData.id; // Get the id of the current shaerData
 
-            // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data: { id: string }) => data.id === shaerId
-            );
+              // Check if the shaerId exists in the stored data
+              const storedShaer = parsedData.find(
+                (data: { id: string }) => data.id === shaerId
+              );
 
-            if (storedShaer) {
-              // If shaerId exists in the stored data, update the card's appearance
-              const cardElement = document.getElementById(shaerId);
-              if (cardElement) {
-                cardElement.classList.add("text-red-600");
+              if (storedShaer) {
+                // If shaerId exists in the stored data, update the card's appearance
+                const cardElement = document.getElementById(shaerId);
+                if (cardElement) {
+                  cardElement.classList.add("text-red-600");
+                }
               }
-            }
-          });
+            });
         } catch (error) {
           console.error("Error parsing stored data:", error);
         }

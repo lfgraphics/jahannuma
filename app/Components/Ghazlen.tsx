@@ -23,7 +23,7 @@ interface Shaer {
 }
 
 const Ghazlen = () => {
-  const [data, setData] = useState<Shaer[]>([]);
+  const [data, setData] = useState<Shaer[] | null>(null);
   const [selectedCard, setSelectedCard] = useState<{
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
@@ -36,7 +36,7 @@ const Ghazlen = () => {
 
   useEffect(() => {
     let retrivedData = localStorage.getItem("Ghazlen");
-    let parsedData = JSON.parse(retrivedData!);
+    let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);
     console.log(parsedData.length);
   }, []);
@@ -232,7 +232,7 @@ const Ghazlen = () => {
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
-          data.forEach((shaerData, index) => {
+          data && data.forEach((shaerData, index) => {
             const shaerId = shaerData.id; // Get the id of the current shaerData
 
             // Check if the shaerId exists in the stored data
