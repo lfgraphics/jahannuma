@@ -268,7 +268,7 @@ const Ashaar = () => {
       {toast}
       {insideBrowser && (data === null || data.length === 0) && (
         <div className="w-screen h-screen grid place-items-center">
-          آپ کے پسندیدہ میں کوئی نظم موجود نہیں ہیں
+          آپ کے پسندیدہ میں کوئی شعر موجود نہیں ہیں
         </div>
       )}
       <div

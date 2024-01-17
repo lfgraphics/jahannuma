@@ -39,7 +39,6 @@ const Ghazlen = () => {
     let retrivedData = localStorage.getItem("Ghazlen");
     let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);
-    console.log(parsedData.length);
   }, []);
   useEffect(() => {
     setInsideBrowser(true);
@@ -269,7 +268,7 @@ const Ghazlen = () => {
       {toast}
       {insideBrowser && (data === null || data.length === 0) && (
         <div className="w-screen h-screen grid place-items-center">
-          آپ کے پسندیدہ میں کوئی نظم موجود نہیں ہیں
+          آپ کے پسندیدہ میں کوئی غزل موجود نہیں ہیں
         </div>
       )}
       <div
