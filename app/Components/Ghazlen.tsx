@@ -36,7 +36,7 @@ const Ghazlen = () => {
   const [insideBrowser, setInsideBrowser] = useState(false);
   const fetchData=()=>{
   let retrivedData = localStorage.getItem("Ghazlen");
-    let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
+    let parsedData = retrivedData && JSON.parse(retrivedData);
     setData(parsedData);
   }
   useEffect(() => {
