@@ -11,8 +11,8 @@ import {
 import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
-import GhazalCard from "../Components/GhazalCard";
 import SkeletonLoader from "../Components/SkeletonLoader";
+import DataCard from "../Components/DataCard";
 
 interface Shaer {
   fields: {
@@ -863,7 +863,8 @@ const Ashaar: React.FC<{}> = () => {
               `}
           >
             {dataItems.map((shaerData, index) => (
-              <GhazalCard
+              <DataCard
+                page="ghazal"
                 download={false}
                 key={index}
                 shaerData={shaerData}

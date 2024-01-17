@@ -8,7 +8,7 @@ import {
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
-import GhazalCard from "../../../Components/GhazalCard";
+import DataCard from "../../../Components/DataCard";
 
 const SkeletonLoader = () => (
   <div className="flex flex-col items-center">
@@ -174,7 +174,7 @@ const Page = ({ params }) => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ashaaar");
+        const existingDataJSON = localStorage.getItem("Ashaar");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData = existingDataJSON
@@ -197,7 +197,7 @@ const Page = ({ params }) => {
           document.getElementById(`${id}`).classList.remove("text-gray-500");
           document.getElementById(`${id}`).classList.add("text-red-600");
 
-          localStorage.setItem("Ashaaar", updatedDataJSON);
+          localStorage.setItem("Ashaar", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -257,7 +257,7 @@ const Page = ({ params }) => {
           document.getElementById(`${id}`).classList.remove("text-red-600");
           document.getElementById(`${id}`).classList.add("text-gray-500");
 
-          localStorage.setItem("Ashaaar", updatedDataJSON);
+          localStorage.setItem("Ashaar", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -329,7 +329,7 @@ const Page = ({ params }) => {
             text:
               shaerData.fields.ghazalHead.map((line) => line).join("\n") +
               `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-            url: `${window.location.href.split("/Ashaaar/")[0] + "/Ashaaar/" + shaerData.id}`, // Get the current page's URL
+            url: `${window.location.href.split("/Ashaar/")[0] + "/Ashaar/" + shaerData.id}`, // Get the current page's URL
           })
 
           .then(() => console.info("Successful share"))
@@ -436,7 +436,7 @@ const Page = ({ params }) => {
     //   });
     // }
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Ashaaar");
+      const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -720,8 +720,9 @@ const Page = ({ params }) => {
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <GhazalCard
-                download={false}
+              <DataCard
+                page="ashaar"
+                download={true}
                 key={index}
                 shaerData={shaerData}
                 index={index}

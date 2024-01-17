@@ -6,8 +6,8 @@ import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
-import GhazalCard from "../../../Components/GhazalCard";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
+import DataCard from "../../../Components/DataCard";
 
 interface Shaer {
   fields: {
@@ -121,8 +121,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
     try {
-      const BASE_ID = "appvzkf6nX376pZy6";
-      const TABLE_NAME = "Ghazlen";
+      const BASE_ID = "appeI2xzzyvUN5bR7";
+      const TABLE_NAME = "Ashaar";
       const pageSize = 30;
       const headers = {
         //authentication with environment variable
@@ -138,8 +138,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         const encodedFormula = encodeURIComponent(
           `OR(
           FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({sher})),
+          FIND('${searchText.trim().toLowerCase()}', LOWER({body})),
           FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
         )`
         );
@@ -164,8 +164,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         ...record,
         fields: {
           ...record.fields,
-          ghazal: record.fields?.ghazal.split("\n"),
-          ghazalHead: record.fields?.ghazalHead.split("\n"),
+          ghazal: record.fields?.body.split("\n"),
+          ghazalHead: record.fields?.sher.split("\n"),
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
@@ -817,8 +817,9 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <GhazalCard
-                download={false}
+              <DataCard
+                page="ashaar"
+                download={true}
                 key={index}
                 shaerData={shaerData}
                 index={index}

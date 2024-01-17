@@ -25,6 +25,7 @@ interface Shaer {
   createdTime: string;
 }
 interface ShaerCardProps {
+  page: string;
   shaerData: Shaer; // Replace Shaer with the actual type of shaerData
   index: number;
   download: boolean;
@@ -36,6 +37,7 @@ interface ShaerCardProps {
 }
 
 const LocalGhazalCard: React.FC<ShaerCardProps> = ({
+  page,
   shaerData,
   index,
   download,
