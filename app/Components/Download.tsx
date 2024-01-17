@@ -118,7 +118,7 @@ const DynamicDownloadHandler: React.FC<{
             <div className="absolute text-white text-lg top-4 right-6">
               جہاں نما
             </div>
-            <div className="absolute text-white text-4xl font-bold w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-[0.15] z-0">
+            <div className="absolute text-white text-2xl font-bold w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-10 z-0">
               Jahan Numa
             </div>
           </div>
