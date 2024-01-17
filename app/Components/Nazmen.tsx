@@ -262,7 +262,7 @@ const Nazmen = () => {
   return (
     <>
       {toast}
-      {data.length == 0 && (
+      {data && data.length == 0 && (
         <div className="w-screen h-screen grid place-items-center">
           آپ کے پسندیدہ میں کوئی نظم موجود نہیں ہیں
         </div>

@@ -262,7 +262,7 @@ const Ghazlen = () => {
   return (
     <>
       {toast}
-      {data.length == 0 && (
+      {data && data.length == 0 && (
         <div className="w-screen h-screen grid place-items-center">
           آپ کے پسندیدہ میں کوئی غزلیں موجود نہیں ہیں
         </div>
