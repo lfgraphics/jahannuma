@@ -240,7 +240,7 @@ const Page: React.FC<{}> = () => {
     if (typeof window !== undefined && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Shu'ra");
+        const existingDataJSON = localStorage.getItem("Shura");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData: FormattedRecord[] = existingDataJSON
@@ -263,7 +263,7 @@ const Page: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
-          localStorage.setItem("Shu'ra", updatedDataJSON);
+          localStorage.setItem("Shura", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -326,7 +326,7 @@ const Page: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          localStorage.setItem("Shu'ra", updatedDataJSON);
+          localStorage.setItem("Shura", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -389,7 +389,7 @@ const Page: React.FC<{}> = () => {
   };
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Shu'ra");
+      const storedData = localStorage.getItem("Shura");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
