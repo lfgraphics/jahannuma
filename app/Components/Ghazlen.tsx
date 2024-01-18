@@ -34,20 +34,15 @@ const Ghazlen = () => {
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [insideBrowser, setInsideBrowser] = useState(false);
-  const fetchData=()=>{
-  let retrivedData = localStorage.getItem("Ghazlen");
+  useEffect(() => {
+    let retrivedData = localStorage.getItem("Ghazlen");
     let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);
-  }
-  useEffect(() => {
-    setInsideBrowser(true);
+    console.log(retrivedData);
+    console.log(parsedData);
   }, []);
   useEffect(() => {
-    if(insideBrowser){
-      let retrivedData = localStorage.getItem("Ghazlen");
-      let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
-      setData(parsedData);
-    }
+    setInsideBrowser(true);
   }, []);
 
   const showToast = (
@@ -283,7 +278,7 @@ const Ghazlen = () => {
         className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
       >
         {insideBrowser &&
-          data &&
+          !(data === null || data.length === 0) &&
           data.map((shaerData, index) => (
             <LocalGhazalCard
               page="ghazal"
