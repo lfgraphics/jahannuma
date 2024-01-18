@@ -9,6 +9,7 @@ import Shura from "../Components/Shura";
 import EBooks from "../Components/EBooks";
 
 import "../Shaer/[name]/shaer.css";
+import ToastComponent from "../Components/Toast";
 
 // Assuming you have the necessary imports for your components like Intro2, Ghazlen, Nazmen, Ashaar, EBkooks, etc.
 
@@ -17,6 +18,47 @@ const YourPage = () => {
 
   const [commentorName, setCommentorName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
+  //snackbar
+  const [toast, setToast] = useState<React.ReactNode | null>(null);
+  const [hideAnimation, setHideAnimation] = useState(false);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
+  //function ot show toast
+  const showToast = (
+    msgtype: "success" | "error" | "invalid",
+    message: string
+  ) => {
+    // Clear the previous timeout if it exists
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      // showToast(msgtype, message);
+    }
+    setToast(
+      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
+        <ToastComponent
+          msgtype={msgtype}
+          message={message}
+          onHide={() => {
+            setHideAnimation(true);
+            setTimeout(() => {
+              setHideAnimation(false);
+              setToast(null);
+            }, 500);
+          }}
+        />
+      </div>
+    );
+    // Set a new timeout
+    const newTimeoutId = setTimeout(() => {
+      setHideAnimation(true);
+      setTimeout(() => {
+        setHideAnimation(false);
+        setToast(null);
+      }, 500);
+    }, 6000);
+
+    setTimeoutId(newTimeoutId);
+  };
 
   useEffect(() => {
     let name = localStorage.getItem("commentorName");
@@ -38,14 +80,16 @@ const YourPage = () => {
   const handleSaveNameClick = () => {
     setIsEditingName(false);
     localStorage.setItem("commentorName", commentorName);
+    showToast("success", "آپ کا نام ب آسانی بدل دیا گیا ");
   };
 
   let navs = ["غزلیں", "نظمیں", "اشعار", "شعرا", "ئی-بکس"];
 
   return (
     <div className="flex flex-col justify-center items-center">
-      <label className="m-6">
-        Your Name:{" "}
+      {toast}
+      <label dir="rtl" className="m-6">
+        <span className="mx-5"> آپ کا نام:</span>
         {isEditingName ? (
           <>
             <input
@@ -61,7 +105,7 @@ const YourPage = () => {
             <FontAwesomeIcon
               icon={faPencilAlt}
               onClick={handleEditNameClick}
-              style={{ cursor: "pointer", marginLeft: "5px" }}
+              style={{ cursor: "pointer", marginRight: "10px" }}
             />
           </>
         )}
