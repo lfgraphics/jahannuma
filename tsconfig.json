@@ -33,6 +33,6 @@
     "app/**/*.tsx",
     "app/E-Books/[id]/page.jsx",
     "app/Components/Donate.jsx"
-  ],
+, "app/Components/Quiz.jsx"  ],
   "exclude": ["node_modules"]
 }
