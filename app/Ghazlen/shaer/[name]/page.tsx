@@ -8,6 +8,8 @@ import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 import DataCard from "../../../Components/DataCard";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 interface Shaer {
   fields: {
@@ -51,6 +53,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     offset: null,
     pageSize: 30,
   });
+  const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
@@ -70,6 +73,14 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
 
   //function ot show toast
   const showToast = (
@@ -110,6 +121,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
 
   //function ot scroll to the top
   function scrollToTop() {
+    setPagination({
+      offset: pagination.offset,
+      pageSize: 30,
+    });
     if (typeof window !== undefined) {
       window.scrollTo({
         top: 0,
@@ -120,6 +135,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   // func to fetch and load more data
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
+    userQuery && setDataOffset(pagination.offset);
     try {
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "Ghazlen";
@@ -153,7 +169,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       const result: ApiResponse = await response.json();
       const records = result.records || [];
 
-      if (!result.offset) {
+      if (!result.offset && dataOffset == "") {
         // No more data, disable the button
         setNoMoreData(true);
         setLoading(false);
@@ -817,34 +833,38 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <DataCard
-                page="ghazal"
-                download={false}
-                key={index}
-                shaerData={shaerData}
-                index={index}
-                handleCardClick={handleCardClick}
-                toggleanaween={toggleanaween}
-                openanaween={openanaween}
-                handleHeartClick={handleHeartClick}
-                handleShareClick={handleShareClick}
-                openComments={openComments}
-              />
+              <div data-aos="fade-up">
+                <DataCard
+                  page="ghazal"
+                  download={false}
+                  key={index}
+                  shaerData={shaerData}
+                  index={index}
+                  handleCardClick={handleCardClick}
+                  toggleanaween={toggleanaween}
+                  openanaween={openanaween}
+                  handleHeartClick={handleHeartClick}
+                  handleShareClick={handleShareClick}
+                  openComments={openComments}
+                />
+              </div>
             ))}
           </div>
-          <div className="flex justify-center text-lg m-5">
-            <button
-              onClick={handleLoadMore}
-              disabled={noMoreData}
-              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-            >
-              {moreloading
-                ? "لوڈ ہو رہا ہے۔۔۔"
-                : noMoreData
-                ? "مزید غزلیں نہیں ہیں"
-                : "مزید غزلیں لوڈ کریں"}
-            </button>
-          </div>
+          {dataItems.length > 0 && (
+            <div className="flex justify-center text-lg m-5">
+              <button
+                onClick={handleLoadMore}
+                disabled={noMoreData}
+                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+              >
+                {moreloading
+                  ? "لوڈ ہو رہا ہے۔۔۔"
+                  : noMoreData
+                  ? "مزید غزلیں نہیں ہیں"
+                  : "مزید غزلیں لوڈ کریں"}
+              </button>
+            </div>
+          )}
         </section>
       )}
       {selectedCard && (

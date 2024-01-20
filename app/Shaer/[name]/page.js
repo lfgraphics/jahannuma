@@ -6,7 +6,6 @@ import Ghazlen from "@/app/Components/shaer/Ghazlen"
 import Nazmen from "@/app/Components/shaer/Nazmen"
 import Ashaar from "@/app/Components/shaer/Ashaar"
 import EBkooks from "@/app/Components/shaer/EBooks"
-
 import './shaer.css';
 
 const Page = ({ params }) => {

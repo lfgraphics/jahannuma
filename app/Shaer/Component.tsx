@@ -10,6 +10,10 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ToastComponent from "../Components/Toast";
 import SkeletonLoader from "../Components/SkeletonLoader";
+// aos for cards animation
+import AOS from "aos";
+import "aos/dist/aos.css";
+
 interface ApiResponse {
   records: any[];
   offset: string | null;
@@ -82,13 +86,23 @@ const Page: React.FC<{}> = () => {
     offset: null,
     pageSize: 30,
   });
+  const [dataOffset, setDataOffset] = useState<string | null>(null);
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
+
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
+    userQuery && setDataOffset(pagination.offset);
     try {
       const BASE_ID = "appgWv81tu4RT3uRB";
       const TABLE_NAME = "Intro";
@@ -128,7 +142,7 @@ const Page: React.FC<{}> = () => {
       const result: ApiResponse = await response.json();
       const records = result.records || [];
 
-      if (!result.offset) {
+      if (!result.offset && dataOffset == "") {
         // No more data, disable the button
         setNoMoreData(true);
         setLoading(false);
@@ -417,6 +431,10 @@ const Page: React.FC<{}> = () => {
   }, [data]);
 
   const searchQuery = () => {
+    setPagination({
+      offset: pagination.offset,
+      pageSize: 30,
+    });
     fetchData(null, true);
     if (typeof window !== undefined) {
       setScrolledPosition(document!.getElementById("section")!.scrollTop);
@@ -542,7 +560,7 @@ const Page: React.FC<{}> = () => {
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
           >
             {data.map((item, index) => (
-              <div className="relative" key={index}>
+              <div className="relative" key={index} data-aos="fade-up">
                 <div
                   className="heart cursor-pointer text-gray-500 pr-3 absolute top-0 right-0 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-full m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
                   onClick={(e) =>
@@ -557,19 +575,21 @@ const Page: React.FC<{}> = () => {
               </div>
             ))}
           </div>
-          <div className="flex justify-center text-lg m-5">
-            <button
-              onClick={handleLoadMore}
-              disabled={noMoreData}
-              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-            >
-              {moreloading
-                ? "لوڈ ہو رہا ہے۔۔۔"
-                : noMoreData
-                ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
-                : "مزید شعراء کی تفصیات لوڈ کریں"}
-            </button>
-          </div>
+          {data.length > 0 && (
+            <div className="flex justify-center text-lg m-5">
+              <button
+                onClick={handleLoadMore}
+                disabled={noMoreData}
+                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+              >
+                {moreloading
+                  ? "لوڈ ہو رہا ہے۔۔۔"
+                  : noMoreData
+                  ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
+                  : "مزید شعراء کی تفصیات لوڈ کریں"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </>

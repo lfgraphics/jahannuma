@@ -10,18 +10,7 @@ const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // if (document !== undefined) {
-    //   const elements = [...document.querySelectorAll('.langChange')];
-    //   elements.forEach((element) => element.classList.add('hidden'));
-    //   window.addEventListener('beforeunload', function () {
-    //     console.log('Beforeunload event triggered!');
-    //     elements.forEach((element) => element.classList.remove('hidden'));
-    //   });
-    // }
-
-
     setId(params.id);
-
     const fetchData = async () => {
       setLoading(true)
       try {
@@ -43,16 +32,15 @@ const Page = ({ params }) => {
         console.error(`Failed to fetch data: ${error}`);
       }
     };
-
     fetchData();
   }, [id]);
   const ghazalLines = data.nazm?.split('\n');
   const anaween = data.unwan?.split('\n');
 
-  const visitGhazlen = () => {
+  const visitNazmen = () => {
     if (typeof window !== undefined) {
       const referrer = document.referrer || '';
-      // Check if the referrer is not coming from /Ghazlen
+      // Check if the referrer is not coming from /Nazmen
       if (!referrer.includes('/Nazmen')) {
         window.location.href = `${window.location.origin}/Nazmen`; // Replace with your desired URL
       } else {
@@ -60,16 +48,6 @@ const Page = ({ params }) => {
       }
     }
   };
-
-  useEffect(() => {
-    // Attach the custom back navigation handler to the popstate event
-    window.addEventListener('popstate', visitGhazlen);
-
-    // Cleanup the event listener when the component is unmounted
-    return () => {
-      window.removeEventListener('popstate', visitGhazlen);
-    };
-  }, []); // Empty dependency array to ensure the effect runs only once
 
   return (
     <div dir="rtl" className="flex justify-center">
@@ -96,7 +74,7 @@ const Page = ({ params }) => {
           </div>
           <div className="mazeed flex justify-around">
             <button
-              onClick={visitGhazlen}
+              onClick={visitNazmen}
               className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
             >
               مزید نظمیں

@@ -9,6 +9,9 @@ import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
 import DataCard from "../../../Components/DataCard";
+// aos for cards animation
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const SkeletonLoader = () => (
   <div className="flex flex-col items-center">
@@ -26,6 +29,10 @@ const SkeletonLoader = () => (
 const Page = ({ params }) => {
   const encodedUnwan = params.unwan;
   const decodedUnwan = decodeURIComponent(encodedUnwan);
+  const [pagination, setPagination] = useState({
+    offset: null,
+    pageSize: 30,
+  });
   const [selectedCommentId, setSelectedCommentId] = React.useState(null);
   const [selectedCard, setSelectedCard] = React.useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +52,14 @@ const Page = ({ params }) => {
   const [toast, setToast] = useState(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
+
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
 
   //function ot show toast
   const showToast = (
@@ -95,6 +110,7 @@ const Page = ({ params }) => {
   // func to fetch and load more data
   const fetchData = async (offset, userQuery) => {
     userQuery && setLoading(true);
+    userQuery && setDataOffset(pagination?.offset);
     try {
       const BASE_ID = "appeI2xzzyvUN5bR7";
       const TABLE_NAME = "Ashaar";
@@ -108,7 +124,7 @@ const Page = ({ params }) => {
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
       const records = result.records || [];
-      if (!result.offset) {
+      if (!result.offset && dataOffset == "") {
         // No more data, disable the button
         setNoMoreData(true);
         setLoading(false);
@@ -427,14 +443,6 @@ const Page = ({ params }) => {
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
-    // if (document !== undefined) {
-    //   const elements = [...document.querySelectorAll('.langChange')];
-    //   elements.forEach((element) => element.classList.add('hidden'));
-    //   window.addEventListener('beforeunload', function () {
-    //     console.log('Beforeunload event triggered!');
-    //     elements.forEach((element) => element.classList.remove('hidden'));
-    //   });
-    // }
     if (window !== undefined && window.localStorage) {
       const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
@@ -720,34 +728,38 @@ const Page = ({ params }) => {
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <DataCard
-                page="ashaar"
-                download={true}
-                key={index}
-                shaerData={shaerData}
-                index={index}
-                handleCardClick={handleCardClick}
-                toggleanaween={toggleanaween}
-                openanaween={openanaween}
-                handleHeartClick={handleHeartClick}
-                handleShareClick={handleShareClick}
-                openComments={openComments}
-              />
+              <div data-aos="fade-up">
+                <DataCard
+                  page="ashaar"
+                  download={true}
+                  key={index}
+                  shaerData={shaerData}
+                  index={index}
+                  handleCardClick={handleCardClick}
+                  toggleanaween={toggleanaween}
+                  openanaween={openanaween}
+                  handleHeartClick={handleHeartClick}
+                  handleShareClick={handleShareClick}
+                  openComments={openComments}
+                />
+              </div>
             ))}
           </div>
-          <div className="flex justify-center text-lg m-5">
-            <button
-              onClick={handleLoadMore}
-              disabled={noMoreData || loading || moreloading}
-              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-            >
-              {moreloading
-                ? "لوڈ ہو رہا ہے۔۔۔"
-                : noMoreData
-                  ? "مزید غزلیں نہیں ہیں"
-                  : "اور غزلیں لعڈ کریں"}
-            </button>
-          </div>
+          {dataItems.length > 0 && (
+            <div className="flex justify-center text-lg m-5">
+              <button
+                onClick={handleLoadMore}
+                disabled={noMoreData || loading || moreloading}
+                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+              >
+                {moreloading
+                  ? "لوڈ ہو رہا ہے۔۔۔"
+                  : noMoreData
+                    ? "مزید غزلیں نہیں ہیں"
+                    : "اور غزلیں لعڈ کریں"}
+              </button>
+            </div>
+          )}
         </section>
       )}
       {selectedCard && (

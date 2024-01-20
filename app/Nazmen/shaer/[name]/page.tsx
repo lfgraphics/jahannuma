@@ -8,6 +8,9 @@ import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 import DataCard from "@/app/Components/DataCard";
+// aos for cards animation
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 interface Shaer {
   fields: {
@@ -28,6 +31,10 @@ interface ApiResponse {
   records: any[];
   offset: string | null;
 }
+interface Pagination {
+  offset: string | null;
+  pageSize: number;
+}
 interface Comment {
   dataId: string | null;
   commentorName: string | null;
@@ -43,6 +50,11 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
+  const [pagination, setPagination] = useState<Pagination>({
+    offset: null,
+    pageSize: 30,
+  });
+  const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
@@ -110,6 +122,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   // func to fetch and load more data
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
+    userQuery && setDataOffset(pagination.offset);
     try {
       const BASE_ID = "app5Y2OsuDgpXeQdz";
       const TABLE_NAME = "nazmen";
@@ -144,7 +157,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       const result: ApiResponse = await response.json();
       const records = result.records || [];
 
-      if (!result.offset) {
+      if (!result.offset && dataOffset == "") {
         // No more data, disable the button
         // setNoMoreData(true);
         setLoading(false);
@@ -798,34 +811,23 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <DataCard
-                page="nazm"
-                download={false}
-                key={index}
-                shaerData={shaerData}
-                index={index}
-                handleCardClick={handleCardClick}
-                toggleanaween={toggleanaween}
-                openanaween={openanaween}
-                handleHeartClick={handleHeartClick}
-                handleShareClick={handleShareClick}
-                openComments={openComments}
-              />
+              <div data-aos="fade-up">
+                <DataCard
+                  page="nazm"
+                  download={false}
+                  key={index}
+                  shaerData={shaerData}
+                  index={index}
+                  handleCardClick={handleCardClick}
+                  toggleanaween={toggleanaween}
+                  openanaween={openanaween}
+                  handleHeartClick={handleHeartClick}
+                  handleShareClick={handleShareClick}
+                  openComments={openComments}
+                />
+              </div>
             ))}
           </div>
-          {/* <div className="flex justify-center text-lg m-5">
-            <button
-              onClick={handleLoadMore}
-              disabled={noMoreData}
-              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-            >
-              {moreloading
-                ? "لوڈ ہو رہا ہے۔۔۔"
-                : noMoreData
-                ? "مزید نظمیں نہیں ہیں"
-                : "اور نظمیں لعڈ کریں"}
-            </button>
-          </div> */}
         </section>
       )}
       {selectedCard && (

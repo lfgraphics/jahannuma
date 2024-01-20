@@ -2,21 +2,23 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import UnwanPageLoader from "../../Components/UnwanPageLoader"
+// aos for cards animation
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const Page = ({ params }) => {
   const [data, setData] = useState([]);
   const [id, setId] = useState("");
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
 
   useEffect(() => {
-    // if (document !== undefined) {
-    //   const elements = [...document.querySelectorAll('.langChange')];
-    //   elements.forEach((element) => element.classList.add('hidden'));
-    //   window.addEventListener('beforeunload', function () {
-    //     console.log('Beforeunload event triggered!');
-    //     elements.forEach((element) => element.classList.remove('hidden'));
-    //   });
-    // }
     setId(params.id);
 
     const fetchData = async () => {
@@ -57,17 +59,6 @@ const Page = ({ params }) => {
       }
     }
   };
-
-  // useEffect(() => {
-  //   // Attach the custom back navigation handler to the popstate event
-  //   window.addEventListener('popstate', visitGhazlen);
-
-  //   // Cleanup the event listener when the component is unmounted
-  //   return () => {
-  //     window.removeEventListener('popstate', visitGhazlen);
-  //   };
-  // }, []); // Empty dependency array to ensure the effect runs only once
-
   return (
     <div dir="rtl" className="flex justify-center">
       {loading ? <UnwanPageLoader /> : (
@@ -84,6 +75,7 @@ const Page = ({ params }) => {
           <div className="text-2xl mb-4">
             {ghazalLines?.map((line, index) => (
               <p
+                data-aos="fade-up"
                 key={index}
                 className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
               >
@@ -91,12 +83,12 @@ const Page = ({ params }) => {
               </p>
             ))}
           </div>
-          <div className="flex gap-5 text-md mb-4 justify-center">
+          <div className="flex gap-5 text-md mb-4 justify-center" data-aos="fade-up">
             {anaween?.map((unwan, index) => (
               <Link href={`/Ghazlen/mozu/${unwan}`} className="text-blue-500 underline cursor-pointer" style={{ lineHeight: "normal" }} key={index}>{unwan}</Link>
             ))}
           </div>
-          <div className="mazeed flex justify-around">
+          <div className="mazeed flex justify-around" data-aos="fade-up">
             <button
               onClick={visitGhazlen}
               className="bg-white text-[#984A02] border active:bg-[#984a02ac] active:text-white border-[#984A02] px-4 py-2 rounded-md"
@@ -105,7 +97,6 @@ const Page = ({ params }) => {
             </button>
             <Link href={`/Ghazlen/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
           </div>
-          {/* <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div> */}
         </div>
       )}
     </div>

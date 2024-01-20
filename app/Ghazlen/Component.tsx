@@ -13,6 +13,8 @@ import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
 import SkeletonLoader from "../Components/SkeletonLoader";
 import DataCard from "../Components/DataCard";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 interface Shaer {
   fields: {
@@ -56,6 +58,7 @@ const Ashaar: React.FC<{}> = () => {
     offset: null,
     pageSize: 30,
   });
+  const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
@@ -75,6 +78,13 @@ const Ashaar: React.FC<{}> = () => {
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
 
   //function ot show toast
   const showToast = (
@@ -109,10 +119,8 @@ const Ashaar: React.FC<{}> = () => {
         setToast(null);
       }, 500);
     }, 6000);
-
     setTimeoutId(newTimeoutId);
   };
-
   //function ot scroll to the top
   function scrollToTop() {
     if (typeof window !== undefined) {
@@ -125,6 +133,7 @@ const Ashaar: React.FC<{}> = () => {
   // func to fetch and load more data
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
+    userQuery && setDataOffset(pagination.offset);
     try {
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "Ghazlen";
@@ -156,7 +165,7 @@ const Ashaar: React.FC<{}> = () => {
       const result: ApiResponse = await response.json();
       const records = result.records || [];
 
-      if (!result.offset) {
+      if (!result.offset && dataOffset == "") {
         // No more data, disable the button
         setNoMoreData(true);
         setLoading(false);
@@ -211,6 +220,10 @@ const Ashaar: React.FC<{}> = () => {
   }, []);
   const searchQuery = () => {
     fetchData(null, true);
+    setPagination({
+      offset: pagination.offset,
+      pageSize: 30,
+    });
     if (typeof window !== undefined) {
       setScrolledPosition(window.scrollY);
     }
@@ -234,7 +247,7 @@ const Ashaar: React.FC<{}> = () => {
     let xMark = document.getElementById("searchClear");
     let sMark = document.getElementById("searchIcon");
 
-    input.value ? (input.value = "") : null;
+    input?.value ? (input.value = "") : null;
     xMark?.classList.add("hidden");
     sMark?.classList.add("hidden");
     // Clear the searched data and show all data again
@@ -539,12 +552,15 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
+  // name input dialogue box (form)
   const hideDialog = () => {
     setShowDialog(false);
   };
+  // name change handeling in name input filed
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNameInput(event.target.value);
   };
+  // handeling name save on the button click
   const handleNameSubmission = () => {
     localStorage.setItem("commentorName", nameInput);
     setCommentorName(nameInput);
@@ -591,6 +607,7 @@ const Ashaar: React.FC<{}> = () => {
       console.error(`Failed to fetch comments: ${error}`);
     }
   };
+  // showing the current made comment in comment box
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
@@ -725,7 +742,9 @@ const Ashaar: React.FC<{}> = () => {
   const closeComments = () => {
     setSelectedCommentId(null);
   };
+  // reseting  search
   const resetSearch = () => {
+    setDataOffset(pagination.offset);
     searchText && clearSearch();
     setDataItems(initialDataItems);
     if (typeof window !== undefined) {
@@ -737,13 +756,6 @@ const Ashaar: React.FC<{}> = () => {
     }
     setInitialdDataItems([]);
   };
-
-  // Check if the initialDataItems.length is greater than 0
-  if (initialDataItems.length > 0) {
-    window.addEventListener("popstate", () => {
-      resetSearch();
-    });
-  }
 
   return (
     <div>
@@ -863,33 +875,37 @@ const Ashaar: React.FC<{}> = () => {
               `}
           >
             {dataItems.map((shaerData, index) => (
-              <DataCard
-                page="ghazal"
-                download={false}
-                key={index}
-                shaerData={shaerData}
-                index={index}
-                handleCardClick={handleCardClick}
-                toggleanaween={toggleanaween}
-                openanaween={openanaween}
-                handleHeartClick={handleHeartClick}
-                handleShareClick={handleShareClick}
-                openComments={openComments}
-              />
+              <div data-aos="fade-up">
+                <DataCard
+                  page="ghazal"
+                  download={false}
+                  key={index}
+                  shaerData={shaerData}
+                  index={index}
+                  handleCardClick={handleCardClick}
+                  toggleanaween={toggleanaween}
+                  openanaween={openanaween}
+                  handleHeartClick={handleHeartClick}
+                  handleShareClick={handleShareClick}
+                  openComments={openComments}
+                />
+              </div>
             ))}
-            <div className="flex justify-center text-lg m-5">
-              <button
-                onClick={handleLoadMore}
-                disabled={noMoreData}
-                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-              >
-                {moreloading
-                  ? "لوڈ ہو رہا ہے۔۔۔"
-                  : noMoreData
-                  ? "مزید غزلیں نہیں ہیں"
-                  : "مزید غزلیں لوڈ کریں"}
-              </button>
-            </div>
+            {dataItems.length > 0 && (
+              <div className="flex justify-center text-lg m-5">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={noMoreData}
+                  className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+                >
+                  {moreloading
+                    ? "لوڈ ہو رہا ہے۔۔۔"
+                    : noMoreData
+                    ? "مزید غزلیں نہیں ہیں"
+                    : "مزید غزلیں لوڈ کریں"}
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}

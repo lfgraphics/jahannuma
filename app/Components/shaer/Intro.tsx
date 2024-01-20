@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
+// aos for cards animation
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 interface IntroProps {
   data: {
@@ -8,6 +11,7 @@ interface IntroProps {
     dob: string;
     location: string;
     tafseel: string;
+    description: string[];
     photo: {
       filename: string;
       url: string;
@@ -22,7 +26,13 @@ interface IntroProps {
 
 const Intro2: React.FC<IntroProps> = ({ data }) => {
   const [insideBrowser, setInsideBrowser] = useState(false);
-
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Code is running in a browser
@@ -38,7 +48,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
       className="container flex flex-col justify-center p-5 pt-0 md:px-36 lg:px-36"
     >
       {!data && <ComponentsLoader />}
-      {data && insideBrowser && (
+      {insideBrowser && data && (
         <div className="poet-intro text-lg">
           <p>
             <strong>نام:</strong> {data.name}
@@ -48,9 +58,16 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
             <strong>مزید:</strong>
             <ul>
               {data.tafseel?.split("\n").map((line, index) => (
-                <li key={index}>{line}</li>
+                <li data-aos="fade-up" key={index}>
+                  {line}
+                </li>
               ))}
             </ul>
+            <div className="block mx-auto">
+              {data.description.map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
+            </div>
           </p>
         </div>
       )}

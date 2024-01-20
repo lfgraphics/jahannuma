@@ -8,6 +8,9 @@ import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 import DataCard from "../../../Components/DataCard";
+// aos for cards animation
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 interface Shaer {
   fields: {
@@ -51,6 +54,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     offset: null,
     pageSize: 30,
   });
+  const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
@@ -71,6 +75,13 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
   //function ot show toast
   const showToast = (
     msgtype: "success" | "error" | "invalid",
@@ -120,6 +131,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   // func to fetch and load more data
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
+    userQuery && setDataOffset(pagination.offset);
     try {
       const BASE_ID = "appeI2xzzyvUN5bR7";
       const TABLE_NAME = "Ashaar";
@@ -153,7 +165,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       const result: ApiResponse = await response.json();
       const records = result.records || [];
 
-      if (!result.offset) {
+      if (!result.offset && dataOffset == "") {
         // No more data, disable the button
         setNoMoreData(true);
         setLoading(false);
@@ -506,7 +518,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Ghazlen");
+      const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
@@ -817,48 +829,39 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <DataCard
-                page="ashaar"
-                download={true}
-                key={index}
-                shaerData={shaerData}
-                index={index}
-                handleCardClick={handleCardClick}
-                toggleanaween={toggleanaween}
-                openanaween={openanaween}
-                handleHeartClick={handleHeartClick}
-                handleShareClick={handleShareClick}
-                openComments={openComments}
-              />
+              <div data-aos="fade-up">
+                <DataCard
+                  page="ashaar"
+                  download={true}
+                  key={index}
+                  shaerData={shaerData}
+                  index={index}
+                  handleCardClick={handleCardClick}
+                  toggleanaween={toggleanaween}
+                  openanaween={openanaween}
+                  handleHeartClick={handleHeartClick}
+                  handleShareClick={handleShareClick}
+                  openComments={openComments}
+                />
+              </div>
             ))}
           </div>
-          <div className="flex justify-center text-lg m-5">
-            <button
-              onClick={handleLoadMore}
-              disabled={noMoreData}
-              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-            >
-              {moreloading
-                ? "لوڈ ہو رہا ہے۔۔۔"
-                : noMoreData
-                ? "مزید اشعار نہیں ہیں"
-                : "مزید اشعار لوڈ کریں"}
-            </button>
-          </div>
+          {dataItems.length > 0 && (
+            <div className="flex justify-center text-lg m-5">
+              <button
+                onClick={handleLoadMore}
+                disabled={noMoreData}
+                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+              >
+                {moreloading
+                  ? "لوڈ ہو رہا ہے۔۔۔"
+                  : noMoreData
+                  ? "مزید اشعار نہیں ہیں"
+                  : "مزید اشعار لوڈ کریں"}
+              </button>
+            </div>
+          )}
         </section>
-      )}
-      {selectedCard && (
-        <button
-          style={{ overflow: "hidden" }}
-          id="modlBtn"
-          className="fixed bottom-12 left-7 z-50"
-          onClick={handleCloseModal}
-        >
-          <FontAwesomeIcon
-            icon={faTimesCircle}
-            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-          />
-        </button>
       )}
       {selectedCard && (
         <div
@@ -870,12 +873,25 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
             dir="rtl"
             className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
-            <div className="p-4 pr-0">
-              <h2 className="text-black text-4xl top-0 bg-white sticky px-0 pr-4 p-3 border-b-2 mb-3">
+            <div className="p-4 pr-0 relative">
+              <button
+                id="modlBtn"
+                className="sticky top-4 right-7 z-50"
+                onClick={handleCloseModal}
+              >
+                <FontAwesomeIcon
+                  icon={faTimesCircle}
+                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
+                />
+              </button>
+              <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}
               </h2>
               {selectedCard.fields.ghazal.map((line, index) => (
-                <p key={index} className="text-black pb-3 pr-4 text-2xl">
+                <p
+                  key={index}
+                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
+                >
                   {line}
                 </p>
               ))}

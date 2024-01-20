@@ -5,6 +5,9 @@ import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
 import SkeletonLoader from "../../Components/SkeletonLoader";
+// aos for cards animation
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 // import { Document, Page } from 'react-pdf';
 const App = ({ params }) => {
@@ -12,6 +15,14 @@ const App = ({ params }) => {
   const [bookUrl, setBookUrl] = useState();
   const [iframeKey, setIframeKey] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
 
   const reloadIframe = () => {
     setIframeKey((prevKey) => prevKey + 1);
@@ -90,9 +101,9 @@ const App = ({ params }) => {
                 loading="lazy"
               />
             </div>
-            <div className="details">
+            <div className="details" data-aos="fade-up">
               {data && (
-                <div className="text-lg">
+                <div className="text-lg" data-aos="fade-up">
                   <p>کتاب کا نام: {data.bookName}</p>
                   <p>اشاعت: {formatDate(data.publishingDate)}</p>
                   <p>مصنف: {data.writer}</p>
@@ -133,6 +144,7 @@ const App = ({ params }) => {
             </button>
             {bookUrl && (
               <iframe
+                data-aos="fade-up"
                 key={iframeKey}
                 src={`https://docs.google.com/viewer?url=${bookUrl}&embedded=true`}
                 className="w-full h-[98svh] border-0 pt-16"
