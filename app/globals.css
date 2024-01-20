@@ -16,6 +16,8 @@
 
 html {
   scroll-behavior: smooth;
+  padding: 0;
+  margin: 0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,11 +29,14 @@ html {
 }
 
 body {
+  padding: 0;
+  margin: 0;
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(to bottom,
       transparent,
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
   background: #fff;
+  color: black;
   scrollbar-width: none;
   /* Firefox */
   -ms-overflow-style: none;
@@ -88,13 +93,14 @@ body {
 }
 
 /* styles.css or your global styles */
-p.text-center,p.justif {
+p.text-center,
+p.justif {
   line-height: normal;
   text-align-last: justify;
 }
 
 
-p.justif{
+p.justif {
   line-height: normal;
 }
 
