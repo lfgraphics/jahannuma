@@ -5,6 +5,7 @@ const nextConfig = {
     reactStrictMode: true,
     images: {
         domains: ['v5.airtableusercontent.com'],
+        domains: ['i.ytimg.com'],
         remotePatterns: [
             {
                 protocol: 'https',

@@ -186,22 +186,24 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
 
             {/* Language Select */}
             <div className="m-2 border-[#984A02] text-[#984A02] ">
-              <select
-                id="langChange"
-                value={language}
-                onChange={onLangChange}
-                className="langChange bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-center"
-              >
-                <option className="bg-[#F0D586]" value="UR">
-                  اردو
-                </option>
-                <option className="bg-[#F0D586]" value="EN">
-                  English
-                </option>
-                <option className="bg-[#F0D586]" value="HI">
-                  हिंदी
-                </option>
-              </select>
+              <label htmlFor="langChange">
+                <select
+                  id="langChange"
+                  value={language}
+                  onChange={onLangChange}
+                  className="langChange bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-center"
+                >
+                  <option className="bg-[#F0D586]" value="UR">
+                    اردو
+                  </option>
+                  <option className="bg-[#F0D586]" value="EN">
+                    English
+                  </option>
+                  <option className="bg-[#F0D586]" value="HI">
+                    हिंदी
+                  </option>
+                </select>
+              </label>
             </div>
             {/* donation button  */}
             <Link

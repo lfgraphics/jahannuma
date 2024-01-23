@@ -22,7 +22,7 @@ export default function Home() {
         {/* <Quiz></Quiz> */}
         <RandCard></RandCard>
         <Branches></Branches>
-        <div className="w-screen flex justify-center m-3">
+        <div className="w-screen flex justify-center my-3">
           <InstallPWAButton />
         </div>
         <Ads></Ads>

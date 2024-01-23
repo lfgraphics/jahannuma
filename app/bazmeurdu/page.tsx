@@ -1,5 +1,16 @@
-import * as React from "react";
+import Content from "./Content";
+export const metadata = {
+  metadataBase: new URL("https://jahan-numa.org/Bazmeurdu"),
+  title: "Bazme Urdu | Jahannuma",
+  description:
+    "This page contans Ghazlen videos of programms organised by jahan numa",
+  openGraph: {
+    images: ["https://jahannuma.vercel.app/metaImages/bazmeurdu.jpg"],
+  },
+};
 
-export default function Bazmeurdu() {
-  return <div>Bazme Urdu</div>;
-}
+const page = () => {
+  return <Content />;
+};
+
+export default page;
