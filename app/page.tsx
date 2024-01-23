@@ -1,6 +1,7 @@
 import Ads from "./Components/Ads";
 import Branches from "./Components/Branches";
 import Carousel1 from "./Components/Carosel_m";
+import HorizontalBooks from "./Components/HorizontalBooks";
 import InstallPWAButton from "./Components/InstallAppBtn";
 import Mutala from "./Components/Mutala";
 import Quiz from "./Components/Quiz";
@@ -18,8 +19,9 @@ export default function Home() {
       <div>
         {/* <GoogleSearch></GoogleSearch> */}
         <Carousel1></Carousel1>
-        <Mutala></Mutala>
+        {/* <Mutala></Mutala> */}
         {/* <Quiz></Quiz> */}
+        <HorizontalBooks></HorizontalBooks>
         <RandCard></RandCard>
         <Branches></Branches>
         <div className="w-screen flex justify-center my-3">
