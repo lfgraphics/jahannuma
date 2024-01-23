@@ -13,7 +13,7 @@ const Branches = () => {
         <div className=" p-4 w-screen overflow-x-auto">
           <div className="flex flex-row w-max">
             <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
-              <Link href="/Bazmeurdu">
+              <Link href="/bazmeurdu">
                 <Image
                   src="/branches/urdu.jpg"
                   alt="Bazme urdu Image"
@@ -27,7 +27,7 @@ const Branches = () => {
               </Link>
             </div>
             <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
-              <Link href="/Bazmehindi">
+              <Link href="/bazmehindi">
                 <Image
                   src="/branches/hindi.jpeg"
                   alt="Bazme hindi Image"

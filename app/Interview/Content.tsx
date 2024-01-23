@@ -145,7 +145,7 @@ const Content = () => {
   return (
     <div>
       {loading && <SkeletonLoader />}
-      <h1 className="text-center text-4xl my-6">بزم اردو</h1>
+      <h1 className="text-center text-4xl my-6">انٹرویوز</h1>
       {!loading && (
         <section>
           <div
