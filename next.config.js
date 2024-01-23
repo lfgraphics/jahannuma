@@ -4,8 +4,7 @@ const withPWA = require('next-pwa');
 const nextConfig = {
     reactStrictMode: true,
     images: {
-        domains: ['v5.airtableusercontent.com'],
-        domains: ['i.ytimg.com'],
+        domains: ['v5.airtableusercontent.com', 'i.ytimg.com'],
         remotePatterns: [
             {
                 protocol: 'https',
