@@ -156,8 +156,7 @@ const Content = () => {
             {dataItems.map((cardData, index) => (
               <div dir="ltr" key={index} data-aos="fade-up">
                 <Link
-                  href={`https://www.youtube.com/watch?v=${cardData.snippet.resourceId.videoId}`}
-                  target="_blank"
+                  href={`/Interview/${cardData.snippet.resourceId.videoId}`}
                 >
                   <div className="cardBody border-gray-600 border overflow-hidden rounded-md hover:border-2">
                     <Image
