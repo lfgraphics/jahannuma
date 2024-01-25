@@ -5,7 +5,7 @@ import LocalGhazalCard from "./LocalDataCard";
 import ToastComponent from "./Toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
-import Card from "./shaer/Profilecard";
+import Card from "./doyoouknow/shaer/Profilecard";
 
 // import React {useEffect} from 'react'
 interface Shaer {

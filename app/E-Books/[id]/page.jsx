@@ -8,6 +8,7 @@ import SkeletonLoader from "../../Components/SkeletonLoader";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
+import PdfViewer from "@/app/Components/PdfViewer";
 
 // import { Document, Page } from 'react-pdf';
 const App = ({ params }) => {
@@ -47,9 +48,6 @@ const App = ({ params }) => {
       if (records.length > 0) {
         const fieldsData = records[0].fields;
         setData(fieldsData);
-
-        // Additional logging if needed
-        console.log("Fields Data:", fieldsData);
       } else {
         // Handle the case where no records are available.
         console.error("No records found in the response.");
@@ -65,19 +63,13 @@ const App = ({ params }) => {
     fetchData();
   }, []);
   useEffect(() => {
-    console.log("data is");
-    console.log(data);
-    console.log("book url is");
     if (data.book && data.book.length > 0) {
       const firstBook = data.book[0];
       const bookUrl = firstBook.url;
-      console.log("Book URL:", bookUrl);
-      console.log("and inline url is:", data.book[0]?.url);
       setBookUrl(data.book[0]?.url);
-      console.log("other fileds are:", data.bookName);
     } else {
       // Handle the case where 'book' is undefined or an empty array
-      console.error("No book data found in the record.");
+      console.error("No book data found in the record. please contact the organization");
     }
   }, [data]); // Log the data whenever it changes
   const formatDate = (dateString) => {
@@ -122,18 +114,18 @@ const App = ({ params }) => {
                       کتاب ڈاؤنلوڈ کریں
                     </Link>
                   )}
-                  کتاب نہ دکھنے یا لوڈ نہ ہونے کی صورت میں{" "}
+                  {/* کتاب نہ دکھنے یا لوڈ نہ ہونے کی صورت میں{" "}
                   <FontAwesomeIcon
                     icon={faRefresh}
                     className="text-black px-3"
                   />{" "}
-                  اس بٹن سے ریفریش کریں
+                  اس بٹن سے ریفریش کریں */}
                 </div>
               )}
             </div>
           </div>
           <div id="pdf" className="main relative">
-            <button
+            {/* <button
               className="absolute top-[75px] rounded-md right-2 w-12 p-3 bg-black text-white "
               onClick={reloadIframe}
             >
@@ -141,15 +133,16 @@ const App = ({ params }) => {
                 icon={faRefresh}
                 className="text-xl block mx-auto "
               />
-            </button>
+            </button> */}
             {bookUrl && (
-              <iframe
-                data-aos="fade-up"
-                key={iframeKey}
-                src={`https://docs.google.com/viewer?url=${bookUrl}&embedded=true`}
-                className="w-full h-[98svh] border-0 pt-16"
-                frameBorder="0"
-              ></iframe>
+            <PdfViewer url={bookUrl} />
+              // <iframe
+              //   data-aos="fade-up"
+              //   key={iframeKey}
+              //   src={`https://docs.google.com/viewer?url=${bookUrl}&embedded=true`}
+              //   className="w-full h-[98svh] border-0 pt-16"
+              //   frameBorder="0"
+              // ></iframe>
             )}
           </div>
         </div>
