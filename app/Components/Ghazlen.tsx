@@ -34,16 +34,23 @@ const Ghazlen = () => {
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [insideBrowser, setInsideBrowser] = useState(false);
+  
   useEffect(() => {
+    setInsideBrowser(true);
+  }, []);
+
+  useEffect(() => {
+    if(insideBrowser){
+
+
     let retrivedData = localStorage.getItem("Ghazlen");
     let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);
     console.log(retrivedData);
     console.log(parsedData);
+    }
   }, []);
-  useEffect(() => {
-    setInsideBrowser(true);
-  }, []);
+
 
   const showToast = (
     msgtype: "success" | "error" | "invalid",
