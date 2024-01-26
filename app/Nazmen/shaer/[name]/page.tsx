@@ -857,7 +857,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               {selectedCard.fields.ghazal.map((line, index) => (
                 <p
                   key={index}
-                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
+                  className="text-black pb-3 pr-4 text-2xl"
                 >
                   {line}
                 </p>

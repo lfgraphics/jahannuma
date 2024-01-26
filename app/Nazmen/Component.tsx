@@ -897,7 +897,7 @@ const Ashaar: React.FC<{}> = () => {
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
                     ? "مزید نظمیں نہیں ہیں"
-                    : "اور نظمیں لعڈ کریں"}
+                    : "اور نظمیں لوڈ کریں"}
                 </button>
               </div>
             )}
@@ -931,7 +931,7 @@ const Ashaar: React.FC<{}> = () => {
               {selectedCard.fields.ghazal.map((line, index) => (
                 <p
                   key={index}
-                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
+                  className="text-black pb-3 pr-4 text-2xl"
                 >
                   {line}
                 </p>
