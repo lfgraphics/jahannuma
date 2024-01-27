@@ -41,8 +41,6 @@ const Ghazlen = () => {
 
   useEffect(() => {
     if(insideBrowser){
-
-
     let retrivedData = localStorage.getItem("Ghazlen");
     let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
     setData(parsedData);

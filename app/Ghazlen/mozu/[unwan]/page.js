@@ -10,13 +10,7 @@ import DataCard from "../../../Components/DataCard";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
-useEffect(() => {
-  AOS.init({
-    offset: 50,
-    delay: 0,
-    duration: 300,
-  });
-});
+
 const SkeletonLoader = () => (
   <div className="flex flex-col items-center">
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
@@ -53,6 +47,14 @@ const Page = ({ params }) => {
   const [toast, setToast] = useState(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
+  
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
 
   //function ot show toast
   const showToast = (

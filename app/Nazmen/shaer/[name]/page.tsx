@@ -73,6 +73,14 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  });
+
   //function ot show toast
   const showToast = (
     msgtype: "success" | "error" | "invalid",
