@@ -5,7 +5,6 @@ import HorizontalBooks from "./Components/HorizontalBooks";
 import InstallPWAButton from "./Components/InstallAppBtn";
 import Mutala from "./Components/Mutala";
 import Quiz from "./Components/Quiz";
-// import GoogleSearch from "./Components/GoogleSearch";
 import RandCard from "./Components/RandCard";
 import DoYouKnow from "./Components/doyoouknow/DoYouKnow";
 
@@ -17,10 +16,9 @@ export default function Home() {
   return (
     <>
       <div>
-        {/* <GoogleSearch></GoogleSearch> */}
         <Carousel1></Carousel1>
-        {/* <Mutala></Mutala> */}
-        {/* <Quiz></Quiz> */}
+        <Mutala></Mutala>
+        <Quiz></Quiz>
         <HorizontalBooks></HorizontalBooks>
         <RandCard></RandCard>
         <Branches></Branches>

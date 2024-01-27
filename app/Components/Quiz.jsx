@@ -1,14 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
-import "./quiz.css"; // You can use Tailwind classes in this CSS file
+import Loader from "./Loader";
+import "./quiz.css";
 
 const Quiz = () => {
   const [quizData, setQuizData] = useState([]);
   const [ans, setAns] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [insideBroser, setInsideBrowser] = useState(false);
-  const [clicked, setClicked] = useState(false);
-  //   const [clicked, setClicked] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const todayDate = new Date().toLocaleDateString("en-GB");
   // Split the date components
@@ -17,6 +17,7 @@ const Quiz = () => {
   const formattedDate = `${dateComponents[2]}-${dateComponents[1]}-${dateComponents[0]}`;
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const BASE_ID = "appX2cOtbO23MjpGI";
       const TABLE_NAME = "Quiz";
@@ -39,9 +40,10 @@ const Quiz = () => {
       );
       setQuizData(recordWithTodayDate);
       setAns(recordWithTodayDate.fields?.ans);
-      console.log(recordWithTodayDate.fields?.ans);
+      setLoading(false);
     } catch (error) {
       console.error("Failed to fetch quiz data:", error);
+      setLoading(false);
     }
   };
 
@@ -51,78 +53,65 @@ const Quiz = () => {
   }, []);
 
   useEffect(() => {
-    if (window !== undefined && window.localStorage) {
-      const storedQuizDataString = localStorage.getItem("todaysQuiz");
-      if (storedQuizDataString) {
-        try {
-          const storedQuizData = JSON.parse(storedQuizDataString);
-
-          // Check if stored data matches the current quizData
-          if (
-            quizData &&
-            storedQuizData.fields &&
-            JSON.stringify(storedQuizData.fields) ===
-              JSON.stringify(quizData.fields)
-          ) {
-            // If the data matches, the user has already played today
-            // Disable the buttons or perform any other logic
-            document.getElementById(`ans0`)?.classList.add("disabled");
-            document.getElementById(`ans1`)?.classList.add("disabled");
-            document.getElementById(`ans2`)?.classList.add("disabled");
-            document.getElementById(`ans3`)?.classList.add("disabled");
-
-            // Simulate the logic that occurs when the user clicks an answer
-            const storedQuizAnswer = localStorage.getItem("quizAnswer");
-            if (storedQuizAnswer) {
-              const answerIndex = parseInt(storedQuizAnswer) - 1;
-              setSelectedOption(answerIndex + 1);
-              localStorage.setItem("quizAnswer", (answerIndex + 1).toString());
-              localStorage.setItem("todaysQuiz", JSON.stringify(quizData));
-              setClicked(true);
-            }
-          }
-        } catch (error) {
-          console.error("Error parsing stored data:", error);
+    if (window.localStorage && quizData !== undefined) {
+      const storedQuiz = localStorage.getItem("todaysQuiz");
+      const userAnswer = localStorage.getItem("userAnswer");
+      const quizAnswer = localStorage.getItem("quizAnswer");
+      if (
+        JSON.parse(storedQuiz).fields.date ==
+        new Date().toISOString().split("T")[0]
+      ) {
+        if (userAnswer == quizAnswer) {
+          document
+            .getElementById(`ans${quizAnswer - 1}`)
+            ?.classList.add("correct");
+          setSelectedOption(userAnswer);
+        } else {
+          document
+            .getElementById(`ans${quizAnswer - 1}`)
+            ?.classList.add("correct");
+          document
+            .getElementById(`ans${userAnswer - 1}`)
+            ?.classList.add("incorrect");
+          setSelectedOption(userAnswer);
         }
       }
     }
   }, [quizData]);
 
   const handleOptionSelect = (index) => {
-    // Show confirm only if an option is not already selected
     if (selectedOption === null) {
-      const isConfirmed = window.confirm(
-        "Lock this option and save to localStorage?"
-      );
+      const isConfirmed = window.confirm("کیا آپ کا جواب لاک کیا جائے؟");
       if (isConfirmed) {
         setSelectedOption(index + 1);
-        // Save the selected option to localStorage
-        localStorage.setItem("quizAnswer", (index + 1).toString());
+        index + 1 == ans
+          ? document.getElementById(`ans${index}`).classList.add("correct")
+          : document.getElementById(`ans${index}`).classList.add("incorrect"),
+          document.getElementById(`ans${ans - 1}`).classList.add("correct");
         localStorage.setItem("todaysQuiz", JSON.stringify(quizData));
-        setClicked(true);
+        localStorage.setItem("quizAnswer", ans.toString());
+        localStorage.setItem("userAnswer", (index + 1).toString());
       }
     }
   };
 
   return (
     <div className="quiz p-8">
+      <h2 className="text-4xl font-semibold text-center p-7">جہاں نما کوئز</h2>
+      {loading && (
+        <div className="text-center">
+          <Loader />
+        </div>
+      )}
       {insideBroser && quizData !== undefined && (
         <>
-          <h2 className="text-4xl font-semibold text-center m-7">
-            جہاں نما کوئز
-          </h2>
-          <h2 className="text-2xl text-center font-semibold">
-            {quizData.fields?.question}
-          </h2>
+          <h2 className="text-2xl text-center">{quizData.fields?.question}</h2>
           {["opt1", "opt2", "opt3", "opt4"].map((opt, index) => (
             <div className="text-center flex flex-col gap-6">
               <button
                 key={index}
                 id={`ans${index}`}
-                className={`btn text-center ${
-                  clicked ? (ans === index + 1 ? "correct" : "incorrect") : ""
-                }
-                  ${selectedOption !== null ? "disabled" : ""}`}
+                className={`btn text-center `}
                 onClick={() => handleOptionSelect(index)}
                 disabled={selectedOption !== null}
               >
