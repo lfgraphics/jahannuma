@@ -2,6 +2,7 @@ import Ads from "./Components/Ads";
 import Branches from "./Components/Branches";
 import Carousel1 from "./Components/Carosel_m";
 import HorizontalBooks from "./Components/HorizontalBooks";
+import HorizontalShura from "./Components/HorizontalShura";
 import InstallPWAButton from "./Components/InstallAppBtn";
 import Mutala from "./Components/Mutala";
 import Quiz from "./Components/Quiz";
@@ -17,15 +18,16 @@ export default function Home() {
     <>
       <div>
         <Carousel1></Carousel1>
-        <Mutala></Mutala>
-        <Quiz></Quiz>
-        <HorizontalBooks></HorizontalBooks>
         <RandCard></RandCard>
+        <HorizontalBooks />
+        <HorizontalShura />
         <Branches></Branches>
         <div className="w-screen flex justify-center my-3">
           <InstallPWAButton />
         </div>
+        <Quiz></Quiz>
         <Ads></Ads>
+        <Mutala></Mutala>
         <DoYouKnow></DoYouKnow>
       </div>
     </>

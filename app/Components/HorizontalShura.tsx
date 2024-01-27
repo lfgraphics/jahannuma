@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import Card from "./BookCard";
+import Card from "./shaer/Profilecard";
 import Link from "next/link";
 import Loader from "./Loader";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-interface Book {
+interface Photo {
   filename: string;
   height: number;
   id: string;
@@ -33,33 +33,37 @@ interface Book {
   width: number;
 }
 
-interface EBooksType {
+interface FormattedRecord {
   fields: {
-    bookName: string;
-    enBookName: string;
-    hiBookName: string;
-    publishingDate: string;
-    writer: string;
-    enWriter: string;
-    hiWriter: string;
-    desc: string[];
-    enDesc: string[];
-    hiDesc: string[];
-    book: Book[];
+    takhallus: string;
+    dob: string;
+    location: string;
+    tafseel: string[];
+    searchKeys: string[];
+    enTakhallus: string[];
+    hiTakhallus: string[];
+    enName: string[];
+    hiName: string[];
+    enLocation: string[];
+    hiLocation: string[];
+    ghazal: boolean;
+    eBooks: boolean;
+    nazmen: boolean;
     likes: number;
+    photo: Photo[];
   };
   id: string;
   createdTime: string;
 }
 
-const HorizontalBooks = () => {
-  const [data, setData] = useState<EBooksType[]>([]);
+const HorizontalShura = () => {
+  const [data, setData] = useState<FormattedRecord[]>([]);
   const [loading, setLoading] = useState(true);
   //
   const fetchData = async () => {
     try {
-      const BASE_ID = "appXcBoNMGdIaSUyA";
-      const TABLE_NAME = "E-Books";
+      const BASE_ID = "appgWv81tu4RT3uRB";
+      const TABLE_NAME = "Intro";
       const pageSize = 10;
       const headers = {
         //authentication with environment variable
@@ -75,20 +79,28 @@ const HorizontalBooks = () => {
 
       setData(result.records);
       // formating result to match the mock data type for ease of development
-      const formattedRecords: EBooksType[] = result.records.map(
+      const formattedRecords: FormattedRecord[] = result.records.map(
         (record: any) => ({
           ...record,
           fields: {
             ...record.fields,
-            bookName: record.fields?.bookName,
-            writer: record.fields?.writer,
-            publishingData: record.fields?.publishingData,
-            tafseel: record.fields?.desc,
-            book: record.fields?.book,
+            tafseel: record.fields?.tafseel.split("\n"),
+            searchKeys: record.fields?.searchKeys.split("\n"),
+            enTakhallus: record.fields?.enTakhallus.split("\n"),
+            hiTakhallus: record.fields?.hiTakhallus.split("\n"),
+            enName: record.fields?.enName.split("\n"),
+            hiName: record.fields?.hiName.split("\n"),
+            enLocation: record.fields?.enLocation.split("\n"),
+            hiLocation: record.fields?.hiLocation.split("\n"),
+            ghazal: record.fields?.ghazal,
+            eBooks: record.fields?.eBooks,
+            nazmen: record.fields?.nazmen,
             likes: record.fields?.likes,
           },
         })
       );
+
+      setData(formattedRecords)
       // seting the loading state to false to show the data
       setLoading(false);
     } catch (error) {
@@ -101,7 +113,7 @@ const HorizontalBooks = () => {
   }, []);
   return (
     <div dir="ltr">
-      <h2 className="py-7 text-center text-4xl">کتابیں</h2>
+      <h2 className="py-7 text-center text-4xl">شعرا</h2>
       {loading && <Loader></Loader>}
       {!loading && (
         <div>
@@ -111,11 +123,11 @@ const HorizontalBooks = () => {
             className="flex flex-row-reverse overflow-auto gap-4 py-6 px-6 items-center"
           >
             {data.map((item, index) => (
-              <div className="relative" key={index}>
-                <Card data={item} />
+              <div className="w-[240px]" key={index}>
+                <Card data={item}/>
               </div>
             ))}
-            <Link className=" text-white text-4xl font-bold" href={"/E-Books"}>
+            <Link className=" text-white text-4xl font-bold" href={"/Shaer"}>
               <FontAwesomeIcon
                 icon={faCircleChevronRight}
                 shake
@@ -129,4 +141,4 @@ const HorizontalBooks = () => {
   );
 };
 
-export default HorizontalBooks;
+export default HorizontalShura;

@@ -142,7 +142,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
       )}
       {page !== "nazm" && (
         <div
-          // data-aos={"fade-up"}
+          dir="rtl"
           key={index}
           id={`card${index}`}
           className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[250px]"

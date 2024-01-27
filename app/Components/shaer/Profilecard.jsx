@@ -19,19 +19,29 @@ const Card = ({ data }) => {
 
   return (
     <Link href={`/Shaer/${takhallus?.replace(" ", "-")}`}>
-      <div className="rounded overflow-hidden shadow-lg mx-auto my-1">
+      <div className="w-[180px] sm:w-[240px] rounded overflow-hidden shadow-lg mx-auto my-1">
         {/* Photo */}
         <div
           className="relative bg-cover bg-center"
           style={{ backgroundImage: `url(/poets/loadingpic.gif)` }}
         >
-          <Image
-            className="w-full h-64 object-cover object-center"
-            src={photo?.[0].thumbnails?.full?.url}
-            height={photo?.[0].thumbnails?.full?.height}
-            width={photo?.[0].thumbnails?.full?.width}
-            alt="Poet's Photo"
-          />
+          {photo ? (
+            <Image
+              className="w-full h-64 object-cover object-center"
+              src={photo?.[0].thumbnails?.full?.url}
+              height={photo?.[0].thumbnails?.full?.height}
+              width={photo?.[0].thumbnails?.full?.width}
+              alt="Poet's Photo"
+            />
+          ) : (
+            <Image
+              className="w-full h-64 object-cover object-center"
+              src={"/poets/nodp.jpg"}
+              height={600}
+              width={600}
+              alt="Poet's Photo"
+            />
+          )}
           {/* Takhallus */}
           <div className="absolute bottom-0 w-full text-center p-2 bg-black bg-opacity-75 text-white">
             {takhallus}

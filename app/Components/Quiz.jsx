@@ -58,7 +58,7 @@ const Quiz = () => {
       const userAnswer = localStorage.getItem("userAnswer");
       const quizAnswer = localStorage.getItem("quizAnswer");
       if (
-        JSON.parse(storedQuiz).fields.date ==
+        JSON.parse(storedQuiz)?.fields.date ==
         new Date().toISOString().split("T")[0]
       ) {
         if (userAnswer == quizAnswer) {
@@ -97,7 +97,6 @@ const Quiz = () => {
 
   return (
     <div className="quiz p-8">
-      <h2 className="text-4xl font-semibold text-center p-7">جہاں نما کوئز</h2>
       {loading && (
         <div className="text-center">
           <Loader />
@@ -105,6 +104,9 @@ const Quiz = () => {
       )}
       {insideBroser && quizData !== undefined && (
         <>
+          <h2 className="text-4xl font-semibold text-center p-7">
+            جہاں نما کوئز
+          </h2>
           <h2 className="text-2xl text-center">{quizData.fields?.question}</h2>
           {["opt1", "opt2", "opt3", "opt4"].map((opt, index) => (
             <div className="text-center flex flex-col gap-6">

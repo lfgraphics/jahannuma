@@ -16,13 +16,13 @@ interface Mutalah {
     hiBody: string[];
     hiHawalaText: string;
     hiHawalaLink: string;
-    likes: number;
-    comments: number;
-    shares: number;
   };
   id: string;
   createdTime: string;
 }
+// likes: number;
+// comments: number;
+// shares: number;
 const Mutala = () => {
   const [mutalaData, setMutalaData] = useState<Mutalah>();
   const [insideBroser, setInsideBrowser] = useState(false);
@@ -71,14 +71,23 @@ const Mutala = () => {
       {insideBroser && mutalaData !== undefined && (
         <>
           <h1 className="text-4xl text-center m-7">مطالعہ کی میز سے </h1>
-          <h2 className="text-2xl text-center font-semibold">
+          <h2 className="text-2xl text-center">
             {mutalaData?.fields?.heading}
           </h2>
-          <p className="p-6">{mutalaData?.fields?.body}</p>
-          <div dir="rtl" className="flex w-screen text-white bg-[#984A02] items-center justify-center p-3">
-            <Link href={mutalaData?.fields?.hawalaLink}>
-              حوالہ: {mutalaData?.fields?.hawalaText}
-            </Link>
+          <p dir="rtl" className="p-6">
+            {mutalaData?.fields?.body}
+          </p>
+          <div
+            dir="rtl"
+            className="flex w-screen text-white bg-[#984A02] items-center justify-center p-3"
+          >
+            {mutalaData.fields.hawalaLink ? (
+              <Link href={mutalaData?.fields?.hawalaLink}>
+                حوالہ: {mutalaData?.fields?.hawalaText}
+              </Link>
+            ) : (
+              `حوالہ: ${mutalaData?.fields?.hawalaText}`
+            )}
           </div>
         </>
       )}
