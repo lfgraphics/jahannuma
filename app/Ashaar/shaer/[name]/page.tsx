@@ -55,13 +55,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     pageSize: 30,
   });
   const [dataOffset, setDataOffset] = useState<string | null>(null);
-  const [searchText, setSearchText] = useState("");
-  const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
-  const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
-  const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
-  const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   //comments
   const [showDialog, setShowDialog] = useState(false);
@@ -129,9 +124,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     }
   }
   // func to fetch and load more data
-  const fetchData = async (offset: string | null, userQuery: boolean) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(pagination.offset);
+  const fetchData = async () => {
     try {
       const BASE_ID = "appeI2xzzyvUN5bR7";
       const TABLE_NAME = "Ashaar";
@@ -145,31 +138,13 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         params.name
       ).replace("_", " ")}')`;
 
-      if (userQuery) {
-        // Encode the formula with OR condition
-        const encodedFormula = encodeURIComponent(
-          `OR(
-          FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({sher})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({body})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
-        )`
-        );
-        url += `&filterByFormula=${encodedFormula}`;
-      }
-
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
       const response = await fetch(url, { method: "GET", headers });
       const result: ApiResponse = await response.json();
       const records = result.records || [];
 
       if (!result.offset && dataOffset == "") {
         // No more data, disable the button
-        setNoMoreData(true);
         setLoading(false);
-        setMoreLoading(false);
       }
       // formating result to match the mock data type for ease of development
       const formattedRecords = records.map((record: any) => ({
@@ -181,83 +156,33 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(dataItems);
-          setDataItems(formattedRecords);
-        } else {
-          setDataItems(formattedRecords);
-        }
-      } else {
-        setDataItems((prevDataItems) => [
-          ...prevDataItems,
-          ...formattedRecords,
-        ]);
-      }
-      !offset && scrollToTop();
-      // seting pagination depending on the response
+      setDataItems(formattedRecords);
       setPagination({
         offset: result.offset,
         pageSize: pageSize,
       });
       // seting the loading state to false to show the data
       setLoading(false);
-      setMoreLoading(false);
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
       setLoading(false);
-      setMoreLoading(false);
     }
   };
   // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(pagination.offset, false);
-  };
   // Fetch the initial set of records
   useEffect(() => {
-    fetchData(null, false);
+    fetchData();
   }, []);
-  const searchQuery = () => {
-    fetchData(null, true);
-    if (typeof window !== undefined) {
-      setScrolledPosition(document!.getElementById("section")!.scrollTop);
-    }
-  };
-  //search keyup handeling
-  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value.toLowerCase();
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-    value === ""
-      ? xMark?.classList.add("hidden")
-      : xMark?.classList.remove("hidden");
-    value === ""
-      ? sMark?.classList.add("hidden")
-      : sMark?.classList.remove("hidden");
-    setSearchText(value);
-  };
-  //clear search box handeling
-  const clearSearch = () => {
-    let input = document.getElementById("searchBox") as HTMLInputElement;
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
 
-    input.value ? (input.value = "") : null;
-    xMark?.classList.add("hidden");
-    sMark?.classList.add("hidden");
-    // Clear the searched data and show all data again
-    setSearchText(""); // Clear the searchText state
-    // setDataItems(data.getAllShaers()); // Restore the original data
-  };
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
+    e: React.MouseEvent<HTMLButtonElement>,
     shaerData: Shaer,
     index: any,
     id: string
   ): Promise<void> => {
     toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage) {
+    if ((typeof window !== undefined && window.localStorage, e.detail == 1)) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ghazlen");
@@ -734,25 +659,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   const closeComments = () => {
     setSelectedCommentId(null);
   };
-  const resetSearch = () => {
-    searchText && clearSearch();
-    setDataItems(initialDataItems);
-    if (typeof window !== undefined) {
-      let section = document.getElementById("section");
-      section!.scrollTo({
-        top: scrolledPosition,
-        behavior: "smooth",
-      });
-    }
-    setInitialdDataItems([]);
-  };
-
-  // Check if the initialDataItems.length is greater than 0
-  if (initialDataItems.length > 0) {
-    window.addEventListener("popstate", () => {
-      resetSearch();
-    });
-  }
 
   return (
     <div>
@@ -802,20 +708,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         {`${decodeURIComponent(params.name).replace("_", " ")} کے اشعار`}
       </div>
       {loading && <SkeletonLoader />}
-      {initialDataItems.length > 0 && dataItems.length == 0 && (
-        <div className="block mx-auto text-center my-3 text-2xl">
-          سرچ میں کچھ نہیں ملا
-        </div>
-      )}
-      {initialDataItems.length > 0 && (
-        <button
-          className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
-          onClick={resetSearch}
-          // disabled={!searchText}
-        >
-          تلاش ریسیٹ کریں
-        </button>
-      )}
       {!loading && (
         <section>
           <div
@@ -846,21 +738,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               </div>
             ))}
           </div>
-          {dataItems.length > 0 && (
-            <div className="flex justify-center text-lg m-5">
-              <button
-                onClick={handleLoadMore}
-                disabled={noMoreData}
-                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-              >
-                {moreloading
-                  ? "لوڈ ہو رہا ہے۔۔۔"
-                  : noMoreData
-                  ? "مزید اشعار نہیں ہیں"
-                  : "مزید اشعار لوڈ کریں"}
-              </button>
-            </div>
-          )}
         </section>
       )}
       {selectedCard && (

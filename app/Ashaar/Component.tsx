@@ -259,12 +259,13 @@ const Ashaar: React.FC<{}> = () => {
   };
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
+    e: React.MouseEvent<HTMLButtonElement>,
     shaerData: Shaer,
     index: any,
     id: string
   ): Promise<void> => {
     toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage) {
+    if ((typeof window !== undefined && window.localStorage, e.detail == 1)) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ashaar");

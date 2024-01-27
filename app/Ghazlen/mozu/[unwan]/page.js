@@ -30,11 +30,7 @@ const Page = ({ params }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState(null);
   const [selectedCard, setSelectedCard] = React.useState(null);
   const [loading, setLoading] = useState(true);
-  const [moreloading, setMoreLoading] = useState(true);
-  const [dataOffset, setDataOffset] = useState < string | null > (null);
   const [dataItems, setDataItems] = useState([]);
-  const [initialDataItems, setInitialdDataItems] = useState([]);
-  const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState(null);
   //comments
   const [showDialog, setShowDialog] = useState(false);
@@ -47,7 +43,7 @@ const Page = ({ params }) => {
   const [toast, setToast] = useState(null);
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
-  
+
   useEffect(() => {
     AOS.init({
       offset: 50,
@@ -93,19 +89,9 @@ const Page = ({ params }) => {
     setTimeoutId(newTimeoutId);
   };
 
-  //function ot scroll to the top
-  function scrollToTop() {
-    if (typeof window !== undefined) {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
+
   // func to fetch and load more data
-  const fetchData = async (offset, userQuery) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(pagination.offset);
+  const fetchData = async () => {
     try {
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "Ghazlen";
@@ -119,12 +105,7 @@ const Page = ({ params }) => {
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
       const records = result.records || [];
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
+
       // formating result to match the mock data type for ease of development
       const formattedRecords = records.map((record) => ({
         ...record,
@@ -135,47 +116,30 @@ const Page = ({ params }) => {
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(dataItems);
-          setDataItems(formattedRecords);
-        } else {
-          setDataItems(formattedRecords);
-        }
-      } else {
-        setDataItems((prevDataItems) => [
-          ...prevDataItems,
-          ...formattedRecords,
-        ]);
-      }
-      !offset && scrollToTop();
-      // seting pagination depending on the response
-      // seting the loading state to false to show the data
+
+      setDataItems(formattedRecords);
+
       setLoading(false);
-      setMoreLoading(false);
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
       setLoading(false);
-      setMoreLoading(false);
     }
   };
-  // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(null, false);
-  };
+
   // Fetch the initial set of records
   useEffect(() => {
-    fetchData(null, false);
+    fetchData();
   }, []);
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
+    e,
     shaerData,
     index,
     id
   ) => {
     toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage) {
+    setDisableHearts(true)
+    if (typeof window !== undefined && window.localStorage && e.detail == 1) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ghazlen");
@@ -242,11 +206,14 @@ const Page = ({ params }) => {
                 updatedDataItems[index].fields.likes = updatedLikes;
                 return updatedDataItems;
               });
+              setDisableHearts(false)
             } else {
               console.error(`Failed to update likes: ${updateResponse.status}`);
+              setDisableHearts(false)
             }
           } catch (error) {
             console.error("Error updating likes:", error);
+            setDisableHearts(false)
           }
         } else {
           // Remove the shaerData from the existing data array
@@ -303,11 +270,14 @@ const Page = ({ params }) => {
                 updatedDataItems[index].fields.likes = updatedLikes;
                 return updatedDataItems;
               });
+              setDisableHearts(false)
             } else {
               console.error(`Failed to update likes: ${updateResponse.status}`);
+              setDisableHearts(false)
             }
           } catch (error) {
             console.error("Error updating likes:", error);
+            setDisableHearts(false)
           }
         }
       } catch (error) {
@@ -316,6 +286,7 @@ const Page = ({ params }) => {
           "Error adding/removing data to/from Local Storage:",
           error
         );
+        setDisableHearts(false)
       }
     }
   };
@@ -698,20 +669,6 @@ const Page = ({ params }) => {
         <div className="text-4xl m-5">{`غزلیں بعنوان : ${decodedUnwan}`}</div>
       </div>
       {loading && <SkeletonLoader />}
-      {initialDataItems.length > 0 && dataItems.length == 0 && (
-        <div className="block mx-auto text-center my-3 text-2xl">
-          سرچ میں کچھ نہیں ملا
-        </div>
-      )}
-      {initialDataItems.length > 0 && (
-        <button
-          className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
-          onClick={resetSearch}
-        // disabled={!searchText}
-        >
-          تلاش ریسیٹ کریں
-        </button>
-      )}
       {!loading && (
         <section>
           <div
@@ -741,21 +698,6 @@ const Page = ({ params }) => {
               </div>
             ))}
           </div>
-          {dataItems.length > 0 && (
-            <div className="flex justify-center text-lg m-5">
-              <button
-                onClick={handleLoadMore}
-                disabled={noMoreData || loading || moreloading}
-                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-              >
-                {moreloading
-                  ? "لوڈ ہو رہا ہے۔۔۔"
-                  : noMoreData
-                    ? "مزید غزلیں نہیں ہیں"
-                    : "اور غزلیں لعڈ کریں"}
-              </button>
-            </div>
-          )}
         </section>
       )}
       {selectedCard && (

@@ -108,15 +108,12 @@ const Page = ({ params }) => {
     }
   }
   // func to fetch and load more data
-  const fetchData = async (offset, userQuery) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(pagination?.offset);
+  const fetchData = async () => {
     try {
       const BASE_ID = "appeI2xzzyvUN5bR7";
       const TABLE_NAME = "Ashaar";
 
       const headers = {
-
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
 
@@ -124,12 +121,6 @@ const Page = ({ params }) => {
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
       const records = result.records || [];
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
       // formating result to match the mock data type for ease of development
       const formattedRecords = records.map((record) => ({
         ...record,
@@ -140,54 +131,27 @@ const Page = ({ params }) => {
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
-      console.log(formattedRecords)
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(dataItems);
-          setDataItems(formattedRecords);
-        } else {
-          setDataItems(formattedRecords);
-        }
-      } else {
-        setDataItems((prevDataItems) => [
-          ...prevDataItems,
-          ...formattedRecords,
-        ]);
-      }
-      !offset && scrollToTop();
-      // seting pagination depending on the response
-      // seting the loading state to false to show the data
+      setDataItems(formattedRecords);
       setLoading(false);
-      setMoreLoading(false);
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
       setLoading(false);
-      setMoreLoading(false);
     }
   };
-  // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(null, false);
-  };
+
   // Fetch the initial set of records
   useEffect(() => {
-    fetchData(null, false);
+    fetchData();
   }, []);
-  const searchQuery = () => {
-    fetchData(null, true);
-    if (typeof window !== undefined) {
-      setScrolledPosition(document.getElementById("section").scrollTop);
-    }
-  };
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
+    e,
     shaerData,
     index,
     id
   ) => {
     toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage) {
+    if (typeof window !== undefined && window.localStorage, e.detail == 1) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ashaar");

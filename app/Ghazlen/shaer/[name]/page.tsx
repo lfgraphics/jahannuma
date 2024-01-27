@@ -30,10 +30,6 @@ interface ApiResponse {
   records: any[];
   offset: string | null;
 }
-interface Pagination {
-  offset: string | null;
-  pageSize: number;
-}
 interface Comment {
   dataId: string | null;
   commentorName: string | null;
@@ -49,20 +45,11 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
-  const [pagination, setPagination] = useState<Pagination>({
-    offset: null,
-    pageSize: 30,
-  });
-  const [dataOffset, setDataOffset] = useState<string | null>(null);
-  const [searchText, setSearchText] = useState("");
-  const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
-  const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
-  const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
-  const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   //comments
+  const [disableHearts, setDisableHearts] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [commentorName, setCommentorName] = useState<string | null>(null);
@@ -119,27 +106,12 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     setTimeoutId(newTimeoutId);
   };
 
-  //function ot scroll to the top
-  function scrollToTop() {
-    setPagination({
-      offset: pagination.offset,
-      pageSize: 30,
-    });
-    if (typeof window !== undefined) {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
   // func to fetch and load more data
-  const fetchData = async (offset: string | null, userQuery: boolean) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(pagination.offset);
+  const fetchData = async () => {
+
     try {
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "Ghazlen";
-      const pageSize = 30;
       const headers = {
         //authentication with environment variable
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -149,32 +121,11 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         params.name
       ).replace("_", " ")}')`;
 
-      if (userQuery) {
-        // Encode the formula with OR condition
-        const encodedFormula = encodeURIComponent(
-          `OR(
-          FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
-        )`
-        );
-        url += `&filterByFormula=${encodedFormula}`;
-      }
 
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
       const response = await fetch(url, { method: "GET", headers });
       const result: ApiResponse = await response.json();
       const records = result.records || [];
 
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
       // formating result to match the mock data type for ease of development
       const formattedRecords = records.map((record: any) => ({
         ...record,
@@ -185,83 +136,31 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           unwan: record.fields?.unwan.split("\n"),
         },
       }));
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(dataItems);
-          setDataItems(formattedRecords);
-        } else {
-          setDataItems(formattedRecords);
-        }
-      } else {
-        setDataItems((prevDataItems) => [
-          ...prevDataItems,
-          ...formattedRecords,
-        ]);
-      }
-      !offset && scrollToTop();
-      // seting pagination depending on the response
-      setPagination({
-        offset: result.offset,
-        pageSize: pageSize,
-      });
+
+      setDataItems(formattedRecords)
       // seting the loading state to false to show the data
       setLoading(false);
-      setMoreLoading(false);
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
       setLoading(false);
-      setMoreLoading(false);
     }
   };
-  // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(pagination.offset, false);
-  };
+
   // Fetch the initial set of records
   useEffect(() => {
-    fetchData(null, false);
+    fetchData();
   }, []);
-  const searchQuery = () => {
-    fetchData(null, true);
-    if (typeof window !== undefined) {
-      setScrolledPosition(document!.getElementById("section")!.scrollTop);
-    }
-  };
-  //search keyup handeling
-  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value.toLowerCase();
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-    value === ""
-      ? xMark?.classList.add("hidden")
-      : xMark?.classList.remove("hidden");
-    value === ""
-      ? sMark?.classList.add("hidden")
-      : sMark?.classList.remove("hidden");
-    setSearchText(value);
-  };
-  //clear search box handeling
-  const clearSearch = () => {
-    let input = document.getElementById("searchBox") as HTMLInputElement;
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-
-    input.value ? (input.value = "") : null;
-    xMark?.classList.add("hidden");
-    sMark?.classList.add("hidden");
-    // Clear the searched data and show all data again
-    setSearchText(""); // Clear the searchText state
-    // setDataItems(data.getAllShaers()); // Restore the original data
-  };
+ 
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
+    e: React.MouseEvent<HTMLButtonElement>,
     shaerData: Shaer,
     index: any,
     id: string
   ): Promise<void> => {
     toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage) {
+    setDisableHearts(true)
+    if (typeof window !== undefined && window.localStorage && e.detail == 1) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ghazlen");
@@ -331,11 +230,14 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
                 updatedDataItems[index].fields.likes = updatedLikes;
                 return updatedDataItems;
               });
+              setDisableHearts(false);
             } else {
               console.error(`Failed to update likes: ${updateResponse.status}`);
+              setDisableHearts(false);
             }
           } catch (error) {
             console.error("Error updating likes:", error);
+            setDisableHearts(false);
           }
         } else {
           // Remove the shaerData from the existing data array
@@ -393,11 +295,14 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
                 updatedDataItems[index].fields.likes = updatedLikes;
                 return updatedDataItems;
               });
+              setDisableHearts(false);
             } else {
               console.error(`Failed to update likes: ${updateResponse.status}`);
+              setDisableHearts(false);
             }
           } catch (error) {
             console.error("Error updating likes:", error);
+            setDisableHearts(false);
           }
         }
       } catch (error) {
@@ -406,6 +311,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           "Error adding/removing data to/from Local Storage:",
           error
         );
+        setDisableHearts(false);
       }
     }
   };
@@ -738,25 +644,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   const closeComments = () => {
     setSelectedCommentId(null);
   };
-  const resetSearch = () => {
-    searchText && clearSearch();
-    setDataItems(initialDataItems);
-    if (typeof window !== undefined) {
-      let section = document.getElementById("section");
-      section!.scrollTo({
-        top: scrolledPosition,
-        behavior: "smooth",
-      });
-    }
-    setInitialdDataItems([]);
-  };
 
-  // Check if the initialDataItems.length is greater than 0
-  if (initialDataItems.length > 0) {
-    window.addEventListener("popstate", () => {
-      resetSearch();
-    });
-  }
 
   return (
     <div>
@@ -806,20 +694,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         {`${decodeURIComponent(params.name).replace("_", " ")} کی غزلیں`}
       </div>
       {loading && <SkeletonLoader />}
-      {initialDataItems.length > 0 && dataItems.length == 0 && (
-        <div className="block mx-auto text-center my-3 text-2xl">
-          سرچ میں کچھ نہیں ملا
-        </div>
-      )}
-      {initialDataItems.length > 0 && (
-        <button
-          className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
-          onClick={resetSearch}
-          // disabled={!searchText}
-        >
-          تلاش ریسیٹ کریں
-        </button>
-      )}
       {!loading && (
         <section>
           <div
@@ -850,21 +724,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               </div>
             ))}
           </div>
-          {dataItems.length > 0 && (
-            <div className="flex justify-center text-lg m-5">
-              <button
-                onClick={handleLoadMore}
-                disabled={noMoreData}
-                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-              >
-                {moreloading
-                  ? "لوڈ ہو رہا ہے۔۔۔"
-                  : noMoreData
-                  ? "مزید غزلیں نہیں ہیں"
-                  : "مزید غزلیں لوڈ کریں"}
-              </button>
-            </div>
-          )}
         </section>
       )}
       {selectedCard && (

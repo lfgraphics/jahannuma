@@ -35,7 +35,12 @@ interface ShaerCardProps {
   handleCardClick: (shaerData: Shaer) => void; // Replace Shaer with the actual type
   toggleanaween: (cardId: string | null) => void;
   openanaween: string | null; // Updated type
-  handleHeartClick: (shaerData: Shaer, index: number, id: string) => void; // Replace Shaer with the actual type
+  handleHeartClick: (
+    e: React.MouseEvent<HTMLButtonElement>,
+    shaerData: Shaer,
+    index: number,
+    id: string
+  ) => void; // Replace Shaer with the actual type
   handleShareClick: (shaerData: Shaer, index: number) => void; // Replace Shaer with the actual type
   openComments: (id: string) => void;
 }
@@ -96,8 +101,8 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
               </button>
               <button
                 className={`m-3 text-gray-500 transition-all duration-500`}
-                onClick={() =>
-                  handleHeartClick(shaerData, index, `${shaerData.id}`)
+                onClick={(e) =>
+                  handleHeartClick(e, shaerData, index, `${shaerData.id}`)
                 }
                 id={`${shaerData.id}`}
               >
@@ -209,8 +214,8 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           <div className="felx text-center icons">
             <button
               className={`m-3 text-gray-500 transition-all duration-500`}
-              onClick={() =>
-                handleHeartClick(shaerData, index, `${shaerData.id}`)
+              onClick={(e) =>
+                handleHeartClick(e, shaerData, index, `${shaerData.id}`)
               }
               id={`${shaerData.id}`}
             >
