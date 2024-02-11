@@ -64,7 +64,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
               ))}
             </ul>
             <div className="block mx-auto">
-              {data.description.map((line, index) => (
+              {data.description?.map((line, index) => (
                 <p key={index}>{line}</p>
               ))}
             </div>

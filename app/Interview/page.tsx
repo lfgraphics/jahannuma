@@ -5,7 +5,7 @@ export const metadata = {
   description:
     "This page contains Interview and podcast videos of contestents interviewed by jahan numa",
   openGraph: {
-    images: ["https://jahannuma.vercel.app/metaImages/interview.jpg"],
+    images: ["https://jahan-numa.org/metaImages/interview.jpg"],
   },
 };
 

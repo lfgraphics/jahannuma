@@ -5,7 +5,7 @@ export const metadata = {
   title: "Nazmen | Jahannuma",
   description: "This page has nazmen of all young shaers of Goraphur",
   openGraph: {
-    images: ["https://jahannuma.vercel.app/metaImages/nazme.jpg"],
+    images: ["https://jahan-numa.org/metaImages/nazme.jpg"],
   },
 };
 

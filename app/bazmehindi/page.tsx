@@ -5,7 +5,7 @@ export const metadata = {
   description:
     "This page contans Ghazlen videos of programms organised by jahan numa",
   openGraph: {
-    images: ["https://jahannuma.vercel.app/metaImages/bazmeurdu.jpg"],
+    images: ["https://jahan-numa.org/metaImages/bazmeurdu.jpg"],
   },
 };
 
