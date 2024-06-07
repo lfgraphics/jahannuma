@@ -78,12 +78,12 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
       ))}
       <div className="relative">
         <div
-          className="anaween-container flex flex-col items-center  absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
+          className="anaween-container flex flex-col items-center absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
           style={{
             height: openanaween === `card${index}` ? "120px" : "0",
           }}
         >
-          {shaerData.fields.unwan?.map((unwaan, index) => (
+          {shaerData?.fields?.unwan?.map((unwaan, index) => (
             <span key={index} className="text-md text-blue-500 underline p-2">
               <Link href={`/${download ? "Ashaar" : "Ghazlen"}/mozu/${unwaan}`}>
                 {unwaan}

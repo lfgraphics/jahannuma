@@ -4,7 +4,6 @@ import {
   AppBar,
   Toolbar,
   IconButton,
-  Typography,
   Container,
   Drawer,
   List,
@@ -17,7 +16,6 @@ import Link from "next/link";
 import Image from "next/image";
 import InstallPWAButton from "./InstallAppBtn";
 
-// export const [language, setLanguage] = useState("EN");
 interface NavbarProps {
   language: string;
   onLangChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -221,7 +219,6 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
           </Toolbar>
         </Container>
       </AppBar>
-
       {/* Mobile Menu (Drawer) */}
       <Drawer
         anchor="left"
@@ -337,6 +334,25 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
           </div>
         </div>
       </Drawer>
+
+      <div dir="rtl" className="w-full md:hidden bg-white p-4 overflow-scroll">
+        <div className="flex text-xs  gap-4">
+          {pages.map((page) => (
+            <div
+              key={page.EN}
+              className="text-[#984A02] hover:text-[#0E88D6] font-medium text-xl mr-2 min-w-[50px]"
+            >
+              <Link
+                href={`/${
+                  language === "UR" ? page.EN : `${language}/${page.EN}`
+                }`}
+              >
+                {(page as any)[language]}
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

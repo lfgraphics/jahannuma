@@ -257,7 +257,6 @@ const Ghazlen = ({ takhallus }) => {
               >
                 <FontAwesomeIcon
                   icon={faHeart}
-                  style={{ color: heartColors[index] }}
                 />
               </div>
             </div>

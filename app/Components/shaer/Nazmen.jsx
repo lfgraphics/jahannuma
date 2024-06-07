@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
@@ -7,6 +7,44 @@ import ComponentsLoader from "./ComponentsLoader";
 const Nazmen = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
   const [loading, setLoading] = useState(true);
+  //snackbar
+  const [toast, setToast] = useState(null);
+  const [hideAnimation, setHideAnimation] = useState(false);
+  const [timeoutId, setTimeoutId] = useState(null);
+
+  //function ot show toast
+  const showToast = (msgtype, message) => {
+    // Clear the previous timeout if it exists
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      // showToast(msgtype, message);
+    }
+    setToast(
+      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
+        <ToastComponent
+          msgtype={msgtype}
+          message={message}
+          onHide={() => {
+            setHideAnimation(true);
+            setTimeout(() => {
+              setHideAnimation(false);
+              setToast(null);
+            }, 500);
+          }}
+        />
+      </div>
+    );
+    // Set a new timeout
+    const newTimeoutId = setTimeout(() => {
+      setHideAnimation(true);
+      setTimeout(() => {
+        setHideAnimation(false);
+        setToast(null);
+      }, 500);
+    }, 6000);
+
+    setTimeoutId(newTimeoutId);
+  };
 
   console.log(takhallus);
 
@@ -229,6 +267,70 @@ const Nazmen = ({ takhallus }) => {
     }
   };
 
+  const handleShareClick = async (shaerData, index) => {
+    try {
+      if (navigator.share) {
+        navigator
+          .share({
+            title: shaerData.fields.shaer, // Use the shaer's name as the title
+            text:
+              shaerData.fields.ghazalHead.map((line) => line).join("\n") +
+              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
+            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
+          })
+
+          .then(() => console.info("Successful share"))
+          .catch((error) => console.error("Error sharing", error));
+        try {
+          // Make API request to update the record's "Likes" field
+          const updatedShares = shaerData.fields.shares + 1;
+          const updateData = {
+            records: [
+              {
+                id: shaerData.id,
+                fields: {
+                  shares: updatedShares,
+                },
+              },
+            ],
+          };
+
+          const updateHeaders = {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
+            "Content-Type": "application/json",
+          };
+
+          const updateResponse = await fetch(
+            `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
+            {
+              method: "PATCH",
+              headers: updateHeaders,
+              body: JSON.stringify(updateData),
+            }
+          );
+
+          if (updateResponse.ok) {
+            // Update local state to reflect the change in likes
+            setDataItems((prevDataItems) => {
+              const updatedDataItems = [...prevDataItems];
+              updatedDataItems[index].fields.shares = updatedShares;
+              return updatedDataItems;
+            });
+          } else {
+            console.error(`Failed to update shares: ${updateResponse.status}`);
+          }
+        } catch (error) {
+          console.error("Error updating shres:", error);
+        }
+      } else {
+        console.warn("Web Share API is not supported.");
+      }
+    } catch (error) {
+      // Handle any errors that may occur when using the Web Share API
+      console.error("Error sharing:", error);
+    }
+  };
+
   return (
     <div>
       {loading && <ComponentsLoader />}
@@ -242,6 +344,9 @@ const Nazmen = ({ takhallus }) => {
             <div className="flex justify-between items-center">
               <div className="mr-5">
                 <Link href={"/Nazmen/" + shaerData.id}>
+                  <p className="text-2xl mb-3 text-[#984A02]">
+                    {shaerData.fields.unwan}
+                  </p>
                   {shaerData.fields.ghazalHead.map((lin, index) => (
                     <p
                       style={{ lineHeight: "normal" }}
@@ -253,17 +358,28 @@ const Nazmen = ({ takhallus }) => {
                   ))}
                 </Link>
               </div>
-              <div
-                id={`${shaerData.id}`}
-                className="btn ml-5 text-gray-500 transition-all duration-500 text-lg"
-                onClick={() =>
-                  handleHeartClick(shaerData, index, `${shaerData.id}`)
-                }
-              >
-                <FontAwesomeIcon
-                  icon={faHeart}
-                  style={{ color: heartColors[index] }}
-                />
+              <div className="flex items-center justify-center">
+                <div
+                  id={`${shaerData.id}`}
+                  className="btn ml-5 text-gray-500 transition-all duration-500 text-lg"
+                  onClick={() =>
+                    handleHeartClick(shaerData, index, `${shaerData.id}`)
+                  }
+                >
+                  <FontAwesomeIcon
+                    icon={faHeart}
+                    style={{ color: heartColors[index] }}
+                  />
+                </div>
+                <button
+                  className="m-3"
+                  onClick={() => handleShareClick(shaerData, index)}
+                >
+                  <FontAwesomeIcon
+                    icon={faShareNodes}
+                    style={{ color: "#984A02" }}
+                  />{" "}
+                </button>
               </div>
             </div>
           </div>

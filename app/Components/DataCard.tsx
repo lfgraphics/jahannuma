@@ -57,8 +57,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
   handleShareClick,
   openComments,
 }) => {
-  // const [openDownloadHandler, setOpenDownloadHandler] =
-  //   useState<boolean>(false);
+  
   const [selectedShaer, setSelectedShaer] = useState<Shaer | null>(null);
 
   const cancelDownload = () => {
@@ -147,12 +146,12 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           id={`card${index}`}
           className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[250px]"
         >
-          <Link href={`/Shaer/${shaerData.fields.shaer.replace(" ", "-")}`}>
+          <Link href={`/Shaer/${shaerData?.fields?.shaer?.replace(" ", "-")}`}>
             <h2 className="text-black text-3xl mb-4">
-              {shaerData.fields.shaer}
+              {shaerData?.fields?.shaer}
             </h2>
           </Link>
-          {shaerData.fields.ghazalHead.map((lin, index) => (
+          {shaerData?.fields?.ghazalHead?.map((lin, index) => (
             <p
               // style={{ lineHeight: "normal" }}
               key={index}

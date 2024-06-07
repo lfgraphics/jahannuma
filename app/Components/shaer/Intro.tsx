@@ -11,7 +11,7 @@ interface IntroProps {
     dob: string;
     location: string;
     tafseel: string;
-    description: string[];
+    description: string;
     photo: {
       filename: string;
       url: string;
@@ -53,9 +53,18 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
           <p>
             <strong>نام:</strong> {data.name}
           </p>
-
+          {data.description && (
+            <div className="block mx-auto my-5">
+              {data.description.split("\n").map((line, index) => (
+                <ul>
+                  <li data-aos="fade-up" key={index}>
+                    {line}
+                  </li>
+                </ul>
+              ))}
+            </div>
+          )}
           <p>
-            <strong>مزید:</strong>
             <ul>
               {data.tafseel?.split("\n").map((line, index) => (
                 <li data-aos="fade-up" key={index}>
@@ -63,11 +72,6 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
                 </li>
               ))}
             </ul>
-            <div className="block mx-auto">
-              {data.description?.map((line, index) => (
-                <p key={index}>{line}</p>
-              ))}
-            </div>
           </p>
         </div>
       )}

@@ -43,25 +43,6 @@ body {
   /* IE and Edge */
 }
 
-/* Hide vertical scrollbar for Chrome, Safari, and newer Edge */
-*::-webkit-scrollbar {
-  width: 0;
-  /* Adjust this value to your preference */
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: transparent;
-}
-
-/* Hide horizontal scrollbar for Chrome, Safari, and newer Edge */
-*::-webkit-scrollbar-horizontal {
-  height: 0;
-  /* Adjust this value to your preference */
-}
-
-*::-webkit-scrollbar-thumb:horizontal {
-  background-color: transparent;
-}
 
 @font-face {
   font-family: 'Mehr_nastaliq';

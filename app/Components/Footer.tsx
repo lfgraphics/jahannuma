@@ -135,16 +135,24 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
             <Typography variant="h6">Follow Us on</Typography>
             <div>
               <IconButton>
-                <FacebookIcon />
+                <Link href="https://www.facebook.com/profile.php?id=61555317448004&mibextid=ZbWKwL">
+                  <FacebookIcon />
+                </Link>
               </IconButton>
               <IconButton>
-                <InstagramIcon />
+                <Link href="https://www.instagram.com/jahannuma_official?igsh=aDdhdXV6OWtmZzRt">
+                  <InstagramIcon />
+                </Link>
               </IconButton>
               <IconButton>
-                <TwitterIcon />
+                <Link href="#">
+                  <TwitterIcon />
+                </Link>
               </IconButton>
               <IconButton>
-                <LinkedInIcon />
+                <Link href="#">
+                  <LinkedInIcon />
+                </Link>
               </IconButton>
             </div>
 
