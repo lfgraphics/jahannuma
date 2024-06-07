@@ -12,13 +12,13 @@ const Branches = () => {
         </div>
         <div className=" p-4 w-screen overflow-x-auto">
           <div className="flex flex-row w-max">
-            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
+            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[350px] m-3 shadow-md relative text-center">
               <Link href="/bazmeurdu">
                 <Image
-                  src="/branches/urdu.jpg"
+                  src="/branches/urdu.jpeg"
                   alt="Bazme urdu Image"
                   width={300}
-                  height={450}
+                  height={300}
                   className="w-full h-auto"
                 ></Image>
                 <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-white text-gray-900 p-4 text-xl ">
@@ -26,7 +26,7 @@ const Branches = () => {
                 </div>
               </Link>
             </div>
-            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
+            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[350px] m-3 shadow-md relative text-center">
               <Link href="/bazmehindi">
                 <Image
                   src="/branches/hindi.jpeg"
@@ -40,7 +40,7 @@ const Branches = () => {
                 </div>
               </Link>
             </div>
-            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
+            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[350px] m-3 shadow-md relative text-center">
               <Link href="/Blogs">
                 <Image
                   src="/branches/blog.jpeg"
@@ -54,10 +54,10 @@ const Branches = () => {
                 </div>
               </Link>
             </div>
-            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[400px] m-3 shadow-md relative text-center">
+            <div className="rounded-md overflow-hidden border-2 w-[300px] h-[350px] m-3 shadow-md relative text-center">
               <Link href="/Interview">
                 <Image
-                  src="/branches/interviews.jpg"
+                  src="/branches/interviews.jpeg"
                   alt="interview Image"
                   width={300}
                   height={450}

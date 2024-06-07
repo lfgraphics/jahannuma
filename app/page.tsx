@@ -25,8 +25,8 @@ export default function Home() {
       <div>
         <Carousel1></Carousel1>
         <RandCard></RandCard>
-        <HorizontalBooks />
         <HorizontalShura />
+        <HorizontalBooks />
         <Branches></Branches>
         <div className="w-screen flex justify-center my-3">
           <InstallPWAButton />

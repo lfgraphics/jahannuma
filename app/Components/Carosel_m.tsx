@@ -1,88 +1,113 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import Carousel from "./Carousel";
 
-const Carousel: React.FC = () => {
-  const [images] = useState([
-    "/carousel/jnd.jpeg",
-    "/carousel/josh.jpeg",
-    "/carousel/caroselcheck.png",
-  ]);
+interface WindowSize {
+  width: number | undefined;
+  height: number | undefined;
+}
+interface Thumbnail {
+  url: string;
+  width: number;
+  height: number;
+}
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  const nextSlide = () => {
-    setCurrentSlide((currentSlide + 1) % images.length);
+interface Image {
+  id: string;
+  filename: string;
+  size: number;
+  type: string;
+  url: string;
+  width: number;
+  height: number;
+  thumbnails: {
+    small: Thumbnail;
+    large: Thumbnail;
+    full: Thumbnail;
   };
+}
 
-  const prevSlide = () => {
-    setCurrentSlide((currentSlide - 1 + images.length) % images.length);
+interface RecordFields {
+  url: String;
+  photo: Image[];
+  mobilePhoto: Image[];
+}
+
+interface Record {
+  id: string;
+  createdTime: string;
+  fields: RecordFields;
+}
+
+interface DataStructure {
+  records: Record[];
+}
+
+const useWindowSize = (): WindowSize => {
+  const [windowSize, setWindowSize] = useState<WindowSize>({
+    width: undefined,
+    height: undefined,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Call handler right away so state gets updated with initial window size
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return windowSize;
+};
+
+const Page: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const size = useWindowSize();
+  const [data, setData] = useState<DataStructure[]>([]);
+
+  const fetchData = async () => {
+    try {
+      const BASE_ID = "app1eVOGD6PdjD3vS";
+      const TABLE_NAME = "Main Carousel";
+      const headers = {
+        //authentication with environment variable
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
+      };
+      //airtable fetch url and methods
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+
+      const response = await fetch(url, { method: "GET", headers });
+      const result: DataStructure = await response.json();
+      const records = result.records || [];
+
+      console.log(records);
+      setData(records);
+      // seting the loading state to false to show the data
+      setLoading(false);
+    } catch (error) {
+      console.error(`Failed to fetch data: ${error}`);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const interval = setInterval(nextSlide, 5000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [currentSlide]);
+    fetchData();
+  }, []);
 
   return (
-    <div className="flex flex-col items-center relative">
-      <div className="carousel flex justify-center">
-        {images.map((image, index) => (
-          <div
-            key={index}
-            className={`slide transition-all  duration-1000 ${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <Image
-              src={image}
-              alt={`Slide ${index + 1}`}
-              width={1920}
-              height={560}
-              className={`${index === currentSlide ? " w-screen" : "w-0"}`}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="navigationsetc absolute bottom-0 mb-3 flex justify-center flex-col">
-        <div className="buttons flex items-center h-full justify-between w-screen">
-          <button
-            className="prev-button text-left w-[40vw] h-[80px] p-4 text-white text-5xl transition-all duration-500"
-            onClick={prevSlide}
-          >
-            &#8249;
-          </button>
-          <button
-            className="next-button text-right w-[40vw] h-[80px] p-4 text-white text-5xl transition-all duration-500"
-            onClick={nextSlide}
-          >
-            &#8250;
-          </button>
-        </div>
-        <div className="indicators">
-          <div className="flex justify-center">
-            <div className="indicators flex flex-col mt-4">
-              <div className="flex flex-row gap-2 items-center justify-center w-screen">
-                {images.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`indicator transition-all duration-500 ease-in-out h-2 rounded-full ${
-                      index === currentSlide
-                        ? "bg-white w-3"
-                        : "bg-black bg-opacity-50 w-2"
-                    }`}
-                  ></div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div>
+      {/* <h1>Image Carousel</h1> */}
+      {loading ? <p>Loading...</p> : <Carousel records={data} />}
     </div>
   );
 };
 
-export default Carousel;
+export default Page;
