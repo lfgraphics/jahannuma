@@ -106,12 +106,19 @@ const DynamicDownloadHandler: React.FC<{
           {/* {data.fields.ghazalHead.map((lin, index) => ( */}
           <div>
             <p className="text-center pl-2">
-              {data.fields.ghazalHead.map((line, index) => (
-                <React.Fragment key={index}>
-                  {line}
-                  <br />
-                </React.Fragment>
-              ))}
+              {data.fields.ghazalHead.includes("\n")
+                ? data.fields.ghazalHead.split("\n").map((line, index) => (
+                    <React.Fragment key={index}>
+                      {line}
+                      <br />
+                    </React.Fragment>
+                  ))
+                : data.fields.ghazalHead.map((line, index) => (
+                    <React.Fragment key={index}>
+                      {line}
+                      <br />
+                    </React.Fragment>
+                  ))}
             </p>
             {/* //   ))} */}
             <div className="m-4 text-sm">{data.fields.shaer}</div>

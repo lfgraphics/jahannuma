@@ -88,6 +88,16 @@ const Carousel: React.FC<CarouselProps> = ({ records }) => {
     );
   };
 
+  // Automatically change the slide at regular intervals
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % records.length);
+    }, 5000); // Change slide every 5 seconds
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(interval);
+  }, [records.length]);
+
   if (records.length === 0) return null;
 
   const currentRecord = records[currentIndex];
