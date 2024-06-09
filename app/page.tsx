@@ -12,7 +12,8 @@ import DoYouKnow from "./Components/doyoouknow/DoYouKnow";
 export const metadata = {
   manifest: "https://nextjs.org/manifest.json",
   metadataBase: new URL("https://jahan-numa.org"),
-  title: "اردو نظمیں، مشہور و معروف شعراء کے اشعار - جہاں نما Urdu Poetry, Urdu Shayeri of Famous Poets - Jahan Numa",
+  title:
+    "اردو نظمیں، مشہور و معروف شعراء کے اشعار - جہاں نما Urdu Poetry, Urdu Shayeri of Famous Poets - Jahan Numa",
   description: "This page has ghazlen of all young shaers of Goraphur",
   openGraph: {
     images: ["https://jahan-numa.org/metaImages/logo.png"],

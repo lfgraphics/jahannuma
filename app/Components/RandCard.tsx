@@ -12,6 +12,7 @@ import html2canvas from "html2canvas";
 import Loader from "./Loader";
 import Link from "next/link";
 import DataCard from "./DataCard";
+import ToastComponent from "./Toast";
 
 interface Shaer {
   fields: {
@@ -43,6 +44,46 @@ const RandCard: React.FC<{}> = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
+  //snackbar
+  const [toast, setToast] = useState<React.ReactNode | null>(null);
+  const [hideAnimation, setHideAnimation] = useState(false);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
+  //function ot show toast
+  const showToast = (
+    msgtype: "success" | "error" | "invalid",
+    message: string
+  ) => {
+    // Clear the previous timeout if it exists
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      // showToast(msgtype, message);
+    }
+    setToast(
+      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
+        <ToastComponent
+          msgtype={msgtype}
+          message={message}
+          onHide={() => {
+            setHideAnimation(true);
+            setTimeout(() => {
+              setHideAnimation(false);
+              setToast(null);
+            }, 500);
+          }}
+        />
+      </div>
+    );
+    // Set a new timeout
+    const newTimeoutId = setTimeout(() => {
+      setHideAnimation(true);
+      setTimeout(() => {
+        setHideAnimation(false);
+        setToast(null);
+      }, 500);
+    }, 6000);
+    setTimeoutId(newTimeoutId);
+  };
 
   const fetchData = async () => {
     try {
@@ -58,35 +99,42 @@ const RandCard: React.FC<{}> = () => {
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
 
-      const records = result.records || [];
+      const records = (await result.records) || [];
+
+      // console.log(records);
       // Convert ghazal and ghazalHead fields to arrays
-      const formattedRecords = records.map(
-        (record: {
-          fields: {
-            unwan: string;
-            ghazal: string;
-            ghazalHead: string;
-          };
-        }) => ({
-          ...record,
-          fields: {
-            ...record.fields,
-            ghazal: record.fields.ghazal.split("\n"),
-            ghazalHead: record.fields.ghazalHead.split("\n"),
-            unwan: record.fields.unwan.split("\n"),
-          },
-        })
-      );
+      // const formattedRecords = await records.map(
+      //   (record: {
+      //     fields: {
+      //       unwan: string;
+      //       ghazal: string;
+      //       ghazalHead: string;
+      //     };
+      //   }) => ({
+      //     ...record,
+      //     fields: {
+      //       ...record.fields,
+      //       ghazal: record.fields.ghazal.split("\n"),
+      //       ghazalHead: record.fields.ghazalHead.split("\n"),
+      //       unwan: record.fields.unwan.split("\n"),
+      //     },
+      //   })
+      // );
+      //
+      // console.log(formattedRecords);
+      // Select a random record from formattedRecords
+      const randomRecord = await records[
+        Math.floor(Math.random() * records.length)
+      ];
 
-      setDataItems(formattedRecords);
+      setDataItems(randomRecord);
       setLoading(false); // Set loading to false when fetching is done
-
-      // console.log(filteredRecord)
     } catch (error) {
       console.error(`Failed to fetch data: ${error}`);
       setLoading(false); // Set loading to false when fetching is done
     }
   };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -219,7 +267,11 @@ const RandCard: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
           localStorage.setItem("Ghazlen", updatedDataJSON);
-
+          // Optionally, you can update the UI or show a success message
+          showToast(
+            "success",
+            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
+          );
           console.log(
             "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
@@ -253,11 +305,14 @@ const RandCard: React.FC<{}> = () => {
 
             if (updateResponse.ok) {
               // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
-                return updatedDataItems;
-              });
+              dataItems[0].fields.likes = updatedLikes;
+              // setDataItems((prevDataItems) => {
+              //   const updatedDataItems = [...prevDataItems];
+              //   updatedDataItems[index].fields.likes = updatedLikes;
+
+              //   // const updted = dataItems.lik;
+              //   return updatedDataItems;
+              // });
             } else {
               console.error(`Failed to update likes: ${updateResponse.status}`);
             }
@@ -279,6 +334,11 @@ const RandCard: React.FC<{}> = () => {
 
           localStorage.setItem("Ghazlen", updatedDataJSON);
 
+          // Optionally, you can update the UI or show a success message
+          showToast(
+            "invalid",
+            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
+          );
           console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
@@ -310,11 +370,12 @@ const RandCard: React.FC<{}> = () => {
 
             if (updateResponse.ok) {
               // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
-                return updatedDataItems;
-              });
+              dataItems[0].fields.likes = updatedLikes;
+              // setDataItems((prevDataItems) => {
+              //   const updatedDataItems = [...prevDataItems];
+              //   updatedDataItems[index].fields.likes = updatedLikes;
+              //   return updatedDataItems;
+              // });
             } else {
               console.error(`Failed to update likes: ${updateResponse.status}`);
             }
@@ -395,10 +456,10 @@ const RandCard: React.FC<{}> = () => {
       {loading && <Loader></Loader>} {/* Show loader while fetching */}
       {!loading && (
         <DataCard
-          page="ghazal"
+          page="rand"
           download={true}
           key={4}
-          shaerData={dataItems[randomData]}
+          shaerData={dataItems}
           index={0}
           handleCardClick={visitSher}
           toggleanaween={toggleanaween}

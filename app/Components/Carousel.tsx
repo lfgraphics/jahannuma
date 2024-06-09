@@ -98,7 +98,7 @@ const Carousel: React.FC<CarouselProps> = ({ records }) => {
       style={{
         position: "relative",
         width: "100%",
-        margin: "0 auto",
+        margin: "0 0",
       }}
     >
       <button
@@ -118,7 +118,7 @@ const Carousel: React.FC<CarouselProps> = ({ records }) => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "500px",
+          height: "auto",
         }}
       >
         {images.map((image) => (
@@ -135,7 +135,6 @@ const Carousel: React.FC<CarouselProps> = ({ records }) => {
                   height={image.height}
                   src={image.url}
                   alt={image.filename}
-                  layout="responsive"
                 />
               </Link>
             ) : (
@@ -144,7 +143,6 @@ const Carousel: React.FC<CarouselProps> = ({ records }) => {
                 height={image.height}
                 src={image.url}
                 alt={image.filename}
-                layout="responsive"
               />
             )}
           </div>
