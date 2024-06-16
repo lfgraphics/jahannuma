@@ -32,7 +32,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
     { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
     { EN: "E-Books", UR: "ای-بکس", HI: "ई-बुक्स" },
     { EN: "Blogs", UR: "بلاگز", HI: "ब्लॉग्स" },
-    { EN: "Interviews", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
+    { EN: "Interview", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
     { EN: "Faviorites", UR: "پسندیدہ", HI: "पसंदीदा" },
   ];
   type Language = "EN" | "UR" | "HI";
