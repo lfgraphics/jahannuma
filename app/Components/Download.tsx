@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
-import Image from "next/image";
 
 // Define the interface for the dynamic data object
 interface Shaer {
@@ -120,7 +119,6 @@ const DynamicDownloadHandler: React.FC<{
                     </React.Fragment>
                   ))}
             </p>
-            {/* //   ))} */}
             <div className="m-4 text-sm">{data.fields.shaer}</div>
             <div className="absolute text-white text-lg top-4 right-6">
               جہاں نما
@@ -137,7 +135,7 @@ const DynamicDownloadHandler: React.FC<{
         <p className="text-lg">پس منظر تصویر منتخب کریں </p>
         <div className="images_wraper flex w-[280px] overflow-x-auto">
           {images.map((image, index) => (
-            <Image
+            <img
               width={280}
               height={280}
               key={index}
@@ -149,7 +147,7 @@ const DynamicDownloadHandler: React.FC<{
                   : ""
               }`}
               onClick={() => handleImageSelect(image)}
-            />
+            ></img>
           ))}
         </div>
         <div className={`accordion mb-4  w-full`}>

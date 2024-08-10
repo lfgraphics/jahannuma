@@ -4,7 +4,6 @@ import {
   faShareAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 interface IntroProps {
@@ -103,13 +102,21 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
               className="h-full w-full bg-black bg-opacity-70 flex items-center justify-center"
             >
               <div className="photo lg:h-32 h-24 md:h-28 lg:w-32 w-24 md:w-28 rounded-full overflow-clip border-[#984a0291] border-4 ">
-                {data && insideBrowser && data.photo?.length > 0 && (
-                  <Image
-                    alt={data.photo[0].filename}
-                    src={data.photo[0].thumbnails.large.url}
+                {data && insideBrowser && data.photo ? (
+                  <img
+                    alt={`${data.photo[0].filename}`}
+                    src={`${data.photo[0].thumbnails.large.url}`}
                     height={data.photo[0].thumbnails.large.height}
                     width={data.photo[0].thumbnails.large.width}
-                  />
+                  ></img>
+                ) : (
+                  <img
+                    className="object-cover object-center"
+                    src={"/poets/nodp.jpg"}
+                    height={150}
+                    width={150}
+                    alt="Poet's Photo"
+                  ></img>
                 )}
               </div>
               <div className="mini_intro mr-5 text-white">

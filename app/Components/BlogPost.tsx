@@ -1,6 +1,4 @@
 
-// import { ReactNode } from "react";
-
 interface BlogPostProps {
   content: string;
 }

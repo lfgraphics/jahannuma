@@ -503,11 +503,11 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="z-20 flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14">
-            <div className="filter-btn basis-[75%] text-center justify-center flex">
+          <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-14">
+            <div className="filter-btn basis-[75%] text-center flex">
               <div
                 dir="rtl"
-                className="flex items-center basis-[100%] h-auto pt-2"
+                className="flex justify-center items-center basis-[100%] h-auto pt-2"
               >
                 <FontAwesomeIcon
                   icon={faHome}
@@ -531,24 +531,20 @@ const Page: React.FC<{}> = () => {
                     }
                   }}
                 />
-                <div
-                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
-                  onClick={clearSearch}
-                >
+                <div className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black">
                   <FontAwesomeIcon
+                    onClick={clearSearch}
                     id="searchClear"
                     icon={faXmark}
-                    className="hidden text-[#984A02] text-2xl"
+                    className="hidden text-[#984A02] text-2xl cursor-pointer"
                   />
                 </div>
-                <div
-                  onClick={searchQuery}
-                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
-                >
+                <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
                   <FontAwesomeIcon
+                    onClick={searchQuery}
                     id="searchIcon"
                     icon={faSearch}
-                    className="hidden text-[#984A02] text-xl"
+                    className="hidden text-[#984A02] text-xl cursor-pointer"
                   />
                 </div>
               </div>

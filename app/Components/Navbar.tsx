@@ -125,7 +125,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   }, []);
 
   return (
-    <div className="sticky w-screen z-50 top-0 font-noto-nastaliq">
+    <div className="sticky w-full z-50 top-0 font-noto-nastaliq">
       <AppBar
         position="static"
         className="bg-[#F0D586] text-[#984A02] shadow-none"
@@ -254,8 +254,8 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 onClick={() => handleLanguageChange("EN")}
                 className={`${
                   language == "EN"
-                    ? "bg-[#984A02] text-white"
-                    : "bg-transparent text-[#984A02]"
+                    ? "bg-[#984A02] text-white cursor-context-menu"
+                    : "bg-transparent text-[#984A02] cursor-pointer"
                 } p-2`}
               >
                 English
@@ -264,8 +264,8 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 onClick={() => handleLanguageChange("UR")}
                 className={`${
                   language == "UR"
-                    ? "bg-[#984A02] text-white"
-                    : "bg-transparent text-[#984A02]"
+                    ? "bg-[#984A02] text-white cursor-context-menu"
+                    : "bg-transparent text-[#984A02] cursor-pointer"
                 } p-2`}
               >
                 Urdu
@@ -274,8 +274,8 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 onClick={() => handleLanguageChange("HI")}
                 className={`${
                   language == "HI"
-                    ? "bg-[#984A02] text-white"
-                    : "bg-transparent text-[#984A02]"
+                    ? "bg-[#984A02] text-white cursor-context-menu"
+                    : "bg-transparent text-[#984A02] cursor-pointer"
                 } p-2`}
               >
                 Hindi
@@ -335,12 +335,12 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
         </div>
       </Drawer>
 
-      <div dir="rtl" className="w-full md:hidden bg-white p-4 overflow-scroll">
-        <div className="flex text-xs  gap-4">
+      <div dir="rtl" className="w-full md:hidden bg-white p-4 overflow-x-scroll">
+        <div className="flex text-xs gap-4">
           {pages.map((page) => (
             <div
               key={page.EN}
-              className="text-[#984A02] hover:text-[#0E88D6] font-medium text-xl mr-2 min-w-[50px]"
+              className="text-[#984A02] hover:text-[#0E88D6] font-medium text-xl mr-2 min-w-[75px]"
             >
               <Link
                 href={`/${

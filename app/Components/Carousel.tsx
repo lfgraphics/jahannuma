@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-// import "swiper/swiper-bundle.min.css";
 import SwiperCore from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 SwiperCore.use([Navigation, Pagination]);
@@ -140,20 +137,20 @@ const Carousel: React.FC<CarouselProps> = ({ records }) => {
                 rel="noopener noreferrer"
                 passHref
               >
-                <Image
+                <img
                   width={image.width}
                   height={image.height}
-                  src={image.url}
-                  alt={image.filename}
-                />
+                  src={`${image.url}`}
+                  alt={`${image.filename}`}
+                ></img>
               </Link>
             ) : (
-              <Image
+              <img
                 width={image.width}
                 height={image.height}
-                src={image.url}
-                alt={image.filename}
-              />
+                src={`${image.url}`}
+                alt={`${image.filename}`}
+              ></img>
             )}
           </div>
         ))}

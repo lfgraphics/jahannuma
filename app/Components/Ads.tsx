@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -51,13 +50,13 @@ const Ads: React.FC = () => {
         {adsData.map((ad, index) => (
           <Link href={ad.redirectUrl} key={index}>
             <div className=" overflow-auto w-[95vw] h-[max-content] m-3 scroll-snap-align-start shadow-md rounded-md">
-              <Image
-                src={ad.imageUrl}
+              <img
+                src={`${ad.imageUrl}`}
                 alt={`Image ${index + 1}`}
                 width={100}
                 height={100}
                 className="w-full h-auto object-cover"
-              />
+              ></img>
               {/* <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold">
                 <p>{ad.redirectUrl}</p>
               </div> */}

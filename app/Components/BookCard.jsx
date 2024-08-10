@@ -1,10 +1,9 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 const Card = ({ data }) => {
   const { fields } = data;
-  const { bookName, publishingDate, writer, book, desc, id } = fields;
+  const { bookName, publishingDate, book, id } = fields;
 
   // Function to format date (assuming dob is in MM/DD/YYYY format)
   const formatDate = (dateString) => {
@@ -22,14 +21,14 @@ const Card = ({ data }) => {
             backgroundImage: `url(/poets/loadingpic.gif)`,
           }}
         >
-          <Image
+          <img
             className="h-full w-full"
-            src={book?.[0].thumbnails?.large?.url}
+            src={`${book?.[0].thumbnails?.large?.url}`}
             height={book?.[0].thumbnails?.large?.height}
             width={book?.[0].thumbnails?.large?.width}
-            alt="Poet's Photo"
+            alt="book's Photo"
             loading="lazy"
-          />
+          ></img>
           {/* <div className="absolute bottom-0 w-full text-center p-2 bg-black bg-opacity-75 text-white">
             {bookName}
           </div> */}

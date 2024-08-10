@@ -5,7 +5,6 @@ import {
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-import Image from "next/image";
 
 const Card = ({ data }) => {
   const { fields } = data;
@@ -26,21 +25,21 @@ const Card = ({ data }) => {
           style={{ backgroundImage: `url(/poets/loadingpic.gif)` }}
         >
           {photo ? (
-            <Image
+            <img
               className="w-full h-64 object-cover object-center"
-              src={photo?.[0].thumbnails?.full?.url}
+              src={`${photo?.[0].thumbnails?.full?.url}`}
               height={photo?.[0].thumbnails?.full?.height}
               width={photo?.[0].thumbnails?.full?.width}
               alt="Poet's Photo"
-            />
+            ></img>
           ) : (
-            <Image
+            <img
               className="w-full h-64 object-cover object-center"
               src={"/poets/nodp.jpg"}
               height={600}
               width={600}
               alt="Poet's Photo"
-            />
+            ></img>
           )}
           {/* Takhallus */}
           <div className="absolute bottom-0 w-full text-center p-2 bg-black bg-opacity-75 text-white">

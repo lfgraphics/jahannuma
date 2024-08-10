@@ -2,8 +2,6 @@
 import React, { useState } from "react";
 import { data } from "./data";
 import Link from "next/link";
-import Image from "next/image";
-// import { ChevronLeft, ChevronRight } from "react-feather";
 
 const DoYouKnow: React.FC = () => {
   const [cards, setCards] = useState(data.cards);
@@ -47,12 +45,12 @@ const DoYouKnow: React.FC = () => {
               {card.img !== "" && (
                 <div className="flex justify-center">
                   <div className="w-[150px] h-[150px] rounded-full shadow-lg mb-3 overflow-hidden bg-cover flex items-center justify-center">
-                    <Image
-                      src={card.img}
+                    <img
+                      src={`${card.img}`}
                       alt=""
                       width={100}
                       height={100}
-                    ></Image>
+                    ></img>
                   </div>
                 </div>
               )}
@@ -69,8 +67,6 @@ const DoYouKnow: React.FC = () => {
           }`}
           onClick={scrollRight}
         >
-          {/* <ChevronRight size={20} /> */}
-          {/* use fontawesome buttons instead */}
         </div>
       </div>
     </div>
