@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-import Image from "next/image";
 import SkeletonLoader from "../../Components/SkeletonLoader";
 // aos for cards animation
 import AOS from "aos";
@@ -84,14 +83,14 @@ const App = ({ params }) => {
           <div className="flex flex-col sm:flex-row p-6">
             <div className="photo mb-4">
               {/* <Image width={data.book[0]?.}></Image> */}
-              <Image
+              <img
                 className="h-full w-[50%] p-2 border-2 block mx-auto"
-                src={data.book?.[0].thumbnails?.large?.url}
+                src={`${data.book?.[0].thumbnails?.large?.url}`}
                 height={data.book?.[0].thumbnails?.large?.height}
                 width={data.book?.[0].thumbnails?.large?.width}
-                alt="Poet's Photo"
+                alt="Book cover"
                 loading="lazy"
-              />
+              ></img>
             </div>
             <div className="details" data-aos="fade-up">
               {data && (
