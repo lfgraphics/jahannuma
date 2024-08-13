@@ -75,6 +75,7 @@ const Page: React.FC<{}> = () => {
     offset: null,
     pageSize: 30,
   });
+  const [voffset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
@@ -127,8 +128,10 @@ const Page: React.FC<{}> = () => {
       }
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
-      // : ApiResponse
-      const records = result.records || [];
+      setTimeout(() => {
+        result.offset && setOffset(result.offset);
+        !result.offset && setNoMoreData(true);
+      }, 3000);
 
       if (!result.offset && dataOffset == "") {
         // No more data, disable the button
@@ -166,10 +169,7 @@ const Page: React.FC<{}> = () => {
         // console.log(result);
       }
       // seting pagination depending on the response
-      setPagination({
-        offset: result.offset,
-        pageSize: pageSize,
-      });
+      setOffset(result.offset);
       // seting the loading state to false to show the data
       setLoading(false);
       setMoreLoading(false);
@@ -451,7 +451,7 @@ const Page: React.FC<{}> = () => {
   };
   const handleLoadMore = () => {
     setMoreLoading(true);
-    fetchData(pagination.offset, false);
+    fetchData(voffset, false);
   };
 
   return (
@@ -474,11 +474,11 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="z-20 flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14">
-            <div className="filter-btn basis-[75%] text-center justify-center flex">
+          <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-14">
+            <div className="filter-btn basis-[75%] justify-center text-center flex">
               <div
                 dir="rtl"
-                className="flex items-center basis-[100%] h-auto pt-2"
+                className="flex basis-[100%] justify-center items-center h-auto pt-2"
               >
                 <FontAwesomeIcon
                   icon={faHome}
@@ -502,24 +502,20 @@ const Page: React.FC<{}> = () => {
                     }
                   }}
                 />
-                <div
-                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
-                  onClick={clearSearch}
-                >
+                <div className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black">
                   <FontAwesomeIcon
+                    onClick={clearSearch}
                     id="searchClear"
                     icon={faXmark}
-                    className="hidden text-[#984A02] text-2xl"
+                    className="hidden text-[#984A02] text-2xl cursor-pointer"
                   />
                 </div>
-                <div
-                  onClick={searchQuery}
-                  className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
-                >
+                <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
                   <FontAwesomeIcon
+                    onClick={searchQuery}
                     id="searchIcon"
                     icon={faSearch}
-                    className="hidden text-[#984A02] text-xl"
+                    className="hidden text-[#984A02] text-xl cursor-pointer"
                   />
                 </div>
               </div>
@@ -568,56 +564,3 @@ const Page: React.FC<{}> = () => {
 };
 
 export default Page;
-
-// YourPage.tsx
-// import React, { useEffect, useState } from "react";
-
-const Data: React.FC = () => {
-  // const [data, setData] = useState<EBooksType[]>([]);
-
-  return (
-    <div>
-      <h1>PDF viewer is working gine will do more for it tomorrow</h1>
-      {/* {data[0]?.fields?.book[0]?.url} */}
-      {/* <embed
-        src="https://v5.airtableusercontent.com/v2/24/24/1704556800000/RVx_lkM5UlqEOQGnQh5tkQ/QRc6aOvGchAwE8QIoMVw6R538ip9jsCt5FtnHoeb0GCgYLFU6qRwCewfD6MjROLg2ZE-sc62tMJAJ-wGqXqoZodKPhfUmM6erLFpMr79q3wL_asqa4NrBIj8iC7ZUTIYOgE1hcLzy7UOV3onpXcaGQ/jVIAG2HNuBxKUv2h7iPaca-2RfFtGhzf-M9bSxm31y0"
-        type="application/pdf"
-        width="100%"
-        height="600px"
-      /> */}
-    </div>
-  );
-};
-
-// export default Data;
-
-// import { useRef } from "react";
-
-// export default function App() {
-//   let url =
-//     "https://v5.airtableusercontent.com/v2/24/24/1704513600000/6LjLiuioYgJ89iO5G2nKew/UrLr0mGMDKs3MIOlNFFNIaEEoIeiA0BlMOkMFcFjPrYXIQeX3pXYcxXdlfTKGDLlr5ic4r8NNSL0AtWRfBUlXwcgrCvT0miHy7YMBx0BtlHUtvxbKjmAA_mHVuT88CzhipFOJrcGe4X4rwiwr0q1XQ/wimqZ7Jqrls2sunMMrQllFJ-pVcK8v4BX_VaD5V6_iM";
-//   const containerRef = useRef(null);
-
-//   useEffect(() => {
-//     const container = containerRef.current;
-//     let PSPDFKit: { unload?: any; load?: any; Action?: any; Annotation?: any; AnnotationsWillChangeReason?: any; Bookmark?: any; ButtonFormField?: any; CheckBoxFormField?: any; ChoiceFormField?: any; Color?: any; ComboBoxFormField?: any; Comment?: any; CommentMarkerAnnotation?: any; Conformance?: any; CustomOverlayItem?: any; DrawingPoint?: any; EllipseAnnotation?: any; Font?: any; FormField?: any; FormFieldValue?: any; FormOption?: any; GoToAction?: any; GoToEmbeddedAction?: any; GoToRemoteAction?: any; HideAction?: any; HighlightAnnotation?: any; ImageAnnotation?: any; InkAnnotation?: any; Inset?: any; Instance?: any; InstantClient?: any; JavaScriptAction?: any; LaunchAction?: any; LineAnnotation?: any; LinkAnnotation?: any; List?: any; ListBoxFormField?: any; NamedAction?: any; NoteAnnotation?: any; OutlineElement?: any; PageInfo?: any; Point?: any; PolygonAnnotation?: any; PolylineAnnotation?: any; RadioButtonFormField?: any; Rect?: any; RectangleAnnotation?: any; RedactionAnnotation?: any; ResetFormAction?: any; SearchResult?: any; SearchState?: any; ShapeAnnotation?: any; SignatureFormField?: any; Size?: any; SquiggleAnnotation?: any; StampAnnotation?: any; StrikeOutAnnotation?: any; SubmitFormAction?: any; TextAnnotation?: any; TextFormField?: any; TextLine?: any; TextMarkupAnnotation?: any; TextSelection?: any; URIAction?: any; UnderlineAnnotation?: any; UnknownAnnotation?: any; ViewState?: any; WidgetAnnotation?: any; default?: any; };
-
-//     (async function () {
-//       PSPDFKit = await import("pspdfkit");
-
-//       if (PSPDFKit) {
-//         PSPDFKit.unload(container);
-//       }
-
-//       await PSPDFKit.load({
-//         container,
-//         document: url,
-//         baseUrl: `${window.location.protocol}//${window.location.host}/`,
-//       });
-//     })();
-
-//     return () => PSPDFKit && PSPDFKit.unload(container);
-//   }, []);
-
-//   return <div ref={containerRef} style={{ height: "100vh" }} />;
-// }

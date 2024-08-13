@@ -70,10 +70,10 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
         <div
           key={index}
           id={`card${index}`}
-          className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[150px]"
+          className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between min-h-[180px] max-h-[200px]"
         >
           <>
-            <div className="flex justify-between mx-7 items-end">
+            <div className="flex justify-between items-end">
               <p className="text-4xl mb-4 text-[#984A02]">
                 {shaerData?.fields?.unwan?.[0]}
               </p>

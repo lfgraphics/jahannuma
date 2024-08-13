@@ -86,6 +86,8 @@ const Page: React.FC<{}> = () => {
     offset: null,
     pageSize: 30,
   });
+
+  const [voffset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
@@ -140,7 +142,10 @@ const Page: React.FC<{}> = () => {
       }
       const response = await fetch(url, { method: "GET", headers });
       const result: ApiResponse = await response.json();
-      const records = result.records || [];
+      setTimeout(() => {
+        result.offset && setOffset(result.offset);
+        !result.offset && setNoMoreData(true);
+      }, 3000);
 
       if (!result.offset && dataOffset == "") {
         // No more data, disable the button
@@ -148,8 +153,6 @@ const Page: React.FC<{}> = () => {
         setLoading(false);
         setMoreLoading(false);
       }
-      console.log("results are>");
-      console.log(result.records);
       setData(result.records);
       // formating result to match the mock data type for ease of development
       const formattedRecords: FormattedRecord[] = result.records.map(
@@ -188,10 +191,7 @@ const Page: React.FC<{}> = () => {
         // console.log(result);
       }
       // seting pagination depending on the response
-      setPagination({
-        offset: result.offset,
-        pageSize: pageSize,
-      });
+      setOffset(result.offset);
       // seting the loading state to false to show the data
       setLoading(false);
       setMoreLoading(false);
@@ -480,7 +480,7 @@ const Page: React.FC<{}> = () => {
   };
   const handleLoadMore = () => {
     setMoreLoading(true);
-    fetchData(pagination.offset, false);
+    fetchData(voffset, false);
   };
 
   return (

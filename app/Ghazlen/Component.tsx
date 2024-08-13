@@ -54,6 +54,7 @@ const Ashaar: React.FC<{}> = () => {
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
+  const [voffset, setOffset] = useState<string | null>("");
   const [pagination, setPagination] = useState<Pagination>({
     offset: null,
     pageSize: 30,
@@ -133,7 +134,7 @@ const Ashaar: React.FC<{}> = () => {
   // func to fetch and load more data
   const fetchData = async (offset: string | null, userQuery: boolean) => {
     userQuery && setLoading(true);
-    userQuery && setDataOffset(pagination.offset);
+    userQuery && setDataOffset(voffset);
     try {
       const BASE_ID = "appvzkf6nX376pZy6";
       const TABLE_NAME = "Ghazlen";
@@ -143,7 +144,8 @@ const Ashaar: React.FC<{}> = () => {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+      // &fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
 
       if (userQuery) {
         // Encode the formula with OR condition
@@ -164,6 +166,10 @@ const Ashaar: React.FC<{}> = () => {
       const response = await fetch(url, { method: "GET", headers });
       const result: ApiResponse = await response.json();
       const records = result.records || [];
+      setTimeout(() => {
+        result.offset && setOffset(result.offset);
+        !result.offset && setNoMoreData(true);
+      }, 3000);
 
       if (!result.offset && dataOffset == "") {
         // No more data, disable the button
@@ -196,10 +202,7 @@ const Ashaar: React.FC<{}> = () => {
       }
       !offset && scrollToTop();
       // seting pagination depending on the response
-      setPagination({
-        offset: result.offset,
-        pageSize: pageSize,
-      });
+      setOffset(result.offset);
       // seting the loading state to false to show the data
       setLoading(false);
       setMoreLoading(false);
@@ -212,7 +215,7 @@ const Ashaar: React.FC<{}> = () => {
   // fetching more data by load more data button
   const handleLoadMore = () => {
     setMoreLoading(true);
-    fetchData(pagination.offset, false);
+    fetchData(voffset, false);
   };
   // Fetch the initial set of records
   useEffect(() => {
@@ -294,9 +297,6 @@ const Ashaar: React.FC<{}> = () => {
             "success",
             "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
           );
-          console.log(
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
-          );
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes + 1;
@@ -358,7 +358,6 @@ const Ashaar: React.FC<{}> = () => {
             "invalid",
             "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
@@ -803,9 +802,12 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14 z-10">
-        <div className="filter-btn basis-[75%] text-center justify-center flex">
-          <div dir="rtl" className="flex items-center basis-[100%] h-auto pt-2">
+      <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-14">
+        <div className="filter-btn basis-[75%] justify-center text-center flex">
+          <div
+            dir="rtl"
+            className="flex basis-[100%] justify-center items-center h-auto pt-2"
+          >
             <FontAwesomeIcon
               icon={faHome}
               className="text-[#984A02] text-2xl ml-3"
@@ -828,24 +830,20 @@ const Ashaar: React.FC<{}> = () => {
                 }
               }}
             />
-            <div
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
-              onClick={clearSearch}
-            >
+            <div className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black">
               <FontAwesomeIcon
+                onClick={clearSearch}
                 id="searchClear"
                 icon={faXmark}
-                className="hidden text-[#984A02] text-2xl"
+                className="hidden text-[#984A02] text-2xl cursor-pointer"
               />
             </div>
-            <div
-              onClick={searchQuery}
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
-            >
+            <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
               <FontAwesomeIcon
+                onClick={searchQuery}
                 id="searchIcon"
                 icon={faSearch}
-                className="hidden text-[#984A02] text-xl"
+                className="hidden text-[#984A02] text-xl cursor-pointer"
               />
             </div>
           </div>

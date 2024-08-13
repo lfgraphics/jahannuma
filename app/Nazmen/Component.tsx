@@ -59,6 +59,7 @@ const Ashaar: React.FC<{}> = () => {
     offset: null,
     pageSize: 30,
   });
+  const [voffset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
@@ -168,6 +169,10 @@ const Ashaar: React.FC<{}> = () => {
       const response = await fetch(url, { method: "GET", headers });
       const result: ApiResponse = await response.json();
       const records = result.records || [];
+      setTimeout(() => {
+        result.offset && setOffset(result.offset);
+        !result.offset && setNoMoreData(true);
+      }, 3000);
 
       if (!result.offset && dataOffset == "") {
         // No more data, disable the button
@@ -200,10 +205,7 @@ const Ashaar: React.FC<{}> = () => {
       }
       !offset && scrollToTop();
       // seting pagination depending on the response
-      setPagination({
-        offset: result.offset,
-        pageSize: pageSize,
-      });
+      setOffset(result.offset);
       // seting the loading state to false to show the data
       setLoading(false);
       setMoreLoading(false);
@@ -216,7 +218,7 @@ const Ashaar: React.FC<{}> = () => {
   // fetching more data by load more data button
   const handleLoadMore = () => {
     setMoreLoading(true);
-    fetchData(pagination.offset, false);
+    fetchData(voffset, false);
   };
   // Fetch the initial set of records
   useEffect(() => {
@@ -765,7 +767,7 @@ const Ashaar: React.FC<{}> = () => {
         {toast}
       </div>
       {showDialog && (
-        <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
+        <div className="w-full h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
           <div
             dir="rtl"
             className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white"
@@ -799,9 +801,12 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center sticky top-14 z-10">
-        <div className="filter-btn basis-[75%] text-center justify-center flex">
-          <div dir="rtl" className="flex items-center basis-[100%] h-auto pt-2">
+      <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-14">
+        <div className="filter-btn basis-[75%] justify-center text-center flex">
+          <div
+            dir="rtl"
+            className="flex basis-[100%] justify-center items-center h-auto pt-2"
+          >
             <FontAwesomeIcon
               icon={faHome}
               className="text-[#984A02] text-2xl ml-3"
@@ -824,24 +829,20 @@ const Ashaar: React.FC<{}> = () => {
                 }
               }}
             />
-            <div
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black"
-              onClick={clearSearch}
-            >
+            <div className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black">
               <FontAwesomeIcon
+                onClick={clearSearch}
                 id="searchClear"
                 icon={faXmark}
-                className="hidden text-[#984A02] text-2xl"
+                className="hidden text-[#984A02] text-2xl cursor-pointer"
               />
             </div>
-            <div
-              onClick={searchQuery}
-              className="justify-center cursor-pointer bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black"
-            >
+            <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
               <FontAwesomeIcon
+                onClick={searchQuery}
                 id="searchIcon"
                 icon={faSearch}
-                className="hidden text-[#984A02] text-xl"
+                className="hidden text-[#984A02] text-xl cursor-pointer"
               />
             </div>
           </div>
@@ -930,10 +931,7 @@ const Ashaar: React.FC<{}> = () => {
                 {selectedCard.fields.shaer}
               </h2>
               {selectedCard.fields.ghazal.map((line, index) => (
-                <p
-                  key={index}
-                  className="text-black pb-3 pr-4 text-2xl"
-                >
+                <p key={index} className="text-black pb-3 pr-4 text-2xl">
                   {line}
                 </p>
               ))}
