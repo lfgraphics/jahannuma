@@ -8,6 +8,9 @@ interface Mutalah {
     body: string[];
     hawalaText: string;
     hawalaLink: string;
+    writer: string;
+    enWriter: string;
+    hiWriter: string;
     enHeading: string;
     enBody: string[];
     enHawalaText: string;
@@ -67,27 +70,38 @@ const Mutala = () => {
   }, []);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col">
       {insideBroser && mutalaData !== undefined && (
         <>
-          <h1 className="text-4xl text-center m-7">مطالعہ کی میز سے </h1>
-          <h2 className="text-2xl text-center">
+          <h1 className="text-4xl text-center mt-7 mb-3 text-[#984A02]">
+            حاصلِ مطالعہ
+          </h1>
+          <h2 className="text-2xl text-center mb-2">
             {mutalaData?.fields?.heading}
           </h2>
-          <p dir="rtl" className="p-6">
+          <p dir="rtl" className="p-6 bg-[#F3F4F6] leading-10">
             {mutalaData?.fields?.body}
           </p>
           <div
             dir="rtl"
-            className="flex w-screen text-white bg-[#984A02] items-center justify-center p-3"
+            className="flex w-full text-white bg-[#984A02] items-center justify-between px-7 pb-3 pt-4"
           >
             {mutalaData.fields.hawalaLink ? (
-              <Link href={mutalaData?.fields?.hawalaLink}>
-                حوالہ: {mutalaData?.fields?.hawalaText}
-              </Link>
+              <p>
+                {" "}
+                حوالہ:
+                <Link
+                  href={mutalaData?.fields?.hawalaLink}
+                  className="text-blue-200 underline mr-2"
+                >
+                  {mutalaData?.fields?.hawalaText}
+                </Link>
+              </p>
             ) : (
               `حوالہ: ${mutalaData?.fields?.hawalaText}`
             )}
+            {/* writer */}
+            <p className="writer">{mutalaData.fields.writer}</p>
           </div>
         </>
       )}

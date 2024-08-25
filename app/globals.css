@@ -95,8 +95,8 @@ p.justif {
 
 /* width */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 7px;
+  height: 7px;
 }
 
 /* Track */
@@ -107,7 +107,7 @@ p.justif {
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #984A02;
+  background: #984a02d6;
   border-radius: 5px;
 }
 

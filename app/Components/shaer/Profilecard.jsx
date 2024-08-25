@@ -18,7 +18,7 @@ const Card = ({ data }) => {
 
   return (
     <Link href={`/Shaer/${takhallus?.replace(" ", "-")}`}>
-      <div className="w-[180px] sm:w-[240px] rounded overflow-hidden shadow-lg mx-auto my-1">
+      <div className="w-[180px] h-[205px] rounded overflow-hidden shadow-lg mx-auto my-1">
         {/* Photo */}
         <div
           className="relative bg-cover bg-center"
@@ -26,7 +26,7 @@ const Card = ({ data }) => {
         >
           {photo ? (
             <img
-              className="w-full h-64 object-cover object-center"
+              className="w-full h-52 object-cover object-center"
               src={`${photo?.[0].thumbnails?.full?.url}`}
               height={photo?.[0].thumbnails?.full?.height}
               width={photo?.[0].thumbnails?.full?.width}
@@ -34,10 +34,10 @@ const Card = ({ data }) => {
             ></img>
           ) : (
             <img
-              className="w-full h-64 object-cover object-center"
+              className="w-full h-52 object-cover object-center"
               src={"/poets/nodp.jpg"}
-              height={600}
-              width={600}
+              height={180}
+              width={180}
               alt="Poet's Photo"
             ></img>
           )}
@@ -47,29 +47,30 @@ const Card = ({ data }) => {
           </div>
         </div>
         {/* Card Content */}
-        <div className="px-6 py-4">
+        {/* <div className="px-6 py-4">
           {/* Date of Birth */}
-          <div className="date_location">
+        {/* <div className="date_location">
             <div className="flex items-center mb-2">
               <FontAwesomeIcon
                 icon={faCalendarAlt}
                 className="ml-2 text-gray-600"
               />
               {formatDate(dob)}
-            </div>
-            {/* Location */}
-            <div className="flex items-center mb-2">
+            </div> */}
+        {/* Location */}
+        {/* <div className="flex items-center mb-2">
               <FontAwesomeIcon
                 icon={faMapMarkerAlt}
                 className="ml-2 text-gray-600"
               />
               {location}
-            </div>
-          </div>
+            </div> */}
+        {/* </div> */}
 
-          {/* Description Icon */}
-          {/* <div className="flex items-center mb-2">{tafseel}</div> */}
-        </div>
+        {/* Description Icon */}
+        {/* <div className="flex items-center mb-2">{tafseel}</div> */}
+        {/* </div> */}
+        {/* */}
       </div>
     </Link>
   );

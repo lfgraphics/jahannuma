@@ -104,7 +104,7 @@ const Quiz = () => {
       )}
       {insideBroser && quizData !== undefined && (
         <>
-          <h2 className="text-4xl font-semibold text-center p-7">
+          <h2 className="text-4xl font-semibold text-center pb-4 text-[#984A02]">
             جہاں نما کوئز
           </h2>
           <h2 className="text-2xl text-center">{quizData.fields?.question}</h2>

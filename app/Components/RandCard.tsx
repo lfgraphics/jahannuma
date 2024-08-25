@@ -1,13 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-// import * as data from "../Ghazlen/data";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowUp,
-  faDownLong,
-  faShareNodes,
-  faTag,
-} from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
 import Loader from "./Loader";
 import Link from "next/link";
@@ -87,8 +79,8 @@ const RandCard: React.FC<{}> = () => {
 
   const fetchData = async () => {
     try {
-      const BASE_ID = "appvzkf6nX376pZy6";
-      const TABLE_NAME = "ghazlen";
+      const BASE_ID = "appeI2xzzyvUN5bR7";
+      const TABLE_NAME = "Ashaar";
 
       let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
 
@@ -101,30 +93,18 @@ const RandCard: React.FC<{}> = () => {
 
       const records = (await result.records) || [];
 
-      // console.log(records);
-      // Convert ghazal and ghazalHead fields to arrays
-      // const formattedRecords = await records.map(
-      //   (record: {
-      //     fields: {
-      //       unwan: string;
-      //       ghazal: string;
-      //       ghazalHead: string;
-      //     };
-      //   }) => ({
-      //     ...record,
-      //     fields: {
-      //       ...record.fields,
-      //       ghazal: record.fields.ghazal.split("\n"),
-      //       ghazalHead: record.fields.ghazalHead.split("\n"),
-      //       unwan: record.fields.unwan.split("\n"),
-      //     },
-      //   })
-      // );
-      //
-      // console.log(formattedRecords);
-      // Select a random record from formattedRecords
-      const randomRecord = await records[
-        Math.floor(Math.random() * records.length)
+      const formattedRecords = records.map((record: any) => ({
+        ...record,
+        fields: {
+          ...record.fields,
+          ghazal: record.fields?.body.split("\n"),
+          ghazalHead: record.fields?.sher.split("\n"),
+          // unwan: record.fields?.unwan.split("\n"),
+        },
+      }));
+
+      const randomRecord = await formattedRecords[
+        Math.floor(Math.random() * formattedRecords.length)
       ];
 
       setDataItems(randomRecord);
@@ -231,7 +211,7 @@ const RandCard: React.FC<{}> = () => {
   };
 
   const visitSher = () => {
-    window.location.href = `/Ghazlen/${dataItems[randomData].fields.id}`;
+    // window.location.href = `/Ghazlen/${dataItems[randomData].fields.id}`;
   };
   const handleHeartClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -448,26 +428,34 @@ const RandCard: React.FC<{}> = () => {
   return (
     <div className="justify-center flex flex-col items-center m-4">
       <h4
-        className="text-2xl mt-4 text-gray-600 "
+        className="text-2xl my-4 text-gray-600 "
         // style={{ letterSpacing: "5px" }}
       >
         ایک منتخب شعر
       </h4>
       {loading && <Loader></Loader>} {/* Show loader while fetching */}
       {!loading && (
-        <DataCard
-          page="rand"
-          download={true}
-          key={4}
-          shaerData={dataItems}
-          index={0}
-          handleCardClick={visitSher}
-          toggleanaween={toggleanaween}
-          openanaween={openanaween}
-          handleHeartClick={handleHeartClick}
-          handleShareClick={handleShareClick}
-          openComments={openComments}
-        />
+        <div className="relative">
+          {/* <div className="bg-white absolute left-0 top-0 bg-opacity-10 w-screen h-[300px] z-auto"></div> */}
+          <img
+            src="https://jahan-numa.org/carousel/jnd.jpeg"
+            className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.07] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none "
+            draggable="false"
+          />
+          <DataCard
+            page="rand"
+            download={true}
+            key={4}
+            shaerData={dataItems}
+            index={0}
+            handleCardClick={visitSher}
+            toggleanaween={toggleanaween}
+            openanaween={openanaween}
+            handleHeartClick={handleHeartClick}
+            handleShareClick={handleShareClick}
+            openComments={openComments}
+          />
+        </div>
       )}
     </div>
   );

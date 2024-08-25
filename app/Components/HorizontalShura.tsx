@@ -113,14 +113,14 @@ const HorizontalShura = () => {
   }, []);
   return (
     <div dir="ltr">
-      <h2 className="py-7 text-center text-4xl">شعرا</h2>
+      <h2 className="py-4 pb-0 text-center text-4xl">شعرا</h2>
       {loading && <Loader></Loader>}
       {!loading && (
         <div>
           <div
             id="section"
             dir="rtl"
-            className="flex flex-row-reverse overflow-auto gap-4 py-6 px-6 items-center"
+            className="flex flex-row-reverse overflow-auto gap-4 py-6 pt-3 px-6 items-center"
           >
             {data.map((item, index) => (
               <div className="w-[240px]" key={index}>

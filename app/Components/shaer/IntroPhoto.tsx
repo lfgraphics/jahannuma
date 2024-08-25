@@ -128,7 +128,7 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
                       style={{ color: "white" }}
                     />
                   </span>
-                  {data?.dob}{" "}
+                  {data?.dob && data.dob}
                   <span className="mx-3 text-white font-bold">|</span>{" "}
                   <span className="icon ml-2">
                     <FontAwesomeIcon

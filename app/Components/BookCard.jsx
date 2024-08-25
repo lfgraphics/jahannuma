@@ -17,9 +17,6 @@ const Card = ({ data }) => {
         {/* Photo */}
         <div
           className="relative bg-cover bg-center min-w-[200px] min-h-[300px]"
-          style={{
-            backgroundImage: `url(/poets/loadingpic.gif)`,
-          }}
         >
           <img
             className="h-full w-full"

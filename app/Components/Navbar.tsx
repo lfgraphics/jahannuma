@@ -340,7 +340,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
           {pages.map((page) => (
             <div
               key={page.EN}
-              className="text-[#984A02] hover:text-[#0E88D6] font-medium text-xl mr-2 min-w-[75px]"
+              className="text-[#984A02] hover:text-[#0E88D6] font-medium text-sm mr-2 min-w-[60px]"
             >
               <Link
                 href={`/${

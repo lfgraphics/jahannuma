@@ -17,7 +17,7 @@ interface Shaer {
     shaer: string;
     ghazalHead: string | string[];
     ghazal: string[];
-    unwan: string| string[];
+    unwan: string | string[];
     likes: number;
     comments: number;
     shares: number;
@@ -95,11 +95,8 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
                   {lin} <span>۔۔۔</span>
                 </p>
               ))}
-              <button
-                className="text-[#984A02] font-semibold m-3"
-                onClick={() => handleCardClick(shaerData)}
-              >
-                پڑھیں۔۔۔
+              <button className="text-[#984A02] font-semibold m-3">
+                <Link href={"/Nazmen/" + shaerData.id}>پڑھیں۔۔۔</Link>
               </button>
               <button
                 className={`m-3 text-gray-500 transition-all duration-500`}
@@ -109,7 +106,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
                 id={`${shaerData?.id}`}
               >
                 <FontAwesomeIcon icon={faHeart} />{" "}
-                <span className="text-gray-500 text-sm">
+                <span id="likescount" className="text-gray-500 text-sm">
                   {shaerData?.fields?.likes}
                 </span>
               </button>
@@ -147,19 +144,18 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           dir="rtl"
           key={index}
           id={`card${index}`}
-          className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[250px]"
+          className=" p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[250px]"
         >
           <Link href={`/Shaer/${shaerData?.fields?.shaer?.replace(" ", "-")}`}>
-            <h2 className="text-black text-3xl mb-4">
+            <h2 className="text-black text-lg mb-4">
               {shaerData?.fields?.shaer}
             </h2>
           </Link>
           {shaerData?.fields?.ghazalHead?.includes("\n")
             ? shaerData.fields.ghazalHead.split("\n").map((lin, index) => (
                 <p
-                  // style={{ lineHeight: "normal" }}
                   key={index}
-                  className="text-black  text-lg cursor-default"
+                  className="text-black text-2xl cursor-default"
                   onClick={() => handleCardClick(shaerData)}
                 >
                   {lin}
@@ -167,9 +163,8 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
               ))
             : shaerData.fields.ghazalHead.map((lin, index) => (
                 <p
-                  // style={{ lineHeight: "normal" }}
                   key={index}
-                  className="text-black  text-lg cursor-default"
+                  className="text-black text-lg cursor-default"
                   onClick={() => handleCardClick(shaerData)}
                 >
                   {lin}
@@ -255,7 +250,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
               id={`${shaerData?.id}`}
             >
               <FontAwesomeIcon icon={faHeart} />{" "}
-              <span className="text-gray-500 text-sm">
+              <span id="likescount" className="text-gray-500 text-sm">
                 {shaerData?.fields?.likes}
               </span>
             </button>
@@ -285,7 +280,9 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
               className="text-[#984A02] font-semibold m-3"
               onClick={() => handleCardClick(shaerData)}
             >
-              غزل پڑھیں
+              <Link href={`/${download ? "Ashaar" : "Ghazlen"}` + shaerData.id}>
+                غزل پڑھیں
+              </Link>
             </button>
             {download && (
               <button
