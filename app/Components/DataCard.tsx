@@ -280,7 +280,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
               className="text-[#984A02] font-semibold m-3"
               onClick={() => handleCardClick(shaerData)}
             >
-              <Link href={`/${download ? "Ashaar" : "Ghazlen"}` + shaerData.id}>
+              <Link href={`/${download ? "Ashaar/" : "Ghazlen/"}` + shaerData.id}>
                 غزل پڑھیں
               </Link>
             </button>

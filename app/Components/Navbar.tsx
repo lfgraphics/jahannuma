@@ -28,6 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const pages = [
     { EN: "Shaer", UR: "شعراء", HI: "शेयर" },
     { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
+    { EN: "Rubai", UR: "رباعی", HI: "रुबाई" },
     { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
     { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
     { EN: "E-Books", UR: "ای-بکس", HI: "ई-बुक्स" },
@@ -335,12 +336,12 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
         </div>
       </Drawer>
 
-      <div dir="rtl" className="w-full md:hidden bg-white p-4 overflow-x-scroll">
-        <div className="flex text-xs gap-4">
+      <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full md:hidden bg-white p-4 overflow-x-scroll">
+        <div className="flex text-xs gap-1">
           {pages.map((page) => (
             <div
               key={page.EN}
-              className="text-[#984A02] hover:text-[#0E88D6] font-medium text-sm mr-2 min-w-[60px]"
+              className="text-[#984A02] hover:text-[#0E88D6] font-medium text-sm min-w-[60px]"
             >
               <Link
                 href={`/${

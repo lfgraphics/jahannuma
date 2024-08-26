@@ -16,6 +16,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import ContactForm from "./ContactForm";
 
 // import { language, setLanguage } from "@/app/Components/Navbar"; // Import the exported variables
 interface FooterProps {
@@ -78,49 +79,33 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
   const linksToDisplay = linksByLanguage[language] || [];
   return (
     <footer className="bg-[#F0D586] p-10 text-[#984A02]">
-      <Container maxWidth="lg">
-        <Grid container spacing={3}>
-          {/* Navigation Links and Contact Info */}
+      <div className="w-full">
+        <div className="grid md:grid-cols-2 gap-6">
+          <ContactForm language={language}></ContactForm>
           <Grid item xs={12} md={6}>
-            <Typography variant="h6">Navigation</Typography>
-            <List id="navelems" className="">
-              {NavsToDisplay.map((item) => (
-                <Link href={`/${item}`} key={item}>
-                  <ListItem button onClick={scrollToTop}>
-                    <ListItemText primary={item} />
-                  </ListItem>
-                </Link>
-              ))}
-            </List>
-            <Typography variant="h6">Contact Info</Typography>
-            <address>
-              <p>123 Main Street</p>
-              <p>City, Country</p>
-              <p>Email: example@example.com</p>
-              <p>Phone: +123 456 789</p>
-            </address>
+            <div className="grid-cols-2">
+              <h6 className="text-xl font-semibold">Navigation</h6>
+              <div id="navelems" className="">
+                {NavsToDisplay.map((item) => (
+                  <Link href={`/${item}`} key={item}>
+                    <div onClick={scrollToTop}>
+                      <p>{item}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <h6 className="text-xl font-semibold">Contact Info</h6>
+              <address>
+                <p>123 Main Street</p>
+                <p>City, Country</p>
+                <p>Email: example@example.com</p>
+                <p>Phone: +123 456 789</p>
+              </address>
 
-            {/* Contact Form */}
-            <Typography variant="h6">Contact Us</Typography>
-            <form id="contact">
-              <TextField label="Name" fullWidth margin="normal" />
-              <TextField label="Email" fullWidth margin="normal" />
-              <TextField
-                label="Message"
-                fullWidth
-                multiline
-                rows={4}
-                margin="normal"
-              />
-              <Button variant="contained" color="primary">
-                Send
-              </Button>
-            </form>
-          </Grid>
-
-          {/* Quick Links, Socials, and Copyright */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Quick Links</Typography>
+              {/* Contact Form */}
+              <h6 className="text-xl font-semibold">Contact Us</h6>
+            </div>
+            <h6 className="text-xl font-semibold">Quick Links</h6>
             <List id="navelems" className="">
               {linksToDisplay.map((item) => (
                 <Link href={`/${item}`} key={item}>
@@ -132,7 +117,7 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
             </List>
 
             {/* Social Media Links */}
-            <Typography variant="h6">Follow Us on</Typography>
+            <h6 className="text-xl font-semibold">Follow Us on</h6>
             <div>
               <IconButton>
                 <Link href="https://www.facebook.com/profile.php?id=61555317448004&mibextid=ZbWKwL">
@@ -157,12 +142,12 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
             </div>
 
             {/* Copyright Notice */}
-            <Typography variant="body2" align="center" className="bottom-0">
-              &copy; 2023 JahanNuman. All Rights Reserved.
-            </Typography>
           </Grid>
-        </Grid>
-      </Container>
+        </div>
+      </div>
+      <div className="text-center mt-6">
+        <p>&copy; 2024 JahanNuman. All Rights Reserved.</p>
+      </div>
     </footer>
   );
 };
