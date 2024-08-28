@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import UnwanPageLoader from "../../Components/UnwanPageLoader"
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
+import Loader from '@/app/Components/Loader'
+
 
 const Page = ({ params }) => {
   const [data, setData] = useState([]);
@@ -64,10 +65,16 @@ const Page = ({ params }) => {
   };
   return (
     <div dir="rtl" className="flex justify-center">
-      {loading ? <UnwanPageLoader /> : (
-        <div className="p-4 mt-3 w-screen md:w-[400px]">
+      {loading ? <div className='h-[90vh] w-full flex items-center justify-center'>
+        <Loader />
+      </div> : (
+        <div className="p-4 mt-3 w-full md:w-[400px]">
           <div className="ghazalHead text-2xl text-center text-black mb-2">
-            {head}
+            {head?.map((line, index) =>{
+              <h2 key={index}>
+                {line}
+              </h2>
+            })}
           </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
             <Link href={`/Shaer/${data.shaer}`}>
@@ -75,7 +82,7 @@ const Page = ({ params }) => {
             </Link>
           </div>
           <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
-          <div className="text-2xl mb-4 flex flex-col justify-center ">
+          <div className="text-2xl mb-4 flex flex-col justify-center">
             {ghazalLines?.map((line, index) => (
               <p
                 data-aos="fade-up"

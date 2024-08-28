@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import gsap from "gsap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHome,
@@ -12,32 +11,15 @@ import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
 import SkeletonLoader from "../Components/SkeletonLoader";
-import DataCard from "../Components/DataCard";
+import RubaiCard from "../Components/RubaiCard";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-interface Shaer {
-  fields: {
-    sher: string[];
-    shaer: string;
-    ghazalHead: string[];
-    ghazal: string[];
-    unwan: string[];
-    likes: number;
-    comments: number;
-    shares: number;
-    id: string;
-  };
-  id: string;
-  createdTime: string;
-}
+import { Rubai } from "../types";
+
 interface ApiResponse {
-  records: any[];
+  records: Rubai[];
   offset: string | null;
-}
-interface Pagination {
-  offset: string | null;
-  pageSize: number;
 }
 interface Comment {
   dataId: string | null;
@@ -50,24 +32,15 @@ const Ashaar: React.FC<{}> = () => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
-  const [selectedCard, setSelectedCard] = React.useState<{
-    id: string;
-    fields: { shaer: string; ghazal: string[]; id: string };
-  } | null>(null);
   const [voffset, setOffset] = useState<string | null>("");
-  const [pagination, setPagination] = useState<Pagination>({
-    offset: null,
-    pageSize: 30,
-  });
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
-  const [dataItems, setDataItems] = useState<Shaer[]>([]);
-  const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
+  const [dataItems, setDataItems] = useState<Rubai[]>([]);
+  const [initialDataItems, setInitialdDataItems] = useState<Rubai[]>([]);
   const [noMoreData, setNoMoreData] = useState(false);
-  const [openanaween, setOpenanaween] = useState<string | null>(null);
   //comments
   const [showDialog, setShowDialog] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -136,15 +109,15 @@ const Ashaar: React.FC<{}> = () => {
     userQuery && setLoading(true);
     userQuery && setDataOffset(voffset);
     try {
-      const BASE_ID = "appvzkf6nX376pZy6";
-      const TABLE_NAME = "Ghazlen";
+      const BASE_ID = "appIewyeCIcAD4Y11";
+      const TABLE_NAME = "rubai";
       const pageSize = 30;
       const headers = {
         //authentication with environment variable
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&&fields%5B%5D=unwan&&fields%5B%5D=body&&fields%5B%5D=likes&&fields%5B%5D=comments&&fields%5B%5D=shares&&fields%5B%5D=id`;
       // &fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
 
       if (userQuery) {
@@ -178,27 +151,16 @@ const Ashaar: React.FC<{}> = () => {
         setMoreLoading(false);
       }
       // formating result to match the mock data type for ease of development
-      const formattedRecords = records.map((record: any) => ({
-        ...record,
-        fields: {
-          ...record.fields,
-          ghazal: record.fields?.ghazal.split("\n"),
-          ghazalHead: record.fields?.ghazalHead.split("\n"),
-          unwan: record.fields?.unwan.split("\n"),
-        },
-      }));
+
       if (!offset) {
         if (userQuery) {
           setInitialdDataItems(dataItems);
-          setDataItems(formattedRecords);
+          setDataItems(records);
         } else {
-          setDataItems(formattedRecords);
+          setDataItems(records);
         }
       } else {
-        setDataItems((prevDataItems) => [
-          ...prevDataItems,
-          ...formattedRecords,
-        ]);
+        setDataItems((prevDataItems) => [...prevDataItems, ...records]);
       }
       !offset && scrollToTop();
       // seting pagination depending on the response
@@ -223,10 +185,7 @@ const Ashaar: React.FC<{}> = () => {
   }, []);
   const searchQuery = () => {
     fetchData(null, true);
-    setPagination({
-      offset: pagination.offset,
-      pageSize: 30,
-    });
+    setOffset(voffset);
     if (typeof window !== undefined) {
       setScrolledPosition(window.scrollY);
     }
@@ -260,18 +219,17 @@ const Ashaar: React.FC<{}> = () => {
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
-    shaerData: Shaer,
+    shaerData: Rubai,
     index: any,
     id: string
   ): Promise<void> => {
-    toggleanaween(null);
     if (typeof window !== undefined && window.localStorage && e.detail == 1) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ghazlen");
+        const existingDataJSON = localStorage.getItem("Rubai");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Shaer[] = existingDataJSON
+        const existingData: Rubai[] = existingDataJSON
           ? JSON.parse(existingDataJSON)
           : [];
 
@@ -291,7 +249,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
-          localStorage.setItem("Ghazlen", updatedDataJSON);
+          localStorage.setItem("Rubai", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -317,7 +275,7 @@ const Ashaar: React.FC<{}> = () => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+              `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -351,7 +309,7 @@ const Ashaar: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          localStorage.setItem("Ghazlen", updatedDataJSON);
+          localStorage.setItem("Rubai", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -378,7 +336,7 @@ const Ashaar: React.FC<{}> = () => {
             };
 
             const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+              `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
               {
                 method: "PATCH",
                 headers: updateHeaders,
@@ -411,17 +369,16 @@ const Ashaar: React.FC<{}> = () => {
   };
   //handeling sahre
   const handleShareClick = async (
-    shaerData: Shaer,
+    shaerData: Rubai,
     index: number
   ): Promise<void> => {
-    toggleanaween(null);
     try {
       if (navigator.share) {
         navigator
           .share({
             title: shaerData.fields.shaer, // Use the shaer's name as the title
             text:
-              shaerData.fields.ghazalHead.map((line) => line).join("\n") +
+              shaerData.fields.body +
               `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
             url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
           })
@@ -448,7 +405,7 @@ const Ashaar: React.FC<{}> = () => {
           };
 
           const updateResponse = await fetch(
-            `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
+            `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
             {
               method: "PATCH",
               headers: updateHeaders,
@@ -477,57 +434,16 @@ const Ashaar: React.FC<{}> = () => {
       console.error("Error sharing:", error);
     }
   };
-  //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
-  //opening and closing ghazal
-  const handleCardClick = (shaerData: Shaer): void => {
-    toggleanaween(null);
-    // setSelectedCard({
-    //   id: shaerData.id,
-    //   fields: {
-    //     shaer: shaerData.fields.shaer,
-    //     ghazal: shaerData.fields.ghazal,
-    //     id: shaerData.fields.id,
-    //   },
-    // });
 
-    // const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    // if (modalElement) {
-    //   animateModalOpen(modalElement);
-    //   if (typeof window !== undefined) {
-    //     document.getElementById("modlBtn")?.classList.remove("hidden");
-    //   }
-    // }
-  };
-  const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
-    setSelectedCard(null);
-  };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
     if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Ghazlen");
+      const storedData = localStorage.getItem("Rubai");
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData);
           dataItems.forEach((shaerData, index) => {
-            const shaerId = shaerData.id; // Get the id of the current shaerData
+            const shaerId = shaerData.fields.id; // Get the id of the current shaerData
 
             // Check if the shaerId exists in the stored data
             const storedShaer = parsedData.find(
@@ -548,14 +464,7 @@ const Ashaar: React.FC<{}> = () => {
       }
     }
   }, [dataItems]);
-  //toggling anaween box
-  const toggleanaween = (cardId: string | null) => {
-    setOpenanaween((prev) => (prev === cardId ? null : cardId));
-  };
-  // name input dialogue box (form)
-  const hideDialog = () => {
-    setShowDialog(false);
-  };
+
   // name change handeling in name input filed
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNameInput(event.target.value);
@@ -564,7 +473,6 @@ const Ashaar: React.FC<{}> = () => {
   const handleNameSubmission = () => {
     localStorage.setItem("commentorName", nameInput);
     setCommentorName(nameInput);
-    hideDialog();
   };
   const fetchComments = async (dataId: string) => {
     const storedName = localStorage.getItem("commentorName");
@@ -575,8 +483,8 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appzB656cMxO0QotZ";
-      const TABLE_NAME = "Comments";
+      const BASE_ID = "appseIUI98pdLBT1K";
+      const TABLE_NAME = "comments";
       const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
       const headers = {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -623,8 +531,8 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appzB656cMxO0QotZ";
-        const TABLE_NAME = "Comments";
+        const BASE_ID = "appseIUI98pdLBT1K";
+        const TABLE_NAME = "comments";
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         const headers = {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -698,8 +606,8 @@ const Ashaar: React.FC<{}> = () => {
           });
 
           try {
-            const BASE_ID = "appvzkf6nX376pZy6";
-            const TABLE_NAME = "Ghazlen";
+            const BASE_ID = "appIewyeCIcAD4Y11";
+            const TABLE_NAME = "Rubai";
             const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
             const headers = {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
@@ -734,7 +642,6 @@ const Ashaar: React.FC<{}> = () => {
     }
   };
   const openComments = (dataId: string) => {
-    toggleanaween(null);
     setSelectedCommentId(dataId);
     fetchComments(dataId);
     // setIsModleOpen(true);
@@ -744,7 +651,7 @@ const Ashaar: React.FC<{}> = () => {
   };
   // reseting  search
   const resetSearch = () => {
-    setDataOffset(pagination.offset);
+    setDataOffset(voffset);
     searchText && clearSearch();
     setDataItems(initialDataItems);
     if (typeof window !== undefined) {
@@ -873,20 +780,14 @@ const Ashaar: React.FC<{}> = () => {
               grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3
               `}
           >
-            {dataItems.map((shaerData, index) => (
+            {dataItems.map((data, index) => (
               <div data-aos="fade-up">
-                <DataCard
-                  page="ghazal"
-                  download={false}
-                  key={index}
-                  shaerData={shaerData}
+                <RubaiCard
+                  RubaiData={data}
                   index={index}
-                  handleCardClick={handleCardClick}
-                  toggleanaween={toggleanaween}
-                  openanaween={openanaween}
                   handleHeartClick={handleHeartClick}
-                  handleShareClick={handleShareClick}
                   openComments={openComments}
+                  handleShareClick={handleShareClick}
                 />
               </div>
             ))}
@@ -900,49 +801,13 @@ const Ashaar: React.FC<{}> = () => {
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                    ? "مزید غزلیں نہیں ہیں"
-                    : "مزید غزلیں لوڈ کریں"}
+                    ? "مزید ربائی نہیں ہیں"
+                    : "مزید ربائی لوڈ کریں"}
                 </button>
               </div>
             )}
           </div>
         </section>
-      )}
-      {selectedCard && (
-        <div
-          onClick={handleCloseModal}
-          id="modal"
-          className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
-        >
-          <div
-            dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
-          >
-            <div className="p-4 pr-0 relative">
-              <button
-                id="modlBtn"
-                className="sticky top-4 right-7 z-50"
-                onClick={handleCloseModal}
-              >
-                <FontAwesomeIcon
-                  icon={faTimesCircle}
-                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-                />
-              </button>
-              <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
-                {selectedCard.fields.shaer}
-              </h2>
-              {selectedCard.fields.ghazal.map((line, index) => (
-                <p
-                  key={index}
-                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
       )}
       {/* //commetcard */}
       {selectedCommentId && (

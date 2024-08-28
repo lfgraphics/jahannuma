@@ -46,7 +46,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       <div className="pr-4">
         {comments?.length === 0 && !commentLoading && (
           <div style={{ lineHeight: "normal" }}>
-            اس غزل پر اب تک کوئی تبصرہ نہیں ہے
+            اب تک کوئی تبصرہ نہیں ہے
             <br /> اس پر تبصرہ کر کے آپ تبصرہ کرنے والے پہلے شخص بنیں
           </div>
         )}

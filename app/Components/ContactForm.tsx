@@ -15,9 +15,9 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
     email: { EN: "E-mail", UR: "ای - میل", HI: "ई-मेल" },
     comment: { EN: "Message", UR: "پیغام", HI: "संदेश" },
     heading: {
-      EN: "Get in Touch",
-      UR: "رابطہ قایم کریں",
-      HI: "राबता क़ायम करें",
+      EN: "Get in Touch with us",
+      UR: "ہم سے رابطہ کریں",
+      HI: "हम से राबता करें",
     },
     successMsg: {
       EN: "Thanks for choosing us and showing interest. We've got your details and will contact you shortly.",
@@ -130,14 +130,14 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
               disabled={state.submitting}
               className="bg-gray-500 p-2 rounded-md hover:bg-blue-700 w-full text-white"
             >
-              Clear
+            {fields.clear[language as Language]}
             </button>
             <button
               type="submit"
               disabled={state.submitting}
               className="bg-blue-500 p-2 rounded-md hover:bg-blue-700 w-full text-white"
-            >
-              Submit
+              >
+              {fields.submit[language as Language]}
             </button>
           </div>
         </>

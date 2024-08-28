@@ -686,10 +686,7 @@ const Page = ({ params }) => {
             id="section"
             dir="rtl"
             className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3 min-h-[500px] max-h-[100svh] ${selectedCommentId !== null || selectedCard !== null
-                ? "overflow-y-hidden"
-                : "overflow-y-scroll"
-              }`}
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}
           >
             {dataItems.map((shaerData, index) => (
               <div data-aos="fade-up">
@@ -709,21 +706,7 @@ const Page = ({ params }) => {
               </div>
             ))}
           </div>
-          {dataItems.length > 0 && (
-            <div className="flex justify-center text-lg m-5">
-              <button
-                onClick={handleLoadMore}
-                disabled={noMoreData || loading || moreloading}
-                className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-              >
-                {moreloading
-                  ? "لوڈ ہو رہا ہے۔۔۔"
-                  : noMoreData
-                    ? "مزید غزلیں نہیں ہیں"
-                    : "اور غزلیں لعڈ کریں"}
-              </button>
-            </div>
-          )}
+
         </section>
       )}
       {selectedCard && (
