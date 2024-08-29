@@ -70,11 +70,13 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
         <div
           key={index}
           id={`card${index}`}
-          className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between min-h-[180px] max-h-[200px]"
+          className={`${
+            index % 2 === 1 ? "bg-gray-50" : ""
+          } p-4 rounded-sm relative flex flex-col justify-between min-h-[180px] max-h-[200px]`}
         >
           <>
             <div className="flex justify-between items-end">
-              <p className="text-4xl mb-4 text-[#984A02]">
+              <p className="text-3xl mb-4 text-[#984A02]">
                 {shaerData?.fields?.unwan?.[0]}
               </p>
               <Link
@@ -144,32 +146,36 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           dir="rtl"
           key={index}
           id={`card${index}`}
-          className=" p-4 rounded-sm border-b relative flex flex-col justify-between max-h-[250px]"
+          className={`${
+            index % 2 === 1 ? "bg-gray-50" : ""
+          } p-4 rounded-sm relative flex flex-col justify-between max-h-[250px]`}
         >
           <Link href={`/Shaer/${shaerData?.fields?.shaer?.replace(" ", "-")}`}>
             <h2 className="text-black text-lg mb-4">
               {shaerData?.fields?.shaer}
             </h2>
           </Link>
-          {shaerData?.fields?.ghazalHead?.includes("\n")
-            ? shaerData.fields.ghazalHead.split("\n").map((lin, index) => (
-                <p
-                  key={index}
-                  className="text-black text-2xl cursor-default"
-                  onClick={() => handleCardClick(shaerData)}
-                >
-                  {lin}
-                </p>
-              ))
-            : shaerData.fields.ghazalHead.map((lin, index) => (
-                <p
-                  key={index}
-                  className="text-black text-lg cursor-default"
-                  onClick={() => handleCardClick(shaerData)}
-                >
-                  {lin}
-                </p>
-              ))}
+          <div className="unwan flex flex-col w-[90%] items-center mb-2">
+            {shaerData?.fields?.ghazalHead?.includes("\n")
+              ? shaerData.fields.ghazalHead.split("\n").map((lin, index) => (
+                  <p
+                    key={index}
+                    className="text-lg w-full text-center px-6"
+                    onClick={() => handleCardClick(shaerData)}
+                  >
+                    {lin}
+                  </p>
+                ))
+              : shaerData.fields.ghazalHead.map((lin, index) => (
+                  <p
+                    key={index}
+                    className="text-lg w-full text-center px-6"
+                    onClick={() => handleCardClick(shaerData)}
+                  >
+                    {lin}
+                  </p>
+                ))}
+          </div>
           <div className="relative">
             <div
               className="anaween-container flex flex-col items-center  absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
@@ -280,7 +286,9 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
               className="text-[#984A02] font-semibold m-3"
               onClick={() => handleCardClick(shaerData)}
             >
-              <Link href={`/${download ? "Ashaar/" : "Ghazlen/"}` + shaerData.id}>
+              <Link
+                href={`/${download ? "Ashaar/" : "Ghazlen/"}` + shaerData.id}
+              >
                 غزل پڑھیں
               </Link>
             </button>

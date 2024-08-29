@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-// aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Loader from '@/app/Components/Loader'
@@ -38,8 +37,7 @@ const Page = ({ params }) => {
         const result = await response.json();
 
         setData(result.records[0].fields)
-        console.log(result.records[0].fields.ghazalHead)
-        setHead(result.records[0].fields.ghazalHead?.split('\n'))
+        setHead(result.records[0].fields.ghazalHead)
         setLoading(false)
       } catch (error) {
         setLoading(false)
@@ -69,13 +67,16 @@ const Page = ({ params }) => {
         <Loader />
       </div> : (
         <div className="p-4 mt-3 w-full md:w-[400px]">
-          <div className="ghazalHead text-2xl text-center text-black mb-2">
-            {head?.map((line, index) =>{
-              <h2 key={index}>
-                {line}
-              </h2>
-            })}
-          </div>
+            <div className="ghazalHead text-2xl text-black text-center leading-[3rem]">
+              {data.ghazalHead?.split('\n').map((line, index) => (
+                <h2
+                  key={index}
+                  className="text-black"
+                >
+                  {line}
+                </h2>
+              ))}
+            </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
             <Link href={`/Shaer/${data.shaer}`}>
               <h2>{data.shaer}</h2>
@@ -105,7 +106,7 @@ const Page = ({ params }) => {
             >
               مزید غزلیں
             </button>
-            <Link href={`/Ghazlen/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید نظمیں</Link>
+            <Link href={`/Ghazlen/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید غزلیں</Link>
           </div>
         </div>
       )}

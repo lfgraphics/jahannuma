@@ -558,13 +558,13 @@ const Page: React.FC<{}> = () => {
             {data.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">
                 <div
-                  className="heart cursor-pointer text-gray-500 pr-3 absolute top-0 right-0 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-full m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
+                  className="heart cursor-pointer text-gray-500 pr-1 absolute top-0 right-0 w-[60px] max-w-[120px] content-center justify-center items-center h-8 flex border rounded-full m-2 gap-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
                   onClick={(e) =>
                     handleHeartClick(e, item, index, `${item.id}`)
                   }
                   id={`${item.id}`}
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
+                  <FontAwesomeIcon icon={faHeart} className="text-xl" />
                   <span className="text-black">{`${item.fields?.likes}`}</span>
                 </div>
                 <Card data={item} />

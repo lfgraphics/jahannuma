@@ -336,7 +336,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
         </div>
       </Drawer>
 
-      <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full md:hidden bg-white p-4 overflow-x-scroll">
+      <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full md:hidden bg-white p-4 overflow-x-scroll px-4">
         <div className="flex text-xs gap-1">
           {pages.map((page) => (
             <div

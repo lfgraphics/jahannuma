@@ -777,7 +777,7 @@ const Ashaar: React.FC<{}> = () => {
             id="section"
             dir="rtl"
             className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3
+              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4
               `}
           >
             {dataItems.map((data, index) => (
@@ -801,8 +801,8 @@ const Ashaar: React.FC<{}> = () => {
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                    ? "مزید ربائی نہیں ہیں"
-                    : "مزید ربائی لوڈ کریں"}
+                    ? "مزید رباعی نہیں ہیں"
+                    : "مزید رباعی لوڈ کریں"}
                 </button>
               </div>
             )}

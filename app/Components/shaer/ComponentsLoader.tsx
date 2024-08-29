@@ -1,9 +1,12 @@
-import React from 'react'
+import React from "react";
+import Loader from "../Loader";
 
 const ComponentsLoader = () => {
   return (
-    <div className="min-h-[80svh] min-w-full bg-gray-300 rounded-lg animate-pulse dark:bg-gray-700"></div>
+    <div className="h-[90vh] w-full flex items-center justify-center">
+      <Loader />
+    </div>
   );
-}
+};
 
-export default ComponentsLoader
+export default ComponentsLoader;

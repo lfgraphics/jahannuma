@@ -48,7 +48,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
         dir="rtl"
         key={index}
         id={`card${index}`}
-        className="p-4 rounded-sm border-b relative flex flex-col items-center justify-between"
+        className={`${ index % 2 === 1 ? 'bg-gray-50' : 'bg-white' } p-4 rounded-sm  relative flex flex-col items-center justify-between`}
       >
         <div className="unwan text-center text-[#984A02] text-2xl mb-2">
           <p>{RubaiData.fields.unwan}</p>
@@ -61,7 +61,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
           ))}
         </div>
         <Link
-          href={`/Rubai/${RubaiData.fields?.shaer?.replace(" ", "-")}`}
+          href={`/Shaer/${RubaiData.fields?.shaer?.replace(" ", "-")}`}
           className="text-center"
         >
           <h2 className="text-black text-lg mb-4">{RubaiData.fields?.shaer}</h2>

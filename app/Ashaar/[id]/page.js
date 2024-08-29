@@ -65,7 +65,7 @@ const Page = ({ params }) => {
         <Loader />
       </div> : (
         <div className="p-4 mt-3 w-screen md:w-[400px]">
-          <div className="ghazalHead text-3xl text-black mb-2 text-center leading-[4rem]">
+          <div className="ghazalHead text-2xl text-black text-center leading-[3rem]">
             {data.sher?.split('\n').map((line, index) => (
               <h2
                 key={index}
