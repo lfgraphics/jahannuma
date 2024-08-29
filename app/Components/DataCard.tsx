@@ -80,7 +80,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
                 {shaerData?.fields?.unwan?.[0]}
               </p>
               <Link
-                href={`/Shaer/${shaerData?.fields?.shaer.replace(" ", "-")}`}
+                href={`/Shaer/${shaerData?.fields?.shaer.replace(" ", "-")}?tab=تعارف`}
               >
                 <h2 className="text-black text-xl">
                   {shaerData?.fields?.shaer}
@@ -150,7 +150,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
             index % 2 === 1 ? "bg-gray-50" : ""
           } p-4 rounded-sm relative flex flex-col justify-between max-h-[250px]`}
         >
-          <Link href={`/Shaer/${shaerData?.fields?.shaer?.replace(" ", "-")}`}>
+          <Link href={`/Shaer/${shaerData?.fields?.shaer?.replace(" ", "-")}?tab=تعارف`}>
             <h2 className="text-black text-lg mb-4">
               {shaerData?.fields?.shaer}
             </h2>
@@ -189,7 +189,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
                     key={index}
                     className="text-md text-blue-500 underline p-2"
                   >
-                    <Link href={`/${page}/mozu/${unwaan}`}>{unwaan}</Link>
+                    <Link href={`/Ghazlen/mozu/${unwaan}`}>{unwaan}</Link>
                   </span>
                 ))}
               {page == "rand" &&
@@ -198,7 +198,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
                     key={index}
                     className="text-md text-blue-500 underline p-2"
                   >
-                    <Link href={`/${page}/mozu/${unwaan}`}>{unwaan}</Link>
+                    <Link href={`/Ashaar/mozu/${unwaan}`}>{unwaan}</Link>
                   </span>
                 ))}
             </div>

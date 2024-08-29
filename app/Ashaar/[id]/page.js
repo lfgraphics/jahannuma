@@ -104,7 +104,7 @@ const Page = ({ params }) => {
             >
               مزید اشعار
             </button>
-            <Link href={`/Ashaar/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کے مزید اشعار</Link>
+            <Link scroll={false} href={`/Ashaar/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کے مزید اشعار</Link>
           </div>
         </div>
       )}

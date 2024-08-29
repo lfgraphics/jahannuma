@@ -61,7 +61,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
           ))}
         </div>
         <Link
-          href={`/Shaer/${RubaiData.fields?.shaer?.replace(" ", "-")}`}
+          href={`/Shaer/${RubaiData.fields?.shaer?.replace(" ", "-")} ?tab=تعارف`}
           className="text-center"
         >
           <h2 className="text-black text-lg mb-4">{RubaiData.fields?.shaer}</h2>

@@ -67,16 +67,16 @@ const Page = ({ params }) => {
         <Loader />
       </div> : (
         <div className="p-4 mt-3 w-full md:w-[400px]">
-            <div className="ghazalHead text-2xl text-black text-center leading-[3rem]">
-              {data.ghazalHead?.split('\n').map((line, index) => (
-                <h2
-                  key={index}
-                  className="text-black"
-                >
-                  {line}
-                </h2>
-              ))}
-            </div>
+          <div className="ghazalHead text-2xl text-black text-center leading-[3rem]">
+            {data.ghazalHead?.split('\n').map((line, index) => (
+              <h2
+                key={index}
+                className="text-black"
+              >
+                {line}
+              </h2>
+            ))}
+          </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
             <Link href={`/Shaer/${data.shaer}`}>
               <h2>{data.shaer}</h2>
@@ -106,7 +106,7 @@ const Page = ({ params }) => {
             >
               مزید غزلیں
             </button>
-            <Link href={`/Ghazlen/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید غزلیں</Link>
+            <Link scroll={false} href={`/Ghazlen/shaer/${data?.shaer?.replace(' ', '_')}`} className="text-blue-600 underline">{data.shaer} کی مزید غزلیں</Link>
           </div>
         </div>
       )}

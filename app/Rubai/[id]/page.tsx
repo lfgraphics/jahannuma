@@ -67,9 +67,7 @@ export default function Page({ params }: { params: { id: string } }) {
       ) : (
         <div className="p-4 mt-3 w-full md:w-[400px]">
           <div className="text-center text-2xl">
-            <p>
-              {data?.fields.unwan}
-            </p>
+            <p>{data?.fields.unwan}</p>
           </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
             <Link href={`/Shaer/${data?.fields.shaer}`}>
@@ -97,6 +95,7 @@ export default function Page({ params }: { params: { id: string } }) {
             <Link
               href={`/Rubai/shaer/${data?.fields.shaer.replace(" ", "_")}`}
               className="text-blue-600 underline"
+              scroll={false}
             >
               {data?.fields.shaer} کی مزید رباعی
             </Link>
