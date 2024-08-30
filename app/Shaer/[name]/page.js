@@ -131,19 +131,19 @@ const Page = ({ params }) => {
         <Intro2 data={data} ></Intro2>
       )}
       {activeNav === "غزلیں" && (
-        <Ghazlen takhallus={data.takhallus}></Ghazlen>
+        <Ghazlen takhallus={decodedName.trim()}></Ghazlen>
       )}
       {activeNav === "نظمیں" && (
-        <Nazmen takhallus={data.takhallus}></Nazmen>
+        <Nazmen takhallus={decodedName.trim()}></Nazmen>
       )}
       {activeNav === "اشعار" && (
-        <Ashaar takhallus={data.takhallus} ></Ashaar>
+        <Ashaar takhallus={decodedName.trim()} ></Ashaar>
       )}
       {activeNav === "ئی - بکس" && (
-        <EBkooks takhallus={data.takhallus} ></EBkooks>
+        <EBkooks takhallus={decodedName.trim()} ></EBkooks>
       )}
       {activeNav === "رباعی" && (
-        <Rubai takhallus={data.takhallus} ></Rubai>
+        <Rubai takhallus={decodedName.trim()} ></Rubai>
       )}
 
     </div>
