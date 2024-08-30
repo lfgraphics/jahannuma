@@ -36,12 +36,12 @@
   },
   "devDependencies": {
     "@types/aos": "^3.0.7",
-    "@types/node": "latest",
-    "@types/react": "latest",
+    "@types/node": "^22.5.1",
+    "@types/react": "^18.3.4",
     "@types/react-dom": "latest",
     "autoprefixer": "latest",
     "postcss": "latest",
     "tailwindcss": "latest",
-    "typescript": "latest"
+    "typescript": "^5.5.4"
   }
 }
