@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import UnwanPageLoader from "../../Components/UnwanPageLoader"
+import ComponentsLoader from "@/app/Components/shaer/ComponentsLoader";
 
 
 const Page = ({ params }) => {
@@ -51,10 +51,10 @@ const Page = ({ params }) => {
 
   return (
     <div dir="rtl" className="flex justify-center">
-      {loading ? <UnwanPageLoader /> : (
+      {loading ? <ComponentsLoader /> : (
         <div className="p-4 mt-3 w-screen md:w-[400px]">
-          <div className="ghazalHead text-4xl text-black mb-2" style={{ lineHeight: "46px" }}>
-            <h2>{data.ghazalHead?.replace("\n", "،")}</h2>
+          <div className="ghazalHead text-3xl text-center text-black mb-2" style={{ lineHeight: "46px" }}>
+            <h2>{data.unwan}</h2>
           </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
             <Link href={`/Shaer/${data.shaer}`}>
@@ -62,11 +62,25 @@ const Page = ({ params }) => {
             </Link>
           </div>
           <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
-          <div className="text-2xl mb-4">
+          {!data.paband && (<div className="text-2xl mb-4 text-center">
             {ghazalLines?.map((line, index) => (
-              <p style={{ lineHeight: "normal" }} key={index}>{line}</p>
+              <p className={`${line == "****" ? "my-12 opacity-0" : ""}`} style={{ lineHeight: "normal" }} key={index}>{line}</p>
             ))}
-          </div>
+          </div>)
+          }
+          {data.paband && (
+            (<div className="text-2xl mb-4 flex flex-col justify-center">
+              {ghazalLines?.map((line, index) => (
+                <p
+                  data-aos="fade-up"
+                  key={index}
+                  className={`justif w-full px-10 text-black pb-3 text-2xl ${line == "****" ? "my-12 opacity-0" : ""}`}
+                >
+                  {line}
+                </p>
+              ))}
+            </div>)
+          )}
           <div className="flex gap-5 text-md mb-4 justify-center">
             {anaween?.map((unwan, index) => (
               <Link href={`/Nazmen/mozu/${unwan}`} className="text-blue-500 underline cursor-pointer" style={{ lineHeight: "normal" }} key={index}>{unwan}</Link>

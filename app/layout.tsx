@@ -10,7 +10,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [language, setLanguage] = useState<string>("UR");
-  // const [pageTitle, setPageTitle] = useState("Jahan Numa");
 
   const changeLang = () => {
     if (typeof window !== "undefined" && window.localStorage) {
@@ -20,11 +19,8 @@ export default function RootLayout({
 
   const langChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     if (typeof window !== "undefined") {
-      localStorage?.setItem("lang", event.target.value);
+      localStorage.setItem("lang", event.target.value);
       setLanguage(event.target.value);
-      if (event.target.value == "UR") {
-        document.getElementById("redirect")?.click();
-      }
       setTimeout(changeLang, 500);
     }
   };
@@ -51,7 +47,6 @@ export default function RootLayout({
       }
     }
   }, [language]);
-
   return (
     <html lang="en">
       <head>

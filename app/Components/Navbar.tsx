@@ -22,88 +22,67 @@ interface NavbarProps {
   onLangClick?: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void;
 }
 
+export const pages = [
+  { EN: "Shaer", UR: "شعراء", HI: "शेयर" },
+  { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
+  { EN: "Rubai", UR: "رباعی", HI: "रुबाई" },
+  { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
+  { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
+  { EN: "E-Books", UR: "ای-بکس", HI: "ई-बुक्स" },
+  { EN: "Blogs", UR: "بلاگز", HI: "ब्लॉग्स" },
+  { EN: "Interview", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
+  { EN: "Faviorites", UR: "پسندیدہ", HI: "पसंदीदा" },
+];
+
+type Language = "EN" | "UR" | "HI";
+
 const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [redirectHref, setRedirectHref] = useState(""); // Initialize redirectHref with an empty string
 
-  const pages = [
-    { EN: "Shaer", UR: "شعراء", HI: "शेयर" },
-    { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
-    { EN: "Rubai", UR: "رباعی", HI: "रुबाई" },
-    { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
-    { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
-    { EN: "E-Books", UR: "ای-بکس", HI: "ई-बुक्स" },
-    { EN: "Blogs", UR: "بلاگز", HI: "ब्लॉग्स" },
-    { EN: "Interview", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
-    { EN: "Faviorites", UR: "پسندیدہ", HI: "पसंदीदा" },
-  ];
-  type Language = "EN" | "UR" | "HI";
-  const handleLanguageChange = (selectedLanguage: string) => {
+  const handleLanguageChange = (selectedLanguage: Language) => {
     const customEvent = {
       target: {
         value: selectedLanguage,
       },
     } as React.ChangeEvent<HTMLSelectElement>;
-    localStorage?.setItem("lang", selectedLanguage);
+
+    localStorage.setItem("lang", selectedLanguage);
     onLangChange(customEvent);
   };
-  const [redirectHref, setRedirectHref] = useState(""); // Initialize redirectHref with an empty string
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const currentPath = window.location.pathname;
-      let updatedRedirectHref = currentPath;
 
-      if (language !== "UR") {
-        // Check if the current path includes /HI or /EN
-        if (currentPath === "/HI" || currentPath === "/EN") {
-          // Remove /HI or /EN
-          updatedRedirectHref = currentPath.replace(/\/(HI|EN)/, `${language}`);
-        } else {
-          // Check if the current path includes a language parameter
-          const languageMatch = currentPath.match(/\/(EN|HI|UR)\//);
-          if (languageMatch) {
-            // Remove the existing language parameter and replace it with the selected language
-            updatedRedirectHref = `${origin}${currentPath.replace(
-              `/${languageMatch[1]}`,
-              `/${language}`
-            )}`;
-          } else {
-            // If the current path doesn't include a language parameter, add the selected language
-            updatedRedirectHref = `${origin}/${language}${currentPath}`;
-          }
-        }
-      } else if (language === "UR") {
-        // Remove /EN or /HI
-        updatedRedirectHref = `${origin}${currentPath.replace(
-          /\/(EN|HI)/,
-          ""
-        )}`;
-      }
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const currentPath = window.location.pathname;
 
-      setRedirectHref(updatedRedirectHref); // Update the state variable with the new value
+    let updatedRedirectHref = currentPath;
+
+    // Remove the existing language code if present
+    updatedRedirectHref = updatedRedirectHref.replace(/\/(EN|HI|UR)/, "");
+
+    // Add the new language code if it's not UR
+    if (language !== "UR") {
+      updatedRedirectHref = `/${language}${updatedRedirectHref}`;
     }
-  }, [language]);
 
-  useEffect(() => {
+    setRedirectHref(updatedRedirectHref);
+  }
+}, [language]);
+
+useEffect(() => {
+  if (typeof window !== "undefined") {
     const handlePopstate = () => {
-      // Get the current pathname
       const pathname = window.location.pathname;
 
-      // Check if the pathname includes "/EN" or "/HI"
-      const isLanguagePath =
-        pathname.includes("/EN") || pathname.includes("/HI");
-
-      // Check the allowed number of slashes based on whether it's a language path
+      const isLanguagePath = pathname.match(/\/(EN|HI|UR)/);
       const allowedSlashCount = isLanguagePath ? 3 : 2;
 
-      // Check if the pathname has the allowed number of slashes
       const hasAllowedSlashes =
         pathname.split("/").length === allowedSlashCount;
 
-      // Get the element with the class 'langChange'
       const langChangeElement = document.querySelector(".langChange");
 
-      // If it's a language path and includes the allowed number of slashes, hide the 'langChange'; otherwise, show it
       if (langChangeElement) {
         if (isLanguagePath && hasAllowedSlashes) {
           langChangeElement.classList.add("hidden");
@@ -113,17 +92,15 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
       }
     };
 
-    // Add event listener for popstate (browser back/forward)
     window.addEventListener("popstate", handlePopstate);
 
-    // Run the initial check
     handlePopstate();
 
-    // Remove the event listener on component unmount
     return () => {
       window.removeEventListener("popstate", handlePopstate);
     };
-  }, []);
+  }
+}, []);
 
   return (
     <div className="sticky w-full z-50 top-0 font-noto-nastaliq">
