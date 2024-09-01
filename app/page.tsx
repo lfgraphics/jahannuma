@@ -29,7 +29,7 @@ export default function Home() {
         <HorizontalShura />
         <HorizontalBooks />
         <Branches></Branches>
-        <div className="w-screen flex justify-center my-3">
+        <div className="w-full flex justify-center my-1">
           <InstallPWAButton />
         </div>
         <Quiz></Quiz>

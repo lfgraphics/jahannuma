@@ -9,7 +9,7 @@ const Branches = () => {
         <div className="pt-7 text-2xl text-center text-gray-700">
           جہاں نما کی شاخیں
         </div>
-        <div className=" p-4 w-screen overflow-x-auto">
+        <div className=" p-4 w-full overflow-x-auto">
           <div className="flex flex-row w-max">
             <div className="rounded-md overflow-hidden border-2 w-[300px] h-[350px] m-3 shadow-md relative text-center">
               <Link href="/bazmeurdu">
