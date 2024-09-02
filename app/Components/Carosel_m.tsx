@@ -80,7 +80,13 @@ const Page: React.FC = () => {
   const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
 
   // Use SWR to handle data fetching, caching, and revalidation
-  const { data, error } = useSWR<DataStructure>(url, fetcher);
+ const { data, error } = useSWR(url, fetcher, {
+   revalidateOnFocus: false, // Disable revalidation on focus
+   revalidateOnReconnect: false, // Disable revalidation on reconnect
+   refreshInterval: 0, // Disable polling entirely
+   dedupingInterval: 60000, // Dedupes requests within 60 seconds (default: 2 seconds)
+ });
+
 
   // Error handling and loading state
   if (error) return <div>Failed to load data: {error.message}</div>;
