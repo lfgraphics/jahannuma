@@ -57,9 +57,7 @@ const Ads: React.FC = () => {
                 height={100}
                 className="w-full h-auto object-cover"
               ></img>
-              {/* <div className="relative bottom-0 text-center bg-[#F0D586] text-[#984A02] text-xl font-semibold">
-                <p>{ad.redirectUrl}</p>
-              </div> */}
+
             </div>
           </Link>
         ))}

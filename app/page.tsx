@@ -21,22 +21,20 @@ export const metadata = {
 };
 
 export default function Home() {
-  return (
-    <>
-      <div>
-        <Carousel1></Carousel1>
-        <RandCard></RandCard>
-        <HorizontalShura />
-        <HorizontalBooks />
-        <Branches></Branches>
-        <div className="w-full flex justify-center my-1">
-          <InstallPWAButton />
-        </div>
-        <Quiz></Quiz>
-        <Ads></Ads>
-        <Mutala></Mutala>
-        <DoYouKnow></DoYouKnow>
+  return <>
+    <div>
+      <Carousel1></Carousel1>
+      <RandCard />
+      <HorizontalShura />
+      <HorizontalBooks />
+      <Branches />
+      <div className="w-full flex justify-center my-3">
+        <InstallPWAButton />
       </div>
-    </>
-  );
+      <Quiz />
+      <Ads />
+      <Mutala />
+      <DoYouKnow />
+    </div>
+  </>;
 }

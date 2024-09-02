@@ -96,34 +96,40 @@ const Quiz = () => {
   };
 
   return (
-    <div className="quiz p-8">
-      {loading && (
-        <div className="text-center">
-          <Loader />
+    <>
+      {quizData && (
+        <div className="quiz p-8">
+          {loading && (
+            <div className="text-center">
+              <Loader />
+            </div>
+          )}
+          {insideBroser && quizData !== undefined && (
+            <>
+              <h2 className="text-4xl font-semibold text-center pb-4 text-[#984A02]">
+                جہاں نما کوئز
+              </h2>
+              <h2 className="text-2xl text-center">
+                {quizData.fields?.question}
+              </h2>
+              {["opt1", "opt2", "opt3", "opt4"].map((opt, index) => (
+                <div className="text-center flex flex-col gap-6">
+                  <button
+                    key={index}
+                    id={`ans${index}`}
+                    className={`btn text-center `}
+                    onClick={() => handleOptionSelect(index)}
+                    disabled={selectedOption !== null}
+                  >
+                    {quizData.fields?.[opt]}
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       )}
-      {insideBroser && quizData !== undefined && (
-        <>
-          <h2 className="text-4xl font-semibold text-center pb-4 text-[#984A02]">
-            جہاں نما کوئز
-          </h2>
-          <h2 className="text-2xl text-center">{quizData.fields?.question}</h2>
-          {["opt1", "opt2", "opt3", "opt4"].map((opt, index) => (
-            <div className="text-center flex flex-col gap-6">
-              <button
-                key={index}
-                id={`ans${index}`}
-                className={`btn text-center `}
-                onClick={() => handleOptionSelect(index)}
-                disabled={selectedOption !== null}
-              >
-                {quizData.fields?.[opt]}
-              </button>
-            </div>
-          ))}
-        </>
-      )}
-    </div>
+    </>
   );
 };
 

@@ -1,8 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import html2canvas from "html2canvas";
 import Loader from "./Loader";
-import Link from "next/link";
 import DataCard from "./DataCard";
 import ToastComponent from "./Toast";
 
