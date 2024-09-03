@@ -13,10 +13,11 @@ const Card = ({ data }) => {
 
   return (
     <Link href={`/E-Books/${id}`}>
-      <div className="rounded overflow-hidden shadow-lg mx-auto my-1">
+      <div className="rounded overflow-hidden shadow-lg mx-auto">
         {/* Photo */}
         <div
-          className="relative bg-cover bg-center min-w-[200px] min-h-[300px]"
+          //  min-w-[200px] min-h-[280px]
+          className="relative bg-cover bg-center w-[200px] h-[260px]"
         >
           <img
             className="h-full w-full"
@@ -31,12 +32,12 @@ const Card = ({ data }) => {
           </div> */}
         </div>
         {/* Card Content */}
-        <div className="px-6 py-4">
+        <div className="px-6">
           {/* bookName */}
-          <div className="mb-2">{bookName}</div>
+          <div className="py-2">{bookName}</div>
           {/* Publishing data */}
           <div className="flex items-center mb-2">
-            {formatDate(publishingDate)}
+            اشاعت: {formatDate(publishingDate)}
           </div>
         </div>
       </div>

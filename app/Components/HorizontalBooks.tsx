@@ -101,14 +101,14 @@ const HorizontalBooks = () => {
   }, []);
   return (
     <div dir="ltr">
-      <h2 className="py-4 text-center text-4xl">کتابیں</h2>
+      <h2 className="pt-6 text-center text-4xl">کتابیں</h2>
       {loading && <Loader></Loader>}
       {!loading && (
         <div>
           <div
             id="section"
             dir="rtl"
-            className="flex flex-row-reverse overflow-auto gap-4 pt-7   px-6 items-center"
+            className="flex flex-row-reverse overflow-auto gap-4 pt-7 pb-4  px-6 items-center"
           >
             {data.map((item, index) => (
               <div className="relative" key={index}>
