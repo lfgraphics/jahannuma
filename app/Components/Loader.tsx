@@ -5,7 +5,7 @@ const Loader = () => {
     <div className="grid w-full h-[220px] max-h-screen items-center bg-opacity-50 bg-white">
       <div className="w-full h-[220px]  max-h-screen flex items-center justify-center">
         <img
-          src="/logo.png" // Replace with your logo file path
+          src="/logo.png"
           alt="Logo"
           height={100}
           width={100}

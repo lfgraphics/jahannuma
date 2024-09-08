@@ -1,6 +1,6 @@
 import Ads from "./Components/Ads";
 import Branches from "./Components/Branches";
-import Carousel1 from "./Components/Carosel_m";
+import Carousel from "./Components/Carosel";
 import HorizontalBooks from "./Components/HorizontalBooks";
 import HorizontalShura from "./Components/HorizontalShura";
 import InstallPWAButton from "./Components/InstallAppBtn";
@@ -21,20 +21,22 @@ export const metadata = {
 };
 
 export default function Home() {
-  return <>
-    <div>
-      <Carousel1></Carousel1>
-      <RandCard />
-      <HorizontalShura />
-      <HorizontalBooks />
-      <Branches />
-      <div className="w-full flex justify-center my-3">
-        <InstallPWAButton />
+  return (
+    <>
+      <div>
+        <Carousel></Carousel>
+        <RandCard />
+        <HorizontalShura />
+        <HorizontalBooks />
+        <Branches />
+        <div className="w-full flex justify-center my-3">
+          <InstallPWAButton />
+        </div>
+        <Quiz />
+        <Ads />
+        <Mutala />
+        <DoYouKnow />
       </div>
-      <Quiz />
-      <Ads />
-      <Mutala />
-      <DoYouKnow />
-    </div>
-  </>;
+    </>
+  );
 }

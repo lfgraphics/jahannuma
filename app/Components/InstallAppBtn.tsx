@@ -1,5 +1,3 @@
-// InstallPWAButton.tsx
-
 "use client";
 import "../../public/service-worker";
 import React, { useEffect, useState } from "react";
