@@ -474,7 +474,7 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-14">
+          <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-28">
             <div className="filter-btn basis-[75%] justify-center text-center flex">
               <div
                 dir="rtl"
@@ -529,7 +529,7 @@ const Page: React.FC<{}> = () => {
             {data.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">
                 <div
-                  className="heart cursor-pointer text-gray-500 pr-3 absolute top-0 right-0 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-full m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
+                  className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-4 -right-4 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
                   onClick={(e) =>
                     handleHeartClick(e, item, index, `${item.id}`)
                   }

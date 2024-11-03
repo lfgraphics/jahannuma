@@ -204,7 +204,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
             </div>
             <button
               dir="ltr"
-              className="text-[#984A02] cursor-auto mt-2 justify-start flex items-end flex-row-reverse "
+              className="text-[#984A02] cursor-auto mt-2 justify-start flex items-end flex-row-reverse border rounded-full px-2 py-1 shadow active:shadow-lg transition-all duration-500 ease-in-out"
               onClick={() => toggleanaween(`card${index}`)}
             >
               <span>

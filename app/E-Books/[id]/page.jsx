@@ -68,7 +68,9 @@ const App = ({ params }) => {
       setBookUrl(data.book[0]?.url);
     } else {
       // Handle the case where 'book' is undefined or an empty array
-      console.error("No book data found in the record. please contact the organization");
+      console.error(
+        "No book data found in the record. please contact the organization"
+      );
     }
   }, [data]); // Log the data whenever it changes
   const formatDate = (dateString) => {
@@ -81,38 +83,52 @@ const App = ({ params }) => {
       {!loading && (
         <div>
           <div className="flex flex-col sm:flex-row p-6">
-            <div className="photo mb-4">
-              {/* <Image width={data.book[0]?.}></Image> */}
-              <img
-                className="h-full w-[50%] p-2 border-2 block mx-auto"
-                src={`${data.book?.[0].thumbnails?.large?.url}`}
-                height={data.book?.[0].thumbnails?.large?.height}
-                width={data.book?.[0].thumbnails?.large?.width}
-                alt="Book cover"
-                loading="lazy"
-              ></img>
-            </div>
+            <Link href="#pdf">
+              <div className="photo mb-4">
+                {/* <Image width={data.book[0]?.}></Image> */}
+                <img
+                  className="h-full w-[50%] p-2 border-2 block mx-auto"
+                  src={`${data.book?.[0].thumbnails?.large?.url}`}
+                  height={data.book?.[0].thumbnails?.large?.height}
+                  width={data.book?.[0].thumbnails?.large?.width}
+                  alt="Book cover"
+                  loading="lazy"
+                ></img>
+              </div>
+            </Link>
             <div className="details" data-aos="fade-up">
               {data && (
                 <div className="text-lg" data-aos="fade-up">
-                  <p>کتاب کا نام: {data.bookName}</p>
-                  <p>اشاعت: {formatDate(data.publishingDate)}</p>
-                  <p>مصنف: {data.writer}</p>
-                  <p>تفصیل: {data.desc}</p>
-                  <Link
-                    href={`#pdf`}
-                    className=" text-white block mx-auto m-4 p-2 bg-blue-500 text-center w-max px-8 rounded-md"
-                  >
-                    کتاب پڑھیں
-                  </Link>
-                  {bookUrl && (
-                    <Link
-                      href={bookUrl}
-                      className=" text-black block mx-auto m-4 p-1 border-2 border-blue-500 text-center w-max px-8 rounded-md"
-                    >
-                      کتاب ڈاؤنلوڈ کریں
-                    </Link>
+                  <p className="my-2">کتاب کا نام: {data.bookName}</p>
+                  <p className="my-2">
+                    اشاعت: {formatDate(data.publishingDate)}
+                  </p>
+                  <p className="my-2">مصنف: {data.writer}</p>
+                  <p className="my-2">تفصیل: {data.desc}</p>
+                  {data.maloomat && (
+                    <div className="bg-gray-100 py-2 mt-4 rounded-sm border">
+                      <p className="text-xs mr-4 text-black">دلچسپ معلومات:</p>
+                      <p className="maloomat mr-4 mt-2 text-sm">
+                        {data.maloomat}
+                      </p>
+                    </div>
                   )}
+                  <div className="scale-75">
+                    <Link
+                      href={`#pdf`}
+                      className=" text-white block mx-auto m-4 p-2 bg-blue-500 text-center w-[200px] px-8 rounded-md"
+                    >
+                      کتاب پڑھیں
+                    </Link>
+                    {bookUrl && data.download && (
+                      <Link
+                        href={bookUrl}
+                        className=" text-black block mx-auto m-4 mb-1 p-2 border-2 border-blue-500 text-center w-[200px] px-8 rounded-md"
+                      >
+                        کتاب ڈاؤنلوڈ کریں
+                      </Link>
+                    )}
+                  </div>
                   {/* کتاب نہ دکھنے یا لوڈ نہ ہونے کی صورت میں{" "}
                   <FontAwesomeIcon
                     icon={faRefresh}
@@ -134,7 +150,7 @@ const App = ({ params }) => {
               />
             </button> */}
             {bookUrl && (
-            <PdfViewer url={bookUrl} />
+              <PdfViewer url={bookUrl} />
               // <iframe
               //   data-aos="fade-up"
               //   key={iframeKey}

@@ -50,9 +50,6 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
       {!data && <ComponentsLoader />}
       {insideBrowser && data && (
         <div className="poet-intro text-lg">
-          <p>
-            <strong>نام:</strong> {data.name}
-          </p>
           {data.description && (
             <div className="block mx-auto my-5">
               {data.description.split("\n").map((line, index) => (
@@ -67,7 +64,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
           <p>
             <ul>
               {data.tafseel?.split("\n").map((line, index) => (
-                <li data-aos="fade-up" key={index}>
+                <li data-aos="fade-up" className="my-2" key={index}>
                   {line}
                 </li>
               ))}

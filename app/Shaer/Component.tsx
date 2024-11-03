@@ -87,7 +87,7 @@ const Page: React.FC<{}> = () => {
     pageSize: 30,
   });
 
-  const [voffset, setOffset] = useState<string | null>("");
+  const [offset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
@@ -436,9 +436,6 @@ const Page: React.FC<{}> = () => {
       pageSize: 30,
     });
     fetchData(null, true);
-    if (typeof window !== undefined) {
-      setScrolledPosition(document!.getElementById("section")!.scrollTop);
-    }
   };
   //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -480,7 +477,7 @@ const Page: React.FC<{}> = () => {
   };
   const handleLoadMore = () => {
     setMoreLoading(true);
-    fetchData(voffset, false);
+    fetchData(offset, false);
   };
 
   return (
@@ -503,7 +500,7 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-14">
+          <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-28">
             <div className="filter-btn basis-[75%] text-center flex">
               <div
                 dir="rtl"

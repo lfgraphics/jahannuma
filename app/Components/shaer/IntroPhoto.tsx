@@ -139,7 +139,7 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
                   {data?.location}
                 </p>
               </div>
-              <div className="navs" onClick={() => handleShareClick()}>
+              <div className="navs -translate-y-4" onClick={() => handleShareClick()}>
                 <FontAwesomeIcon
                   icon={faShareAlt}
                   style={{ color: "white" }}

@@ -32,7 +32,7 @@ const PdfViewer: React.FC<Prop> = ({ url }) => {
 
   return (
     <div className="MyComponent">
-      <div className="webviewer" ref={viewer} style={{ height: "100vh" }}></div>
+      <div className="webviewer" ref={viewer} style={{ height: "70vh" }}></div>
     </div>
   );
 };

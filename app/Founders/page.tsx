@@ -35,7 +35,7 @@ const page = () => {
           <h3 className="text-2xl text-center p-2">جالب نعمانی</h3>
         </div>
         <div className="details leading-8 text-justify" dir="rtl">
-          <p data-aos="fade-up">
+          <p data-aos="fade-up" className="text-gray-700">
             جالب نعمانی کا ذاتی نام ہدایت اللہ اور صفاتی نام جالب نعمانی۔ مولد و
             مسکن عسکر گنج گورکھپور ہے۔ انہیں ادبیات عربی فارسی اور اردو پر عبور
             حاصل ہے۔ شاعری انکی خانہ زاد ہے۔ ان کے لا تعداد شاگرد ہیں جو میدانِ
@@ -46,7 +46,7 @@ const page = () => {
             ہمیشہ سرگرم رہے ہیں اسکے لیے انہوں نے اپنے جسم کا ایک اک قطرہ لہو
             نچوڑ دیا ہے اسے انکا ایک مثالی کارنامہ کہا جا سکتا ہے۔
           </p>
-          <p data-aos="fade-up">
+          <p data-aos="fade-up" className="text-gray-700">
             سب سے پہلے انہوں نے ایک ادبی ادارہ نگارِ ادب قائم کیا، اسکے علاوہ
             شہر کے دیگر ادبی اداروں اور انجمنوں مثلاً ارباب ذوق، ادبی سوسائٹی،
             بزمِ ادب، انجمنِ ترقی پسند مصنفین، انجمنِ ترقی اردو، نئے زاویے وغیرہ
@@ -65,7 +65,7 @@ const page = () => {
             data-aos="fade-up"
             className="w-full flex items-center content-center justify-center"
           >
-            <p className="text-center w-max">
+            <p className="text-center w-max text-gray-700">
               لکھتے رہے جنوں کی حکایات خونچکاں <br />
               ہر چند اس میں ہاتھ ہمارے قلم ہوئے{" "}
             </p>
@@ -94,7 +94,7 @@ const page = () => {
         </div>
         <div className="details" dir="rtl">
           <div className="details leading-8 text-justify" dir="rtl">
-            <p data-aos="fade-up">
+            <p data-aos="fade-up" className="text-gray-700">
               ڈاکٹر عزیز احمد ایم - ڈی مسلم یونیورسٹی کے فیض یافتہ ایک جامع اثر
               انگیز اور دلنواز شخصیت کے مالک ہیں انکی شخصیت کا ایک اہم جزو صلح
               کل ہے شاندار خاندانی پسِ منظر رکھتے ہیں شعر فہمی غضب کی، یاد داشت
@@ -102,7 +102,7 @@ const page = () => {
               حفظ ہیں، جن کا استعمال دورانِ خطابت (تقریر) برجستہ اور برمحل کرتے
               رہتے ہیں۔
             </p>
-            <p data-aos="fade-up">
+            <p data-aos="fade-up" className="text-gray-700">
               احمد ہاسپٹل ابو بازار انچوا کے بنیاد کار اور مالک ہیں۔ اسی سے متصل
               انکی شاندار رہائشگاہ ہے، انتہائی، شفیق، بردبار اور بزلہ سنج ہیں۔
               اردو زبان اور شعر و ادب کے لیے انکی خدمات ہمیشہ یاد رکھی جائیں گی۔
@@ -113,7 +113,7 @@ const page = () => {
               data-aos="fade-up"
               className="w-full flex items-center content-center justify-center"
             >
-              <p className="text-center w-max">
+              <p className="text-center w-max text-gray-700">
                 جو دل پہ گزرتی ہے رقم کرتے رہیں گے <br />
                 ہم پرورشِ لوح و قلم کرتے رہیں گے{" "}
               </p>
@@ -142,7 +142,7 @@ const page = () => {
         </div>
         <div className="details" dir="rtl">
           <div className="details leading-8 text-justify" dir="rtl">
-            <p data-aos="fade-up">
+            <p data-aos="fade-up" className="text-gray-700">
               محبوب سعید حارث شہر گورکھپور کے مشہور ادیب و شاعر اور رئیس سید
               حامد علی گلفشاں قاضی پور خرد کے صاحبزادے ہیں، معززین میں انہیں ایک
               اہم مقام حاصل تھا، انہوں نے اپنی رہائش گاہ میں ایک لائبریری قائم
@@ -153,7 +153,7 @@ const page = () => {
               کٹرہ میں ایک طرحی شعری انعامی نشست منعقد ہو چکی ہے۔ یہ شعری نشست
               محبوب سعید حارث کے ذہنی تنوع کی زندہ مثال ہے۔
             </p>
-            <p data-aos="fade-up">
+            <p data-aos="fade-up" className="text-gray-700">
               محبوب سعید حارث گورکھپور یونیورسٹی سے اردو میں پی ایچ ڈی ہیں، انکی
               شخصیت کی تعمیر میں والد اور دادا کے ذوقِ سخنوری اور جزبۂ خدمت نے
               بہت اہم رول ادا کیا ہے یہی وجہ ہے کہ خدمت خلق انکی رگوں میں لہو بن
@@ -188,7 +188,7 @@ const page = () => {
         </div>
         <div className="details" dir="rtl">
           <div className="details leading-8 text-justify" dir="rtl">
-            <p data-aos="fade-up">
+            <p data-aos="fade-up" className="text-gray-700">
               انور ضیا - مشہور عالم دین قاری اور مبلغ رحمت اللہ صاحب مرحوم
               (اسماعیل پور گورکھپور) کے لائق فرزند اور اردو سے ایم-اے ہیں اردو
               کے معتبر اسکالر، شاعر اور ادیب ہیں، فنِ عروض پر انہیں دسترس حاصل

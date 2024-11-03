@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import html2canvas from "html2canvas";
+import { Baseline, ImagePlus, PaintBucket, Plus, Settings2 } from "lucide-react";
 
 // Define the interface for the dynamic data object
 interface Shaer {
@@ -161,14 +162,27 @@ const DynamicDownloadHandler: React.FC<{
               icon={isOpen ? faChevronUp : faChevronDown}
               className="text-md ml-5"
             />
-            <span className="flex-1">مزید ترمیمی ٹولز </span>
+            <span className="flex flex-1 gap-2">مزید ترمیمی <Settings2 /> </span>
           </div>
           {isOpen && (
             <div className="accordion-content p-3 border-t flex justify-around items-center">
-              <div className="flex max-w-full overflow-x-auto flex-row">
-                <p>Change text colour</p>
-                <p>change background overlay colour</p>
-                <p>custom image upload</p>
+              <div className="flex max-w-full overflow-x-auto flex-row h-[120px] gap-3 flex-wrap" >
+                <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                  <Baseline />
+                  <p className="text-xs">خط کا رنگ تبدیل کریں</p>
+                </div>
+                <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                  <PaintBucket />
+                  <p className="text-xs">پسِ منظر کا رنگ تبدیل کریں</p>
+                </div>
+                <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                  <ImagePlus />
+                  <p className="text-xs">اپنی تصویل اپلوڈ کریں</p>
+                </div>
+                <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                  <Plus />
+                  {/* <p className="txst-sm">اپنی تصویل اپلوڈ کریں</p> */}
+                </div>
               </div>
             </div>
           )}

@@ -50,10 +50,6 @@ const Ashaar: React.FC<{}> = () => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
-  const [selectedCard, setSelectedCard] = React.useState<{
-    id: string;
-    fields: { shaer: string; ghazal: string[]; id: string };
-  } | null>(null);
   const [voffset, setOffset] = useState<string | null>("");
   const [pagination, setPagination] = useState<Pagination>({
     offset: null,
@@ -200,7 +196,6 @@ const Ashaar: React.FC<{}> = () => {
           ...formattedRecords,
         ]);
       }
-      !offset && scrollToTop();
       // seting pagination depending on the response
       setOffset(result.offset);
       // seting the loading state to false to show the data
@@ -477,47 +472,9 @@ const Ashaar: React.FC<{}> = () => {
       console.error("Error sharing:", error);
     }
   };
-  //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
   //opening and closing ghazal
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
-    // setSelectedCard({
-    //   id: shaerData.id,
-    //   fields: {
-    //     shaer: shaerData.fields.shaer,
-    //     ghazal: shaerData.fields.ghazal,
-    //     id: shaerData.fields.id,
-    //   },
-    // });
-
-    // const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    // if (modalElement) {
-    //   animateModalOpen(modalElement);
-    //   if (typeof window !== undefined) {
-    //     document.getElementById("modlBtn")?.classList.remove("hidden");
-    //   }
-    // }
-  };
-  const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
-    setSelectedCard(null);
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
@@ -802,7 +759,7 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-14">
+      <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-28">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
           <div
             dir="rtl"
@@ -907,42 +864,6 @@ const Ashaar: React.FC<{}> = () => {
             )}
           </div>
         </section>
-      )}
-      {selectedCard && (
-        <div
-          onClick={handleCloseModal}
-          id="modal"
-          className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
-        >
-          <div
-            dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
-          >
-            <div className="p-4 pr-0 relative">
-              <button
-                id="modlBtn"
-                className="sticky top-4 right-7 z-50"
-                onClick={handleCloseModal}
-              >
-                <FontAwesomeIcon
-                  icon={faTimesCircle}
-                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-                />
-              </button>
-              <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
-                {selectedCard.fields.shaer}
-              </h2>
-              {selectedCard.fields.ghazal.map((line, index) => (
-                <p
-                  key={index}
-                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
       )}
       {/* //commetcard */}
       {selectedCommentId && (

@@ -71,7 +71,7 @@ const Page = ({ params }) => {
       {loading && <ComponentsLoader />}
       {!loading && (<div dir="rtl" className="flex flex-col">
         <Intro data={data} ></Intro>
-        <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 mb-4 border-b-2 self-center p-4 text-xl">
+        <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 mb-4 border-b-2 self-center p-4 py-2 text-xl">
           <div
             className={`nav-item ${activeNav === 'تعارف' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
             onClick={() => handleNavClick('تعارف')}

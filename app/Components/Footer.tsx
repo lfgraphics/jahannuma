@@ -18,6 +18,7 @@ import TwitterIcon from "@mui/icons-material/Twitter";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import ContactForm from "./ContactForm";
 import { pages } from "./Navbar";
+import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 
 // import { language, setLanguage } from "@/app/Components/Navbar"; // Import the exported variables
 interface FooterProps {
@@ -68,32 +69,17 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
   const NavsToDisplay =
     language === "EN" ? englishNavs : language === "HI" ? hindiNavs : urduNavs;
 
-  const linksByLanguage: Record<string, string[]> = {
-    UR: ["صفحہ کی معلومات", "مالک کی معلومات", "پروگرامز"],
-    EN: ["About_site", "About_owner", "Programs"],
-    HI: ["साइट के बारे में", "मालिक के बारे में", "कार्यक्रम"],
-  };
+  const quickLinks = [
+    { EN: "Founders", HI: "मालिक की मालूमात", UR: "مالک کی معلومات" },
+    { EN: "", HI: "", UR: "" },
+    { EN: "", HI: "", UR: "" },
+  ];
 
-  const navs = {
-    quicklinks: {
-      bani: {
-        UR: "بانی کا تعارف",
-        EN: "Bani ka ta'aruf",
-        HI: "बानी का तारुफ़",
-        url: "",
-      },
-      srprst: {
-        UR: "بانی کا تعارف",
-        EN: "Bani ka ta'aruf",
-        HI: "बानी का तारुफ़",
-        url: "",
-      },
-    },
-  };
-
-  const linksToDisplay = linksByLanguage[language] || [];
   return (
-    <footer className="bg-[#F0D586] p-10 text-[#984A02]">
+    <footer
+      dir={language === "UR" ? "rtl" : "ltr"}
+      className="bg-[#F0D586] p-10 text-[#984A02]"
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <ContactForm language={language}></ContactForm>
 
@@ -101,11 +87,18 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
         <div>
           <h6 className="text-xl font-semibold mb-4">Navigation</h6>
           <ul className="space-y-2">
-            {NavsToDisplay.map((item) => (
-              <li key={item}>
-                <a href={`/${item}`} className="hover:underline">
-                  {item}
-                </a>
+            {pages.map((page) => (
+              <li
+                key={page.EN}
+                className="text-[#984A02] hover:text-[#0E88D6] font-medium text-xl mr-2"
+              >
+                <Link
+                  href={`/${
+                    language === "UR" ? page.EN : `${language}/${page.EN}`
+                  }`}
+                >
+                  {(page as any)[language]}
+                </Link>
               </li>
             ))}
           </ul>
@@ -113,10 +106,8 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
           {/* <!-- Contact Info --> */}
           <h6 className="text-xl font-semibold mt-8 mb-4">Contact Info</h6>
           <address>
-            <p>123 Main Street</p>
-            <p>City, Country</p>
-            <p>Email: example@example.com</p>
-            <p>Phone: +123 456 789</p>
+            <p>Email: jahannuma1.7@gmail.com</p>
+            {/* <p>Phone: +123 456 789</p> */}
           </address>
         </div>
 
@@ -124,42 +115,42 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
         <div>
           <h6 className="text-xl font-semibold mb-4">Quick Links</h6>
           <ul className="space-y-2">
-            {linksToDisplay.map((item) => (
-              <li key={item}>
-                <a href={`/${item}`} className="hover:underline">
-                  {item}
-                </a>
+            {quickLinks.map((link) => (
+              <li key={link.EN}>
+                <Link
+                  href={`/${
+                    language === "UR" ? link.EN : `${language}/${link.EN}`
+                  }`}
+                  className="hover:underline"
+                >
+                  {(link as any)[language]}
+                </Link>
               </li>
             ))}
           </ul>
 
           <h6 className="text-xl font-semibold mt-8 mb-4">Follow Us</h6>
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 text-[#984A02]">
             <a
               href="https://www.facebook.com/profile.php?id=61555317448004&mibextid=ZbWKwL"
               className="hover:text-[#984A02]"
             >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                {/* <!-- Facebook Icon SVG --> */}
-              </svg>
+              <Facebook />
             </a>
             <a
               href="https://www.instagram.com/jahannuma_official?igsh=aDdhdXV6OWtmZzRt"
               className="hover:text-[#984A02]"
             >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                {/* <!-- Instagram Icon SVG --> */}
-              </svg>
+              <Instagram />
+            </a>
+            <a
+              href="https://x.com/Jahan_Numa_?t=ivx39tbEyxGPMqV86zjviQ&s=08"
+              className="hover:text-[#984A02]"
+            >
+              <Twitter />
             </a>
             <a href="#" className="hover:text-[#984A02]">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                {/* <!-- Twitter Icon SVG --> */}
-              </svg>
-            </a>
-            <a href="#" className="hover:text-[#984A02]">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                {/* <!-- LinkedIn Icon SVG --> */}
-              </svg>
+              <Linkedin />
             </a>
           </div>
         </div>

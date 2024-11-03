@@ -801,7 +801,7 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-14">
+      <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-28">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
           <div
             dir="rtl"

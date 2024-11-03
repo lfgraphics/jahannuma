@@ -74,7 +74,7 @@ const Page = ({ params }) => {
                 <p
                   data-aos="fade-up"
                   key={index}
-                  className={`justif w-full px-10 text-black pb-3 text-2xl ${line == "****" ? "my-12 opacity-0" : ""}`}
+                  className={`justif w-full px-10 text-black pb-3 text-2xl ${line == "****" ? "text-transparent my-3 select-none" : ""} [&]:text-[length:clamp(1rem,2vw,1.5rem)] break-words`}
                 >
                   {line}
                 </p>
