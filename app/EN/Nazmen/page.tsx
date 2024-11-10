@@ -1,7 +1,20 @@
 import React from "react";
-
-const Nazmen = () => {
-  return <div>Nazmen</div>;
+import Ashaar from "./Component";
+export const metadata = {
+  metadataBase: new URL("https://jahannuma.vercel.app/Nazmen"),
+  title: "Nazmen | Jahannuma",
+  description: "This page has nazmen of all young shaers of Goraphur",
+  openGraph: {
+    images: ["https://jahan-numa.org/metaImages/nazme.jpg"],
+  },
 };
 
-export default Nazmen;
+const page = () => {
+  return (
+    <div>
+      <Ashaar></Ashaar>
+    </div>
+  );
+};
+
+export default page;
