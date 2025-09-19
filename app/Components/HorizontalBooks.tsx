@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 import Card from "./BookCard";
 import Link from "next/link";
 import Loader from "./Loader";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronRightCircle } from "lucide-react";
 
 interface Book {
   filename: string;
@@ -71,11 +70,11 @@ const HorizontalBooks = () => {
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
       // : ApiResponse
-      const records = result.records || [];
+      const records = result?.records || [];
 
-      setData(result.records);
+      setData(result?.records);
       // formating result to match the mock data type for ease of development
-      const formattedRecords: EBooksType[] = result.records.map(
+      const formattedRecords: EBooksType[] = result?.records.map(
         (record: any) => ({
           ...record,
           fields: {
@@ -116,11 +115,7 @@ const HorizontalBooks = () => {
               </div>
             ))}
             <Link className=" text-white text-4xl font-bold" href={"/E-Books"}>
-              <FontAwesomeIcon
-                icon={faCircleChevronRight}
-                shake
-                style={{ color: "#984A02" }}
-              />{" "}
+              <ChevronRightCircle color="#984A02" size={36} />
             </Link>
           </div>
         </div>

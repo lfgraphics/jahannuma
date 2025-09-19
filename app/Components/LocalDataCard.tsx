@@ -1,12 +1,6 @@
 // ShaerCard.tsx
 import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHeart,
-  faShareNodes,
-  faTag,
-  faDownload,
-} from "@fortawesome/free-solid-svg-icons";
+import { Heart, Share2, Tag, Download } from "lucide-react";
 import Link from "next/link";
 import DynamicDownloadHandler from "./Download";
 interface Shaer {
@@ -63,7 +57,7 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
       id={`card${index}`}
       className="bg-white p-4 items-center rounded-sm border-b relative flex flex-col justify-between max-h-[250px]"
     >
-      <Link href={`/Shaer/${shaerData.fields.shaer.replace(" ", "-")}`}>
+      <Link href={{ pathname: `/Shaer/${shaerData.fields.shaer.replace(" ", "-")}` }}>
         <h2 className="text-black text-3xl mb-4">{shaerData.fields.shaer}</h2>
       </Link>
       {shaerData.fields.ghazalHead.map((lin, index) => (
@@ -85,7 +79,7 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
         >
           {shaerData?.fields?.unwan?.map((unwaan, index) => (
             <span key={index} className="text-md text-blue-500 underline p-2">
-              <Link href={`/${download ? "Ashaar" : "Ghazlen"}/mozu/${unwaan}`}>
+              <Link href={{ pathname: `/${download ? "Ashaar" : "Ghazlen"}/mozu/${unwaan}` }}>
                 {unwaan}
               </Link>
             </span>
@@ -98,17 +92,12 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
         >
           <span>
             :موضوعات{" "}
-            <FontAwesomeIcon
-              icon={faTag}
-              className="ml-2 text-yellow-400 cursor-pointer"
-            />
+            <Tag className="ml-2 text-yellow-400 cursor-pointer" size={16} />
           </span>
           {
             <Link
               className="text-blue-500 underline"
-              href={`/${download ? "Ashaar" : "Ghazlen"}/mozu/${
-                shaerData.fields.unwan?.[0]
-              }`}
+              href={{ pathname: `/${download ? "Ashaar" : "Ghazlen"}/mozu/${shaerData.fields.unwan?.[0]}` }}
             >
               {shaerData.fields.unwan?.[0]}
             </Link>
@@ -126,13 +115,13 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
           onClick={() => handleHeartClick(shaerData, index, `${shaerData.id}`)}
           id={`${shaerData.id}`}
         >
-          <FontAwesomeIcon icon={faHeart} />{" "}
+          <Heart className="inline" fill="currentColor" size={16} />{" "}
         </button>
         <button
           className="m-3"
           onClick={() => handleShareClick(shaerData, index)}
         >
-          <FontAwesomeIcon icon={faShareNodes} style={{ color: "#984A02" }} />{" "}
+          <Share2 color="#984A02" size={16} />{" "}
         </button>
         <button
           className="text-[#984A02] font-semibold m-3"
@@ -142,7 +131,7 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
         </button>
         {download && (
           <button className="m-3" onClick={() => setSelectedShaer(shaerData)}>
-            <FontAwesomeIcon icon={faDownload} style={{ color: "#984A02" }} />
+            <Download color="#984A02" />
           </button>
         )}
       </div>

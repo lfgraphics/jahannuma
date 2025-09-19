@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <>
       <div>
-        <Carousel></Carousel>
+        <Carousel />
         <RandCard />
         <HorizontalShura />
         <HorizontalBooks />

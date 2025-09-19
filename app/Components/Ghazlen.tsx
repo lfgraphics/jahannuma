@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import gsap from "gsap";
 import LocalGhazalCard from "./LocalDataCard";
 import ToastComponent from "./Toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Home, Search, X, XCircle } from "lucide-react";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 // import React {useEffect} from 'react'
 interface Shaer {
@@ -316,10 +316,7 @@ const Ghazlen = () => {
                 className="sticky top-4 right-7 z-50"
                 onClick={handleCloseModal}
               >
-                <FontAwesomeIcon
-                  icon={faTimesCircle}
-                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-                />
+                <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
               </button>
               <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}

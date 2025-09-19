@@ -16,6 +16,7 @@ import DataCard from "../Components/DataCard";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { Home, Search, X } from "lucide-react";
 
 interface Shaer {
   fields: {
@@ -334,7 +335,10 @@ const Ashaar: React.FC<{}> = () => {
               // Update local state to reflect the change in likes
               setDataItems((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -396,7 +400,10 @@ const Ashaar: React.FC<{}> = () => {
               // Update local state to reflect the change in likes
               setDataItems((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -466,7 +473,10 @@ const Ashaar: React.FC<{}> = () => {
             // Update local state to reflect the change in likes
             setDataItems((prevDataItems) => {
               const updatedDataItems = [...prevDataItems];
-              updatedDataItems[index].fields.shares = updatedShares;
+              const item = updatedDataItems[index];
+              if (item && item.fields) {
+                item.fields.shares = updatedShares;
+              }
               return updatedDataItems;
             });
           } else {
@@ -679,9 +689,11 @@ const Ashaar: React.FC<{}> = () => {
             (item) => item.id === dataId
           );
 
-          if (!dataItemToUpdate?.fields.comments) {
-            // If the comments field is not present, add it with the value 1
-            dataItemToUpdate!.fields.comments = 1;
+          if (dataItemToUpdate && dataItemToUpdate.fields) {
+            if (!dataItemToUpdate.fields.comments) {
+              // If the comments field is not present, add it with the value 1
+              dataItemToUpdate.fields.comments = 1;
+            }
           }
           setDataItems((prevDataItems) => {
             return prevDataItems.map((prevItem) => {
@@ -750,9 +762,9 @@ const Ashaar: React.FC<{}> = () => {
     if (typeof window !== undefined) {
       let section = window;
       section!.scrollTo({
-        top: scrolledPosition,
+        top: scrolledPosition ?? 0,
         behavior: "smooth",
-      });
+      } as ScrollToOptions);
     }
     setInitialdDataItems([]);
   };
@@ -801,23 +813,14 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-28">
+      <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-0 border-foreground border-b-2">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
-          <div
-            dir="rtl"
-            className="flex basis-[100%] justify-center items-center h-auto pt-2"
-          >
-            <FontAwesomeIcon
-              icon={faHome}
-              className="text-[#984A02] text-2xl ml-3"
-              onClick={() => {
-                window.location.href = "/";
-              }}
-            />
+          <div dir="rtl" className="flex basis-[100%] justify-center items-center h-auto pt-1">
+            <Home color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
             <input
               type="text"
               placeholder="لکھ کر تلاش کریں"
-              className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -829,21 +832,11 @@ const Ashaar: React.FC<{}> = () => {
                 }
               }}
             />
-            <div className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black">
-              <FontAwesomeIcon
-                onClick={clearSearch}
-                id="searchClear"
-                icon={faXmark}
-                className="hidden text-[#984A02] text-2xl cursor-pointer"
-              />
+            <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+              <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
             </div>
-            <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
-              <FontAwesomeIcon
-                onClick={searchQuery}
-                id="searchIcon"
-                icon={faSearch}
-                className="hidden text-[#984A02] text-xl cursor-pointer"
-              />
+            <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+              <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
             </div>
           </div>
         </div>
@@ -872,11 +865,10 @@ const Ashaar: React.FC<{}> = () => {
               grid md:grid-cols-2 lg:grid-cols-4 gap-4`}
           >
             {dataItems.map((shaerData, index) => (
-              <div data-aos="fade-up">
+              <div data-aos="fade-up" key={(shaerData as any)?.id ?? (shaerData as any)?.ID ?? index}>
                 <DataCard
                   page="nazm"
                   download={false}
-                  key={index}
                   shaerData={shaerData}
                   index={index}
                   handleCardClick={handleCardClick}

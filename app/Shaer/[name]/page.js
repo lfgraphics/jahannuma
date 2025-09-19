@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
+import { useParams } from "next/navigation";
 import Intro from "@/app/Components/shaer/IntroPhoto"
 import Intro2 from "@/app/Components/shaer/Intro"
 import Ghazlen from "@/app/Components/shaer/Ghazlen"
@@ -15,6 +16,9 @@ const Page = ({ params }) => {
   const [data, setData] = useState([]);
   const [activeNav, setActiveNav] = useState('');
   const [loading, setLoading] = useState(true);
+  // In Next.js newer versions, params is a Promise; unwrap safely for client usage
+  const routeParams = typeof params?.then === "function" ? use(params) : params;
+  const nameParam = routeParams?.name ?? useParams()?.name;
 
   useEffect(() => {
     const initializeActiveNav = () => {
@@ -29,7 +33,11 @@ const Page = ({ params }) => {
 
     initializeActiveNav();
 
-    const encodedName = params.name;
+    const encodedName = nameParam;
+    if (!encodedName) {
+      setLoading(false);
+      return;
+    }
     const decodedName = decodeURIComponent(encodedName).replace("-", " ");
 
     const fetchData = async () => {
@@ -46,7 +54,11 @@ const Page = ({ params }) => {
         const result = await response.json();
 
         const records = result.records || [];
-        setData(records[0].fields);
+        if (records.length > 0 && records[0].fields) {
+          setData(records[0].fields);
+        } else {
+          setData({});
+        }
         setLoading(false)
       } catch (error) {
         console.error(`Failed to fetch data: ${error}`);
@@ -59,7 +71,7 @@ const Page = ({ params }) => {
     return () => {
       window.removeEventListener("popstate", initializeActiveNav);
     };
-  }, [params.name]);
+  }, [nameParam]);
 
   const handleNavClick = (nav) => {
     setActiveNav(nav);
@@ -76,7 +88,7 @@ const Page = ({ params }) => {
             className={`nav-item ${activeNav === 'تعارف' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
             onClick={() => handleNavClick('تعارف')}
           >
-            <Link href={`${"/Shaer/" + params.name + "?tab=تعارف"}`} prefetch >
+            <Link href={`${"/Shaer/" + nameParam + "?tab=تعارف"}`} prefetch >
               تعارف
             </Link>
           </div>
@@ -85,7 +97,7 @@ const Page = ({ params }) => {
               className={`nav-item ${activeNav === 'غزلیں' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
               onClick={() => handleNavClick('غزلیں')}
             >
-              <Link href={`${"/Shaer/" + params.name + "?tab=غزلیں"}`} prefetch >
+              <Link href={`${"/Shaer/" + nameParam + "?tab=غزلیں"}`} prefetch >
                 غزلیں
               </Link>
             </div>
@@ -95,7 +107,7 @@ const Page = ({ params }) => {
               className={`nav-item ${activeNav === 'نظمیں' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
               onClick={() => handleNavClick('نظمیں')}
             >
-              <Link href={`${"/Shaer/" + params.name + "?tab=نظمیں"}`} prefetch >
+              <Link href={`${"/Shaer/" + nameParam + "?tab=نظمیں"}`} prefetch >
                 نظمیں
               </Link>
             </div>
@@ -105,7 +117,7 @@ const Page = ({ params }) => {
               className={`nav-item ${activeNav === 'اشعار' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
               onClick={() => handleNavClick('اشعار')}
             >
-              <Link href={`${"/Shaer/" + params.name + "?tab=اشعار"}`} prefetch >
+              <Link href={`${"/Shaer/" + nameParam + "?tab=اشعار"}`} prefetch >
                 اشعار
               </Link>
             </div>
@@ -115,7 +127,7 @@ const Page = ({ params }) => {
               className={`nav-item ${activeNav === 'ئی - بکس' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
               onClick={() => handleNavClick('ئی - بکس')}
             >
-              <Link href={`${"/Shaer/" + params.name + "?tab=ئی - بکس"}`} prefetch >
+              <Link href={`${"/Shaer/" + nameParam + "?tab=ئی - بکس"}`} prefetch >
                 ئی - بکس
               </Link>
             </div>
@@ -125,7 +137,7 @@ const Page = ({ params }) => {
               className={`nav-item ${activeNav === 'رباعی' ? 'active' : ''} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
               onClick={() => handleNavClick('رباعی')}
             >
-              <Link href={`${"/Shaer/" + params.name + "?tab=رباعی"}`} prefetch >
+              <Link href={`${"/Shaer/" + nameParam + "?tab=رباعی"}`} prefetch >
                 رباعی
               </Link>
             </div>

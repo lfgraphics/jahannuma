@@ -32,7 +32,7 @@ const Mutala = () => {
 
   const todayDate = new Date().toLocaleDateString("en-GB");
   // Split the date components
-  const dateComponents = todayDate.split("/");
+  const dateComponents = todayDate?.split("/");
   // Rearrange the components to the desired format "YYYY/MM/DD"
   const formattedDate = `${dateComponents[2]}-${dateComponents[1]}-${dateComponents[0]}`;
 
@@ -58,7 +58,8 @@ const Mutala = () => {
           new Date(formattedDate).getTime()
       );
       setMutalaData(recordWithTodayDate);
-      console.log(recordWithTodayDate.fields?.ans);
+      console.log(recordWithTodayDate);
+      console.log(recordWithTodayDate?.fields?.ans);
     } catch (error) {
       console.error("Failed to fetch quiz data:", error);
     }
@@ -91,7 +92,7 @@ const Mutala = () => {
                 {" "}
                 حوالہ:
                 <Link
-                  href={mutalaData?.fields?.hawalaLink}
+                  href={{ pathname: mutalaData?.fields?.hawalaLink }}
                   className="text-blue-200 underline mr-2"
                 >
                   {mutalaData?.fields?.hawalaText}

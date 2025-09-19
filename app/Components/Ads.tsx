@@ -45,10 +45,10 @@ const Ads: React.FC = () => {
       <div
         className="flex flex-row mt-4 mb-6"
         style={scrollSnapStyle}
-        // style={translateXStyle}
+      // style={translateXStyle}
       >
         {adsData.map((ad, index) => (
-          <Link href={ad.redirectUrl} key={index}>
+          <Link href={{ pathname: ad.redirectUrl }} key={index}>
             <div className=" overflow-auto w-[95vw] h-[max-content] m-3 scroll-snap-align-start shadow-md rounded-md">
               <img
                 src={`${ad.imageUrl}`}

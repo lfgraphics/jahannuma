@@ -3,8 +3,8 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import Loader from "@/app/Components/Loader";
-import { Rubai } from "../../types";
+import Loader from "../../Components/Loader";
+import type { Rubai } from "../../types";
 
 export default function Page({ params }: { params: { id: string } }) {
   const [data, setData] = useState<Rubai>();
@@ -70,7 +70,7 @@ export default function Page({ params }: { params: { id: string } }) {
             <p>{data?.fields.unwan}</p>
           </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
-            <Link href={`/Shaer/${data?.fields.shaer}`}>
+            <Link href={{ pathname: "/Shaer/[name]", query: { name: data?.fields.shaer ?? "" } }}>
               <h2>{data?.fields.shaer}</h2>
             </Link>
           </div>
@@ -93,7 +93,7 @@ export default function Page({ params }: { params: { id: string } }) {
               مزید رباعی
             </button>
             <Link
-              href={`/Rubai/shaer/${data?.fields.shaer.replace(" ", "_")}`}
+              href={{ pathname: "/Rubai/shaer/[name]", query: { name: data?.fields.shaer?.replace(" ", "_") ?? "" } }}
               className="text-blue-600 underline"
               scroll={false}
             >

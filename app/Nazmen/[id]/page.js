@@ -64,7 +64,7 @@ const Page = ({ params }) => {
           <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
           {!data.paband && (<div className="text-2xl mb-4 text-center">
             {ghazalLines?.map((line, index) => (
-              <p className={`${line == "****" ? "my-12 opacity-0" : ""}`} style={{ lineHeight: "normal" }} key={index}>{line}</p>
+              <p className={`${line == "****" ? "my-12 md:my-9 opacity-0" : ""}`} style={{ lineHeight: "normal" }} key={index}>{line}</p>
             ))}
           </div>)
           }

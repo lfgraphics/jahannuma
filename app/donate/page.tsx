@@ -1,5 +1,4 @@
 import React from "react";
-import Donate from "../Components/Donate";
 import ComingSoon from "../Components/Commingsoon";
 const page = () => {
   return (

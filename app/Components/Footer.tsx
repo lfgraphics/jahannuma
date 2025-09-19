@@ -70,7 +70,7 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
     language === "EN" ? englishNavs : language === "HI" ? hindiNavs : urduNavs;
 
   const quickLinks = [
-    { EN: "Founders", HI: "मालिक की मालूमात", UR: "مالک کی معلومات" },
+    { EN: "Founders", HI: "मालिक की मालूमात", UR: "بانی و سرپرست" },
     { EN: "", HI: "", UR: "" },
     { EN: "", HI: "", UR: "" },
   ];
@@ -115,8 +115,8 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
         <div>
           <h6 className="text-xl font-semibold mb-4">Quick Links</h6>
           <ul className="space-y-2">
-            {quickLinks.map((link) => (
-              <li key={link.EN}>
+            {quickLinks?.map((link, index) => (
+              <li key={index + link.EN}>
                 <Link
                   href={`/${
                     language === "UR" ? link.EN : `${language}/${link.EN}`

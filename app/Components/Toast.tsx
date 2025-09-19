@@ -1,12 +1,6 @@
 // ToastComponent.tsx
 import React, { useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheckCircle,
-  faTimesCircle,
-  faExclamationCircle,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { CheckCircle2, CircleX, AlertCircle, X } from "lucide-react";
 import "./toast.css"; // You can use Tailwind classes in this CSS file
 
 interface ToastProps {
@@ -17,20 +11,20 @@ interface ToastProps {
 
 const ToastComponent: React.FC<ToastProps> = ({ msgtype, message, onHide }) => {
   const getIconAndColor = () => {
-    let icon = null;
+  let icon: React.ReactNode = null;
     let bgColor = "";
 
     switch (msgtype) {
       case "success":
-        icon = faCheckCircle;
+        icon = <CheckCircle2 className="mx-4 text-4xl" />;
         bgColor = "text-green-500";
         break;
       case "error":
-        icon = faTimesCircle;
+        icon = <CircleX className="mx-4 text-4xl" />;
         bgColor = "text-red-500";
         break;
       case "invalid":
-        icon = faExclamationCircle;
+        icon = <AlertCircle className="mx-4 text-4xl" />;
         bgColor = "text-yellow-500";
         break;
       default:
@@ -57,12 +51,10 @@ const ToastComponent: React.FC<ToastProps> = ({ msgtype, message, onHide }) => {
       className={`toast`}
       //   onClick={clearTimeout(timeoutId)}
     >
-      {icon && (
-        <FontAwesomeIcon icon={icon} className={`${bgColor} mx-4 text-4xl`} />
-      )}
+      {icon && <span className={`${bgColor}`}>{icon}</span>}
       <p className="text-black">{message}</p>
       <button onClick={onHide} className="text-black ml-4 focus:outline-none">
-        <FontAwesomeIcon icon={faXmark} className="text-black mr-4 text-2xl" />
+        <X className="text-black mr-4 text-2xl" />
       </button>
     </div>
   );

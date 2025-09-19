@@ -1,7 +1,10 @@
 "use client";
 import "./globals.css";
+import "./loading.tsx"
 import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
+import { ThemeProvider } from "@/components/theme-provider";
+// import { ThemeToggle } from "@/components/theme-toggle";
 import { useEffect, useState } from "react";
 
 export default function RootLayout({
@@ -48,7 +51,7 @@ export default function RootLayout({
     }
   }, [language]);
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link
@@ -128,10 +131,18 @@ export default function RootLayout({
         />
         <meta name="theme-color" content="#F0D586" />
       </head>
-      <body className="bg-[#ffff] dark:bg-white text-black font-noto-nastaliq ">
-        <Navbar language={language} onLangChange={langChange} />
-        {children}
-        <Footer language={language} />
+      <body className="bg-background text-foreground font-noto-nastaliq">
+        <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem={false}>
+          <div className="app-root min-h-screen flex flex-col">
+            <header className="w-full flex items-center justify-between gap-4">
+              <Navbar language={language} onLangChange={langChange} />
+            </header>
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer language={language} />
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

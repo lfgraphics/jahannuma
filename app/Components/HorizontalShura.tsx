@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 import Card from "./shaer/Profilecard";
 import Link from "next/link";
 import Loader from "./Loader";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronRightCircle } from "lucide-react";
 
 interface Photo {
   filename: string;
@@ -74,33 +73,36 @@ const HorizontalShura = () => {
 
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
-      // : ApiResponse
-      const records = result.records || [];
+      const records = Array.isArray(result.records) ? result.records : [];
 
-      setData(result.records);
-      // formating result to match the mock data type for ease of development
-      const formattedRecords: FormattedRecord[] = result.records.map(
-        (record: any) => ({
-          ...record,
-          fields: {
-            ...record.fields,
-            tafseel: record.fields?.tafseel.split("\n"),
-            searchKeys: record.fields?.searchKeys.split("\n"),
-            enTakhallus: record.fields?.enTakhallus.split("\n"),
-            hiTakhallus: record.fields?.hiTakhallus.split("\n"),
-            enName: record.fields?.enName.split("\n"),
-            hiName: record.fields?.hiName.split("\n"),
-            enLocation: record.fields?.enLocation.split("\n"),
-            hiLocation: record.fields?.hiLocation.split("\n"),
-            ghazal: record.fields?.ghazal,
-            eBooks: record.fields?.eBooks,
-            nazmen: record.fields?.nazmen,
-            likes: record.fields?.likes,
-          },
-        })
-      );
+      // helper to normalize string | string[] | undefined to string[]
+      const toArray = (v: unknown): string[] => {
+        if (Array.isArray(v)) return v.filter(Boolean) as string[];
+        return typeof v === "string" ? v.split("\n").filter(Boolean) : [];
+      };
 
-      setData(formattedRecords)
+      // format records to match FormattedRecord safely
+      const formattedRecords: FormattedRecord[] = records.map((record: any) => ({
+        ...record,
+        fields: {
+          ...record.fields,
+          tafseel: toArray(record?.fields?.tafseel),
+          searchKeys: toArray(record?.fields?.searchKeys),
+          enTakhallus: toArray(record?.fields?.enTakhallus),
+          hiTakhallus: toArray(record?.fields?.hiTakhallus),
+          enName: toArray(record?.fields?.enName),
+          hiName: toArray(record?.fields?.hiName),
+          enLocation: toArray(record?.fields?.enLocation),
+          hiLocation: toArray(record?.fields?.hiLocation),
+          ghazal: Boolean(record?.fields?.ghazal),
+          eBooks: Boolean(record?.fields?.eBooks),
+          nazmen: Boolean(record?.fields?.nazmen),
+          likes: Number(record?.fields?.likes ?? 0),
+          photo: Array.isArray(record?.fields?.photo) ? record.fields.photo : [],
+        },
+      }));
+
+      setData(formattedRecords);
       // seting the loading state to false to show the data
       setLoading(false);
     } catch (error) {
@@ -128,11 +130,7 @@ const HorizontalShura = () => {
               </div>
             ))}
             <Link className=" text-white text-4xl font-bold" href={"/Shaer"}>
-              <FontAwesomeIcon
-                icon={faCircleChevronRight}
-                shake
-                style={{ color: "#984A02" }}
-              />{" "}
+              <ChevronRightCircle color="#984A02" size={24} />
             </Link>
           </div>
         </div>

@@ -1,13 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import gsap from "gsap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { XCircle } from "lucide-react";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
-import DataCard from "@/app/Components/DataCard";
+import DataCard from "../../../Components/DataCard";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -252,7 +251,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               // Update local state to reflect the change in likes
               setDataItems((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -314,7 +316,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               // Update local state to reflect the change in likes
               setDataItems((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -384,7 +389,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
             // Update local state to reflect the change in likes
             setDataItems((prevDataItems) => {
               const updatedDataItems = [...prevDataItems];
-              updatedDataItems[index].fields.shares = updatedShares;
+              const item = updatedDataItems[index];
+              if (item && item.fields) {
+                item.fields.shares = updatedShares;
+              }
               return updatedDataItems;
             });
           } else {
@@ -759,10 +767,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
                 className="sticky top-4 right-7 z-50"
                 onClick={handleCloseModal}
               >
-                <FontAwesomeIcon
-                  icon={faTimesCircle}
-                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-                />
+                <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
               </button>
               <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}
@@ -784,10 +789,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           id="modlBtn"
           onClick={() => closeComments()}
         >
-          <FontAwesomeIcon
-            icon={faTimesCircle}
-            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-          />
+          <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
         </button>
       )}
       {selectedCommentId && (

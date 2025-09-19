@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import gsap from "gsap";
 import LocalGhazalCard from "./LocalDataCard";
 import ToastComponent from "./Toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { Heart } from "lucide-react";
 import Card from "./shaer/Profilecard"
 
 // import React {useEffect} from 'react'
@@ -210,9 +209,9 @@ const Shura = () => {
                 onClick={(e) => handleHeartClick(item, index, `${item.id}`)}
                 id={`${item.id}`}
               >
-                <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
+                <Heart className="text-xl ml-3" />
               </div>
-              <Card data={item} />
+              <Card data={item as any} />
             </div>
           ))}
       </div>

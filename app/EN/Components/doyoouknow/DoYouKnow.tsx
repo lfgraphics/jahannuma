@@ -35,14 +35,14 @@ const DoYouKnow: React.FC = () => {
         </div>
         <div
           className="flex basis-[90%] justify-center overflow-hidden rounded-lg shadow-md h-[30rem] overflow-y-auto"
-          style={{ background: card.bgGradient }}
+          style={{ background: card?.bgGradient }}
         >
           <div className="card w-full min-h-[100%] h-max">
             <div className="py-6 px-8 text-white text-center">
               <h2 className="text-2xl md:text-4xl font-semibold mb-3">
                 DID YOU KNOW ?
               </h2>
-              {card.img !== "" && (
+              {card && card.img !== "" && (
                 <div className="flex justify-center">
                   <div className="w-[150px] h-[150px] rounded-full shadow-lg mb-3 overflow-hidden bg-cover flex items-center justify-center">
                     <Image
@@ -54,10 +54,12 @@ const DoYouKnow: React.FC = () => {
                   </div>
                 </div>
               )}
-              <p className="text-base text-black">{card.content}</p>
-              <Link href={card.link} className="text-blue-500 mt-4 block">
-                {card.link}
-              </Link>
+              <p className="text-base text-black">{card?.content}</p>
+              {card && (
+                <Link href={{ pathname: card.link }} className="text-blue-500 mt-4 block">
+                  {card.link}
+                </Link>
+              )}
             </div>
           </div>
         </div>

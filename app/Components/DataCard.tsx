@@ -1,47 +1,36 @@
 // ShaerCard.tsx
-import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHeart,
-  faCommentAlt,
-  faShareNodes,
-  faTag,
-  faDownload,
-} from "@fortawesome/free-solid-svg-icons";
+import React, { useMemo, useState } from "react";
+import { Heart, MessageCircle, Share2, Tag, Download } from "lucide-react";
 import Link from "next/link";
 import DynamicDownloadHandler from "./Download";
-
-interface Shaer {
-  fields: {
-    sher: string[];
-    shaer: string;
-    ghazalHead: string | string[];
-    ghazal: string[];
-    unwan: string | string[];
-    likes: number;
-    comments: number;
-    shares: number;
-    id: string;
-  };
+// Use a minimal local shape for safety without forcing all callers to match a strict type
+type MinimalShaer = {
   id: string;
-  createdTime: string;
-}
+  fields?: {
+    shaer?: string;
+    ghazalHead?: string | string[];
+    unwan?: string | string[];
+    likes?: number;
+    comments?: number;
+    shares?: number;
+  };
+};
 
 interface ShaerCardProps {
   page: string;
-  shaerData: Shaer; // Replace Shaer with the actual type of shaerData
+  shaerData: any; // Accept any shape from callers; we normalize internally
   index: number;
   download: boolean;
-  handleCardClick: (shaerData: Shaer) => void; // Replace Shaer with the actual type
+  handleCardClick: (shaerData: any) => void; // Keep bivariant for consumers
   toggleanaween: (cardId: string | null) => void;
   openanaween: string | null; // Updated type
   handleHeartClick: (
     e: React.MouseEvent<HTMLButtonElement>,
-    shaerData: Shaer,
+    shaerData: any,
     index: number,
     id: string
   ) => void; // Replace Shaer with the actual type
-  handleShareClick: (shaerData: Shaer, index: number) => void; // Replace Shaer with the actual type
+  handleShareClick: (shaerData: any, index: number) => void; // Replace Shaer with the actual type
   openComments: (id: string) => void;
 }
 
@@ -57,12 +46,30 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
   handleShareClick,
   openComments,
 }) => {
-  const [selectedShaer, setSelectedShaer] = useState<Shaer | null>(null);
+  const [selectedShaer, setSelectedShaer] = useState<MinimalShaer | null>(null);
 
   const cancelDownload = () => {
     // Reset the selectedShaer state to null
     setSelectedShaer(null);
   };
+
+  // Normalize heads: ensure we always have an array of lines
+  const sd = shaerData as MinimalShaer;
+
+  const ghazalHeadLines: string[] = useMemo(() => {
+    const head = sd?.fields?.ghazalHead;
+    if (!head) return [];
+    if (Array.isArray(head)) return head.filter(Boolean);
+    return head.split("\n").filter(Boolean);
+  }, [sd]);
+
+  // Normalize unwan entries as array
+  const unwanList: string[] = useMemo(() => {
+    const u = sd?.fields?.unwan;
+    if (!u) return [];
+    if (Array.isArray(u)) return u.filter(Boolean);
+    return u.split("\n").filter(Boolean);
+  }, [sd]);
 
   return (
     <>
@@ -70,35 +77,39 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
         <div
           key={index}
           id={`card${index}`}
-          className={`${
-            index % 2 === 1 ? "bg-gray-50" : ""
-          } p-4 rounded-sm relative flex flex-col justify-between min-h-[180px] max-h-[200px]`}
+          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-slate-800" : ""
+            } p-4 rounded-sm relative flex flex-col justify-between min-h-[180px] max-h-[200px]`}
         >
           <>
             <div className="flex justify-between items-end">
               <p className="text-3xl mb-4 text-[#984A02]">
-                {shaerData?.fields?.unwan?.[0]}
+                {unwanList[0] ?? ""}
               </p>
               <Link
-                href={`/Shaer/${shaerData?.fields?.shaer.replace(" ", "-")}?tab=تعارف`}
+                href={{
+                  pathname: `/Shaer/${(sd?.fields?.shaer || "").replace(" ", "-")}`,
+                  query: {
+                    tab: "تعارف",
+                  },
+                }}
               >
-                <h2 className="text-black text-xl">
+                <h2 className="text-foreground text-xl">
                   {shaerData?.fields?.shaer}
                 </h2>
               </Link>
             </div>
             <div className="flex items-center justify-center text-center icons">
-              {shaerData?.fields?.ghazalHead.map((lin, index) => (
+              {ghazalHeadLines.map((lin, index) => (
                 <p
                   key={index}
-                  className="text-black  text-lg cursor-default"
+                  className="text-foreground text-lg cursor-default"
                   onClick={() => handleCardClick(shaerData)}
                 >
                   {lin} <span>۔۔۔</span>
                 </p>
               ))}
               <button className="text-[#984A02] font-semibold m-3">
-                <Link href={"/Nazmen/" + shaerData.id}>پڑھیں۔۔۔</Link>
+                <Link href={{ pathname: `/Nazmen/${shaerData.id}`, query: { id: shaerData.id } }}>پڑھیں۔۔۔</Link>
               </button>
               <button
                 className={`m-3 text-gray-500 transition-all duration-500`}
@@ -107,34 +118,27 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
                 }
                 id={`${shaerData?.id}`}
               >
-                <FontAwesomeIcon icon={faHeart} />{" "}
+                <Heart className="inline" fill="currentColor" size={16} />{" "}
                 <span id="likescount" className="text-gray-500 text-sm">
-                  {shaerData?.fields?.likes}
+                  {shaerData?.fields?.likes ?? 0}
                 </span>
               </button>
               <button
-                className="m-3"
+                className="m-3 flex items-center gap-1"
                 onClick={() => openComments(shaerData?.id)}
               >
-                <FontAwesomeIcon
-                  icon={faCommentAlt}
-                  style={{ color: "#984A02" }}
-                  className="ml-2"
-                />{" "}
+                <MessageCircle color="#984A02" className="ml-2" size={16} />{" "}
                 <span className="text-gray-500 text-sm">
-                  {shaerData?.fields?.comments}
+                  {shaerData?.fields?.comments ?? 0}
                 </span>
               </button>
               <button
-                className="m-3"
+                className="m-3 flex items-center gap-1"
                 onClick={() => handleShareClick(shaerData, index)}
               >
-                <FontAwesomeIcon
-                  icon={faShareNodes}
-                  style={{ color: "#984A02" }}
-                />{" "}
+                <Share2 color="#984A02" size={16} />{" "}
                 <span className="text-gray-500 text-sm">
-                  {shaerData?.fields?.shares}
+                  {shaerData?.fields?.shares ?? 0}
                 </span>
               </button>
             </div>
@@ -146,161 +150,138 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           dir="rtl"
           key={index}
           id={`card${index}`}
-          className={`${
-            index % 2 === 1 ? "bg-gray-50" : ""
-          } p-4 rounded-sm relative flex flex-col justify-between max-h-[250px]`}
+          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-slate-800" : ""
+            } p-4 rounded-sm relative flex flex-col h-[250px]`}
         >
-          <Link href={`/Shaer/${shaerData?.fields?.shaer?.replace(" ", "-")}?tab=تعارف`}>
-            <h2 className="text-black text-lg mb-4">
+          <Link
+            href={{
+              pathname: `/Shaer/${(sd?.fields?.shaer || "").replace(" ", "-")}`,
+              query: {
+                tab: "تعارف",
+              },
+            }}
+          >
+            <h2 className="text-foreground text-lg mb-4">
               {shaerData?.fields?.shaer}
             </h2>
           </Link>
-          <div className="unwan flex flex-col w-[90%] items-center mb-2">
-            {shaerData?.fields?.ghazalHead?.includes("\n")
-              ? shaerData.fields.ghazalHead.split("\n").map((lin, index) => (
-                  <p
-                    key={index}
-                    className="text-lg w-full text-center px-6"
-                    onClick={() => handleCardClick(shaerData)}
-                  >
-                    {lin}
-                  </p>
-                ))
-              : shaerData.fields.ghazalHead.map((lin, index) => (
-                  <p
-                    key={index}
-                    className="text-lg w-full text-center px-6"
-                    onClick={() => handleCardClick(shaerData)}
-                  >
-                    {lin}
-                  </p>
-                ))}
+          <div className="unwan flex flex-col w-full items-center mb-2">
+            {ghazalHeadLines.map((lin: string, index: number) => (
+              <p
+                key={index}
+                className="text-lg w-full text-center px-6"
+                onClick={() => handleCardClick(shaerData)}
+              >
+                {lin}
+              </p>
+            ))}
           </div>
           <div className="relative">
             <div
-              className="anaween-container flex flex-col items-center  absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
+              className="anaween-container flex flex-col items-center absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
               style={{
                 height: openanaween === `card${index}` ? "120px" : "0",
               }}
             >
               {page !== "rand" &&
-                shaerData?.fields?.unwan?.map((unwaan, index) => (
+                unwanList.map((unwaan, index) => (
                   <span
                     key={index}
                     className="text-md text-blue-500 underline p-2"
                   >
-                    <Link href={`/Ghazlen/mozu/${unwaan}`}>{unwaan}</Link>
+                    <Link href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwaan)}` }}>{unwaan}</Link>
                   </span>
                 ))}
               {page == "rand" &&
-                shaerData?.fields?.unwan?.split("\n").map((unwaan, index) => (
+                unwanList.map((unwaan, index) => (
                   <span
                     key={index}
                     className="text-md text-blue-500 underline p-2"
                   >
-                    <Link href={`/Ashaar/mozu/${unwaan}`}>{unwaan}</Link>
+                    <Link href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwaan)}` }}>{unwaan}</Link>
                   </span>
                 ))}
             </div>
             <button
               dir="ltr"
-              className="text-[#984A02] cursor-auto mt-2 justify-start flex items-end flex-row-reverse border rounded-full px-2 py-1 shadow active:shadow-lg transition-all duration-500 ease-in-out"
+              className="text-[#984A02] cursor-auto mt-2 justify-start flex items-start flex-row-reverse border rounded-full px-2 py-1 shadow active:shadow-lg transition-all duration-500 ease-in-out"
               onClick={() => toggleanaween(`card${index}`)}
             >
-              <span>
+              <span className="flex items-center">
                 :موضوعات{" "}
-                <FontAwesomeIcon
-                  icon={faTag}
-                  className="ml-2 text-yellow-400 cursor-pointer"
-                />
+                <Tag className="ml-2 text-yellow-400 cursor-pointer" size={16} />
               </span>
               {page !== "rand" && (
-                <Link
-                  className="text-blue-500 underline"
-                  href={`/${download ? "Ashaar" : "Ghazlen"}/mozu/${
-                    shaerData?.fields?.unwan?.[0]
-                  }`}
-                >
-                  {shaerData?.fields?.unwan?.[0]}
-                </Link>
+                download ? (
+                  <Link className="text-blue-500 underline" href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwanList[0] ?? "")}` }}>
+                    {unwanList[0] ?? ""}
+                  </Link>
+                ) : (
+                  <Link className="text-blue-500 underline" href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] ?? "")}` }}>
+                    {unwanList[0] ?? ""}
+                  </Link>
+                )
               )}
               {page == "rand" && (
-                <Link
-                  className="text-blue-500 underline"
-                  href={`/${download ? "Ashaar" : "Ghazlen"}/mozu/${
-                    shaerData?.fields?.unwan?.split("\n")[0]
-                  }`}
-                >
-                  {shaerData?.fields?.unwan?.split("\n")[0]}
-                </Link>
+                download ? (
+                  <Link className="text-blue-500 underline" href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwanList[0] ?? "nothing")}` }}>
+                    {unwanList[0] ?? "nothing"}
+                  </Link>
+                ) : (
+                  <Link className="text-blue-500 underline" href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] ?? "nothing")}` }}>
+                    {unwanList[0] ?? "nothing"}
+                  </Link>
+                )
               )}
               <span dir="rtl" className="cursor-auto">
-                {page !== "rand" && shaerData?.fields?.unwan?.length > 1
-                  ? " ، " + (shaerData?.fields?.unwan?.length - 1) + " اور "
-                  : ""}
-                {page == "rand" &&
-                shaerData?.fields?.unwan?.split("\n").length > 1
-                  ? " ، " +
-                    (shaerData?.fields?.unwan?.split("\n").length - 1) +
-                    " اور "
-                  : ""}
+                {unwanList.length > 1 ? ` ، ${unwanList.length - 1} اور ` : ""}
               </span>
             </button>
           </div>
-          <div className="felx text-center icons">
+          <div className="flex items-end text-center w-full">
             <button
-              className={`m-3 text-gray-500 transition-all duration-500`}
+              className={`m-3 flex gap-1 items-center text-gray-500 transition-all duration-500`}
               onClick={(e) =>
                 handleHeartClick(e, shaerData, index, `${shaerData?.id}`)
               }
               id={`${shaerData?.id}`}
             >
-              <FontAwesomeIcon icon={faHeart} />{" "}
+              <Heart className="inline" fill="currentColor" size={16} />{" "}
               <span id="likescount" className="text-gray-500 text-sm">
-                {shaerData?.fields?.likes}
+                {shaerData?.fields?.likes ?? 0}
               </span>
             </button>
-            <button className="m-3" onClick={() => openComments(shaerData?.id)}>
-              <FontAwesomeIcon
-                icon={faCommentAlt}
-                style={{ color: "#984A02" }}
-                className="ml-2"
-              />{" "}
+            <button className="m-3 flex items-center gap-1" onClick={() => openComments(shaerData?.id)}>
+              <MessageCircle color="#984A02" className="ml-2" size={16} />{" "}
               <span className="text-gray-500 text-sm">
-                {shaerData?.fields?.comments}
+                {shaerData?.fields?.comments ?? 0}
               </span>
             </button>
             <button
-              className="m-3"
+              className="m-3 flex items-center gap-1"
               onClick={() => handleShareClick(shaerData, index)}
             >
-              <FontAwesomeIcon
-                icon={faShareNodes}
-                style={{ color: "#984A02" }}
-              />{" "}
+              <Share2 color="#984A02" size={16} />{" "}
               <span className="text-gray-500 text-sm">
-                {shaerData?.fields?.shares}
+                {shaerData?.fields?.shares ?? 0}
               </span>
             </button>
             <button
               className="text-[#984A02] font-semibold m-3"
               onClick={() => handleCardClick(shaerData)}
             >
-              <Link
-                href={`/${download ? "Ashaar/" : "Ghazlen/"}` + shaerData.id}
-              >
-                غزل پڑھیں
-              </Link>
+              {download ? (
+                <Link href={{ pathname: `/Ashaar/${encodeURIComponent(shaerData.id)}` }}>غزل پڑھیں</Link>
+              ) : (
+                <Link href={{ pathname: `/Ghazlen/${encodeURIComponent(shaerData.id)}` }}>غزل پڑھیں</Link>
+              )}
             </button>
             {download && (
               <button
-                className="m-3"
+                className="m-3 flex items-center gap-1"
                 onClick={() => setSelectedShaer(shaerData)}
               >
-                <FontAwesomeIcon
-                  icon={faDownload}
-                  style={{ color: "#984A02" }}
-                />
+                <Download color="#984A02" />
               </button>
             )}
           </div>

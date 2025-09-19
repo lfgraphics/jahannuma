@@ -103,7 +103,8 @@ const Carousel: React.FC = () => {
   const isMobile = size.width && size.width < 768;
 
   function getImages(record: Record) {
-    return isMobile ? record.fields.mobilePhoto[0] : record.fields.photo[0];
+    const img = isMobile ? record.fields.mobilePhoto?.[0] : record.fields.photo?.[0];
+    return img;
   }
 
   return (
@@ -130,24 +131,24 @@ const Carousel: React.FC = () => {
           <SwiperSlide>
             {record.fields.url ? (
               <Link
-                href={`${record.fields.url}`}
+                href={{ pathname: `${record.fields.url}` }}
                 target="_blank"
                 rel="noopener noreferrer"
                 passHref
               >
                 <img
-                  width={`${getImages(record).width}`}
-                  height={`${getImages(record).height}`}
-                  src={`${getImages(record).url}`}
-                  alt={`${getImages(record).filename}`}
+                  width={`${getImages(record)?.width ?? 0}`}
+                  height={`${getImages(record)?.height ?? 0}`}
+                  src={`${getImages(record)?.url ?? ""}`}
+                  alt={`${getImages(record)?.filename ?? ""}`}
                 ></img>
               </Link>
             ) : (
               <img
-                width={getImages(record).width}
-                height={getImages(record).height}
-                src={`${getImages(record).url}`}
-                alt={`${getImages(record).filename}`}
+                width={getImages(record)?.width ?? 0}
+                height={getImages(record)?.height ?? 0}
+                src={`${getImages(record)?.url ?? ""}`}
+                alt={`${getImages(record)?.filename ?? ""}`}
               ></img>
             )}
           </SwiperSlide>

@@ -41,7 +41,7 @@ const Branches = () => {
               </Link>
             </div>
             <div className="rounded-lg overflow-hidden border-2 border-[#F0D586] w-[300px] h-[max-content] m-3">
-              <Link href="/blogs">
+              <Link href={{ pathname: "/Blogs" }}>
                 <Image
                   src="/branches/blog.jpeg"
                   alt="blogs Image"

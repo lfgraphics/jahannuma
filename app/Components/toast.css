@@ -1,3 +1,4 @@
+/* Themed toast styles */
 #tostBox {
     position: absolute;
     display: flex;
@@ -14,48 +15,40 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-    /* Set a high z-index to ensure it's on top of other elements */
 }
 
 .toast {
+    position: relative;
     width: 370px;
     height: 80px;
-    background-color: #fff;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
     font-weight: 500;
     margin: 15px 0;
-    box-shadow: 0 0 20px #3c3b3b81;
+    box-shadow: 0 0 20px hsl(var(--shadow) / 0.5);
     display: flex;
     align-items: center;
+    border-radius: 8px;
     animation: showtoast 0.5s linear forwards;
 }
 
 @keyframes showtoast {
-    0% {
-        transform: translateX(100%);
-    }
-
-    100% {
-        transform: translateX(0);
-    }
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(0); }
 }
 
-.hide {
-    animation: hidetoast 0.5s linear forwards;
-}
+.hide { animation: hidetoast 0.5s linear forwards; }
 
 @keyframes hidetoast {
-    0% {
-        transform: translateX(0%);
-    }
-
-    100% {
-        transform: translateX(100%);
-    }
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(100%); }
 }
 
 .toast i {
     margin: 0 20px;
     font-size: 35px;
+    color: hsl(var(--primary));
 }
 
 .toast::after {
@@ -65,13 +58,14 @@
     bottom: 0;
     width: 100%;
     height: 5px;
-    background: green;
+    background: hsl(var(--success));
+    border-radius: 0 0 8px 8px;
     animation: anim 6s linear forwards;
 }
 
 @keyframes anim {
     100% {
         width: 0;
-        background: red;
+        background: hsl(var(--destructive));
     }
 }

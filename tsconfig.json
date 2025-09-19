@@ -1,15 +1,24 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "ES2022",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
     "allowJs": true,
-    "skipLibCheck": true,
+    "checkJs": false,
     "strict": true,
-    // "noEmit": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
     "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
@@ -19,20 +28,26 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
     "noEmit": true,
-    "forceConsistentCasingInFileNames": true
+    "skipLibCheck": true
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
     "app/**/*.ts",
     "app/**/*.tsx",
-    "app/E-Books/[id]/page.jsx",
-    "app/Components/Donate.jsx"
-, "app/Components/Quiz.jsx"  ],
-  "exclude": ["node_modules"]
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.js",
+    "**/*.jsx",
+    ".next/**",
+    "app/Components/shaer/profilecard.d.ts"
+  ]
 }

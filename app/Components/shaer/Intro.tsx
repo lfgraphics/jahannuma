@@ -52,24 +52,24 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
         <div className="poet-intro text-lg">
           {data.description && (
             <div className="block mx-auto my-5">
-              {data.description.split("\n").map((line, index) => (
-                <ul>
+              <ul>
+                {data.description.split("\n").map((line, index) => (
                   <li data-aos="fade-up" key={index}>
                     {line}
                   </li>
-                </ul>
-              ))}
+                ))}
+              </ul>
             </div>
           )}
-          <p>
-            <ul>
+          <ul>
+            <p>
               {data.tafseel?.split("\n").map((line, index) => (
                 <li data-aos="fade-up" className="my-2" key={index}>
                   {line}
                 </li>
               ))}
-            </ul>
-          </p>
+            </p>
+          </ul>
         </div>
       )}
     </div>

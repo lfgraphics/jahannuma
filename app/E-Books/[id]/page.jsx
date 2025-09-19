@@ -78,7 +78,7 @@ const App = ({ params }) => {
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
   return (
-    <div dir="rtl" className="flex flex-col min-h-screen w-screen bg-white">
+    <div dir="rtl" className="flex flex-col min-h-screen w-screen">
       {loading && <SkeletonLoader />}
       {!loading && (
         <div>
@@ -103,11 +103,15 @@ const App = ({ params }) => {
                   <p className="my-2">
                     اشاعت: {formatDate(data.publishingDate)}
                   </p>
-                  <p className="my-2">مصنف: {data.writer}</p>
+                  <p className="my-2">مصنف:
+                    <Link href={`/Shaer/${data.writer}`}>
+                      {data.writer}
+                    </Link>
+                  </p>
                   <p className="my-2">تفصیل: {data.desc}</p>
                   {data.maloomat && (
                     <div className="bg-gray-100 py-2 mt-4 rounded-sm border">
-                      <p className="text-xs mr-4 text-black">دلچسپ معلومات:</p>
+                      <p className="text-xs mr-4 text-foreground">دلچسپ معلومات:</p>
                       <p className="maloomat mr-4 mt-2 text-sm">
                         {data.maloomat}
                       </p>
@@ -116,14 +120,14 @@ const App = ({ params }) => {
                   <div className="scale-75">
                     <Link
                       href={`#pdf`}
-                      className=" text-white block mx-auto m-4 p-2 bg-blue-500 text-center w-[200px] px-8 rounded-md"
+                      className=" text-background block mx-auto m-4 p-2 bg-blue-500 text-center w-[200px] px-8 rounded-md"
                     >
                       کتاب پڑھیں
                     </Link>
                     {bookUrl && data.download && (
                       <Link
                         href={bookUrl}
-                        className=" text-black block mx-auto m-4 mb-1 p-2 border-2 border-blue-500 text-center w-[200px] px-8 rounded-md"
+                        className=" text-foreground block mx-auto m-4 mb-1 p-2 border-2 border-blue-500 text-center w-[200px] px-8 rounded-md"
                       >
                         کتاب ڈاؤنلوڈ کریں
                       </Link>
@@ -132,7 +136,7 @@ const App = ({ params }) => {
                   {/* کتاب نہ دکھنے یا لوڈ نہ ہونے کی صورت میں{" "}
                   <FontAwesomeIcon
                     icon={faRefresh}
-                    className="text-black px-3"
+                    className="text-foreground px-3"
                   />{" "}
                   اس بٹن سے ریفریش کریں */}
                 </div>
@@ -141,7 +145,7 @@ const App = ({ params }) => {
           </div>
           <div id="pdf" className="main relative">
             {/* <button
-              className="absolute top-[75px] rounded-md right-2 w-12 p-3 bg-black text-white "
+              className="absolute top-[75px] rounded-md right-2 w-12 p-3 bg-black text-background "
               onClick={reloadIframe}
             >
               <FontAwesomeIcon

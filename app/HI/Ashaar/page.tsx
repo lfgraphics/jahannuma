@@ -4,13 +4,7 @@ import * as data from "./data";
 import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
 
 import gsap from "gsap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faDownload,
-  faHeart,
-  faShare,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { Download, Heart, Share2, X } from "lucide-react";
 import html2canvas from "html2canvas";
 // import { Filter } from "react-feather";
 import Image from "next/image";
@@ -37,7 +31,9 @@ const Ashaar: React.FC<{}> = () => {
     // Shuffle the array as before
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+      const temp = array[i];
+      array[i] = array[j]!;
+      array[j] = temp!;
     }
     return array;
   }
@@ -351,25 +347,19 @@ const Ashaar: React.FC<{}> = () => {
                     }
                     id={`heart-icon-${index}`}
                   >
-                    <FontAwesomeIcon icon={faHeart} />
+                    <Heart className="inline" fill="currentColor" size={16} />
                   </button>
                   <button
                     className="m-3"
                     onClick={() => handleShareClick(shaerData, `card${index}`)}
                   >
-                    <FontAwesomeIcon
-                      icon={faShare}
-                      style={{ color: "#984A02" }}
-                    />
+                    <Share2 color="#984A02" />
                   </button>
                   <button
                     className="m-3"
                     onClick={() => handleDownload(`card${index}`)}
                   >
-                    <FontAwesomeIcon
-                      icon={faDownload}
-                      style={{ color: "#984A02" }}
-                    />
+                    <Download color="#984A02" />
                   </button>
 
                   <button
@@ -403,10 +393,7 @@ const Ashaar: React.FC<{}> = () => {
               className="absolute bottom-12 left-5 z-50"
               onClick={handleCloseModal}
             >
-              <FontAwesomeIcon
-                icon={faTimes}
-                className="text-[#984A02] text-2xl"
-              />
+              <X className="text-[#984A02] text-2xl" />
             </button>
             <h2 className="text-black font-2xl font-bold p-1 border-b-2">
               {selectedCard.shaer}

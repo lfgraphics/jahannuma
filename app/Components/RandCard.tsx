@@ -88,6 +88,7 @@ const RandCard: React.FC<{}> = () => {
 
       const response = await fetch(url, { method: "GET", headers });
       const result = await response.json();
+      console.log("RandCard data:", result);
 
       const records = (await result.records) || [];
 
@@ -174,7 +175,10 @@ const RandCard: React.FC<{}> = () => {
             // Update local state to reflect the change in likes
             setDataItems((prevDataItems) => {
               const updatedDataItems = [...prevDataItems];
-              updatedDataItems[index].fields.shares = updatedShares;
+              const item = updatedDataItems[index];
+              if (item && item.fields) {
+                item.fields.shares = updatedShares;
+              }
               return updatedDataItems;
             });
           } else {
@@ -283,7 +287,9 @@ const RandCard: React.FC<{}> = () => {
 
             if (updateResponse.ok) {
               // Update local state to reflect the change in likes
-              dataItems[0].fields.likes = updatedLikes;
+              if (dataItems[0] && dataItems[0].fields) {
+                dataItems[0].fields.likes = updatedLikes;
+              }
               // setDataItems((prevDataItems) => {
               //   const updatedDataItems = [...prevDataItems];
               //   updatedDataItems[index].fields.likes = updatedLikes;
@@ -348,7 +354,9 @@ const RandCard: React.FC<{}> = () => {
 
             if (updateResponse.ok) {
               // Update local state to reflect the change in likes
-              dataItems[0].fields.likes = updatedLikes;
+              if (dataItems[0] && dataItems[0].fields) {
+                dataItems[0].fields.likes = updatedLikes;
+              }
               // setDataItems((prevDataItems) => {
               //   const updatedDataItems = [...prevDataItems];
               //   updatedDataItems[index].fields.likes = updatedLikes;
@@ -437,7 +445,7 @@ const RandCard: React.FC<{}> = () => {
           {/* <div className="bg-white absolute left-0 top-0 bg-opacity-10 w-screen h-[300px] z-auto"></div> */}
           <img
             src="https://jahan-numa.org/carousel/jnd.jpeg"
-            className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.07] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none "
+            className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.07] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none h-[220px]"
             draggable="false"
           />
           <DataCard

@@ -49,7 +49,7 @@ const Ads: React.FC = () => {
         // style={translateXStyle}
       >
         {adsData.map((ad, index) => (
-          <Link href={ad.redirectUrl} key={index}>
+          <Link href={{ pathname: ad.redirectUrl }} key={index}>
             <div className=" overflow-auto w-[95vw] h-[max-content] m-3 scroll-snap-align-start shadow-md rounded-md">
               <Image
                 src={ad.imageUrl}

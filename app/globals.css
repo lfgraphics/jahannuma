@@ -2,16 +2,130 @@
 @tailwind components;
 @tailwind utilities;
 
-/* pdf vierwer's css starts */
-/* pdf vierwer's css ends */
+/* shadcn/ui base layer adjustments */
+@layer base {
+  :root {
+    /* Brand palette mapped to semantic tokens */
+    --background: 0 0% 100%;
+    --foreground: 20 6% 10%;
 
-/* @import url('/public/Mehr\ Nastaliq.ttf'); */
+    --card: 0 0% 100%;
+    --card-foreground: 20 6% 10%;
 
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 6% 10%;
 
+    /* Primary brand (#984A02) converted to HSL approx (24, 97%, 30%) */
+    --primary: 24 97% 30%;
+    --primary-foreground: 45 86% 92%;
+    /* light gold on primary */
+
+    /* Secondary brand (#F0D586) HSL approx (45, 76%, 75%) */
+    --secondary: 45 76% 75%;
+    --secondary-foreground: 24 97% 18%;
+
+    --muted: 45 36% 90%;
+    --muted-foreground: 24 8% 35%;
+
+    --accent: 45 76% 75%;
+    --accent-foreground: 24 97% 18%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 24 25% 84%;
+    --input: 24 25% 84%;
+    --ring: 24 97% 30%;
+
+    /* Added success & shadow tokens */
+    --success: 142 76% 36%;
+    --success-foreground: 355 7% 97%;
+    --shadow: 220 3% 15%;
+
+    --radius: 0.5rem;
+  }
+
+  [data-theme="dark"] {
+    --background: 24 19% 8%;
+    --foreground: 45 20% 96%;
+
+    --card: 24 19% 10%;
+    --card-foreground: 45 20% 96%;
+
+    --popover: 24 19% 10%;
+    --popover-foreground: 45 20% 96%;
+
+    --primary: oklch(0.8784 0.1030 91.2377);
+    --primary-foreground: oklch(0.4982 0.1256 52.9423);
+
+    --secondary: 45 56% 50%;
+    --secondary-foreground: 24 97% 10%;
+
+    --muted: 24 15% 18%;
+    --muted-foreground: 45 10% 70%;
+
+    --accent: 45 56% 50%;
+    --accent-foreground: 24 97% 10%;
+
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 45 20% 96%;
+
+    --border: 24 15% 24%;
+    --input: 24 15% 24%;
+    --ring: 45 76% 75%;
+    --success: 142 76% 36%;
+    --success-foreground: 355 7% 97%;
+    --shadow: 220 3% 15%;
+  }
+
+  /* Removed global universal border reset to avoid regressions */
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Scoped border color application */
+.app-root * {
+  @apply border-border;
+}
+
+/* Shimmer color variables */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --shimmer-start: hsl(var(--muted));
+  --shimmer-mid: hsl(var(--muted-foreground) / 0.6);
+  --shimmer-end: hsl(var(--muted));
+}
+
+[data-theme="dark"] {
+  --shimmer-start: hsl(var(--muted));
+  --shimmer-mid: hsl(var(--muted-foreground) / 0.5);
+  --shimmer-end: hsl(var(--muted));
+}
+
+/* Legacy .dark selector compatibility */
+.dark {
+  --background: 24 19% 8%;
+  --foreground: 45 20% 96%;
+  --card: 24 19% 10%;
+  --card-foreground: 45 20% 96%;
+  --popover: 24 19% 10%;
+  --popover-foreground: 45 20% 96%;
+  --primary: oklch(0.8784 0.1030 91.2377);
+  --primary-foreground: oklch(0.4982 0.1256 52.9423);
+  --secondary: 45 56% 50%;
+  --secondary-foreground: 24 97% 10%;
+  --muted: 24 15% 18%;
+  --muted-foreground: 45 10% 70%;
+  --accent: 45 56% 50%;
+  --accent-foreground: 24 97% 10%;
+  --destructive: 0 62% 40%;
+  --destructive-foreground: 45 20% 96%;
+  --border: 24 15% 24%;
+  --input: 24 15% 24%;
+  --ring: 45 76% 75%;
+  --success: 142 76% 36%;
+  --success-foreground: 355 7% 97%;
+  --shadow: 220 3% 15%;
 }
 
 html {
@@ -19,30 +133,6 @@ html {
   padding: 0;
   margin: 0;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
-body {
-  padding: 0;
-  margin: 0;
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
-  background: #fff;
-  color: black;
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE and Edge */
-}
-
 
 @font-face {
   font-family: 'Mehr_nastaliq';
@@ -65,7 +155,7 @@ body {
 
 .animate-shimmer {
   animation: shimmer 1s infinite linear;
-  background: linear-gradient(90deg, #eee 25%, #ccc 50%, #eee 75%);
+  background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%);
   background-size: 200% 100%;
 }
 
@@ -73,45 +163,48 @@ body {
   transform: scale(1.5) rotate(-10deg);
 }
 
-/* styles.css or your global styles */
 p.text-center,
 p.justif {
   line-height: normal;
   text-align-last: justify;
 }
 
-
 p.justif {
   line-height: normal;
 }
 
-/* Custom CSS to hide the popout button */
 .gdocs-viewer-toolstrip {
   display: none !important;
 }
 
-
-/* custom scrol bar */
-
-/* width */
+/* Scrollbar styling using CSS variables */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 
-/* Track */
 ::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 2px grey;
+  box-shadow: inset 0 0 2px hsl(var(--muted-foreground) / 0.3);
   border-radius: 5px;
 }
 
-/* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #984a02d6;
+  background: hsl(var(--primary) / 0.85);
   border-radius: 5px;
 }
 
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b3402;
+  background: hsl(var(--primary));
+}
+
+/* Utility CSS variable mapping for legacy inline hex colors (optional) */
+:root {
+  --legacy-primary-hex: #984A02;
+  --legacy-secondary-hex: #F0D586;
+}
+
+[data-theme="dark"] {
+  --legacy-primary-hex: #C85F05;
+  /* adjusted for dark */
+  --legacy-secondary-hex: #D9BB6A;
 }

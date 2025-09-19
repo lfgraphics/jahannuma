@@ -1,11 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import * as data from "../Ghazlen/data";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faShare } from "@fortawesome/free-solid-svg-icons";
+import { Download, Share2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import Loader from "./Loader";
-import { ArrowDown } from "react-feather";
 
 interface Shaer {
   shaer: string;
@@ -15,8 +13,8 @@ interface Shaer {
 
 const RandCard: React.FC<{}> = () => {
   const dataItems: Shaer[] = data.getAllShaers();
-  const randomIndex = Math.floor(Math.random() * dataItems.length);
-  const randomData = dataItems[randomIndex];
+  const randomIndex = dataItems.length > 0 ? Math.floor(Math.random() * dataItems.length) : 0;
+  const randomData = dataItems.length > 0 ? dataItems[randomIndex] : undefined;
 
   // Define handleDownload and handleShareClick functions here
   const handleDownload = (elementId: string) => {
@@ -92,7 +90,7 @@ const RandCard: React.FC<{}> = () => {
         Random sher
       </h4>
       {!insideBrowser && <Loader></Loader>}
-      {insideBrowser && (
+  {insideBrowser && randomData && (
         <div
           id={"sherCard"}
           className="bg-white p-4 rounded-sm w-[95vw] justify-center flex flex-col items-center"
@@ -117,19 +115,16 @@ const RandCard: React.FC<{}> = () => {
             <div className="flex flex-row items-center icons gap-3">
               <button
                 className="m-3 flex gap-2 items-center"
-                onClick={() => handleShareClick(randomData, "sherCard")}
+                onClick={() => randomData && handleShareClick(randomData, "sherCard")}
               >
-                <FontAwesomeIcon icon={faShare} style={{ color: "#984A02" }} />
+                <Share2 color="#984A02" />
                 <p className="pb-[11px]">Share this</p>
               </button>
               <button
                 className="m-3 flex gap-2 items-center"
                 onClick={() => handleDownload("sherCard")}
               >
-                <FontAwesomeIcon
-                  icon={faDownload}
-                  style={{ color: "#984A02" }}
-                />
+                <Download color="#984A02" />
                 <p className="pb-[11px]">Download this</p>
               </button>
               {/* <button

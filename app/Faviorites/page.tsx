@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { Pencil } from "lucide-react";
 import Ghazlen from "../Components/Ghazlen";
 import Nazmen from "../Components/Nazmen";
 import Ashaar from "../Components/Ashaar";
@@ -102,8 +101,7 @@ const YourPage = () => {
         ) : (
           <>
             {commentorName}
-            <FontAwesomeIcon
-              icon={faPencilAlt}
+            <Pencil
               onClick={handleEditNameClick}
               style={{ cursor: "pointer", marginRight: "10px" }}
             />

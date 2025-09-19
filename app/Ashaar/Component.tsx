@@ -16,6 +16,7 @@ import DataCard from "../Components/DataCard";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { Home, House, Search, X } from "lucide-react";
 
 interface Shaer {
   fields: {
@@ -306,7 +307,10 @@ const Ashaar: React.FC<{}> = () => {
               // Update local state to reflect the change in likes
               setDataItems((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -367,7 +371,10 @@ const Ashaar: React.FC<{}> = () => {
               // Update local state to reflect the change in likes
               setDataItems((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -437,7 +444,10 @@ const Ashaar: React.FC<{}> = () => {
             // Update local state to reflect the change in likes
             setDataItems((prevDataItems) => {
               const updatedDataItems = [...prevDataItems];
-              updatedDataItems[index].fields.shares = updatedShares;
+              const item = updatedDataItems[index];
+              if (item && item.fields) {
+                item.fields.shares = updatedShares;
+              }
               return updatedDataItems;
             });
           } else {
@@ -731,9 +741,8 @@ const Ashaar: React.FC<{}> = () => {
   return (
     <div>
       <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+        className={`toast-container ${hideAnimation ? " hide " : ""
+          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
       >
         {toast}
       </div>
@@ -772,7 +781,7 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-28">
+      <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-0 border-foreground border-b-2">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
           <div
             dir="rtl"
@@ -829,7 +838,7 @@ const Ashaar: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          // disabled={!searchText}
+        // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
@@ -839,11 +848,10 @@ const Ashaar: React.FC<{}> = () => {
           <div
             id="section"
             dir="rtl"
-            className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4`}
+            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky mt-6`}
           >
             {dataItems.map((shaerData, index) => (
-              <div data-aos="fade-up">
+              <div data-aos="fade-up" key={index + "main"}>
                 <DataCard
                   page="ashaar"
                   download={true}
@@ -869,8 +877,8 @@ const Ashaar: React.FC<{}> = () => {
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                    ? "مزید اشعار نہیں ہیں"
-                    : "مزید اشعار لوڈ کریں"}
+                      ? "مزید اشعار نہیں ہیں"
+                      : "مزید اشعار لوڈ کریں"}
                 </button>
               </div>
             )}

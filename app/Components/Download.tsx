@@ -1,32 +1,23 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Baseline, ImagePlus, PaintBucket, Plus, Settings2 } from "lucide-react";
 
-// Define the interface for the dynamic data object
-interface Shaer {
-  fields: {
-    sher: string[];
-    shaer: string;
-    ghazalHead: string[];
-    ghazal: string[];
-    unwan: string[];
-    likes: number;
-    comments: number;
-    shares: number;
-    id: string;
-  };
-  id: string;
-  createdTime: string;
-}
+// Use the unified domain type
+import type { Shaer } from "../types";
 
 // Define the DynamicDownloadHandler component
 const DynamicDownloadHandler: React.FC<{
   data: Shaer;
   onCancel: () => void;
 }> = ({ data, onCancel }) => {
+  const ghazalHeadLines = useMemo(() => {
+    const head = data.fields?.ghazalHead;
+    if (!head) return [] as string[];
+    if (Array.isArray(head)) return head.filter(Boolean);
+    return head.split("\n").filter(Boolean);
+  }, [data]);
   // State for selected background image
   const [selectedImage, setSelectedImage] = useState<string | null>(
     "/backgrounds/1.jpeg"
@@ -103,22 +94,14 @@ const DynamicDownloadHandler: React.FC<{
         style={{ backgroundImage: `url(${selectedImage || images[0]})` }}
       >
         <div className="bg-black flex flex-col justify-center bg-opacity-60 relative text-white min-w-[300px] min-h-[300px] pt-12 p-8">
-          {/* {data.fields.ghazalHead.map((lin, index) => ( */}
           <div>
             <p className="text-center pl-2">
-              {data.fields.ghazalHead.includes("\n")
-                ? data.fields.ghazalHead.split("\n").map((line, index) => (
-                    <React.Fragment key={index}>
-                      {line}
-                      <br />
-                    </React.Fragment>
-                  ))
-                : data.fields.ghazalHead.map((line, index) => (
-                    <React.Fragment key={index}>
-                      {line}
-                      <br />
-                    </React.Fragment>
-                  ))}
+              {ghazalHeadLines.map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
             </p>
             <div className="m-4 text-sm">{data.fields.shaer}</div>
             <div className="absolute text-white text-lg top-4 right-6">
@@ -158,10 +141,11 @@ const DynamicDownloadHandler: React.FC<{
             } p-3 flex items-center cursor-pointer`}
             onClick={toggleAccordion}
           >
-            <FontAwesomeIcon
-              icon={isOpen ? faChevronUp : faChevronDown}
-              className="text-md ml-5"
-            />
+            {isOpen ? (
+              <ChevronUp className="text-md ml-5" />
+            ) : (
+              <ChevronDown className="text-md ml-5" />
+            )}
             <span className="flex flex-1 gap-2">مزید ترمیمی <Settings2 /> </span>
           </div>
           {isOpen && (

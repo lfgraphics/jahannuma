@@ -8,6 +8,7 @@ import {
   Drawer,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -15,6 +16,14 @@ import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
 import Image from "next/image";
 import InstallPWAButton from "./InstallAppBtn";
+import { ThemeToggle } from "../../components/theme-toggle";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 interface NavbarProps {
   language: string;
@@ -52,55 +61,55 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   };
 
 
-useEffect(() => {
-  if (typeof window !== "undefined") {
-    const currentPath = window.location.pathname;
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
 
-    let updatedRedirectHref = currentPath;
+      let updatedRedirectHref = currentPath;
 
-    // Remove the existing language code if present
-    updatedRedirectHref = updatedRedirectHref.replace(/\/(EN|HI|UR)/, "");
+      // Remove the existing language code if present
+      updatedRedirectHref = updatedRedirectHref.replace(/\/(EN|HI|UR)/, "");
 
-    // Add the new language code if it's not UR
-    if (language !== "UR") {
-      updatedRedirectHref = `/${language}${updatedRedirectHref}`;
-    }
-
-    setRedirectHref(updatedRedirectHref);
-  }
-}, [language]);
-
-useEffect(() => {
-  if (typeof window !== "undefined") {
-    const handlePopstate = () => {
-      const pathname = window.location.pathname;
-
-      const isLanguagePath = pathname.match(/\/(EN|HI|UR)/);
-      const allowedSlashCount = isLanguagePath ? 3 : 2;
-
-      const hasAllowedSlashes =
-        pathname.split("/").length === allowedSlashCount;
-
-      const langChangeElement = document.querySelector(".langChange");
-
-      if (langChangeElement) {
-        if (isLanguagePath && hasAllowedSlashes) {
-          langChangeElement.classList.add("hidden");
-        } else {
-          langChangeElement.classList.remove("hidden");
-        }
+      // Add the new language code if it's not UR
+      if (language !== "UR") {
+        updatedRedirectHref = `/${language}${updatedRedirectHref}`;
       }
-    };
 
-    window.addEventListener("popstate", handlePopstate);
+      setRedirectHref(updatedRedirectHref);
+    }
+  }, [language]);
 
-    handlePopstate();
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handlePopstate = () => {
+        const pathname = window.location.pathname;
 
-    return () => {
-      window.removeEventListener("popstate", handlePopstate);
-    };
-  }
-}, []);
+        const isLanguagePath = pathname.match(/\/(EN|HI|UR)/);
+        const allowedSlashCount = isLanguagePath ? 3 : 2;
+
+        const hasAllowedSlashes =
+          pathname.split("/").length === allowedSlashCount;
+
+        const langChangeElement = document.querySelector(".langChange");
+
+        if (langChangeElement) {
+          if (isLanguagePath && hasAllowedSlashes) {
+            langChangeElement.classList.add("hidden");
+          } else {
+            langChangeElement.classList.remove("hidden");
+          }
+        }
+      };
+
+      window.addEventListener("popstate", handlePopstate);
+
+      handlePopstate();
+
+      return () => {
+        window.removeEventListener("popstate", handlePopstate);
+      };
+    }
+  }, []);
 
   return (
     <div className="sticky w-full z-50 top-0 font-noto-nastaliq">
@@ -110,7 +119,7 @@ useEffect(() => {
         style={{ backgroundColor: "#F0D586" }}
       >
         <Link
-          href={`${redirectHref}`}
+          href={{ pathname: `${redirectHref}` }}
           id="redirect"
           className="opacity-0 h-0 overflow-hidden"
         >
@@ -131,9 +140,9 @@ useEffect(() => {
                 <MenuIcon />
               )}
             </IconButton>
-            <Link href={language !== "UR" ? `/${language}` : "/"}>
+            <Link href={{ pathname: language !== "UR" ? `/${language}` : "/" }}>
               <Image
-                className="lg:w-20 md:w-16"
+                className="lg:w-20 md:w-16 h-auto"
                 src="/logo.png"
                 alt="Logo"
                 height={80}
@@ -149,9 +158,7 @@ useEffect(() => {
                     className="text-[#984A02] hover:text-[#0E88D6] font-medium text-xl mr-2"
                   >
                     <Link
-                      href={`/${
-                        language === "UR" ? page.EN : `${language}/${page.EN}`
-                      }`}
+                      href={{ pathname: `/${language === "UR" ? page.EN : `${language}/${page.EN}`}` }}
                     >
                       {(page as any)[language]}
                     </Link>
@@ -162,24 +169,20 @@ useEffect(() => {
 
             {/* Language Select */}
             <div className="m-2 border-[#984A02] text-[#984A02] ">
-              <label htmlFor="langChange">
-                <select
+              <Select value={language} onValueChange={(val) => handleLanguageChange(val as Language)}>
+                <SelectTrigger
                   id="langChange"
-                  value={language}
-                  onChange={onLangChange}
-                  className="langChange bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-center"
+                  className="langChange bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none"
+                  aria-label="Select language"
                 >
-                  <option className="bg-[#F0D586]" value="UR">
-                    اردو
-                  </option>
-                  <option className="bg-[#F0D586]" value="EN">
-                    English
-                  </option>
-                  <option className="bg-[#F0D586]" value="HI">
-                    हिंदी
-                  </option>
-                </select>
-              </label>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#F0D586] text-[#984A02]">
+                  <SelectItem value="UR">اردو</SelectItem>
+                  <SelectItem value="EN">English</SelectItem>
+                  <SelectItem value="HI">हिंदी</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {/* donation button  */}
             <Link
@@ -190,10 +193,11 @@ useEffect(() => {
                 {language === "UR"
                   ? "ہمیں عطیہ کریں"
                   : language == "EN"
-                  ? "Donate Us"
-                  : "हमें दान करें"}
+                    ? "Donate Us"
+                    : "हमें दान करें"}
               </button>
             </Link>
+            <ThemeToggle />
           </Toolbar>
         </Container>
       </AppBar>
@@ -202,6 +206,7 @@ useEffect(() => {
         anchor="left"
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
+        ModalProps={{ keepMounted: true }}
       >
         <div
           style={{
@@ -230,31 +235,28 @@ useEffect(() => {
             <div className="langChange grid grid-flow-col gap-2 mt-12">
               <span
                 onClick={() => handleLanguageChange("EN")}
-                className={`${
-                  language == "EN"
-                    ? "bg-[#984A02] text-white cursor-context-menu"
-                    : "bg-transparent text-[#984A02] cursor-pointer"
-                } p-2`}
+                className={`${language == "EN"
+                  ? "bg-[#984A02] text-white cursor-context-menu"
+                  : "bg-transparent text-[#984A02] cursor-pointer"
+                  } p-2`}
               >
                 English
               </span>
               <span
                 onClick={() => handleLanguageChange("UR")}
-                className={`${
-                  language == "UR"
-                    ? "bg-[#984A02] text-white cursor-context-menu"
-                    : "bg-transparent text-[#984A02] cursor-pointer"
-                } p-2`}
+                className={`${language == "UR"
+                  ? "bg-[#984A02] text-white cursor-context-menu"
+                  : "bg-transparent text-[#984A02] cursor-pointer"
+                  } p-2`}
               >
                 Urdu
               </span>
               <span
                 onClick={() => handleLanguageChange("HI")}
-                className={`${
-                  language == "HI"
-                    ? "bg-[#984A02] text-white cursor-context-menu"
-                    : "bg-transparent text-[#984A02] cursor-pointer"
-                } p-2`}
+                className={`${language == "HI"
+                  ? "bg-[#984A02] text-white cursor-context-menu"
+                  : "bg-transparent text-[#984A02] cursor-pointer"
+                  } p-2`}
               >
                 Hindi
               </span>
@@ -275,9 +277,7 @@ useEffect(() => {
                     <Link
                       className="hover:text-white hover:bg-yellow-900 p-1 rounded-sm"
                       key={index}
-                      href={`/${
-                        language == "UR" ? page.EN : language + "/" + page.EN
-                      }`}
+                      href={{ pathname: `/${language == "UR" ? page.EN : language + "/" + page.EN}` }}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <li>{page[language as Language]}</li>
@@ -293,17 +293,20 @@ useEffect(() => {
                 <List>
                   {["About_site", "About_owner", "Contact", "Programs"].map(
                     (item) => (
-                      <Link
-                        href={`/${
-                          language == "UR" ? item : language + "/" + item
-                        }`}
-                        key={item}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <ListItem button>
-                          <ListItemText primary={item} />
-                        </ListItem>
-                      </Link>
+                      <ListItem key={item} disablePadding>
+                        <ListItemButton onClick={() => setMobileMenuOpen(false)}>
+                          <Link
+                            href={{
+                              pathname: `/${
+                                language == "UR" ? item : language + "/" + item
+                              }`,
+                            }}
+                            className="w-full block"
+                          >
+                            <ListItemText primary={item} />
+                          </Link>
+                        </ListItemButton>
+                      </ListItem>
                     )
                   )}
                 </List>
@@ -313,17 +316,18 @@ useEffect(() => {
         </div>
       </Drawer>
 
-      <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full md:hidden bg-white p-4 overflow-x-scroll px-4">
+      <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full md:hidden p-4 overflow-x-scroll px-4">
         <div className="flex text-xs gap-1">
           {pages.map((page) => (
             <div
               key={page.EN}
-              className="text-[#984A02] hover:text-[#0E88D6] font-medium text-sm min-w-[60px]"
+              className="text-secondary-foreground dark:text-secondary hover:text-[#0E88D6] font-medium text-sm min-w-[60px]"
             >
               <Link
-                href={`/${
-                  language === "UR" ? page.EN : `${language}/${page.EN}`
-                }`}
+                href={{
+                  pathname: `/${language === "UR" ? page.EN : `${language}/${page.EN}`
+                    }`
+                }}
               >
                 {(page as any)[language]}
               </Link>

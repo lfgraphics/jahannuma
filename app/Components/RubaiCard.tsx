@@ -1,37 +1,19 @@
 // ShaerCard.tsx
-import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHeart,
-  faCommentAlt,
-  faShareNodes,
-} from "@fortawesome/free-solid-svg-icons";
+import React from "react";
+import { Heart, MessageSquare, Share2 } from "lucide-react";
 import Link from "next/link";
-
-export interface Rubai {
-  fields: {
-    shaer: string;
-    unwan: String;
-    body: String;
-    likes: number;
-    comments: number;
-    shares: number;
-    id: string;
-  };
-  id: String;
-  createdTime: String;
-}
+import type { Rubai } from "../types";
 
 interface RubaiCardProps {
   RubaiData: Rubai; // Replace Shaer with the actual type of shaerData
   index: number;
-  handleShareClick: (shaerData: Rubai, index: number) => void; // Replace Shaer with the actual type
+  handleShareClick: (shaerData: Rubai, index: number) => void | Promise<void>; // Allow async
   handleHeartClick: (
     e: React.MouseEvent<HTMLButtonElement>,
     shaerData: Rubai,
     index: number,
     id: string
-  ) => void; // Replace Shaer with the actual type // Replace Shaer with the actual type
+  ) => void | Promise<void>; // Allow async
   openComments: (id: string) => void;
 }
 
@@ -48,25 +30,25 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
         dir="rtl"
         key={index}
         id={`card${index}`}
-        className={`${ index % 2 === 1 ? 'bg-gray-50' : 'bg-white' } p-4 rounded-sm  relative flex flex-col items-center justify-between`}
+        className={`${index % 2 === 1 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-background'} p-4 rounded-sm  relative flex flex-col items-center justify-between`}
       >
         <div className="unwan text-center text-[#984A02] text-2xl mb-2">
           <p>{RubaiData.fields.unwan}</p>
         </div>
         <div className="unwan flex flex-col w-[90%] justify-center mb-2">
-          {RubaiData?.fields?.body.split("\n").map((lin, index) => (
-            <p key={index} className="justif text-black text-xl">
+          {RubaiData?.fields?.body.split("\n").map((lin: any, index: number) => (
+            <p key={index} className="justif text-foreground text-xl">
               {lin}
             </p>
           ))}
         </div>
         <Link
-          href={`/Shaer/${RubaiData.fields?.shaer?.replace(" ", "-")} ?tab=تعارف`}
+          href={{ pathname: `/Shaer/${RubaiData.fields?.shaer?.replace(" ", "-") ?? ""}` }}
           className="text-center"
         >
-          <h2 className="text-black text-lg mb-4">{RubaiData.fields?.shaer}</h2>
+          <h2 className="text-foreground text-lg mb-4">{RubaiData.fields?.shaer}</h2>
         </Link>
-        <div className="felx text-center icons">
+        <div className="flex text-center icons">
           <button
             className={`m-3 text-gray-500 transition-all duration-500`}
             onClick={(e) =>
@@ -74,7 +56,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
             }
             id={`${RubaiData.id}`}
           >
-            <FontAwesomeIcon icon={faHeart} />{" "}
+            <Heart className="inline-block" />{" "}
             <span id="likescount" className="text-gray-500 text-sm">
               {RubaiData.fields?.likes}
             </span>
@@ -83,11 +65,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
             className="m-3"
             onClick={() => openComments(RubaiData.fields?.id)}
           >
-            <FontAwesomeIcon
-              icon={faCommentAlt}
-              style={{ color: "#984A02" }}
-              className="ml-2"
-            />{" "}
+            <MessageSquare color="#984A02" className="ml-2 inline-block" />{" "}
             <span className="text-gray-500 text-sm">
               {RubaiData.fields?.comments}
             </span>
@@ -96,7 +74,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
             className="m-3"
             onClick={() => handleShareClick(RubaiData, index)}
           >
-            <FontAwesomeIcon icon={faShareNodes} style={{ color: "#984A02" }} />{" "}
+            <Share2 color="#984A02" className="inline-block" />{" "}
             <span className="text-gray-500 text-sm">
               {RubaiData.fields?.shares}
             </span>

@@ -1,13 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Card from "../Components/BookCard";
-import {
-  faHeart,
-  faHome,
-  faSearch,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { House, Search, X } from "lucide-react";
 import ToastComponent from "../Components/Toast";
 import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
@@ -50,9 +46,9 @@ interface EBooksType {
     writer: string;
     enWriter: string;
     hiWriter: string;
-    desc: string[];
-    enDesc: string[];
-    hiDesc: string[];
+    desc: string;
+    enDesc: string;
+    hiDesc: string;
     book: Book[];
     likes: number;
   };
@@ -294,7 +290,10 @@ const Page: React.FC<{}> = () => {
               // Update local state to reflect the change in likes
               setData((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -357,7 +356,10 @@ const Page: React.FC<{}> = () => {
               // Update local state to reflect the change in likes
               setData((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -441,11 +443,11 @@ const Page: React.FC<{}> = () => {
     searchText && clearSearch();
     setData(initialDataItems);
     if (typeof window !== undefined) {
-      let section = document.getElementById("section");
-      section!.scrollTo({
-        top: scrolledPosition,
+      const section = document.getElementById("section");
+      section?.scrollTo({
+        top: scrolledPosition ?? 0,
         behavior: "smooth",
-      });
+      } as ScrollToOptions);
     }
     setInitialdDataItems([]);
   };
@@ -474,15 +476,16 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-28">
+          <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-0 border-foreground border-b-2">
             <div className="filter-btn basis-[75%] justify-center text-center flex">
               <div
                 dir="rtl"
-                className="flex basis-[100%] justify-center items-center h-auto pt-2"
+                className="flex basis-[100%] justify-center items-center h-auto pt-1"
               >
-                <FontAwesomeIcon
-                  icon={faHome}
-                  className="text-[#984A02] text-2xl ml-3"
+                <House
+                  color="#984A02"
+                  className="ml-3"
+                  size={30}
                   onClick={() => {
                     window.location.href = "/";
                   }}
@@ -490,7 +493,7 @@ const Page: React.FC<{}> = () => {
                 <input
                   type="text"
                   placeholder="لکھ کر تلاش کریں"
-                  className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
+                  className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
                   id="searchBox"
                   onKeyUp={(e) => {
                     handleSearchKeyUp(e);
@@ -502,19 +505,21 @@ const Page: React.FC<{}> = () => {
                     }
                   }}
                 />
-                <div className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black">
-                  <FontAwesomeIcon
+                <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+                  <X
+                    color="#984A02"
+                    size={24}
                     onClick={clearSearch}
                     id="searchClear"
-                    icon={faXmark}
-                    className="hidden text-[#984A02] text-2xl cursor-pointer"
+                    className="hidden text-[#984A02] cursor-pointer"
                   />
                 </div>
-                <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
-                  <FontAwesomeIcon
+                <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+                  <Search
+                    color="#984A02"
+                    size={24}
                     onClick={searchQuery}
                     id="searchIcon"
-                    icon={faSearch}
                     className="hidden text-[#984A02] text-xl cursor-pointer"
                   />
                 </div>
@@ -524,7 +529,7 @@ const Page: React.FC<{}> = () => {
           <div
             id="section"
             dir="rtl"
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
+            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sticky m-3`}
           >
             {data.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">

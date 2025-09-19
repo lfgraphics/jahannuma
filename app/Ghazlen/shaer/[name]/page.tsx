@@ -227,7 +227,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               // Update local state to reflect the change in likes
               setDataItems((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
               setDisableHearts(false);
@@ -292,7 +295,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
               // Update local state to reflect the change in likes
               setDataItems((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
               setDisableHearts(false);
@@ -366,7 +372,10 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
             // Update local state to reflect the change in likes
             setDataItems((prevDataItems) => {
               const updatedDataItems = [...prevDataItems];
-              updatedDataItems[index].fields.shares = updatedShares;
+              const item = updatedDataItems[index];
+              if (item && item.fields) {
+                item.fields.shares = updatedShares;
+              }
               return updatedDataItems;
             });
           } else {

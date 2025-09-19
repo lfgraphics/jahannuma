@@ -1,13 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Card from "../Components/shaer/Profilecard";
-import {
-  faHeart,
-  faHome,
-  faSearch,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Heart, House, Search, X } from "lucide-react";
 import ToastComponent from "../Components/Toast";
 import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
@@ -160,14 +154,14 @@ const Page: React.FC<{}> = () => {
           ...record,
           fields: {
             ...record.fields,
-            tafseel: record.fields?.tafseel.split("\n"),
-            searchKeys: record.fields?.searchKeys.split("\n"),
-            enTakhallus: record.fields?.enTakhallus.split("\n"),
-            hiTakhallus: record.fields?.hiTakhallus.split("\n"),
-            enName: record.fields?.enName.split("\n"),
-            hiName: record.fields?.hiName.split("\n"),
-            enLocation: record.fields?.enLocation.split("\n"),
-            hiLocation: record.fields?.hiLocation.split("\n"),
+            tafseel: record.fields?.tafseel?.split("\n"),
+            searchKeys: record.fields?.searchKeys?.split("\n"),
+            enTakhallus: record.fields?.enTakhallus?.split("\n"),
+            hiTakhallus: record.fields?.hiTakhallus?.split("\n"),
+            enName: record.fields?.enName?.split("\n"),
+            hiName: record.fields?.hiName?.split("\n"),
+            enLocation: record.fields?.enLocation?.split("\n"),
+            hiLocation: record.fields?.hiLocation?.split("\n"),
             ghazal: record.fields?.ghazal,
             eBooks: record.fields?.eBooks,
             nazmen: record.fields?.nazmen,
@@ -190,6 +184,7 @@ const Page: React.FC<{}> = () => {
         setData((prevDataItems) => [...prevDataItems, ...formattedRecords]);
         // console.log(result);
       }
+      !offset && scrollToTop();
       // seting pagination depending on the response
       setOffset(result.offset);
       // seting the loading state to false to show the data
@@ -201,6 +196,16 @@ const Page: React.FC<{}> = () => {
       setMoreLoading(false);
     }
   };
+
+  function scrollToTop() {
+    if (typeof window !== undefined) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }
+
   useEffect(() => {
     fetchData(null, false);
   }, []);
@@ -318,7 +323,10 @@ const Page: React.FC<{}> = () => {
               // Update local state to reflect the change in likes
               setData((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -382,7 +390,10 @@ const Page: React.FC<{}> = () => {
               // Update local state to reflect the change in likes
               setData((prevDataItems) => {
                 const updatedDataItems = [...prevDataItems];
-                updatedDataItems[index].fields.likes = updatedLikes;
+                const item = updatedDataItems[index];
+                if (item && item.fields) {
+                  item.fields.likes = updatedLikes;
+                }
                 return updatedDataItems;
               });
             } else {
@@ -469,9 +480,9 @@ const Page: React.FC<{}> = () => {
     if (typeof window !== undefined) {
       let section = document.getElementById("section");
       section!.scrollTo({
-        top: scrolledPosition,
+        top: Number(scrolledPosition) || 0,
         behavior: "smooth",
-      });
+      } as ScrollToOptions);
     }
     setInitialdDataItems([]);
   };
@@ -493,30 +504,21 @@ const Page: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          // disabled={!searchText}
+        // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-white border-b-2 p-3 justify-center sticky top-28">
+          <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-0 border-foreground border-b-2">
             <div className="filter-btn basis-[75%] text-center flex">
-              <div
-                dir="rtl"
-                className="flex justify-center items-center basis-[100%] h-auto pt-2"
-              >
-                <FontAwesomeIcon
-                  icon={faHome}
-                  className="text-[#984A02] text-2xl ml-3"
-                  onClick={() => {
-                    window.location.href = "/";
-                  }}
-                />
+              <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
+                <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
                 <input
                   type="text"
                   placeholder="لکھ کر تلاش کریں"
-                  className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
+                  className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
                   id="searchBox"
                   onKeyUp={(e) => {
                     handleSearchKeyUp(e);
@@ -528,41 +530,27 @@ const Page: React.FC<{}> = () => {
                     }
                   }}
                 />
-                <div className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black">
-                  <FontAwesomeIcon
-                    onClick={clearSearch}
-                    id="searchClear"
-                    icon={faXmark}
-                    className="hidden text-[#984A02] text-2xl cursor-pointer"
-                  />
+                <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+                  <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
                 </div>
-                <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
-                  <FontAwesomeIcon
-                    onClick={searchQuery}
-                    id="searchIcon"
-                    icon={faSearch}
-                    className="hidden text-[#984A02] text-xl cursor-pointer"
-                  />
+                <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+                  <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
                 </div>
               </div>
             </div>
           </div>
-          <div
-            id="section"
-            dir="rtl"
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
-          >
+          <div id="section" dir="rtl" className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sticky m-3`}>
             {data.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">
                 <div
-                  className="heart cursor-pointer text-gray-500 pr-1 absolute top-0 right-0 w-[60px] max-w-[120px] content-center justify-center items-center h-8 flex border rounded-full m-2 gap-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
+                  className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-4 -right-4 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
                   onClick={(e) =>
                     handleHeartClick(e, item, index, `${item.id}`)
                   }
                   id={`${item.id}`}
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-xl" />
-                  <span className="text-black">{`${item.fields?.likes}`}</span>
+                  <Heart className="text-xl ml-3" fill="#6b7280" />
+                  <span className="text-foreground">{`${item.fields?.likes}`}</span>
                 </div>
                 <Card data={item} />
               </div>
@@ -578,8 +566,8 @@ const Page: React.FC<{}> = () => {
                 {moreloading
                   ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                  ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
-                  : "مزید شعراء کی تفصیات لوڈ کریں"}
+                    ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
+                    : "مزید شعراء کی تفصیات لوڈ کریں"}
               </button>
             </div>
           )}

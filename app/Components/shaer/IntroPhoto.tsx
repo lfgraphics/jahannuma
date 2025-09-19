@@ -1,9 +1,4 @@
-import {
-  faCalendarAlt,
-  faLocationDot,
-  faShareAlt,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { CalendarDays, MapPin, Share2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 interface IntroProps {
@@ -102,12 +97,12 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
               className="h-full w-full bg-black bg-opacity-70 flex items-center justify-center"
             >
               <div className="photo lg:h-32 h-24 md:h-28 lg:w-32 w-24 md:w-28 rounded-full overflow-clip border-[#984a0291] border-4 ">
-                {data && insideBrowser && data.photo ? (
+                {data && insideBrowser && data.photo && data.photo.length > 0 && data.photo[0]?.thumbnails?.large ? (
                   <img
-                    alt={`${data.photo[0].filename}`}
-                    src={`${data.photo[0].thumbnails.large.url}`}
-                    height={data.photo[0].thumbnails.large.height}
-                    width={data.photo[0].thumbnails.large.width}
+                    alt={`${data.photo[0]?.filename ?? "poet"}`}
+                    src={`${data.photo[0]?.thumbnails?.large?.url ?? "/poets/nodp.jpg"}`}
+                    height={data.photo[0]?.thumbnails?.large?.height ?? 150}
+                    width={data.photo[0]?.thumbnails?.large?.width ?? 150}
                   ></img>
                 ) : (
                   <img
@@ -123,28 +118,18 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
                 <p className="text-4xl">{data?.takhallus}</p>
                 <p className="mt-3">
                   <span className="icon ml-2">
-                    <FontAwesomeIcon
-                      icon={faCalendarAlt}
-                      style={{ color: "white" }}
-                    />
+                    <CalendarDays color="white" size={16} />
                   </span>
                   {data?.dob && data.dob}
                   <span className="mx-3 text-white font-bold">|</span>{" "}
                   <span className="icon ml-2">
-                    <FontAwesomeIcon
-                      icon={faLocationDot}
-                      style={{ color: "white" }}
-                    />
+                    <MapPin color="white" size={16} />
                   </span>
                   {data?.location}
                 </p>
               </div>
               <div className="navs -translate-y-4" onClick={() => handleShareClick()}>
-                <FontAwesomeIcon
-                  icon={faShareAlt}
-                  style={{ color: "white" }}
-                  className="text-3xl ml-6"
-                />
+                <Share2 color="white" className="text-3xl ml-6" />
               </div>
             </div>
           </div>
