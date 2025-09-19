@@ -118,15 +118,15 @@ const Page = ({ params }) => {
     }
   };
   return (
-    <div dir="rtl" className="flex flex-col items-center">
+    <div dir="rtl" className="flex flex-col items-center dark:bg-[#2d2d2f]">
       <div className="w-full sm:w-[400px]">
         {loading ? <ComponentsLoader /> : (
           <div id="main" className="p-4 mt-3">
-            <div className={`ghazalHead text-2xl text-black text-center leading-[3rem]`}>
+            <div className={`ghazalHead text-2xl text-foreground text-center leading-[3rem]`}>
               {data.ghazalHead?.split('\n').map((line, index) => (
                 <h2
                   key={index}
-                  className="text-black"
+                  className="text-foreground"
                 >
                   {line}
                 </h2>
@@ -143,7 +143,7 @@ const Page = ({ params }) => {
                 <p
                   data-aos="fade-up"
                   key={index}
-                  className="justif w-full px-10 text-black pb-3 text-2xl [&]:text-[length:clamp(1rem,2vw,1.5rem)] break-words"
+                  className="justif w-full px-10 text-foreground pb-3 text-2xl [&]:text-[length:clamp(1rem,2vw,1.5rem)] break-words"
                 >
                   {line}
                 </p>

@@ -1,9 +1,8 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import Card from "../../Components/BookCard";
 import ComponentsLoader from "./ComponentsLoader";
+import { Heart } from "lucide-react";
 
 const EBooks = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
@@ -247,7 +246,7 @@ const EBooks = ({ takhallus }) => {
                 onClick={(e) => handleHeartClick(e, item, index, `${item.id}`)}
                 id={`${item.id}`}
               >
-                <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
+                <Heart fill="gray" color="gray" />
                 <span className="text-black">{`${item.fields?.likes}`}</span>
               </div>
               <Card data={item} />

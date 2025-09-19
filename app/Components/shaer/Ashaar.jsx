@@ -1,8 +1,8 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
+import { Heart } from "lucide-react";
+import ToastComponent from "../Toast";
 
 const Ashaar = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
@@ -232,7 +232,7 @@ const Ashaar = ({ takhallus }) => {
           <div
             key={index}
             id={`card${index}`}
-            className="bg-white rounded-sm border-b relative flex flex-col justify-between m-5 pt-0 md:mx-36 lg:mx-36"
+            className="bg-white dark:bg-[#2d2d2f] rounded-sm border-b relative flex flex-col justify-between m-5 pt-0 md:mx-36 lg:mx-36"
           >
             <div className="flex justify-between items-center">
               <div className="mr-5">
@@ -241,7 +241,7 @@ const Ashaar = ({ takhallus }) => {
                     <p
                       style={{ lineHeight: "normal" }}
                       key={index}
-                      className="text-black line-normal text-xl"
+                      className="line-normal text-xl"
                     >
                       {lin}
                     </p>
@@ -255,8 +255,7 @@ const Ashaar = ({ takhallus }) => {
                   handleHeartClick(shaerData, index, `${shaerData.id}`)
                 }
               >
-                <FontAwesomeIcon
-                  icon={faHeart}
+                <Heart size={24}
                   style={{ color: heartColors[index] }}
                 />
               </div>

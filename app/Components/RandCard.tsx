@@ -433,19 +433,14 @@ const RandCard: React.FC<{}> = () => {
 
   return (
     <div className="justify-center flex flex-col items-center m-4">
-      <h4
-        className="text-2xl my-4 text-gray-600 "
-        // style={{ letterSpacing: "5px" }}
-      >
-        ایک منتخب شعر
-      </h4>
+      <h4 className="text-2xl my-4">ایک منتخب شعر</h4>
       {loading && <Loader></Loader>} {/* Show loader while fetching */}
       {!loading && (
         <div className="relative">
           {/* <div className="bg-white absolute left-0 top-0 bg-opacity-10 w-screen h-[300px] z-auto"></div> */}
           <img
             src="https://jahan-numa.org/carousel/jnd.jpeg"
-            className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.07] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none h-[220px]"
+            className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.09] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none h-[220px]"
             draggable="false"
           />
           <DataCard

@@ -77,7 +77,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
         <div
           key={index}
           id={`card${index}`}
-          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-slate-800" : ""
+          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-[#2d2d2f]" : ""
             } p-4 rounded-sm relative flex flex-col justify-between min-h-[180px] max-h-[200px]`}
         >
           <>
@@ -150,7 +150,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           dir="rtl"
           key={index}
           id={`card${index}`}
-          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-slate-800" : ""
+          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-[#2d2d2f]" : ""
             } p-4 rounded-sm relative flex flex-col h-[250px]`}
         >
           <Link
@@ -178,7 +178,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           </div>
           <div className="relative">
             <div
-              className="anaween-container flex flex-col items-center absolute translate-y-[-7rem] overflow-y-scroll w-[90px] bg-white shadow-md transition-all duration-500 ease-in-out"
+              className="anaween-container flex flex-col items-center absolute bottom-full -translate-y-2 z-10 overflow-y-scroll w-[90px] bg-white dark:bg-[#2d2d2f] shadow-md transition-all duration-500 ease-in-out rounded-sm bg-opacity-70 backdrop-blur-sm"
               style={{
                 height: openanaween === `card${index}` ? "120px" : "0",
               }}

@@ -45,7 +45,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
   return (
     <div
       dir="rtl"
-      className="container flex flex-col justify-center p-5 pt-0 md:px-36 lg:px-36"
+      className="container flex flex-col justify-center p-5 pt-0 md:px-36 lg:px-36 dark:bg-[#2d2d2f]"
     >
       {!data && <ComponentsLoader />}
       {insideBrowser && data && (
@@ -53,7 +53,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
           {data.description && (
             <div className="block mx-auto my-5">
               <ul>
-                {data.description.split("\n").map((line, index) => (
+                {data?.description?.split("\n").map((line, index) => (
                   <li data-aos="fade-up" key={index}>
                     {line}
                   </li>

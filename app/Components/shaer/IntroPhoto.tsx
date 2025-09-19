@@ -53,9 +53,8 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
 
         navigator
           .share({
-            text: `${title}\n\n${
-              text !== "" ? `${text}\n` : ""
-            }Found this on Jahannuma webpage\nVisit it here\n`,
+            text: `${title}\n\n${text !== "" ? `${text}\n` : ""
+              }Found this on Jahannuma webpage\nVisit it here\n`,
             url: decodedUrl,
           })
           .then(() => console.log("Successful share"))
@@ -93,8 +92,8 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
           >
             <div
               dir="rtl"
-              style={{ filter: "backGroundBlur(10px)" }}
-              className="h-full w-full bg-black bg-opacity-70 flex items-center justify-center"
+              // style={{ filter: "backGroundBlur(10px)" }}
+              className="h-full w-full bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center gap-2"
             >
               <div className="photo lg:h-32 h-24 md:h-28 lg:w-32 w-24 md:w-28 rounded-full overflow-clip border-[#984a0291] border-4 ">
                 {data && insideBrowser && data.photo && data.photo.length > 0 && data.photo[0]?.thumbnails?.large ? (
@@ -114,21 +113,26 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
                   ></img>
                 )}
               </div>
-              <div className="mini_intro mr-5 text-white">
+
+              <div className="mini_intro mr-5 text-white ">
                 <p className="text-4xl">{data?.takhallus}</p>
-                <p className="mt-3">
+                <p className="mt-3 flex gap-2 items-baseline">
                   <span className="icon ml-2">
                     <CalendarDays color="white" size={16} />
                   </span>
                   {data?.dob && data.dob}
-                  <span className="mx-3 text-white font-bold">|</span>{" "}
+                </p>
+                <p className="flex gap-2 items-baseline">
                   <span className="icon ml-2">
                     <MapPin color="white" size={16} />
                   </span>
                   {data?.location}
                 </p>
               </div>
-              <div className="navs -translate-y-4" onClick={() => handleShareClick()}>
+
+              <span className="mx-3 text-white font-bold">|</span>{" "}
+
+              <div className="navs" onClick={() => handleShareClick()}>
                 <Share2 color="white" className="text-3xl ml-6" />
               </div>
             </div>

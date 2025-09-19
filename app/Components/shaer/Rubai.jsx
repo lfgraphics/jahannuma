@@ -3,6 +3,7 @@ import SkeletonLoader from "../../Components/SkeletonLoader";
 import RubaiCard from "../../Components/RubaiCard";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { X } from "lucide-react";
 
 const Rubai = ({ takhallus }) => {
   const [selectedCommentId, setSelectedCommentId] = useState(null);
@@ -565,8 +566,7 @@ const Rubai = ({ takhallus }) => {
           id="modlBtn"
           onClick={() => closeComments()}
         >
-          <FontAwesomeIcon
-            icon={faTimesCircle}
+          <X
             className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
           />
         </button>

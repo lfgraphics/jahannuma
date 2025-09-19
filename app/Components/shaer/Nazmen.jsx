@@ -1,8 +1,8 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart, faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
+import { Heart, Share2 } from "lucide-react";
+import ToastComponent from "../Toast"
 
 const Nazmen = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
@@ -334,6 +334,7 @@ const Nazmen = ({ takhallus }) => {
   return (
     <div>
       {loading && <ComponentsLoader />}
+      {toast}
       {dataItems.map((shaerData, index) => {
         return (
           <div
@@ -366,19 +367,18 @@ const Nazmen = ({ takhallus }) => {
                     handleHeartClick(shaerData, index, `${shaerData.id}`)
                   }
                 >
-                  <FontAwesomeIcon
-                    icon={faHeart}
+                  <Heart
+                    className="cursor-pointer"
+                    size={18}
                     style={{ color: heartColors[index] }}
                   />
                 </div>
                 <button
-                  className="m-3"
+                  className="m-3 flex items-center justify-center gap-2"
                   onClick={() => handleShareClick(shaerData, index)}
                 >
-                  <FontAwesomeIcon
-                    icon={faShareNodes}
-                    style={{ color: "#984A02" }}
-                  />{" "}
+                  <Share2 fill="gray" color="gray" />
+                  <span>{`${shaerData.fields?.shares}`}</span>
                 </button>
               </div>
             </div>

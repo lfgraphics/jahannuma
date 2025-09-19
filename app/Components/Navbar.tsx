@@ -15,6 +15,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import InstallPWAButton from "./InstallAppBtn";
 import { ThemeToggle } from "../../components/theme-toggle";
 import {
@@ -24,6 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 interface NavbarProps {
   language: string;
@@ -48,6 +51,27 @@ type Language = "EN" | "UR" | "HI";
 const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [redirectHref, setRedirectHref] = useState(""); // Initialize redirectHref with an empty string
+  const pathname = usePathname();
+
+  // Normalize current path to compare against section slugs, handling language prefixes.
+  const normalizePath = (path: string) => {
+    if (!path) return "/";
+    // Remove language prefix like /EN, /HI, /UR once at the start
+    let p = path.replace(/^\/(EN|HI|UR)(?=\/|$)/, "");
+    if (p === "") p = "/";
+    return p;
+  };
+
+  const currentPath = normalizePath(pathname || "/");
+
+  // Determine if a given top-level section (e.g., "E-Books") is active.
+  // We map section EN slug (the pathname segment) to active state by checking:
+  //  - exact match: "/E-Books"
+  //  - nested route: "/E-Books/..."
+  const isActive = (slugEN: string) => {
+    const base = `/${slugEN}`;
+    return currentPath === base || currentPath.startsWith(base + "/");
+  };
 
   const handleLanguageChange = (selectedLanguage: Language) => {
     const customEvent = {
@@ -112,10 +136,10 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
   }, []);
 
   return (
-    <div className="sticky w-full z-50 top-0 font-noto-nastaliq">
+    <div className="fixed w-full z-50 top-0 font-noto-nastaliq">
       <AppBar
         position="static"
-        className="bg-[#F0D586] text-[#984A02] shadow-none"
+        className="bg-[#F0D586] text-[#984A02] shadow-none sticky top-0"
         style={{ backgroundColor: "#F0D586" }}
       >
         <Link
@@ -152,18 +176,21 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
             </Link>
             <div dir="rtl" className="w-0 lg:w-[100%]">
               <ul className="hidden lg:flex md:text-xs justify-center gap-4">
-                {pages.map((page) => (
-                  <li
-                    key={page.EN}
-                    className="text-[#984A02] hover:text-[#0E88D6] font-medium text-xl mr-2"
-                  >
-                    <Link
-                      href={{ pathname: `/${language === "UR" ? page.EN : `${language}/${page.EN}`}` }}
+                {pages.map((page) => {
+                  const active = isActive(page.EN);
+                  return (
+                    <li
+                      key={page.EN}
+                      className={`${active ? "text-[#0E88D6]" : "text-[#984A02]"} hover:text-[#0E88D6] font-medium text-xl mr-2`}
                     >
-                      {(page as any)[language]}
-                    </Link>
-                  </li>
-                ))}
+                      <Link
+                        href={{ pathname: `/${language === "UR" ? page.EN : `${language}/${page.EN}`}` }}
+                      >
+                        {(page as any)[language]}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
@@ -177,17 +204,18 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                 >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#F0D586] text-[#984A02]">
+                <SelectContent className="bg-[#F0D586] text-[#984A02] w-fit">
                   <SelectItem value="UR">اردو</SelectItem>
                   <SelectItem value="EN">English</SelectItem>
                   <SelectItem value="HI">हिंदी</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            <Search size={24} color="#984A02" />
             {/* donation button  */}
             <Link
               href={`https://rzp.io/l/QpiIjiU`}
-              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem]"
+              className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 text-[1rem]"
             >
               <button>
                 {language === "UR"
@@ -273,16 +301,19 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
                   id="navelems"
                   className="flex flex-col gap-3 text-center w-[80px]"
                 >
-                  {pages.map((page, index) => (
-                    <Link
-                      className="hover:text-white hover:bg-yellow-900 p-1 rounded-sm"
-                      key={index}
-                      href={{ pathname: `/${language == "UR" ? page.EN : language + "/" + page.EN}` }}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <li>{page[language as Language]}</li>
-                    </Link>
-                  ))}
+                  {pages.map((page, index) => {
+                    const active = isActive(page.EN);
+                    return (
+                      <Link
+                        className={`${active ? "text-[#0E88D6]" : ""} hover:text-white hover:bg-yellow-900 p-1 rounded-sm`}
+                        key={index}
+                        href={{ pathname: `/${language == "UR" ? page.EN : language + "/" + page.EN}` }}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <li>{page[language as Language]}</li>
+                      </Link>
+                    );
+                  })}
                   <li>
                     <InstallPWAButton />
                   </li>
@@ -291,23 +322,30 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
               <div>
                 <h3 className="text-black font-bold">More</h3>
                 <List>
-                  {["About_site", "About_owner", "Contact", "Programs"].map(
-                    (item) => (
-                      <ListItem key={item} disablePadding>
-                        <ListItemButton onClick={() => setMobileMenuOpen(false)}>
-                          <Link
-                            href={{
-                              pathname: `/${
-                                language == "UR" ? item : language + "/" + item
-                              }`,
-                            }}
-                            className="w-full block"
-                          >
-                            <ListItemText primary={item} />
-                          </Link>
-                        </ListItemButton>
-                      </ListItem>
-                    )
+                  {(["About_site", "About_owner", "Contact", "Programs"]).map(
+                    (item) => {
+                      const active = isActive(item);
+                      return (
+                        <ListItem key={item} disablePadding>
+                          <ListItemButton onClick={() => setMobileMenuOpen(false)}>
+                            <Link
+                              href={{
+                                pathname: `/${language == "UR" ? item : language + "/" + item
+                                  }`,
+                              }}
+                              className="w-full block"
+                            >
+                              <ListItemText
+                                primary={item}
+                                {...(active
+                                  ? { primaryTypographyProps: { className: "text-[#0E88D6]" } }
+                                  : {})}
+                              />
+                            </Link>
+                          </ListItemButton>
+                        </ListItem>
+                      );
+                    }
                   )}
                 </List>
               </div>
@@ -316,23 +354,26 @@ const Navbar: React.FC<NavbarProps> = ({ language, onLangChange }) => {
         </div>
       </Drawer>
 
-      <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full md:hidden p-4 overflow-x-scroll px-4">
+      <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full md:hidden p-4 overflow-x-scroll px-4 bg-white dark:bg-black bg-opacity-70 backdrop-blur-sm">
         <div className="flex text-xs gap-1">
-          {pages.map((page) => (
-            <div
-              key={page.EN}
-              className="text-secondary-foreground dark:text-secondary hover:text-[#0E88D6] font-medium text-sm min-w-[60px]"
-            >
-              <Link
-                href={{
-                  pathname: `/${language === "UR" ? page.EN : `${language}/${page.EN}`
-                    }`
-                }}
+          {pages.map((page) => {
+            const active = isActive(page.EN);
+            return (
+              <div
+                key={page.EN}
+                className={`${active ? "text-[#0E88D6]" : "text-secondary-foreground dark:text-secondary"} hover:text-[#0E88D6] font-medium text-sm min-w-[60px]`}
               >
-                {(page as any)[language]}
-              </Link>
-            </div>
-          ))}
+                <Link
+                  href={{
+                    pathname: `/${language === "UR" ? page.EN : `${language}/${page.EN}`
+                      }`
+                  }}
+                >
+                  {(page as any)[language]}
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

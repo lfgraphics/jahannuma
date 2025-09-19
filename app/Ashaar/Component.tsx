@@ -17,6 +17,14 @@ import DataCard from "../Components/DataCard";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Home, House, Search, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "../../components/ui/dialog";
 
 interface Shaer {
   fields: {
@@ -746,50 +754,48 @@ const Ashaar: React.FC<{}> = () => {
       >
         {toast}
       </div>
-      {showDialog && (
-        <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
-          <div
-            dir="rtl"
-            className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white"
-          >
-            <div className="dialog-content">
-              <p className="text-lg font-bold pb-3 border-b">
-                براہ کرم اپنا نام درج کریں
-              </p>
-              <p className="pt-2">
-                ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے
-                استعمال کریں گے
-              </p>
-              <input
-                type="text"
-                id="nameInput"
-                className="mt-2 p-2 border"
-                value={nameInput}
-                onChange={handleNameChange}
-              />
-              <div className=" mt-4">
-                <button
-                  id="submitBtn"
-                  disabled={nameInput.length < 4}
-                  className="px-4 py-2 bg-[#984A02] disabled:bg-gray-500 text-white rounded"
-                  onClick={handleNameSubmission}
-                >
-                  محفوظ کریں
-                </button>
-              </div>
-            </div>
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent dir="rtl" className="sm:max-w-[400px] bg-background text-foreground border border-border">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold pb-1 text-center">
+              براہ کرم اپنا نام درج کریں
+            </DialogTitle>
+            <DialogDescription className="pt-1">
+              ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے استعمال کریں گے
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-2">
+            <input
+              type="text"
+              id="nameInput"
+              className="mt-2 w-full p-2 rounded-md border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={nameInput}
+              onChange={handleNameChange}
+            />
           </div>
-        </div>
-      )}
-      <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-0 border-foreground border-b-2">
+          <DialogFooter className="mt-4">
+            <button
+              id="submitBtn"
+              disabled={nameInput.length < 4}
+              className="px-4 py-2 bg-[#984A02] hover:bg-[#8a4202] disabled:bg-gray-500 text-white rounded"
+              onClick={handleNameSubmission}
+            >
+              محفوظ کریں
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* top-[118px] */}
+      <div className="w-full z-10 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
           <div
             dir="rtl"
-            className="flex basis-[100%] justify-center items-center h-auto pt-2"
+            className="flex basis-[100%] justify-center items-center h-auto pt-1"
           >
-            <FontAwesomeIcon
-              icon={faHome}
-              className="text-[#984A02] text-2xl ml-3"
+            <House
+              color="#984A02"
+              className="ml-3"
+              size={30}
               onClick={() => {
                 window.location.href = "/";
               }}
@@ -797,7 +803,7 @@ const Ashaar: React.FC<{}> = () => {
             <input
               type="text"
               placeholder="لکھ کر تلاش کریں"
-              className="text-black border border-black focus:outline-none focus:border-l-0 border-l-0 p-2 w-64 leading-7"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -809,19 +815,21 @@ const Ashaar: React.FC<{}> = () => {
                 }
               }}
             />
-            <div className="justify-center bg-white h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-black">
-              <FontAwesomeIcon
+            <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+              <X
+                color="#984A02"
+                size={24}
                 onClick={clearSearch}
                 id="searchClear"
-                icon={faXmark}
-                className="hidden text-[#984A02] text-2xl cursor-pointer"
+                className="hidden text-[#984A02] cursor-pointer"
               />
             </div>
-            <div className="justify-center bg-white h-[100%] items-center flex w-11 border-t border-b border-l border-black">
-              <FontAwesomeIcon
+            <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+              <Search
+                color="#984A02"
+                size={24}
                 onClick={searchQuery}
                 id="searchIcon"
-                icon={faSearch}
                 className="hidden text-[#984A02] text-xl cursor-pointer"
               />
             </div>
@@ -884,20 +892,6 @@ const Ashaar: React.FC<{}> = () => {
             )}
           </div>
         </section>
-      )}
-      {/* //commetcard */}
-      {selectedCommentId && (
-        <button
-          // style={{ overflow: "hidden" }}
-          className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
-          id="modlBtn"
-          onClick={() => closeComments()}
-        >
-          <FontAwesomeIcon
-            icon={faTimesCircle}
-            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-          />
-        </button>
       )}
       {selectedCommentId && (
         <CommentSection

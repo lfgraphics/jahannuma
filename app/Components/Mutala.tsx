@@ -80,12 +80,12 @@ const Mutala = () => {
           <h2 className="text-2xl text-center mb-2">
             {mutalaData?.fields?.heading}
           </h2>
-          <p dir="rtl" className="p-6 bg-[#F3F4F6] leading-10">
+          <p dir="rtl" className="p-6 bg-[#F3F4F6] dark:bg-[#2d2d2f] leading-10">
             {mutalaData?.fields?.body}
           </p>
           <div
             dir="rtl"
-            className="flex w-full text-white bg-[#984A02] items-center justify-between px-7 pb-3 pt-4"
+            className="flex w-full dark:text-foreground text-background bg-[#984A02] items-center justify-between px-7 pb-3 pt-4"
           >
             {mutalaData.fields.hawalaLink ? (
               <p>

@@ -511,7 +511,7 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-0 border-foreground border-b-2">
+          <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
             <div className="filter-btn basis-[75%] text-center flex">
               <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
                 <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
@@ -543,7 +543,7 @@ const Page: React.FC<{}> = () => {
             {data.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">
                 <div
-                  className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-4 -right-4 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
+                  className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-[9px] -right-3 rounded-tr-sm w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
                   onClick={(e) =>
                     handleHeartClick(e, item, index, `${item.id}`)
                   }

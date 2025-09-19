@@ -783,19 +783,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       )}
       {/* //commetcard */}
       {selectedCommentId && (
-        <button
-          // style={{ overflow: "hidden" }}
-          className=" fixed bottom-24 left-7 z-50 rounded-full  h-10 w-10 pt-2 "
-          id="modlBtn"
-          onClick={() => closeComments()}
-        >
-          <FontAwesomeIcon
-            icon={faTimesCircle}
-            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-          />
-        </button>
-      )}
-      {selectedCommentId && (
         <CommentSection
           dataId={selectedCommentId}
           comments={comments}

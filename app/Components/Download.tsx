@@ -1,8 +1,16 @@
 "use client";
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Baseline, ImagePlus, PaintBucket, Plus, Settings2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../../components/ui/dialog";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../components/ui/accordion";
+import { Button } from "../../components/ui/button";
 
 // Use the unified domain type
 import type { Shaer } from "../types";
@@ -60,7 +68,7 @@ const DynamicDownloadHandler: React.FC<{
 
       html2canvas(
         document.getElementById("downloadArea")!,
-        options as any
+        { ...options, scale: 2 } // Increase the scale here
       ).then(function (canvas) {
         var anchorTag = document.createElement("a");
         document.body.appendChild(anchorTag);
@@ -83,112 +91,95 @@ const DynamicDownloadHandler: React.FC<{
   };
 
   return (
-    <div
-      ref={downloadHandlerRef}
-      className="bg-white max-h-[90svh] overflow-y-auto fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  flex flex-col justify-between p-4 rounded-md shadow-lg"
-    >
-      {/* Display shaer information */}
-      <div
-        id="downloadArea"
-        className="relative text-center bg-cover bg-center text-black overflow-hidden"
-        style={{ backgroundImage: `url(${selectedImage || images[0]})` }}
-      >
-        <div className="bg-black flex flex-col justify-center bg-opacity-60 relative text-white min-w-[300px] min-h-[300px] pt-12 p-8">
-          <div>
-            <p className="text-center pl-2">
-              {ghazalHeadLines.map((line, index) => (
-                <React.Fragment key={index}>
-                  {line}
-                  <br />
-                </React.Fragment>
-              ))}
-            </p>
-            <div className="m-4 text-sm">{data.fields.shaer}</div>
-            <div className="absolute text-white text-lg top-4 right-6">
-              جہاں نما
-            </div>
-            <div className="absolute text-white text-2xl font-bold w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-10 z-0">
-              Jahan Numa
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Display background image selection */}
-      <div className={`flex flex-col mt-2 mb-2 items-center justify-center`}>
-        <p className="text-lg">پس منظر تصویر منتخب کریں </p>
-        <div className="images_wraper flex w-[280px] overflow-x-auto">
-          {images.map((image, index) => (
-            <img
-              width={280}
-              height={280}
-              key={index}
-              src={image}
-              alt={`Image ${index}`}
-              className={`w-8 h-8 m-1 cursor-pointer transition-all duration-500 rounded-sm mt-4 ${
-                image == selectedImage
-                  ? "border-2 border-[#984A02] scale-125"
-                  : ""
-              }`}
-              onClick={() => handleImageSelect(image)}
-            ></img>
-          ))}
-        </div>
-        <div className={`accordion mb-4  w-full`}>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <DialogContent className="sm:max-w-[420px] bg-background text-foreground border border-border p-0">
+        <DialogHeader className="px-4 pt-4">
+          <DialogTitle>تصویر ڈاؤنلوڈ</DialogTitle>
+          <DialogDescription>پس منظر منتخب کریں اور تصویر محفوظ کریں</DialogDescription>
+        </DialogHeader>
+        <div ref={downloadHandlerRef} className="max-h-[85svh] overflow-y-auto px-4 pb-4">
+          {/* Display shaer information */}
           <div
-            className={`accordion-header ${
-              isOpen && "bg-gray-200  "
-            } p-3 flex items-center cursor-pointer`}
-            onClick={toggleAccordion}
+            id="downloadArea"
+            className="relative text-center bg-cover bg-center text-black overflow-hidden aspect-square w-full max-w-[360px] mx-auto"
+            style={{ backgroundImage: `url(${selectedImage || images[0]})` }}
           >
-            {isOpen ? (
-              <ChevronUp className="text-md ml-5" />
-            ) : (
-              <ChevronDown className="text-md ml-5" />
-            )}
-            <span className="flex flex-1 gap-2">مزید ترمیمی <Settings2 /> </span>
-          </div>
-          {isOpen && (
-            <div className="accordion-content p-3 border-t flex justify-around items-center">
-              <div className="flex max-w-full overflow-x-auto flex-row h-[120px] gap-3 flex-wrap" >
-                <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
-                  <Baseline />
-                  <p className="text-xs">خط کا رنگ تبدیل کریں</p>
+            <div className="bg-black flex flex-col justify-center bg-opacity-60 relative text-white w-full h-full pt-12 p-8">
+              <div>
+                <p className="text-center pl-2">
+                  {ghazalHeadLines.map((line, index) => (
+                    <React.Fragment key={index}>
+                      {line}
+                      <br />
+                    </React.Fragment>
+                  ))}
+                </p>
+                <div className="m-4 text-sm">{data.fields.shaer}</div>
+                <div className="absolute text-white text-lg top-4 right-6">
+                  جہاں نما
                 </div>
-                <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
-                  <PaintBucket />
-                  <p className="text-xs">پسِ منظر کا رنگ تبدیل کریں</p>
-                </div>
-                <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
-                  <ImagePlus />
-                  <p className="text-xs">اپنی تصویل اپلوڈ کریں</p>
-                </div>
-                <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
-                  <Plus />
-                  {/* <p className="txst-sm">اپنی تصویل اپلوڈ کریں</p> */}
+                <div className="absolute text-white text-2xl font-bold w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-10 z-0">
+                  Jahan Numa
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Display buttons for download and cancel */}
-      <div className="flex justify-around mt-4">
-        <button
-          onClick={download}
-          className="bg-[#984A02] text-white px-4 py-2 mr-2 rounded"
-        >
-          ڈاؤنلوڈ کریں
-        </button>
-        <button
-          onClick={onCancel}
-          className="bg-gray-500 text-white px-4 py-2 rounded"
-        >
-          منسوخ کریں
-        </button>
-      </div>
-    </div>
+          {/* Display background image selection */}
+          <div className={`flex flex-col mt-2 mb-2 items-center justify-center`}>
+            <p className="text-lg">پس منظر تصویر منتخب کریں </p>
+            <div className="images_wraper flex w-[280px] overflow-x-auto">
+              {images.map((image, index) => (
+                <img
+                  width={280}
+                  height={280}
+                  key={index}
+                  src={image}
+                  alt={`Image ${index}`}
+                  className={`w-8 h-8 m-1 cursor-pointer transition-all duration-500 rounded-sm mt-4 ${image == selectedImage
+                      ? "border-2 border-[#984A02] scale-125"
+                      : ""
+                    }`}
+                  onClick={() => handleImageSelect(image)}
+                ></img>
+              ))}
+            </div>
+            <Accordion dir="rtl" type="single" collapsible className="w-full mb-4">
+              <AccordionItem value="tweaks">
+                <AccordionTrigger dir="rtl" className="px-3">
+                  <span className="flex gap-2 items-center justify-between">مزید ترمیمی <Settings2 className="h-4 w-4" /></span>
+                </AccordionTrigger>
+                <AccordionContent className="border-t">
+                  <div className="flex max-w-full overflow-x-auto flex-row h-[120px] gap-3 flex-wrap p-3">
+                    <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                      <Baseline />
+                      <p className="text-xs">خط کا رنگ تبدیل کریں</p>
+                    </div>
+                    <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                      <PaintBucket />
+                      <p className="text-xs">پسِ منظر کا رنگ تبدیل کریں</p>
+                    </div>
+                    <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                      <ImagePlus />
+                      <p className="text-xs">اپنی تصویل اپلوڈ کریں</p>
+                    </div>
+                    <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                      <Plus />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
+          {/* Display buttons for download and cancel */}
+          <div className="flex justify-around gap-3 mt-4 px-4 pb-4 flex-row-reverse">
+            <Button onClick={download} className="bg-[#984A02] text-white hover:bg-[#8a4202]">ڈاؤنلوڈ کریں</Button>
+            <Button onClick={onCancel} variant="outline">منسوخ کریں</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -714,7 +714,7 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-0 border-foreground border-b-2">
+      <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
           <div dir="rtl" className="flex basis-[100%] justify-center items-center h-auto pt-1">
             <Home color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />

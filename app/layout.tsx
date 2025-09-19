@@ -137,7 +137,7 @@ export default function RootLayout({
             <header className="w-full flex items-center justify-between gap-4">
               <Navbar language={language} onLangChange={langChange} />
             </header>
-            <main className="flex-1">
+            <main className="flex-1 mt-[125px] md:mt-[60px]">
               {children}
             </main>
             <Footer language={language} />

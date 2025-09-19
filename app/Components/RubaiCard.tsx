@@ -30,7 +30,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
         dir="rtl"
         key={index}
         id={`card${index}`}
-        className={`${index % 2 === 1 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-background'} p-4 rounded-sm  relative flex flex-col items-center justify-between`}
+        className={`${index % 2 === 1 ? 'bg-gray-50 dark:bg-[#2d2d2f]' : 'bg-background'} p-4 rounded-sm  relative flex flex-col items-center justify-between`}
       >
         <div className="unwan text-center text-[#984A02] text-2xl mb-2">
           <p>{RubaiData.fields.unwan}</p>

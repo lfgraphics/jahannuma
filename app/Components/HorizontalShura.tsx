@@ -122,7 +122,7 @@ const HorizontalShura = () => {
           <div
             id="section"
             dir="rtl"
-            className="flex flex-row-reverse overflow-auto gap-4 py-6 pt-3 px-6 items-center"
+            className="flex flex-row-reverse overflow-auto gap-4 py-6 pt-3 px-6 items-center bg-[#F3F4F6] dark:bg-[#2d2d2f]"
           >
             {data.map((item, index) => (
               <div className="w-[240px]" key={index}>
@@ -130,7 +130,7 @@ const HorizontalShura = () => {
               </div>
             ))}
             <Link className=" text-white text-4xl font-bold" href={"/Shaer"}>
-              <ChevronRightCircle color="#984A02" size={24} />
+              <ChevronRightCircle color="#984A02" size={36} />
             </Link>
           </div>
         </div>

@@ -5,8 +5,8 @@ import React from "react";
 const Branches = () => {
   return (
     <div>
-      <div className=" bg-gray-100">
-        <div className="pt-7 text-2xl text-center text-gray-700">
+      <div className="bg-gray-100 dark:bg-[#2d2d2f]">
+        <div className="pt-7 text-2xl text-center">
           جہاں نما کی شاخیں
         </div>
         <div className="w-full overflow-x-auto">
@@ -20,7 +20,7 @@ const Branches = () => {
                   height={300}
                   className="w-full h-auto"
                 ></img>
-                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-white text-gray-900 p-4 text-xl ">
+                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-card text-card-foreground p-4 text-xl ">
                   <p>بزم اردو</p>
                 </div>
               </Link>
@@ -34,7 +34,7 @@ const Branches = () => {
                   height={450}
                   className="w-full h-auto"
                 ></img>
-                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-white text-gray-900 p-4 text-xl ">
+                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-card text-card-foreground p-4 text-xl ">
                   <p>بزم ھندی</p>
                 </div>
               </Link>
@@ -48,7 +48,7 @@ const Branches = () => {
                   height={450}
                   className="w-full h-auto"
                 ></img>
-                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-white text-gray-900 p-4 text-xl ">
+                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-card text-card-foreground p-4 text-xl ">
                   <p>بلاگز</p>
                 </div>
               </Link>
@@ -62,7 +62,7 @@ const Branches = () => {
                   height={450}
                   className="w-full h-auto"
                 ></img>
-                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-white text-gray-900 p-4 text-xl ">
+                <div className="absolute bottom-0 text-center w-full h-16 transition-all duration-500 bg-card text-card-foreground p-4 text-xl ">
                   <p>انٹرویو</p>
                 </div>
               </Link>
