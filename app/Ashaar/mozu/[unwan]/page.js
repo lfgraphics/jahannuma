@@ -1,10 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import gsap from "gsap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTimesCircle,
-} from "@fortawesome/free-solid-svg-icons";
+import { XCircle } from "lucide-react";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
@@ -363,17 +359,6 @@ const Page = ({ params }) => {
       console.error("Error sharing:", error);
     }
   };
-  //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
   //opening and closing ghazal
   const handleCardClick = (shaerData) => {
     toggleanaween(null);
@@ -386,23 +371,9 @@ const Page = ({ params }) => {
       },
     });
 
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-      if (typeof window !== undefined) {
-        document.getElementById("modlBtn")?.classList.remove("hidden");
-      }
-    }
+    // open modal instantly without GSAP
   };
   const handleCloseModal = () => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
     setSelectedCard(null);
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
@@ -725,10 +696,7 @@ const Page = ({ params }) => {
                 className="sticky top-4 right-7 z-50"
                 onClick={handleCloseModal}
               >
-                <FontAwesomeIcon
-                  icon={faTimesCircle}
-                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-                />
+                <XCircle className="text-gray-700 h-8 w-8 hover:text-[#984A02] transition-all duration-500 ease-in-out" />
               </button>
               <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}
@@ -753,10 +721,7 @@ const Page = ({ params }) => {
           id="modlBtn"
           onClick={() => closeComments()}
         >
-          <FontAwesomeIcon
-            icon={faTimesCircle}
-            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-          />
+          <XCircle className="text-gray-700 h-8 w-8 hover:text-[#984A02] transition-all duration-500 ease-in-out" />
         </button>
       )}
       {selectedCommentId && (

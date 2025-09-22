@@ -1,11 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import gsap from "gsap";
 import LocalGhazalCard from "./LocalDataCard";
 import ToastComponent from "./Toast";
-import { Home, Search, X, XCircle } from "lucide-react";
-import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
-// import React {useEffect} from 'react'
+import { TimesCircleIcon as XCircle } from "../../lib/icons";
 interface Shaer {
   fields: {
     sher: string[];
@@ -34,19 +31,16 @@ const Ghazlen = () => {
   const [hideAnimation, setHideAnimation] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [insideBrowser, setInsideBrowser] = useState(false);
-  
+
   useEffect(() => {
     setInsideBrowser(true);
   }, []);
 
   useEffect(() => {
-    if(insideBrowser){
-    let retrivedData = localStorage.getItem("Ghazlen");
-    console.log(retrivedData)
-    let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
-    setData(parsedData);
-    console.log(retrivedData);
-    console.log(parsedData);
+    if (insideBrowser) {
+      let retrivedData = localStorage.getItem("Ghazlen");
+      let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
+      setData(parsedData);
     }
   }, []);
 
@@ -89,7 +83,7 @@ const Ghazlen = () => {
 
   const handleHeartClick = async (
     shaerData: Shaer,
-    index: any,
+    index: number,
     id: string
   ): Promise<void> => {
     toggleanaween(null);
@@ -193,17 +187,6 @@ const Ghazlen = () => {
       console.error("Error sharing:", error);
     }
   };
-  //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
   //opening and closing ghazal
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
@@ -215,24 +198,8 @@ const Ghazlen = () => {
         id: shaerData.fields.id,
       },
     });
-
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-      if (typeof window !== undefined) {
-        document.getElementById("modlBtn")?.classList.remove("hidden");
-      }
-    }
   };
   const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
     setSelectedCard(null);
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
@@ -316,7 +283,7 @@ const Ghazlen = () => {
                 className="sticky top-4 right-7 z-50"
                 onClick={handleCloseModal}
               >
-                <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
+                <XCircle className="text-muted-foreground text-3xl hover:text-primary transition-all duration-500 ease-in-out" />
               </button>
               <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}

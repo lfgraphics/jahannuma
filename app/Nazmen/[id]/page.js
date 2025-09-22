@@ -2,15 +2,15 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import ComponentsLoader from "@/app/Components/shaer/ComponentsLoader";
+import { useParams } from "next/navigation";
 
-
-const Page = ({ params }) => {
+const Page = () => {
   const [data, setData] = useState([]);
-  const [id, setId] = useState("");
+  const params = useParams();
+  const id = params?.id;
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setId(params.id);
     const fetchData = async () => {
       setLoading(true)
       try {
@@ -25,14 +25,18 @@ const Page = ({ params }) => {
         const response = await fetch(url, { method: "GET", headers });
         const result = await response.json();
 
-        setData(result.records[0].fields)
-        setLoading(false)
+        if (result.records && result.records.length > 0) {
+          setData(result.records[0].fields);
+        } else {
+          console.warn('No records found for the given ID');
+          setData({});
+        }        setLoading(false)
       } catch (error) {
         setLoading(false)
         console.error(`Failed to fetch data: ${error}`);
       }
     };
-    fetchData();
+    if (id) fetchData();
   }, [id]);
   const ghazalLines = data.nazm?.split('\n');
   const anaween = data.unwan?.split('\n');

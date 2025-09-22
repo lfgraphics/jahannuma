@@ -22,8 +22,7 @@ interface Comment {
   comment: string;
 }
 
-const Page = ({ params }: { params: { name: string } }) => {
-  const [selectedCommentId, setSelectedCommentId] = React.useState<
+const Page = ({ params }: { params: { name: string } }) => {  const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
   const [voffset, setOffset] = useState<string | null>("");

@@ -7,7 +7,7 @@
 .nav-item.active::after {
     content: '';
     display: block;
-    border-bottom: 3px solid #984A02;
+    border-bottom: 3px solid var(--color-primary, hsl(var(--primary)));
     margin-top: 5px;
     transition: all 0.5s ease-in-out;
 }

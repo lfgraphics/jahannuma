@@ -1,5 +1,6 @@
 import { CalendarDays, MapPin, Share2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import Loader from "../Loader";
 
 interface IntroProps {
   data: {
@@ -78,11 +79,10 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
     }
   }, []);
 
-  console.log(data);
   return (
     <>
       {!data && (
-        <div className="min-h-full min-w-full bg-gray-300 rounded-lg animate-pulse dark:bg-gray-700"></div>
+        <Loader />
       )}
       {data && (
         <div dir="rtl" className="container flex flex-col justify-center ">

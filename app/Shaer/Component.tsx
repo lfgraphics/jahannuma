@@ -511,14 +511,14 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
+          <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
             <div className="filter-btn basis-[75%] text-center flex">
               <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
                 <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
                 <input
                   type="text"
                   placeholder="لکھ کر تلاش کریں"
-                  className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
+                  className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
                   id="searchBox"
                   onKeyUp={(e) => {
                     handleSearchKeyUp(e);
@@ -530,20 +530,20 @@ const Page: React.FC<{}> = () => {
                     }
                   }}
                 />
-                <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+                <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
                   <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
                 </div>
-                <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+                <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
                   <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
                 </div>
               </div>
             </div>
           </div>
-          <div id="section" dir="rtl" className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sticky m-3`}>
+          <div id="section" dir="rtl" className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sticky top-[128px] m-3`}>
             {data.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">
                 <div
-                  className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-[9px] -right-3 rounded-tr-sm w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
+                  className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-[9px] -right-3 rounded-tr-sm w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 backdrop-blur-sm z-10"
                   onClick={(e) =>
                     handleHeartClick(e, item, index, `${item.id}`)
                   }

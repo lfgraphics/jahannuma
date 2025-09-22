@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import gsap from "gsap";
 import { XCircle } from "lucide-react";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
@@ -41,8 +40,7 @@ interface Comment {
   comment: string;
 }
 
-const Ashaar = ({ params }: { params: { name: string } }) => {
-  const [selectedCommentId, setSelectedCommentId] = React.useState<
+const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
   const [selectedCard, setSelectedCard] = React.useState<{
@@ -410,16 +408,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     }
   };
   //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
   //opening and closing ghazal
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
@@ -432,23 +420,9 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       },
     });
 
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-      if (typeof window !== undefined) {
-        document.getElementById("modlBtn")?.classList.remove("hidden");
-      }
-    }
+    // open modal instantly without GSAP
   };
   const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
     setSelectedCard(null);
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey

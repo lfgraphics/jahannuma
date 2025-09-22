@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { formatDistanceToNow } from "date-fns";
 import {
   Drawer,
   DrawerContent,
@@ -8,9 +7,9 @@ import {
   DrawerTitle,
   DrawerDescription,
   DrawerFooter,
+  DrawerClose,
 } from "../../components/ui/drawer";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { XCircle } from "lucide-react";
 
 interface Comment {
   dataId: string | null;
@@ -70,23 +69,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     >
       <DrawerContent
         dir="rtl"
-        className={`z-50 sm:max-w-[800px] mx-auto ${
-          isInputFocused ? "max-h-[92dvh]" : "max-h-[65dvh]"
-        }`}
+        className={`z-50 sm:max-w-[800px] mx-auto ${isInputFocused ? "max-h-[92dvh]" : "max-h-[65dvh]"
+          }`}
       >
-        <div className="relative">
-          {/* Top-right close button */}
-          <button
-            className="absolute top-2 right-2 z-50 rounded-full h-10 w-10 flex items-center justify-center"
-            onClick={onCloseComments}
-            aria-label="Close comments"
-          >
-            <FontAwesomeIcon
-              icon={faTimesCircle}
-              className="text-foreground/80 text-2xl hover:text-[#984A02] transition-all duration-300 ease-in-out"
-            />
-          </button>
-        </div>
+        {/* Top-right close button */}
+        <DrawerClose
+          className="absolute top-2 right-2 z-50 rounded-full h-10 w-10 flex items-center justify-center"
+          // onClick={onCloseComments}
+          aria-label="Close comments"
+        >
+          <XCircle className="text-foreground/80 text-2xl hover:text-primary transition-all duration-300 ease-in-out" />
+        </DrawerClose>
+        {/* </div> */}
         <DrawerHeader className="pt-6 pb-2">
           <DrawerTitle className="text-foreground text-center">تبصرے</DrawerTitle>
           <DrawerDescription className="text-muted-foreground text-center w-fit mx-auto">
@@ -95,12 +89,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         </DrawerHeader>
         {/* Use dvh so height reacts to mobile browser UI, and expand while typing so the composer stays visible */}
         <div
-          className={`flex flex-col min-h-0 overflow-y-auto overscroll-contain ${
-            isInputFocused ? "h-[92dvh]" : "h-[65dvh]"
-          }`}
+          className={`flex flex-col min-h-0 overflow-y-auto overscroll-contain ${isInputFocused ? "h-[92dvh]" : "h-[65dvh]"
+            }`}
         >
           {/* Comments list */}
-                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-4">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-4">
             {commentLoading && (
               <div className="flex items-center justify-center">
                 <div className="w-6 h-6 border-t-4 border-[#984A02] m-3 rounded-full animate-spin"></div>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import html2canvas from "html2canvas";
+import { toPng } from 'html-to-image';
 import { Baseline, ImagePlus, PaintBucket, Plus, Settings2 } from "lucide-react";
 import {
   Dialog,
@@ -14,6 +14,9 @@ import { Button } from "../../components/ui/button";
 
 // Use the unified domain type
 import type { Shaer } from "../types";
+import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getButtonText } from "@/lib/multilingual-texts";
 
 // Define the DynamicDownloadHandler component
 const DynamicDownloadHandler: React.FC<{
@@ -26,10 +29,12 @@ const DynamicDownloadHandler: React.FC<{
     if (Array.isArray(head)) return head.filter(Boolean);
     return head.split("\n").filter(Boolean);
   }, [data]);
+  const { language } = useLanguage();
   // State for selected background image
   const [selectedImage, setSelectedImage] = useState<string | null>(
     "/backgrounds/1.jpeg"
   );
+  const [fileName, setFileName] = useState<string>("poetry");
 
   // Ref for the download handler container
   const downloadHandlerRef = useRef<HTMLDivElement>(null);
@@ -59,29 +64,60 @@ const DynamicDownloadHandler: React.FC<{
   };
 
   // Function to handle the download button click
-  const download = () => {
-    // Logic to convert the selected area to image using html2canvas
-    if (downloadHandlerRef.current) {
-      const options = {
-        quality: 10, // Adjust this value as needed
-      };
+  const download = async () => {
+    // Logic to convert the selected area to image using html-to-image
+    if (!downloadHandlerRef.current) return;
 
-      html2canvas(
-        document.getElementById("downloadArea")!,
-        { ...options, scale: 2 } // Increase the scale here
-      ).then(function (canvas) {
-        var anchorTag = document.createElement("a");
-        document.body.appendChild(anchorTag);
-        anchorTag.download = `${prompt(
-          "محفوظ کرنے کے لیے تصویر کا نام درج کریں"
-        )} جہاں نما کی ویبسائٹ سے.png`;
-        anchorTag.href = canvas.toDataURL();
-        anchorTag.target = "_blank";
-        anchorTag.click();
-        onCancel();
-      });
+    // Strict filename sanitizer
+    const sanitizeFilename = (input: string): string => {
+      let name = (input ?? "").trim();
+      // Strip common image extensions at the end
+      name = name.replace(/\.(png|jpe?g|webp|gif|bmp|tiff)$/i, "");
+      // Convert spaces to underscores
+      name = name.replace(/\s+/g, "_");
+      // Remove any character not in [A-Za-z0-9_-]
+      name = name.replace(/[^A-Za-z0-9_-]/g, "");
+      // Collapse multiple underscores or hyphens
+      name = name.replace(/[_-]{2,}/g, (m) => m[0]);
+      // Trim leading/trailing separators
+      name = name.replace(/^[_-]+|[_-]+$/g, "");
+      // Limit length
+      if (name.length > 100) name = name.slice(0, 100);
+      // Fallback
+      if (!name) name = "poetry";
+      return name;
+    };
+
+    // html-to-image options
+    const options = {
+      pixelRatio: 2,
+      quality: 2,
+      canvasWidth: 1080,
+      canvasHeight: 1080,
+      innerWidth: 1080,
+      innerHeight: 1080,
+    } as const;
+
+    const downloadArea = document.getElementById("downloadArea");
+    if (!downloadArea) return;
+
+    try {
+      const dataUrl = await toPng(downloadArea as HTMLElement, options as any);
+      const base = sanitizeFilename(fileName || "poetry");
+      const a = document.createElement("a");
+      document.body.appendChild(a);
+      a.download = `${base} جہاں نما کی ویبسائٹ سے.png`;
+      a.href = dataUrl;
+      a.target = "_blank";
+      a.click();
+      a.remove();
+      onCancel();
+    } catch (error) {
+      toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
+      console.error("Error generating image:", error);
     }
   };
+
 
   // accordian
   const [isOpen, setIsOpen] = useState(false);
@@ -97,14 +133,14 @@ const DynamicDownloadHandler: React.FC<{
           <DialogTitle>تصویر ڈاؤنلوڈ</DialogTitle>
           <DialogDescription>پس منظر منتخب کریں اور تصویر محفوظ کریں</DialogDescription>
         </DialogHeader>
-        <div ref={downloadHandlerRef} className="max-h-[85svh] overflow-y-auto px-4 pb-4">
+        <div ref={downloadHandlerRef} className="max-h-[75svh] overflow-y-auto px-4 pb-4">
           {/* Display shaer information */}
           <div
             id="downloadArea"
-            className="relative text-center bg-cover bg-center text-black overflow-hidden aspect-square w-full max-w-[360px] mx-auto"
+            className="relative text-center bg-cover bg-center text-foreground overflow-hidden aspect-square w-full max-w-[360px] mx-auto"
             style={{ backgroundImage: `url(${selectedImage || images[0]})` }}
           >
-            <div className="bg-black flex flex-col justify-center bg-opacity-60 relative text-white w-full h-full pt-12 p-8">
+            <div className="bg-black/70 flex flex-col justify-center bg-opacity-60 relative text-white w-full h-full pt-12 p-8">
               <div>
                 <p className="text-center pl-2">
                   {ghazalHeadLines.map((line, index) => (
@@ -136,13 +172,20 @@ const DynamicDownloadHandler: React.FC<{
                   key={index}
                   src={image}
                   alt={`Image ${index}`}
-                  className={`w-8 h-8 m-1 cursor-pointer transition-all duration-500 rounded-sm mt-4 ${image == selectedImage
-                      ? "border-2 border-[#984A02] scale-125"
-                      : ""
-                    }`}
+                  className={`w-8 h-8 m-1 cursor-pointer transition-all duration-500 rounded-sm mt-4 ${image == selectedImage ? "border-2 border-primary scale-125" : ""}`}
                   onClick={() => handleImageSelect(image)}
                 ></img>
               ))}
+            </div>
+            <div className="w-full mt-3">
+              <label htmlFor="file-name" className="text-sm">فائل کے نام</label>
+              <input
+                id="file-name"
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="مثلاً: poetry"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+              />
             </div>
             <Accordion dir="rtl" type="single" collapsible className="w-full mb-4">
               <AccordionItem value="tweaks">
@@ -151,19 +194,19 @@ const DynamicDownloadHandler: React.FC<{
                 </AccordionTrigger>
                 <AccordionContent className="border-t">
                   <div className="flex max-w-full overflow-x-auto flex-row h-[120px] gap-3 flex-wrap p-3">
-                    <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                    <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                       <Baseline />
                       <p className="text-xs">خط کا رنگ تبدیل کریں</p>
                     </div>
-                    <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                    <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                       <PaintBucket />
                       <p className="text-xs">پسِ منظر کا رنگ تبدیل کریں</p>
                     </div>
-                    <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                    <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                       <ImagePlus />
                       <p className="text-xs">اپنی تصویل اپلوڈ کریں</p>
                     </div>
-                    <div onClick={() => alert("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-[#984A02] hover:text-white transition-all duration-500 ease-in-out select-none">
+                    <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                       <Plus />
                     </div>
                   </div>
@@ -174,7 +217,7 @@ const DynamicDownloadHandler: React.FC<{
 
           {/* Display buttons for download and cancel */}
           <div className="flex justify-around gap-3 mt-4 px-4 pb-4 flex-row-reverse">
-            <Button onClick={download} className="bg-[#984A02] text-white hover:bg-[#8a4202]">ڈاؤنلوڈ کریں</Button>
+            <Button onClick={download} className="bg-primary text-primary-foreground hover:bg-primary/90">ڈاؤنلوڈ کریں</Button>
             <Button onClick={onCancel} variant="outline">منسوخ کریں</Button>
           </div>
         </div>

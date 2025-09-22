@@ -1,9 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Card from "../Components/BookCard";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { House, Search, X } from "lucide-react";
+import { Heart, House, Search, X } from "lucide-react";
 import ToastComponent from "../Components/Toast";
 import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
@@ -469,31 +467,21 @@ const Page: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          // disabled={!searchText}
+        // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
-            <div className="filter-btn basis-[75%] justify-center text-center flex">
-              <div
-                dir="rtl"
-                className="flex basis-[100%] justify-center items-center h-auto pt-1"
-              >
-                <House
-                  color="#984A02"
-                  className="ml-3"
-                  size={30}
-                  onClick={() => {
-                    window.location.href = "/";
-                  }}
-                />
+          <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
+            <div className="filter-btn basis-[75%] text-center flex">
+              <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
+                <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
                 <input
                   type="text"
                   placeholder="لکھ کر تلاش کریں"
-                  className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
+                  className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
                   id="searchBox"
                   onKeyUp={(e) => {
                     handleSearchKeyUp(e);
@@ -505,23 +493,11 @@ const Page: React.FC<{}> = () => {
                     }
                   }}
                 />
-                <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
-                  <X
-                    color="#984A02"
-                    size={24}
-                    onClick={clearSearch}
-                    id="searchClear"
-                    className="hidden text-[#984A02] cursor-pointer"
-                  />
+                <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+                  <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
                 </div>
-                <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
-                  <Search
-                    color="#984A02"
-                    size={24}
-                    onClick={searchQuery}
-                    id="searchIcon"
-                    className="hidden text-[#984A02] text-xl cursor-pointer"
-                  />
+                <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+                  <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
                 </div>
               </div>
             </div>
@@ -540,7 +516,7 @@ const Page: React.FC<{}> = () => {
                   }
                   id={`${item.id}`}
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
+                  <Heart className="text-xl ml-3" />
                   <span className="text-black">{`${item.fields?.likes}`}</span>
                 </div>
                 <Card data={item} />
@@ -557,8 +533,8 @@ const Page: React.FC<{}> = () => {
                 {moreloading
                   ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                  ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
-                  : "مزید شعراء کی تفصیات لوڈ کریں"}
+                    ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
+                    : "مزید شعراء کی تفصیات لوڈ کریں"}
               </button>
             </div>
           )}

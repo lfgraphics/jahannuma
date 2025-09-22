@@ -1,7 +1,7 @@
 // ToastComponent.tsx
-import React, { useEffect } from "react";
-import { CheckCircle2, CircleX, AlertCircle, X } from "lucide-react";
-import "./toast.css"; // You can use Tailwind classes in this CSS file
+import React from "react";
+import { CheckCircle2, CircleX, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface ToastProps {
   msgtype: "success" | "error" | "invalid";
@@ -10,54 +10,48 @@ interface ToastProps {
 }
 
 const ToastComponent: React.FC<ToastProps> = ({ msgtype, message, onHide }) => {
-  const getIconAndColor = () => {
-  let icon: React.ReactNode = null;
-    let bgColor = "";
-
+  const getIconAndConfig = () => {
+    let icon: React.ReactNode = null;
+    
     switch (msgtype) {
       case "success":
-        icon = <CheckCircle2 className="mx-4 text-4xl" />;
-        bgColor = "text-green-500";
+        icon = <CheckCircle2 className="text-2xl" />;
+        toast.success(message, {
+          icon: icon,
+          duration: 6000,
+          onDismiss: onHide
+        });
         break;
       case "error":
-        icon = <CircleX className="mx-4 text-4xl" />;
-        bgColor = "text-red-500";
+        icon = <CircleX className="text-2xl" />;
+        toast.error(message, {
+          icon: icon,
+          duration: 6000,
+          onDismiss: onHide
+        });
         break;
       case "invalid":
-        icon = <AlertCircle className="mx-4 text-4xl" />;
-        bgColor = "text-yellow-500";
+        icon = <AlertCircle className="text-2xl" />;
+        toast.warning(message, {
+          icon: icon,
+          duration: 6000,
+          onDismiss: onHide
+        });
         break;
       default:
         break;
     }
-
-    return { icon, bgColor };
+    
+    return { icon };
   };
 
-  const { icon, bgColor } = getIconAndColor();
+  // Trigger the toast immediately when component mounts
+  React.useEffect(() => {
+    getIconAndConfig();
+  }, [message, msgtype]);
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      onHide();
-    }, 6000); // Hide after 5 seconds
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [onHide]);
-
-  return (
-    <div
-      className={`toast`}
-      //   onClick={clearTimeout(timeoutId)}
-    >
-      {icon && <span className={`${bgColor}`}>{icon}</span>}
-      <p className="text-black">{message}</p>
-      <button onClick={onHide} className="text-black ml-4 focus:outline-none">
-        <X className="text-black mr-4 text-2xl" />
-      </button>
-    </div>
-  );
+  // Return null as we're using the sonner toast directly
+  return null;
 };
 
 export default ToastComponent;

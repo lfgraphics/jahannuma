@@ -44,7 +44,7 @@ const Card = ({ data }: CardProps) => {
               alt="Poet's Photo"
             />
           )}
-          <div className="absolute bottom-0 w-full text-center p-2 bg-black bg-opacity-75 text-white">
+          <div className="absolute bottom-0 w-full text-center p-2 bg-black/40 text-white backdrop-blur-sm" style={{ WebkitBackdropFilter: 'blur(4px)' }}>
             {takhallus}
           </div>
         </div>

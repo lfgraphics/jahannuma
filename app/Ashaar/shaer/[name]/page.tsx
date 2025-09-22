@@ -1,8 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import gsap from "gsap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { XCircle } from "lucide-react";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
@@ -42,8 +40,8 @@ interface Comment {
   comment: string;
 }
 
-const Ashaar = ({ params }: { params: { name: string } }) => {
-  const [selectedCommentId, setSelectedCommentId] = React.useState<
+const Ashaar = async ({ params }: { params: Promise<{ name: string }> }) => {
+  const { name } = await params;  const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
   const [selectedCard, setSelectedCard] = React.useState<{
@@ -135,7 +133,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       };
       //airtable fetch url and methods
       let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${decodeURIComponent(
-        params.name
+        (await params).name
       ).replace("_", " ")}')`;
 
       const response = await fetch(url, { method: "GET", headers });
@@ -407,17 +405,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       console.error("Error sharing:", error);
     }
   };
-  //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
   //opening and closing ghazal
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
@@ -430,23 +417,9 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
       },
     });
 
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-      if (typeof window !== undefined) {
-        document.getElementById("modlBtn")?.classList.remove("hidden");
-      }
-    }
+    // open modal instantly without GSAP
   };
   const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
     setSelectedCard(null);
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
@@ -714,7 +687,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         </div>
       )}
       <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">
-        {`${decodeURIComponent(params.name).replace("_", " ")} کے اشعار`}
+        {`${decodeURIComponent((await params).name).replace("_", " ")} کے اشعار`}
       </div>
       {loading && <SkeletonLoader />}
       {!loading && (
@@ -761,10 +734,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
                 className="sticky top-4 right-7 z-50"
                 onClick={handleCloseModal}
               >
-                <FontAwesomeIcon
-                  icon={faTimesCircle}
-                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-                />
+                <XCircle className="text-muted-foreground text-3xl hover:text-primary transition-all duration-500 ease-in-out" />
               </button>
               <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}

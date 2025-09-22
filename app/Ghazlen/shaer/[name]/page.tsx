@@ -1,8 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import gsap from "gsap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { XCircle } from "lucide-react";
 import { format } from "date-fns";
 import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
@@ -150,7 +148,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   useEffect(() => {
     fetchData();
   }, []);
- 
+
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -393,16 +391,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
     }
   };
   //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
   //opening and closing ghazal
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
@@ -414,24 +402,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
         id: shaerData.fields.id,
       },
     });
-
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-      if (typeof window !== undefined) {
-        document.getElementById("modlBtn")?.classList.remove("hidden");
-      }
-    }
   };
   const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
     setSelectedCard(null);
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
@@ -658,9 +630,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
   return (
     <div>
       <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+        className={`toast-container ${hideAnimation ? " hide " : ""
+          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
       >
         {toast}
       </div>
@@ -747,10 +718,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
                 className="sticky top-4 right-7 z-50"
                 onClick={handleCloseModal}
               >
-                <FontAwesomeIcon
-                  icon={faTimesCircle}
-                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-                />
+                <XCircle className="text-muted-foreground text-3xl hover:text-primary transition-all duration-500 ease-in-out" />
               </button>
               <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
                 {selectedCard.fields.shaer}
@@ -775,10 +743,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {
           id="modlBtn"
           onClick={() => closeComments()}
         >
-          <FontAwesomeIcon
-            icon={faTimesCircle}
-            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-          />
+          <XCircle className="text-foreground/80 text-3xl hover:text-primary transition-all duration-500 ease-in-out" />
         </button>
       )}
       {selectedCommentId && (

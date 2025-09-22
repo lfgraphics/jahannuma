@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import gsap from "gsap";
 import LocalGhazalCard from "./LocalDataCard";
 import ToastComponent from "./Toast";
 import { Heart } from "lucide-react";

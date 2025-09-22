@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { data } from "./data";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const DoYouKnow: React.FC = () => {
   const [cards, setCards] = useState(data.cards);
@@ -30,8 +31,7 @@ const DoYouKnow: React.FC = () => {
           }`}
           onClick={scrollLeft}
         >
-          {/* <ChevronLeft size={20} /> */}
-          {/* use fontawesome buttons instead */}
+          <ChevronLeft size={20} />
         </div>
         <div
           className="flex basis-[90%] justify-center overflow-hidden rounded-lg shadow-md h-[30rem] overflow-y-auto"
@@ -69,6 +69,7 @@ const DoYouKnow: React.FC = () => {
           }`}
           onClick={scrollRight}
         >
+          <ChevronRight size={20} />
         </div>
       </div>
     </div>

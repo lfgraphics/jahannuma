@@ -11,7 +11,7 @@ import DoYouKnow from "./Components/doyoouknow/DoYouKnow";
 export default function Home() {
   return (
     <>
-    <div className="bg-white text-black">
+  <div className="bg-background text-foreground">
       <Carousel1></Carousel1>
       <RandCard></RandCard>
       <Branches></Branches>

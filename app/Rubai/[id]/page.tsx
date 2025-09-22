@@ -1,14 +1,16 @@
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Loader from "../../Components/Loader";
 import type { Rubai } from "../../types";
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page() {
   const [data, setData] = useState<Rubai>();
-  const [id, setId] = useState("");
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     AOS.init({
@@ -24,7 +26,7 @@ export default function Page({ params }: { params: { id: string } }) {
       const BASE_ID = "appIewyeCIcAD4Y11";
       const TABLE_NAME = "rubai";
 
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${params.id}')`;
+      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
       const headers = {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
@@ -41,12 +43,9 @@ export default function Page({ params }: { params: { id: string } }) {
     }
   };
   useEffect(() => {
-    // setId(params.id);
+    if (!id) return;
     fetchData();
-    setTimeout(() => {
-      console.log("data is -- ", data);
-      console.log("id is -- ", params.id);
-    }, 5000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
   const visitRubai = () => {
     if (typeof window !== undefined) {
@@ -69,7 +68,7 @@ export default function Page({ params }: { params: { id: string } }) {
           <div className="text-center text-2xl">
             <p>{data?.fields.unwan}</p>
           </div>
-          <div className="ghazalHead mb-3 text-[#984A02]">
+          <div className="ghazalHead mb-3 text-primary">
             <Link href={{ pathname: "/Shaer/[name]", query: { name: data?.fields.shaer ?? "" } }}>
               <h2>{data?.fields.shaer}</h2>
             </Link>
@@ -79,7 +78,7 @@ export default function Page({ params }: { params: { id: string } }) {
               <p
                 data-aos="fade-up"
                 key={index}
-                className="justif w-full px-10 text-black pb-3 text-2xl"
+                className="justif w-full px-10 text-foreground pb-3 text-2xl"
               >
                 {line}
               </p>
@@ -88,7 +87,7 @@ export default function Page({ params }: { params: { id: string } }) {
           <div className="mazeed flex justify-around" data-aos="fade-up">
             <button
               onClick={visitRubai}
-              className="bg-white text-[#984A02] border active:bg-[#984a02ac] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+              className="bg-background text-primary border active:bg-primary/70 active:text-primary-foreground border-primary px-4 py-2 rounded-md"
             >
               مزید رباعی
             </button>

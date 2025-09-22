@@ -5,15 +5,15 @@ import React, { useState, useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Loader from '@/app/Components/Loader'
+import { useParams } from "next/navigation";
 
-const Page = ({ params }) => {
+const Page = () => {
   const [data, setData] = useState([]);
-  const [id, setId] = useState("");
+  const params = useParams();
+  const id = params?.id;
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setId(params.id);
-
     AOS.init({
       offset: 50,
       delay: 0,
@@ -21,36 +21,38 @@ const Page = ({ params }) => {
     });
 
 
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        const BASE_ID = "appeI2xzzyvUN5bR7";
-        const TABLE_NAME = "Ashaar";
+const fetchData = async () => {
+  setLoading(true)
+  try {
+    const BASE_ID = "appeI2xzzyvUN5bR7";
+    const TABLE_NAME = "Ashaar";
 
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
-        const headers = {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-        };
-
-        const response = await fetch(url, { method: "GET", headers });
-        const result = await response.json();
-
-        setData(result.records[0].fields)
-        setLoading(false)
-      } catch (error) {
-        setLoading(false)
-        console.error(`Failed to fetch data: ${error}`);
-      }
+    const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
+    const headers = {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
     };
 
-    fetchData();
+    const response = await fetch(url, { method: "GET", headers });
+    const result = await response.json();
+
+    if (result.records && result.records.length > 0) {
+      setData(result.records[0].fields)
+    } else {
+      console.warn('No records found for the given id')
+    }
+    setLoading(false)
+  } catch (error) {
+    setLoading(false)
+    console.error(`Failed to fetch data: ${error}`);
+  }
+};
+    if (id) fetchData();
   }, [id]);
   const ghazalLines = data.body?.split('\n');
   const anaween = data.unwan?.split('\n');
 
   const visitGhazlen = () => {
-    if (typeof window !== undefined) {
-      const referrer = document.referrer || '';
+    if (typeof window !== "undefined") {      const referrer = document.referrer || '';
       // Check if the referrer is not coming from /Ghazlen
       if (!referrer.includes('/Ashaar')) {
         window.location.href = `${window.location.origin}/Ashaar`; // Replace with your desired URL
@@ -65,11 +67,11 @@ const Page = ({ params }) => {
         <Loader />
       </div> : (
         <div className="p-4 mt-3 w-screen md:w-[400px]">
-          <div className="ghazalHead text-2xl text-black text-center leading-[3rem]">
+          <div className="ghazalHead text-2xl text-center leading-[3rem]">
             {data.sher?.split('\n').map((line, index) => (
               <h2
                 key={index}
-                className="text-black"
+                className=""
               >
                 {line}
               </h2>
@@ -86,7 +88,7 @@ const Page = ({ params }) => {
               <p
                 data-aos="fade-up"
                 key={index}
-                className="justif w-full px-10 text-black pb-3 text-2xl"
+                className="justif w-full px-10 pb-3 text-2xl"
               >
                 {line}
               </p>

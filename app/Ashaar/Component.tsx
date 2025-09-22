@@ -1,13 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import gsap from "gsap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHome,
-  faSearch,
-  faTimesCircle,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+// FontAwesome removed; using Lucide icons instead
 import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
@@ -16,7 +9,7 @@ import DataCard from "../Components/DataCard";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { Home, House, Search, X } from "lucide-react";
+import { House, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -56,10 +49,7 @@ const Ashaar: React.FC<{}> = () => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
-  const [selectedCard, setSelectedCard] = React.useState<{
-    id: string;
-    fields: { shaer: string; ghazal: string[]; id: string };
-  } | null>(null);
+  // Removed modal state; comments use a Drawer inside CommentSection
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [voffset, setOffset] = useState<string | null>("");
@@ -472,51 +462,14 @@ const Ashaar: React.FC<{}> = () => {
       console.error("Error sharing:", error);
     }
   };
-  //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
-  //opening and closing ghazal
+  // Opening card currently just collapses any open 'anaween'; modal removed
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
-    setSelectedCard({
-      id: shaerData.id,
-      fields: {
-        shaer: shaerData.fields.shaer,
-        ghazal: shaerData.fields.ghazal,
-        id: shaerData.fields.id,
-      },
-    });
-
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-      if (typeof window !== undefined) {
-        document.getElementById("modlBtn")?.classList.remove("hidden");
-      }
-    }
   };
-  const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
-    setSelectedCard(null);
-  };
+  
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
-    if (window !== undefined && window.localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
         try {
@@ -786,7 +739,7 @@ const Ashaar: React.FC<{}> = () => {
         </DialogContent>
       </Dialog>
       {/* top-[118px] */}
-      <div className="w-full z-10 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
+      <div className="w-full z-10 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[64px]">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
           <div
             dir="rtl"
@@ -803,7 +756,7 @@ const Ashaar: React.FC<{}> = () => {
             <input
               type="text"
               placeholder="لکھ کر تلاش کریں"
-              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -815,7 +768,7 @@ const Ashaar: React.FC<{}> = () => {
                 }
               }}
             />
-            <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
               <X
                 color="#984A02"
                 size={24}
@@ -824,7 +777,7 @@ const Ashaar: React.FC<{}> = () => {
                 className="hidden text-[#984A02] cursor-pointer"
               />
             </div>
-            <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
               <Search
                 color="#984A02"
                 size={24}

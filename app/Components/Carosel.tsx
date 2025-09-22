@@ -1,15 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
-// import required modules
-import { Autoplay, Keyboard, Pagination, Navigation } from "swiper/modules";
 import useSWR from "swr";
 import Loader from "./Loader";
 import Link from "next/link";
+import {
+  Carousel as ShadcnCarousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface WindowSize {
   width: number | undefined;
@@ -109,51 +109,47 @@ const Carousel: React.FC = () => {
 
   return (
     <div>
-      <Swiper
-        slidesPerView={1}
-        spaceBetween={0}
-        loop={true}
-        autoplay={{
-          delay: 2500,
-          disableOnInteraction: false,
+      <ShadcnCarousel
+        opts={{
+          loop: true,
+          align: "start",
         }}
-        keyboard={{
-          enabled: true,
-        }}
-        pagination={{
-          clickable: true,
-        }}
-        navigation={true}
-        modules={[Autoplay, Keyboard, Pagination, Navigation]}
-        className="mySwiper h-[210px] sm:h-[310px] md:h-[210px] lg:h-[280px] xl:h-[390px] 2xl:h-[450px]"
+        className="w-full"
       >
-        {records.map((record: Record) => (
-          <SwiperSlide>
-            {record.fields.url ? (
-              <Link
-                href={{ pathname: `${record.fields.url}` }}
-                target="_blank"
-                rel="noopener noreferrer"
-                passHref
-              >
+        <CarouselContent className="h-[210px] sm:h-[310px] md:h-[210px] lg:h-[280px] xl:h-[390px] 2xl:h-[450px]">
+          {records.map((record: Record, index: number) => (
+            <CarouselItem key={record.id || index} className="relative">
+              {record.fields.url ? (
+                <Link
+                  href={{ pathname: `${record.fields.url}` }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  passHref
+                  className="block h-full w-full"
+                >
+                  <img
+                    width={`${getImages(record)?.width ?? 0}`}
+                    height={`${getImages(record)?.height ?? 0}`}
+                    src={`${getImages(record)?.url ?? ""}`}
+                    alt={`${getImages(record)?.filename ?? ""}`}
+                    className="h-full w-full object-cover"
+                  />
+                </Link>
+              ) : (
                 <img
-                  width={`${getImages(record)?.width ?? 0}`}
-                  height={`${getImages(record)?.height ?? 0}`}
+                  width={getImages(record)?.width ?? 0}
+                  height={getImages(record)?.height ?? 0}
                   src={`${getImages(record)?.url ?? ""}`}
                   alt={`${getImages(record)?.filename ?? ""}`}
-                ></img>
-              </Link>
-            ) : (
-              <img
-                width={getImages(record)?.width ?? 0}
-                height={getImages(record)?.height ?? 0}
-                src={`${getImages(record)?.url ?? ""}`}
-                alt={`${getImages(record)?.filename ?? ""}`}
-              ></img>
-            )}
-          </SwiperSlide>
-        ))}
-      </Swiper>
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="left-4" />
+        <CarouselNext className="right-4" />
+      </ShadcnCarousel>
     </div>
   );
 };

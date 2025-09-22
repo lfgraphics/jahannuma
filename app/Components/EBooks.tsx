@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ToastComponent from "./Toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { Heart, XCircle } from "lucide-react";
 import Card from "./BookCard";
 
 // import React {useEffect} from 'react'
@@ -206,7 +205,7 @@ const EBooks = () => {
                 onClick={(e) => handleHeartClick(item, index, `${item.id}`)}
                 id={`${item.id}`}
               >
-                <FontAwesomeIcon icon={faHeart} className="text-xl ml-3" />
+                <Heart className="text-xl ml-3" />
                 <span className="text-black">{`${item.fields?.likes}`}</span>
               </div>
               <Card data={item} />

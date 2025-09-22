@@ -1,13 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as data from "./data";
 import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
-
-import gsap from "gsap";
+import { toPng } from "html-to-image";
 import { Download, Heart, Share2, X } from "lucide-react";
-import html2canvas from "html2canvas";
 // import { Filter } from "react-feather";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface Shaer {
   shaer: string;
@@ -45,30 +44,21 @@ const Ashaar: React.FC<{}> = () => {
   // Get all unique tags from the data
   const allTags = data.getAllUniqueTags();
 
-  // Function to handle search input change
-  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value.toLowerCase();
-    let xMark = document.getElementById("searchClear");
-    value === ""
-      ? xMark?.classList.add("hidden")
-      : xMark?.classList.remove("hidden");
-    setSearchText(value);
+  // Derived: show/hide clear icon
+  const showClear = useMemo(() => searchText.trim() !== "", [searchText]);
 
-    // Call the filterDataBySearch function to filter the data
+  // Function to handle search input change
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value.toLowerCase();
+    setSearchText(value);
     const filteredData = filterDataBySearch(value);
     setDataItems(filteredData);
   };
 
   // Function to clear the search input
   const clearSearch = () => {
-    let input = document.getElementById("searchBox") as HTMLInputElement;
-    let xMark = document.getElementById("searchClear");
-    input.value = "";
-    xMark?.classList.add("hidden");
-
-    // Clear the searched data and show all data again
-    setSearchText(""); // Clear the searchText state
-    setDataItems(data.getAllShaers()); // Restore the original data
+    setSearchText("");
+    setDataItems(data.getAllShaers());
   };
 
   // Function to check if a Shaer matches the selected filter and search text
@@ -86,7 +76,9 @@ const Ashaar: React.FC<{}> = () => {
     );
   };
 
-  const handleHeartClick = (shaerData: Shaer, index: any, id: string): void => {
+  const [liked, setLiked] = useState<Set<string>>(new Set());
+
+  const handleHeartClick = (shaerData: Shaer): void => {
     if (typeof window !== "undefined" && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
@@ -98,9 +90,7 @@ const Ashaar: React.FC<{}> = () => {
           : [];
 
         // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.shaer === shaerData.shaer
-        );
+        const isDuplicate = existingData.some((d) => d.shaer === shaerData.shaer);
 
         if (!isDuplicate) {
           // Add the new shaerData to the existing data array
@@ -108,33 +98,22 @@ const Ashaar: React.FC<{}> = () => {
 
           // Serialize the updated data back to JSON
           const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-          // document.getElementById(`${id}`)!.style.color = "#984A02";
-
           localStorage.setItem("Ashaar", updatedDataJSON);
+          setLiked((prev) => new Set(prev).add(shaerData.shaer));
           // Optionally, you can update the UI or show a success message
           console.log("Data added to Local Storage successfully.");
         } else {
           // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.shaer !== shaerData.shaer
-          );
+          const updatedData = existingData.filter((d) => d.shaer !== shaerData.shaer);
 
           // Serialize the updated data back to JSON
           const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Store the updated data in Local Storage
-
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
           localStorage.setItem("Ashaar", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          document.getElementById(`${id}`)?.classList.remove("text-red-600");
+          setLiked((prev) => {
+            const next = new Set(prev);
+            next.delete(shaerData.shaer);
+            return next;
+          });
           console.log("Data removed from Local Storage successfully.");
         }
       } catch (error) {
@@ -172,60 +151,59 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   // Function to animate modal opening
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-
-  // Function to animate modal closing
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
-
   const handleCardClick = (shaerData: Shaer): void => {
     setSelectedCard(shaerData);
-
-    // Animate modal open
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-    }
   };
 
   const handleCloseModal = (): void => {
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
+    setSelectedCard(null);
   };
 
-  const handleDownload = (elementId: string) => {
-    console.log("download is clicked");
-    document.querySelectorAll(".icons").forEach(function (icon) {
-      icon.classList.add("hidden");
-    });
-
-    const element = document.getElementById(elementId);
-    if (element) {
-      html2canvas(element).then(function (canvas) {
-        var anchorTag = document.createElement("a");
-        document.body.appendChild(anchorTag);
-        anchorTag.download = `${prompt("Enter file name to save")}.png`;
-        anchorTag.href = canvas.toDataURL();
-        anchorTag.target = "_blank";
-        anchorTag.click();
-        document.querySelectorAll(".icons").forEach(function (icon) {
-          icon.classList.remove("hidden");
-        });
-      });
+  const handleDownload = async (
+    elementId: string,
+    options?: {
+      pixelRatio?: number;
+      backgroundColor?: string;
+      quality?: number; // used by jpeg, ignored by png but kept for flexibility
+      width?: number;
+      height?: number;
     }
-    document.querySelectorAll(".icons").forEach(function (icon) {
-      icon.classList.remove("hidden");
-    });
+  ): Promise<void> => {
+    console.log("download is clicked");
+    const icons = document.querySelectorAll(".icons");
+    icons.forEach((icon) => icon.classList.add("hidden"));
+
+    try {
+      const element = document.getElementById(elementId) as HTMLElement | null;
+      if (!element) return;
+
+
+      const defaultPixelRatio =
+        typeof window !== "undefined"
+          ? Math.min((window.devicePixelRatio || 1) * 2, 4)
+          : 2;
+
+      const opts = {
+        cacheBust: true,
+        pixelRatio: defaultPixelRatio,
+        ...options,
+      };
+
+      const dataUrl = await toPng(element, opts as any);
+
+      const anchorTag = document.createElement("a");
+      document.body.appendChild(anchorTag);
+      const fileName = prompt("Enter file name to save") || "image";
+      anchorTag.download = `${fileName}.png`;
+      anchorTag.href = dataUrl;
+      anchorTag.target = "_blank";
+      anchorTag.click();
+      anchorTag.remove();
+    } catch (err) {
+      console.error("Error generating image:", err);
+    } finally {
+      icons.forEach((icon) => icon.classList.remove("hidden"));
+    }
   };
   const toggleFilter = () => {
     document.getElementById("filtersListBox")?.classList.toggle("max-h-0");
@@ -236,30 +214,21 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   useEffect(() => {
-    // Check if the cardData is in localStorage
-    if (window !== undefined && window.localStorage) {
+    // Initialize liked state from localStorage
+    if (typeof window !== "undefined" && window.localStorage) {
       const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        dataItems.forEach((shaerData, index) => {
-          const cardData = shaerData.wholeSher.map((line) => line).join("|"); // Serialize the card data
-
-          if (
-            parsedData.some(
-              (data: { wholeSher: any[] }) =>
-                data.wholeSher.join("|") === cardData
-            )
-          ) {
-            // If card data exists in the stored data, update the card's appearance
-            const cardElement = document.getElementById(`heart-icon-${index}`);
-            if (cardElement) {
-              cardElement.classList.add("text-red-600");
-            }
-          }
-        });
+        try {
+          const parsed: Shaer[] = JSON.parse(storedData);
+          const next = new Set<string>();
+          parsed.forEach((d) => d?.shaer && next.add(d.shaer));
+          setLiked(next);
+        } catch {}
+      } else {
+        setLiked(new Set());
       }
     }
-  }, [dataItems]);
+  }, [dataItems.length]);
 
   return (
     <div>
@@ -277,7 +246,8 @@ const Ashaar: React.FC<{}> = () => {
               placeholder="Search what you want"
               className="text-black border border-black focus:outline-none focus:border-r-0 border-r-0 p-2 w-64"
               id="searchBox"
-              onKeyUp={handleSearchKeyUp}
+              value={searchText}
+              onChange={handleSearchChange}
             />
             <div
               className="justify-center bg-white h-[100%] pr-3 items-center flex w-11 border border-l-0 border-black"
@@ -289,7 +259,7 @@ const Ashaar: React.FC<{}> = () => {
                 alt="x icon"
                 width="20"
                 height="20"
-                className="hidden text-[#984A02]"
+                className={cn("text-[#984A02]", !showClear && "hidden")}
               ></Image>
             </div>
           </div>
@@ -348,10 +318,8 @@ const Ashaar: React.FC<{}> = () => {
                 ))}
                 <div className="felx text-center icons">
                   <button
-                    className={`m-3 text-gray-500 `}
-                    onClick={() =>
-                      handleHeartClick(shaerData, index, `heart-icon-${index}`)
-                    }
+                    className={cn("m-3", liked.has(shaerData.shaer) ? "text-red-600" : "text-gray-500")}
+                    onClick={() => handleHeartClick(shaerData)}
                     id={`heart-icon-${index}`}
                   >
                     <Heart className="inline" fill="currentColor" size={16} />

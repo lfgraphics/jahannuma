@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Home, Search, XCircle, X } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Home, Search, XCircle, X, House } from "lucide-react";
 import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
@@ -50,6 +50,7 @@ const Ashaar: React.FC<{}> = () => {
   });
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
+  const [showIcons, setShowIcons] = useState(false);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
@@ -74,7 +75,7 @@ const Ashaar: React.FC<{}> = () => {
       delay: 0,
       duration: 300,
     });
-  });
+  }, []);
 
   //function ot show toast
   const showToast = (
@@ -113,7 +114,7 @@ const Ashaar: React.FC<{}> = () => {
   };
   //function ot scroll to the top
   function scrollToTop() {
-    if (typeof window !== undefined) {
+    if (typeof window !== "undefined") {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -215,35 +216,20 @@ const Ashaar: React.FC<{}> = () => {
       offset: pagination.offset,
       pageSize: 30,
     });
-    if (typeof window !== undefined) {
+    if (typeof window !== "undefined") {
       setScrolledPosition(window.scrollY);
     }
   };
-  //search keyup handeling
-  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  // search input change handling (state-driven visibility)
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-    value === ""
-      ? xMark?.classList.add("hidden")
-      : xMark?.classList.remove("hidden");
-    value === ""
-      ? sMark?.classList.add("hidden")
-      : sMark?.classList.remove("hidden");
     setSearchText(value);
+    setShowIcons(value.trim() !== "");
   };
   //clear search box handeling
   const clearSearch = () => {
-    let input = document.getElementById("searchBox") as HTMLInputElement;
-    let xMark = document.getElementById("searchClear");
-    let sMark = document.getElementById("searchIcon");
-
-    input?.value ? (input.value = "") : null;
-    xMark?.classList.add("hidden");
-    sMark?.classList.add("hidden");
-    // Clear the searched data and show all data again
-    setSearchText(""); // Clear the searchText state
-    // setDataItems(data.getAllShaers()); // Restore the original data
+    setSearchText("");
+    setShowIcons(false);
   };
   // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
@@ -474,39 +460,55 @@ const Ashaar: React.FC<{}> = () => {
       console.error("Error sharing:", error);
     }
   };
+  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value.toLowerCase();
+    let xMark = document.getElementById("searchClear");
+    let sMark = document.getElementById("searchIcon");
+    value === ""
+      ? xMark?.classList.add("hidden")
+      : xMark?.classList.remove("hidden");
+    value === ""
+      ? sMark?.classList.add("hidden")
+      : sMark?.classList.remove("hidden");
+    setSearchText(value);
+  };
   //opening and closing ghazal
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
   };
-  //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
+  // Keep latest data items in a ref to avoid stale-closure in effects
+  const latestDataRef = useRef<Shaer[]>(dataItems);
   useEffect(() => {
-    if (window !== undefined && window.localStorage) {
+    latestDataRef.current = dataItems;
+  }, [dataItems]);
+
+  // On mount and when list length changes, mark hearts based on localStorage in a batched, efficient way
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
       const storedData = localStorage.getItem("Ghazlen");
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          dataItems.forEach((shaerData, index) => {
-            const shaerId = shaerData.id; // Get the id of the current shaerData
+      if (!storedData) return;
+      try {
+        const parsed: Array<{ id: string }> = JSON.parse(storedData);
+        const likedIds = new Set(parsed.map((d) => d.id));
+        const items = latestDataRef.current;
 
-            // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data: { id: string }) => data.id === shaerId
-            );
-
-            if (storedShaer) {
-              // If shaerId exists in the stored data, update the card's appearance
-              const cardElement = document.getElementById(shaerId);
-              if (cardElement) {
-                cardElement.classList.add("text-red-600");
-              }
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing stored data:", error);
+        // Batch DOM updates: loop once and update classes
+        for (const item of items) {
+          const el = document.getElementById(item.id);
+          if (!el) continue;
+          if (likedIds.has(item.id)) {
+            el.classList.add("text-red-600");
+            el.classList.remove("text-gray-500");
+          } else {
+            el.classList.remove("text-red-600");
+            el.classList.add("text-gray-500");
+          }
         }
+      } catch (error) {
+        console.error("Error parsing stored data:", error);
       }
     }
-  }, [dataItems]);
+  }, [dataItems.length]);
   //toggling anaween box
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
@@ -570,6 +572,14 @@ const Ashaar: React.FC<{}> = () => {
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
+  // Pure helper to increment comments immutably
+  const incrementComments = (item: Shaer): Shaer => ({
+    ...item,
+    fields: {
+      ...item.fields,
+      comments: (item.fields?.comments || 0) + 1,
+    },
+  });
   const handleCommentSubmit = async (dataId: string) => {
     // Check if the user has provided a name
     if (typeof window !== "undefined") {
@@ -615,48 +625,11 @@ const Ashaar: React.FC<{}> = () => {
             commentData,
           ]);
 
-          // Clear the input field
+          // Clear the input field and increment comments immutably in state
           setNewComment("");
-          const updatedDataItems = dataItems.map((dataItem) => {
-            if (dataItem.id === dataId) {
-              // If the dataItem has the matching id, update comments field
-              const currentComments = dataItem.fields.comments || 0;
-              return {
-                ...dataItem,
-                fields: {
-                  ...dataItem.fields,
-                  comments: currentComments + 1,
-                },
-              };
-            }
-            return dataItem;
-          });
-
-          const dataItemToUpdate = updatedDataItems.find(
-            (item) => item.id === dataId
-          );
-
-          if (dataItemToUpdate && dataItemToUpdate.fields) {
-            if (!dataItemToUpdate.fields.comments) {
-              // If the comments field is not present, add it with the value 1
-              dataItemToUpdate.fields.comments = 1;
-            }
-          }
-          setDataItems((prevDataItems) => {
-            return prevDataItems.map((prevItem) => {
-              if (prevItem.id === dataId) {
-                return {
-                  ...prevItem,
-                  fields: {
-                    ...prevItem.fields,
-                    comments: (prevItem.fields.comments || 0) + 1,
-                  },
-                };
-              } else {
-                return prevItem;
-              }
-            });
-          });
+          const currentItem = dataItems.find((i) => i.id === dataId);
+          const newCommentsCount = ((currentItem?.fields?.comments) || 0) + 1;
+          setDataItems((prev) => prev.map((i) => (i.id === dataId ? incrementComments(i) : i)));
 
           try {
             const BASE_ID = "appvzkf6nX376pZy6";
@@ -672,7 +645,7 @@ const Ashaar: React.FC<{}> = () => {
               headers,
               body: JSON.stringify({
                 fields: {
-                  comments: dataItemToUpdate!.fields.comments,
+                  comments: newCommentsCount,
                 },
               }),
             });
@@ -708,7 +681,7 @@ const Ashaar: React.FC<{}> = () => {
     setDataOffset(pagination.offset);
     searchText && clearSearch();
     setDataItems(initialDataItems);
-    if (typeof window !== undefined) {
+    if (typeof window !== "undefined") {
       let section = window;
       section!.scrollTo({
         top: scrolledPosition ?? 0,
@@ -721,9 +694,8 @@ const Ashaar: React.FC<{}> = () => {
   return (
     <div>
       <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+        className={`toast-container ${hideAnimation ? " hide " : ""
+          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
       >
         {toast}
       </div>
@@ -763,14 +735,14 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
-        <div className="filter-btn basis-[75%] justify-center text-center flex">
-          <div dir="rtl" className="flex basis-[100%] justify-center items-center h-auto pt-1">
-            <Home color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
+        <div className="filter-btn basis-[75%] text-center flex">
+          <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
+            <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
             <input
               type="text"
               placeholder="لکھ کر تلاش کریں"
-              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -782,10 +754,10 @@ const Ashaar: React.FC<{}> = () => {
                 }
               }}
             />
-            <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
               <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
             </div>
-            <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
               <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
             </div>
           </div>
@@ -801,7 +773,7 @@ const Ashaar: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          // disabled={!searchText}
+        // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
@@ -836,27 +808,15 @@ const Ashaar: React.FC<{}> = () => {
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                    ? "مزید غزلیں نہیں ہیں"
-                    : "مزید غزلیں لوڈ کریں"}
+                      ? "مزید غزلیں نہیں ہیں"
+                      : "مزید غزلیں لوڈ کریں"}
                 </button>
               </div>
             )}
           </div>
         </section>
       )}
-      {/* //commetcard */}
-      {selectedCommentId && (
-        <button
-          // style={{ overflow: "hidden" }}
-          className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
-          id="modlBtn"
-          onClick={() => closeComments()}
-        >
-          <XCircle
-            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-          />
-        </button>
-      )}
+      {/* Comment section using shadcn Drawer */}
       {selectedCommentId && (
         <CommentSection
           dataId={selectedCommentId}

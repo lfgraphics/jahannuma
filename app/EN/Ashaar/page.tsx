@@ -3,17 +3,11 @@ import React, { useEffect, useState } from "react";
 import * as data from "./data";
 import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
 
-import gsap from "gsap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faDownload,
-  faHeart,
-  faShare,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
-import html2canvas from "html2canvas";
+import { Download, Heart, Share, X } from "lucide-react";
+import { toPng } from "html-to-image";
 // import { Filter } from "react-feather";
 import Image from "next/image";
+import InputDialog from "@/components/ui/input-dialog";
 
 interface Shaer {
   shaer: string;
@@ -26,6 +20,8 @@ const Ashaar: React.FC<{}> = () => {
   const [searchText, setSearchText] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
   const [dataItems, setDataItems] = useState<Shaer[]>([]); // Specify the type explicitly as Shaer[]
+  const [nameDialogOpen, setNameDialogOpen] = useState(false);
+  const [pendingDownloadEl, setPendingDownloadEl] = useState<string | null>(null);
 
   useEffect(() => {
     // This effect runs when the component mounts
@@ -177,61 +173,62 @@ const Ashaar: React.FC<{}> = () => {
     }
   };
 
-  // Function to animate modal opening
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-
-  // Function to animate modal closing
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
-
   const handleCardClick = (shaerData: Shaer): void => {
     setSelectedCard(shaerData);
-
-    // Animate modal open
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-    }
   };
 
   const handleCloseModal = (): void => {
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
+    // simply clear selection to close
+    setSelectedCard(null);
   };
 
   const handleDownload = (elementId: string) => {
-    console.log("download is clicked");
-    document.querySelectorAll(".icons").forEach(function (icon) {
-      icon.classList.add("hidden");
-    });
+    setPendingDownloadEl(elementId);
+    setNameDialogOpen(true);
+  };
 
-    const element = document.getElementById(elementId);
-    if (element) {
-      html2canvas(element).then(function (canvas) {
-        var anchorTag = document.createElement("a");
-        document.body.appendChild(anchorTag);
-        anchorTag.download = `${prompt("Enter file name to save")}.png`;
-        anchorTag.href = canvas.toDataURL();
-        anchorTag.target = "_blank";
-        anchorTag.click();
-        document.querySelectorAll(".icons").forEach(function (icon) {
-          icon.classList.remove("hidden");
-        });
-      });
+  const performDownloadWithName = async (filename: string) => {
+    const sanitizeFilename = (input: string): string => {
+      let name = (input ?? "image").trim();
+      name = name.replace(/\.(png|jpe?g)$/i, "");
+      name = name.replace(/\s+/g, "_");
+      name = name.replace(/[^A-Za-z0-9_-]/g, "");
+      name = name.replace(/[_-]{2,}/g, (m) => m[0]);
+      name = name.replace(/^[_-]+|[_-]+$/g, "");
+      if (!name) name = "image";
+      if (name.length > 100) name = name.slice(0, 100);
+      return name;
+    };
+
+    const base = sanitizeFilename(filename);
+    const elementId = pendingDownloadEl;
+    if (!elementId) return;
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const icons = document.querySelectorAll(".icons");
+    icons.forEach((icon) => icon.classList.add("hidden"));
+    try {
+      const dataUrl = await toPng(el, {
+        cacheBust: true,
+        pixelRatio: 2,
+        style: {
+          backgroundColor: "rgb(var(--background))",
+          color: "rgb(var(--foreground))",
+        },
+      } as any);
+      const anchorTag = document.createElement("a");
+      document.body.appendChild(anchorTag);
+      anchorTag.download = `${base}.png`;
+      anchorTag.href = dataUrl;
+      anchorTag.target = "_blank";
+      anchorTag.click();
+      document.body.removeChild(anchorTag);    } catch (e) {
+      console.error("Failed to generate image via html-to-image:", e);
+    } finally {
+      icons.forEach((icon) => icon.classList.remove("hidden"));
+      setNameDialogOpen(false);
+      setPendingDownloadEl(null);
     }
-    document.querySelectorAll(".icons").forEach(function (icon) {
-      icon.classList.remove("hidden");
-    });
   };
   const toggleFilter = () => {
     document.getElementById("filtersListBox")?.classList.toggle("max-h-0");
@@ -243,7 +240,7 @@ const Ashaar: React.FC<{}> = () => {
 
   useEffect(() => {
     // Check if the cardData is in localStorage
-    if (window !== undefined && window.localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       const storedData = localStorage.getItem("Ashaar");
       if (storedData) {
         const parsedData = JSON.parse(storedData);
@@ -269,10 +266,10 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-between items-center relative">
+      <div className="flex flex-row w-screen bg-background border-b p-3 justify-between items-center relative">
         <div
           onClick={toggleFilter}
-          className="cursor-pointer filter-btn flex-[20%] flex justify-center text-[#984A02]"
+          className="cursor-pointer filter-btn flex-[20%] flex justify-center text-primary"
         >
           {/* <Filter></Filter> */}
         </div>
@@ -281,12 +278,12 @@ const Ashaar: React.FC<{}> = () => {
             <input
               type="text"
               placeholder="Search what you want"
-              className="text-black border border-black focus:outline-none focus:border-r-0 border-r-0 p-2 w-64"
+              className="text-foreground border border-border focus:outline-none focus:border-r-0 border-r-0 p-2 w-64 bg-background"
               id="searchBox"
               onKeyUp={handleSearchKeyUp}
             />
             <div
-              className="justify-center bg-white h-[100%] pr-3 items-center flex w-11 border border-l-0 border-black"
+              className="justify-center bg-background h-[100%] pr-3 items-center flex w-11 border border-l-0 border-border"
               onClick={clearSearch}
             >
               <Image
@@ -295,7 +292,7 @@ const Ashaar: React.FC<{}> = () => {
                 alt="x icon"
                 width="20"
                 height="20"
-                className="hidden text-[#984A02]"
+                className="hidden text-primary"
               ></Image>
             </div>
           </div>
@@ -303,13 +300,12 @@ const Ashaar: React.FC<{}> = () => {
       </div>
       <div
         id="filtersListBox"
-        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-white absolute transition-all left-8 shadow-md border-t-0 z-50"
+        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-background absolute transition-all left-8 shadow-md border-t-0 z-50"
       >
-        <ul className="p-2 text-black select-none" onClick={toggleFilter}>
+        <ul className="p-2 text-foreground select-none" onClick={toggleFilter}>
           <li
-            className={`border-b-2 m-2 cursor-pointer ${
-              selectedFilter === "" ? "font-bold text-[#984A02]" : ""
-            }`}
+            className={`border-b-2 m-2 cursor-pointer ${selectedFilter === "" ? "font-bold text-primary" : ""
+              }`}
             onClick={() => filterData("")}
           >
             All
@@ -317,9 +313,8 @@ const Ashaar: React.FC<{}> = () => {
           {allTags.map((tag) => (
             <li
               key={tag}
-              className={`border-b-2 m-2 cursor-pointer ${
-                tag === selectedFilter ? "font-bold text-[#984A02]" : ""
-              }`}
+              className={`border-b-2 m-2 cursor-pointer ${tag === selectedFilter ? "font-bold text-primary" : ""
+                }`}
               onClick={() => filterData(tag)}
             >
               {tag}
@@ -334,14 +329,14 @@ const Ashaar: React.FC<{}> = () => {
               <div
                 key={index}
                 id={`card${index}`}
-                className="bg-white p-4 rounded-sm border-b relative flex flex-col justify-between"
+                className="bg-background p-4 rounded-sm border-b relative flex flex-col justify-between"
               >
-                <h2 className="text-black text-2xl font-bold mb-2">
+                <h2 className="text-foreground text-2xl font-bold mb-2">
                   {shaerData.shaer}
                 </h2>
                 {/* Display a snippet of the ghazal data here */}
                 {shaerData.sherHead.map((line, index) => (
-                  <p key={index} className="text-black">
+                  <p key={index} className="text-foreground">
                     {line}
                   </p>
                 ))}
@@ -353,29 +348,23 @@ const Ashaar: React.FC<{}> = () => {
                     }
                     id={`heart-icon-${index}`}
                   >
-                    <FontAwesomeIcon icon={faHeart} />
+                    <Heart size={20} className="inline-block" />
                   </button>
                   <button
                     className="m-3"
                     onClick={() => handleShareClick(shaerData, `card${index}`)}
                   >
-                    <FontAwesomeIcon
-                      icon={faShare}
-                      style={{ color: "#984A02" }}
-                    />
+                    <Share size={20} className="text-primary inline-block" />
                   </button>
                   <button
                     className="m-3"
                     onClick={() => handleDownload(`card${index}`)}
                   >
-                    <FontAwesomeIcon
-                      icon={faDownload}
-                      style={{ color: "#984A02" }}
-                    />
+                    <Download size={20} className="text-primary inline-block" />
                   </button>
 
                   <button
-                    className="text-[#984A02] font-semibold m-3"
+                    className="text-primary font-semibold m-3"
                     onClick={() => handleCardClick(shaerData)}
                   >
                     View More
@@ -399,25 +388,22 @@ const Ashaar: React.FC<{}> = () => {
           <div
             style={{ lineHeight: "normal" }}
             dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0 bg-white p-4 transition-all ease-in-out min-h-[50vh] max-h-[70vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
+            className="opacity-100 fixed bottom-0 left-0 right-0 bg-background p-4 transition-all ease-in-out min-h-[50vh] max-h-[70vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
           >
             <button
               className="absolute bottom-12 left-5 z-50"
               onClick={handleCloseModal}
             >
-              <FontAwesomeIcon
-                icon={faTimes}
-                className="text-[#984A02] text-2xl"
-              />
+              <X size={24} className="text-primary" />
             </button>
-            <h2 className="text-black font-2xl font-bold p-1 border-b-2">
+            <h2 className="text-foreground font-2xl font-bold p-1 border-b-2">
               {selectedCard.shaer}
             </h2>
             {selectedCard.wholeSher.map((line, index) => (
               <p
                 style={{ lineHeight: "normal" }}
                 key={index}
-                className="text-black"
+                className="text-foreground"
               >
                 {line}
               </p>
@@ -425,6 +411,18 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
+
+      <InputDialog
+        open={nameDialogOpen}
+        onOpenChange={(o) => {
+          setNameDialogOpen(o);
+          if (!o) setPendingDownloadEl(null);
+        }}
+        title={"Enter file name"}
+        placeholder={"filename"}
+        defaultValue={"poetry"}
+        onConfirm={(val) => performDownloadWithName(val)}
+      />
     </div>
   );
 };

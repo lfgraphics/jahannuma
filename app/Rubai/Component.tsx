@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Home, Search, XCircle, X } from "lucide-react";
+import { Search, X, House } from "lucide-react";
 import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
@@ -672,9 +672,8 @@ const Ashaar: React.FC<{}> = () => {
   return (
     <div>
       <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+        className={`toast-container ${hideAnimation ? " hide " : ""
+          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
       >
         {toast}
       </div>
@@ -714,14 +713,14 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
-        <div className="filter-btn basis-[75%] justify-center text-center flex">
-          <div dir="rtl" className="flex basis-[100%] justify-center items-center h-auto pt-1">
-            <Home color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
+        <div className="filter-btn basis-[75%] text-center flex">
+          <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
+            <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
             <input
               type="text"
               placeholder="لکھ کر تلاش کریں"
-              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -733,10 +732,10 @@ const Ashaar: React.FC<{}> = () => {
                 }
               }}
             />
-            <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
               <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
             </div>
-            <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
               <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
             </div>
           </div>
@@ -752,7 +751,7 @@ const Ashaar: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          // disabled={!searchText}
+        // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
@@ -781,8 +780,8 @@ const Ashaar: React.FC<{}> = () => {
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                    ? "مزید رباعی نہیں ہیں"
-                    : "مزید رباعی لوڈ کریں"}
+                      ? "مزید رباعی نہیں ہیں"
+                      : "مزید رباعی لوڈ کریں"}
                 </button>
               </div>
             )}
@@ -790,16 +789,7 @@ const Ashaar: React.FC<{}> = () => {
         </section>
       )}
       {/* //commetcard */}
-      {selectedCommentId && (
-        <button
-          // style={{ overflow: "hidden" }}
-          className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
-          id="modlBtn"
-          onClick={() => closeComments()}
-        >
-          <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
-        </button>
-      )}
+      {/* Removed external close button as it's included in the Drawer component */}
       {selectedCommentId && (
         <CommentSection
           dataId={selectedCommentId}

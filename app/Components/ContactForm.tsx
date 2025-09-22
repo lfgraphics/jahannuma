@@ -41,7 +41,7 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
     <form
       dir={language === "UR" ? "rtl" : "ltr"}
       onSubmit={handleSubmit}
-      className="bg-white rounded-lg shadow-md p-6"
+      className="bg-background rounded-lg shadow-md p-6"
     >
       <h2 className="text-2xl mb-4 text-center">
         {fields.heading[language as Language]}

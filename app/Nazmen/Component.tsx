@@ -1,13 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import gsap from "gsap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHome,
-  faSearch,
-  faTimesCircle,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { House, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import ToastComponent from "../Components/Toast";
 import CommentSection from "../Components/CommentSection";
@@ -17,6 +10,10 @@ import DataCard from "../Components/DataCard";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Home, Search, X } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 interface Shaer {
   fields: {
@@ -493,18 +490,7 @@ const Ashaar: React.FC<{}> = () => {
       console.error("Error sharing:", error);
     }
   };
-  //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
-  //opening and closing ghazal
+  // Opening card now uses shadcn Drawer instead of manual modal/GSAP
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
     setSelectedCard({
@@ -515,29 +501,11 @@ const Ashaar: React.FC<{}> = () => {
         id: shaerData.fields.id,
       },
     });
+  };
 
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-      if (typeof window !== undefined) {
-        document.getElementById("modlBtn")?.classList.remove("hidden");
-      }
-    }
-  };
-  const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
-    setSelectedCard(null);
-  };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
-    if (window !== undefined && window.localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       const storedData = localStorage.getItem("Nazmen");
       if (storedData) {
         try {
@@ -759,7 +727,7 @@ const Ashaar: React.FC<{}> = () => {
   const resetSearch = () => {
     searchText && clearSearch();
     setDataItems(initialDataItems);
-    if (typeof window !== undefined) {
+    if (typeof window !== "undefined") {
       let section = window;
       section!.scrollTo({
         top: scrolledPosition ?? 0,
@@ -772,55 +740,49 @@ const Ashaar: React.FC<{}> = () => {
   return (
     <div>
       <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
+        className={`toast-container ${hideAnimation ? " hide " : ""
+          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
       >
         {toast}
       </div>
-      {showDialog && (
-        <div className="w-full h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
-          <div
-            dir="rtl"
-            className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white"
+      <Dialog open={showDialog} onOpenChange={hideDialog}>
+        <DialogContent dir="rtl" className="max-w-[380px]">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold pb-3 border-b text-center">
+              براہ کرم اپنا نام درج کریں
+            </DialogTitle>
+            <DialogDescription className="text-center pt-2">
+              ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے
+              استعمال کریں گے
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4"
           >
-            <div className="dialog-content">
-              <p className="text-lg font-bold pb-3 border-b">
-                براہ کرم اپنا نام درج کریں
-              </p>
-              <p className="pt-2">
-                ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے
-                استعمال کریں گے
-              </p>
-              <input
-                type="text"
-                id="nameInput"
-                className="mt-2 p-2 border"
-                value={nameInput}
-                onChange={handleNameChange}
-              />
-              <div className=" mt-4">
-                <button
-                  id="submitBtn"
-                  disabled={nameInput.length < 4}
-                  className="px-4 py-2 bg-[#984A02] disabled:bg-gray-500 text-white rounded"
-                  onClick={handleNameSubmission}
-                >
-                  محفوظ کریں
-                </button>
-              </div>
-            </div>
+            <Input
+              id="nameInput"
+              value={nameInput}
+              onChange={handleNameChange}
+              className="mt-2"
+            />
+            <Button
+              id="submitBtn"
+              disabled={nameInput.length < 4}
+              onClick={handleNameSubmission}
+              className="bg-[#984A02] disabled:bg-gray-500 text-white hover:bg-[#984A02]/90"
+            >
+              محفوظ کریں
+            </Button>
           </div>
-        </div>
-      )}
-      <div className="w-full z-20 flex flex-row bg-background pb-1 justify-center sticky top-[118px] md:top-[64px] border-foreground border-b-2">
-        <div className="filter-btn basis-[75%] justify-center text-center flex">
-          <div dir="rtl" className="flex basis-[100%] justify-center items-center h-auto pt-1">
-            <Home color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
+        </DialogContent>
+      </Dialog>
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
+        <div className="filter-btn basis-[75%] text-center flex">
+          <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
+            <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
             <input
               type="text"
               placeholder="لکھ کر تلاش کریں"
-              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-background"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -832,10 +794,10 @@ const Ashaar: React.FC<{}> = () => {
                 }
               }}
             />
-            <div className="justify-center bg-background h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
               <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
             </div>
-            <div className="justify-center bg-background h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
               <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
             </div>
           </div>
@@ -851,7 +813,7 @@ const Ashaar: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          // disabled={!searchText}
+        // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
@@ -890,8 +852,8 @@ const Ashaar: React.FC<{}> = () => {
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                    ? "مزید نظمیں نہیں ہیں"
-                    : "اور نظمیں لوڈ کریں"}
+                      ? "مزید نظمیں نہیں ہیں"
+                      : "اور نظمیں لوڈ کریں"}
                 </button>
               </div>
             )}
@@ -899,52 +861,30 @@ const Ashaar: React.FC<{}> = () => {
         </section>
       )}
       {selectedCard && (
-        <div
-          onClick={handleCloseModal}
-          id="modal"
-          className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
-        >
-          <div
-            dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
-          >
-            <div className="p-4 pr-0 relative">
-              <button
-                id="modlBtn"
-                className="sticky top-4 right-7 z-50"
-                onClick={handleCloseModal}
-              >
-                <FontAwesomeIcon
-                  icon={faTimesCircle}
-                  className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-                />
-              </button>
-              <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
-                {selectedCard.fields.shaer}
-              </h2>
+        <Drawer open={!!selectedCard} onOpenChange={(open) => { if (!open) setSelectedCard(null) }}>
+          <DrawerContent className="min-h-[60svh] max-h-[70svh] overflow-y-auto rounded-t-lg border w-[98%] mx-auto">
+            <div dir="rtl" className="p-4 pr-0 relative">
+              <DrawerClose asChild>
+                <button id="modlBtn" className="sticky top-4 right-7 z-50">
+                  <XCircle className="text-muted-foreground text-3xl hover:text-primary transition-all duration-500 ease-in-out" />
+                </button>
+              </DrawerClose>
+              <DrawerHeader className="p-0">
+                <DrawerTitle className="text-foreground text-4xl text-center top-0 bg-background sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
+                  {selectedCard.fields.shaer}
+                </DrawerTitle>
+              </DrawerHeader>
               {selectedCard.fields.ghazal.map((line, index) => (
-                <p key={index} className="text-black pb-3 pr-4 text-2xl">
+                <p key={index} className="text-foreground pb-3 pr-4 text-2xl">
                   {line}
                 </p>
               ))}
             </div>
-          </div>
-        </div>
+          </DrawerContent>
+        </Drawer>
       )}
       {/* //commetcard */}
-      {selectedCommentId && (
-        <button
-          // style={{ overflow: "hidden" }}
-          className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
-          id="modlBtn"
-          onClick={() => closeComments()}
-        >
-          <FontAwesomeIcon
-            icon={faTimesCircle}
-            className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out"
-          />
-        </button>
-      )}
+      {/* Removed external close button as it's included in the Drawer component */}
       {selectedCommentId && (
         <CommentSection
           dataId={selectedCommentId}

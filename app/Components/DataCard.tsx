@@ -34,7 +34,7 @@ interface ShaerCardProps {
   openComments: (id: string) => void;
 }
 
-const GhazalCard: React.FC<ShaerCardProps> = ({
+const DataCard: React.FC<ShaerCardProps> = ({
   page,
   shaerData,
   index,
@@ -178,7 +178,7 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
           </div>
           <div className="relative">
             <div
-              className="anaween-container flex flex-col items-center absolute bottom-full -translate-y-2 z-10 overflow-y-scroll w-[90px] bg-white dark:bg-[#2d2d2f] shadow-md transition-all duration-500 ease-in-out rounded-sm bg-opacity-70 backdrop-blur-sm"
+              className="anaween-container flex flex-col items-center absolute bottom-full -translate-y-2 z-10 overflow-y-scroll w-[90px] shadow-md transition-all duration-500 ease-in-out rounded-sm bg-opacity-70 backdrop-blur-sm"
               style={{
                 height: openanaween === `card${index}` ? "120px" : "0",
               }}
@@ -300,4 +300,4 @@ const GhazalCard: React.FC<ShaerCardProps> = ({
   );
 };
 
-export default GhazalCard;
+export default DataCard;

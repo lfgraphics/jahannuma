@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import * as data from "./data";
 import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
 
-import gsap from "gsap";
 import { Download, Heart, Share2, X } from "lucide-react";
 import html2canvas from "html2canvas";
 // import { Filter } from "react-feather";
@@ -171,36 +170,12 @@ const Ashaar: React.FC<{}> = () => {
     }
   };
 
-  // Function to animate modal opening
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-
-  // Function to animate modal closing
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
-
   const handleCardClick = (shaerData: Shaer): void => {
     setSelectedCard(shaerData);
-
-    // Animate modal open
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-    }
   };
 
   const handleCloseModal = (): void => {
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
+    setSelectedCard(null);
   };
 
   const handleDownload = (elementId: string) => {

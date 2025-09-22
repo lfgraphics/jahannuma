@@ -1,9 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import gsap from "gsap";
 import LocalGhazalCard from "./LocalDataCard";
 import ToastComponent from "./Toast";
-import { Home, Search, X, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
+} from "../../components/ui/drawer";
 
 // import React {useEffect} from 'react'
 interface Shaer {
@@ -28,6 +34,7 @@ const Ashaar = () => {
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   //snackbar
   const [toast, setToast] = useState<React.ReactNode | null>(null);
@@ -185,17 +192,6 @@ const Ashaar = () => {
       console.error("Error sharing:", error);
     }
   };
-  //using gsap to animate ghazal opening and closing
-  const animateModalOpen = (modalElement: gsap.TweenTarget) => {
-    gsap.fromTo(
-      modalElement,
-      { y: "100vh" },
-      { y: 0, duration: 0.2, ease: "power2.inOut" }
-    );
-  };
-  const animateModalClose = (modalElement: gsap.TweenTarget) => {
-    gsap.to(modalElement, { y: "100vh", duration: 0.5, ease: "power2.inOut" });
-  };
   //opening and closing ghazal
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
@@ -207,25 +203,11 @@ const Ashaar = () => {
         id: shaerData.fields.id,
       },
     });
-
-    const modalElement = document.getElementById("modal"); // Add an ID to your modal
-    if (modalElement) {
-      animateModalOpen(modalElement);
-      if (typeof window !== undefined) {
-        document.getElementById("modlBtn")?.classList.remove("hidden");
-      }
-    }
+    setDrawerOpen(true);
   };
   const handleCloseModal = (): void => {
-    if (typeof window !== undefined) {
-      document.getElementById("modlBtn")?.classList.add("hidden");
-    }
-    // Animate modal close
-    const modalElement = document.getElementById("modal");
-    if (modalElement) {
-      animateModalClose(modalElement);
-    }
     setSelectedCard(null);
+    setDrawerOpen(false);
   };
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
@@ -292,39 +274,25 @@ const Ashaar = () => {
             />
           ))}
       </div>
-      {selectedCard && (
-        <div
-          onClick={handleCloseModal}
-          id="modal"
-          className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
-        >
-          <div
-            dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
-          >
-            <div className="p-4 pr-0 relative">
-              <button
-                id="modlBtn"
-                className="sticky top-4 right-7 z-50"
-                onClick={handleCloseModal}
-              >
-                <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
-              </button>
-              <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
-                {selectedCard.fields.shaer}
-              </h2>
-              {selectedCard.fields.ghazal.map((line, index) => (
-                <p
-                  key={index}
-                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
+      <Drawer open={drawerOpen} onOpenChange={(open: boolean) => (open ? setDrawerOpen(true) : handleCloseModal())}>
+        <DrawerContent className="max-h-[80vh]">
+          <DrawerHeader className="sticky top-0 bg-background z-10">
+            <DrawerTitle dir="rtl" className="text-center text-2xl">
+              {selectedCard?.fields.shaer}
+            </DrawerTitle>
+            <DrawerClose className="absolute right-4 top-4" aria-label="Close">
+              <XCircle className="h-6 w-6 text-muted-foreground hover:text-primary" />
+            </DrawerClose>
+          </DrawerHeader>
+          <div dir="rtl" className="px-4 pb-6 overflow-y-auto">
+            {selectedCard?.fields.ghazal.map((line, index) => (
+              <p key={index} className="justif w-[320px] text-foreground pb-3 pr-4 text-2xl">
+                {line}
+              </p>
+            ))}
           </div>
-        </div>
-      )}
+        </DrawerContent>
+      </Drawer>
     </>
   );
 };
