@@ -1,13 +1,17 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Home, Search, XCircle, X, House } from "lucide-react";
 import { format } from "date-fns";
-import ToastComponent from "../Components/Toast";
+import { toast } from "sonner";
 import CommentSection from "../Components/CommentSection";
 import SkeletonLoader from "../Components/SkeletonLoader";
 import DataCard from "../Components/DataCard";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { useAirtableCreate } from "@/hooks/useAirtableCreate";
+import { airtableFetchJson, TTL, invalidateAirtable } from "@/lib/airtable-fetcher";
 
 interface Shaer {
   fields: {
@@ -65,10 +69,7 @@ const Ashaar: React.FC<{}> = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // toast via sonner
   useEffect(() => {
     AOS.init({
       offset: 50,
@@ -77,40 +78,13 @@ const Ashaar: React.FC<{}> = () => {
     });
   }, []);
 
-  //function ot show toast
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") return toast.success(message);
+    if (msgtype === "error") return toast.error(message);
+    return toast.warning(message);
   };
   //function ot scroll to the top
   function scrollToTop() {
@@ -121,104 +95,61 @@ const Ashaar: React.FC<{}> = () => {
       });
     }
   }
-  // func to fetch and load more data
-  const fetchData = async (offset: string | null, userQuery: boolean) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(voffset);
-    try {
-      const BASE_ID = "appvzkf6nX376pZy6";
-      const TABLE_NAME = "Ghazlen";
-      const pageSize = 30;
-      const headers = {
-        //authentication with environment variable
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
-      // &fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
+  // Build filter formula via SWR hook
+  const filterFormula = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return undefined;
+    // sanitize to avoid Airtable formula injection: escape backslashes and single quotes
+    const safeQ = q.replace(/\\/g, "\\\\").replace(/'/g, "''");
+    return `OR( FIND('${safeQ}', LOWER({shaer})), FIND('${safeQ}', LOWER({ghazalHead})), FIND('${safeQ}', LOWER({ghazal})), FIND('${safeQ}', LOWER({unwan})) )`;  }, [searchText]);
 
-      if (userQuery) {
-        // Encode the formula with OR condition
-        const encodedFormula = encodeURIComponent(
-          `OR(
-          FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
-        )`
-        );
-        url += `&filterByFormula=${encodedFormula}`;
-      }
+  const { records, isLoading, hasMore, loadMore } = useAirtableList<Shaer>(
+    "appvzkf6nX376pZy6",
+    "Ghazlen",
+    { pageSize: 30, filterByFormula: filterFormula },
+    { debounceMs: 300 }
+  );
 
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
-      const response = await fetch(url, { method: "GET", headers });
-      const result: ApiResponse = await response.json();
-      const records = result.records || [];
-      setTimeout(() => {
-        result.offset && setOffset(result.offset);
-        !result.offset && setNoMoreData(true);
-      }, 3000);
+  const { updateRecord: updateGhazlen } = useAirtableMutation(
+    "appvzkf6nX376pZy6",
+    "Ghazlen"
+  );
+  const { createRecord: createGhazlenComment } = useAirtableCreate(
+    "appzB656cMxO0QotZ",
+    "Comments"
+  );
 
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
-      // formating result to match the mock data type for ease of development
-      const formattedRecords = records.map((record: any) => ({
-        ...record,
-        fields: {
-          ...record.fields,
-          ghazal: record.fields?.ghazal.split("\n"),
-          ghazalHead: record.fields?.ghazalHead.split("\n"),
-          unwan: record.fields?.unwan.split("\n"),
-        },
-      }));
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(dataItems);
-          setDataItems(formattedRecords);
-        } else {
-          setDataItems(formattedRecords);
-        }
-      } else {
-        setDataItems((prevDataItems) => [
-          ...prevDataItems,
-          ...formattedRecords,
-        ]);
-      }
-      // seting pagination depending on the response
-      setOffset(result.offset);
-      // seting the loading state to false to show the data
-      setLoading(false);
-      setMoreLoading(false);
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false);
-      setMoreLoading(false);
-    }
-  };
-  // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(voffset, false);
-  };
-  // Fetch the initial set of records
+  // Format records
+  const formattedRecords: Shaer[] = useMemo(() => {
+    return (records || []).map((record: any) => ({
+      ...record,
+      fields: {
+        ...record.fields,
+        ghazal: String(record.fields?.ghazal || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazalHead: String(record.fields?.ghazalHead || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        unwan: String(record.fields?.unwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+      },
+    }));
+  }, [records]);
+
   useEffect(() => {
-    fetchData(null, false);
-  }, []);
-  const searchQuery = () => {
-    fetchData(null, true);
-    setPagination({
-      offset: pagination.offset,
-      pageSize: 30,
-    });
-    if (typeof window !== "undefined") {
-      setScrolledPosition(window.scrollY);
+    setDataItems(formattedRecords);
+    setLoading(isLoading);
+    setMoreLoading(false);
+    setNoMoreData(!hasMore);
+  }, [formattedRecords, isLoading, hasMore]);
+
+  const handleLoadMore = async () => {
+    try {
+      setMoreLoading(true);
+      await loadMore();
+    } finally {
+      setMoreLoading(false);
     }
+  };
+  const searchQuery = () => {
+    // filterFormula derives from searchText
+    if (typeof window !== "undefined") setScrolledPosition(window.scrollY);
   };
   // search input change handling (state-driven visibility)
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -239,7 +170,7 @@ const Ashaar: React.FC<{}> = () => {
     id: string
   ): Promise<void> => {
     toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage && e.detail == 1) {
+  if (typeof window !== 'undefined' && window.localStorage && e.detail === 1) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ghazlen");
@@ -272,46 +203,14 @@ const Ashaar: React.FC<{}> = () => {
             "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
           );
           try {
-            // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes + 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            await updateGhazlen([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
+            setDataItems((prev) => {
+              const copy = [...prev];
+              const item = copy[index];
+              if (item?.fields) item.fields.likes = updatedLikes;
+              return copy;
+            });
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -336,46 +235,14 @@ const Ashaar: React.FC<{}> = () => {
             "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
           try {
-            // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            await updateGhazlen([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
+            setDataItems((prev) => {
+              const copy = [...prev];
+              const item = copy[index];
+              if (item?.fields) item.fields.likes = updatedLikes;
+              return copy;
+            });
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -409,48 +276,16 @@ const Ashaar: React.FC<{}> = () => {
           .then(() => console.info("Successful share"))
           .catch((error) => console.error("Error sharing", error));
         try {
-          // Make API request to update the record's "Likes" field
           const updatedShares = shaerData.fields.shares + 1;
-          const updateData = {
-            records: [
-              {
-                id: shaerData.id,
-                fields: {
-                  shares: updatedShares,
-                },
-              },
-            ],
-          };
-
-          const updateHeaders = {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-            "Content-Type": "application/json",
-          };
-
-          const updateResponse = await fetch(
-            `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
-            {
-              method: "PATCH",
-              headers: updateHeaders,
-              body: JSON.stringify(updateData),
-            }
-          );
-
-          if (updateResponse.ok) {
-            // Update local state to reflect the change in likes
-            setDataItems((prevDataItems) => {
-              const updatedDataItems = [...prevDataItems];
-              const item = updatedDataItems[index];
-              if (item && item.fields) {
-                item.fields.shares = updatedShares;
-              }
-              return updatedDataItems;
-            });
-          } else {
-            console.error(`Failed to update shares: ${updateResponse.status}`);
-          }
+          await updateGhazlen([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+          setDataItems((prev) => {
+            const copy = [...prev];
+            const item = copy[index];
+            if (item?.fields) item.fields.shares = updatedShares;
+            return copy;
+          });
         } catch (error) {
-          console.error("Error updating shres:", error);
+          console.error("Error updating shares:", error);
         }
       } else {
         console.warn("Web Share API is not supported.");
@@ -536,17 +371,15 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appzB656cMxO0QotZ";
-      const TABLE_NAME = "Comments";
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
+      const result = await airtableFetchJson({
+        kind: "list",
+        baseId: "appzB656cMxO0QotZ",
+        table: "Comments",
+        params: { filterByFormula: `dataId="${dataId}"` },
+        ttl: TTL.fast,
+      });
 
-      const response = await fetch(url, { headers });
-      const result = await response.json();
-
-      const fetchedComments = result.records.map(
+      const fetchedComments = (result.records || []).map(
         (record: {
           fields: {
             dataId: string;
@@ -592,14 +425,6 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appzB656cMxO0QotZ";
-        const TABLE_NAME = "Comments";
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
-        const headers = {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-          "Content-Type": "application/json",
-        };
-
         const timestamp = new Date().toISOString();
         const date = new Date(timestamp);
 
@@ -611,14 +436,8 @@ const Ashaar: React.FC<{}> = () => {
           timestamp: formattedDate,
           comment: newComment,
         };
-
-        const response = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ records: [{ fields: commentData }] }),
-        });
-
-        if (response.ok) {
+  await createGhazlenComment([{ fields: commentData }]);
+        {
           // Update the UI with the new comment
           setComments((prevComments: Comment[]) => [
             ...prevComments,
@@ -632,35 +451,12 @@ const Ashaar: React.FC<{}> = () => {
           setDataItems((prev) => prev.map((i) => (i.id === dataId ? incrementComments(i) : i)));
 
           try {
-            const BASE_ID = "appvzkf6nX376pZy6";
-            const TABLE_NAME = "Ghazlen";
-            const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
-            const headers = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(url, {
-              method: "PATCH",
-              headers,
-              body: JSON.stringify({
-                fields: {
-                  comments: newCommentsCount,
-                },
-              }),
-            });
-
-            if (updateResponse.ok) {
-            } else {
-              console.error(
-                `Failed to update comments on the server: ${updateResponse.status}`
-              );
-            }
+            await updateGhazlen([{ id: dataId, fields: { comments: newCommentsCount } }]);
+            // Invalidate comments cache to ensure subsequent fetch reflects new comment
+            invalidateAirtable("appzB656cMxO0QotZ", "Comments");
           } catch (error) {
             console.error("Error updating comments on the server:", error);
           }
-        } else {
-          console.error(`Failed to add comment: ${response.statusText}`);
         }
       } catch (error) {
         console.error(`Error adding comment: ${error}`);
@@ -693,12 +489,7 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      <div
-        className={`toast-container ${hideAnimation ? " hide " : ""
-          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-      >
-        {toast}
-      </div>
+      {/* Sonner Toaster is global; no local toast container */}
       {showDialog && (
         <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
           <div
@@ -802,7 +593,7 @@ const Ashaar: React.FC<{}> = () => {
               <div className="flex justify-center text-lg m-5">
                 <button
                   onClick={handleLoadMore}
-                  disabled={noMoreData}
+                  disabled={noMoreData || moreloading}
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {moreloading

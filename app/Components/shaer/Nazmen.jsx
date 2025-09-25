@@ -2,48 +2,19 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
 import { Heart, Share2 } from "lucide-react";
-import ToastComponent from "../Toast"
+import { toast } from "sonner"
 
 const Nazmen = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
   const [loading, setLoading] = useState(true);
   //snackbar
-  const [toast, setToast] = useState(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState(null);
+  // notifications via Sonner Toaster (global)
 
   //function ot show toast
   const showToast = (msgtype, message) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
 
   console.log(takhallus);

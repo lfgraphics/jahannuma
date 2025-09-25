@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { XCircle } from "lucide-react";
 import { format } from "date-fns";
-import ToastComponent from "../../../Components/Toast";
+import { toast } from "sonner";
 import CommentSection from "../../../Components/CommentSection";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 import DataCard from "../../../Components/DataCard";
@@ -40,9 +40,10 @@ interface Comment {
   comment: string;
 }
 
-const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedCommentId, setSelectedCommentId] = React.useState<
-    string | null
-  >(null);
+const Ashaar = ({ params }: { params: Promise<{ name: string }> }) => {
+  const resolved = React.use(params);
+  const displayName = decodeURIComponent(resolved.name).replace("_", " ");
+  const [selectedCommentId, setSelectedCommentId] = React.useState<string | null>(null);
   const [selectedCard, setSelectedCard] = React.useState<{
     id: string;
     fields: { shaer: string; ghazal: string[]; id: string };
@@ -65,10 +66,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedC
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // notifications handled by Sonner Toaster globally
 
   useEffect(() => {
     AOS.init({
@@ -78,41 +76,14 @@ const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedC
     });
   });
 
-  //function ot show toast
+  // function to show toast via Sonner
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
 
   //function ot scroll to the top
@@ -135,10 +106,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedC
       };
       //airtable fetch url and methods
       // &fields%5B%5D=shaer&fields%5B%5D=displayLine&fields%5B%5D=nazm&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${params.name.replace(
-        "_",
-        " "
-      )}')`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({shaer}='${displayName}')`;
 
       const response = await fetch(url, { method: "GET", headers });
       const result: ApiResponse = await response.json();
@@ -647,13 +615,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedC
 
   return (
     <div>
-      <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-      >
-        {toast}
-      </div>
+      {/* Sonner Toaster is mounted globally in providers; no local container needed */}
       {showDialog && (
         <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
           <div
@@ -689,8 +651,8 @@ const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedC
           </div>
         </div>
       )}
-      <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">
-        {`${decodeURIComponent(params.name).replace("_", " ")} کی نظمیں`}
+      <div className="flex flex-row w-screen md:p-6 justify-center items-center top-14 z-10">
+        {`${displayName} کی نظمیں`}
       </div>
       {loading && <SkeletonLoader />}
       {!loading && (
@@ -706,7 +668,7 @@ const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedC
               }`}
           >
             {dataItems.map((shaerData, index) => (
-              <div data-aos="fade-up">
+              <div data-aos="fade-up" key={index + shaerData.id}>
                 <DataCard
                   page="nazm"
                   download={false}
@@ -754,17 +716,6 @@ const Ashaar = ({ params }: { params: { name: string } }) => {  const [selectedC
             </div>
           </div>
         </div>
-      )}
-      {/* //commetcard */}
-      {selectedCommentId && (
-        <button
-          // style={{ overflow: "hidden" }}
-          className=" fixed bottom-24 left-7 z-50 rounded-full  h-10 w-10 pt-2 "
-          id="modlBtn"
-          onClick={() => closeComments()}
-        >
-          <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
-        </button>
       )}
       {selectedCommentId && (
         <CommentSection

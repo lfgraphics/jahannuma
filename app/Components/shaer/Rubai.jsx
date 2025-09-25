@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 import SkeletonLoader from "../../Components/SkeletonLoader";
 import RubaiCard from "../../Components/RubaiCard";
 import AOS from "aos";
@@ -17,9 +18,7 @@ const Rubai = ({ takhallus }) => {
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
   //snackbar
-  const [toast, setToast] = useState(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState(null);
+  // notifications via Sonner Toaster (global)
   useEffect(() => {
     AOS.init({
       offset: 50,
@@ -30,35 +29,9 @@ const Rubai = ({ takhallus }) => {
 
   //function ot show toast
   const showToast = (msgtype, message) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
 
   const fetchData = async () => {
@@ -493,13 +466,7 @@ const Rubai = ({ takhallus }) => {
 
   return (
     <>
-      <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-      >
-        {toast}
-      </div>
+      {/* Sonner Toaster mounted globally; removed local toast container */}
       {showDialog && (
         <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
           <div

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import LocalGhazalCard from "./LocalDataCard";
-import ToastComponent from "./Toast";
+import { toast } from "sonner";
 import { TimesCircleIcon as XCircle } from "../../lib/icons";
 interface Shaer {
   fields: {
@@ -26,10 +26,7 @@ const Ghazlen = () => {
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // notifications handled by global Sonner Toaster
   const [insideBrowser, setInsideBrowser] = useState(false);
 
   useEffect(() => {
@@ -49,36 +46,9 @@ const Ghazlen = () => {
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
 
   const handleHeartClick = async (
@@ -239,7 +209,6 @@ const Ghazlen = () => {
 
   return (
     <>
-      {toast}
       {insideBrowser && (data === null || data.length === 0) && (
         <div className="w-screen h-screen grid place-items-center">
           آپ کے پسندیدہ میں کوئی غزل موجود نہیں ہیں

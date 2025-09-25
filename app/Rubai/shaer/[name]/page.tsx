@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { XCircle } from "lucide-react";
 import { format } from "date-fns";
-import ToastComponent from "../../../Components/Toast";
+import { toast } from "sonner";
 import CommentSection from "../../../Components/CommentSection";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 import RubaiCard from "../../../Components/RubaiCard";
@@ -22,9 +22,13 @@ interface Comment {
   comment: string;
 }
 
-const Page = ({ params }: { params: { name: string } }) => {  const [selectedCommentId, setSelectedCommentId] = React.useState<
+const Page = ({ params }: { params: Promise<{ name: string }> }) => {
+  const resolved = React.use(params);
+  const displayName = decodeURIComponent(resolved.name).replace("_", " ");
+  const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
+  const [pendingLikes, setPendingLikes] = useState<Set<string>>(new Set());
   const [voffset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,10 +42,7 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // notifications handled by Sonner globally
   useEffect(() => {
     AOS.init({
       offset: 50,
@@ -50,50 +51,17 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
     });
   });
 
-  //function ot show toast
+  // function to show toast via Sonner
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
   //function ot scroll to the top
-  function scrollToTop() {
-    if (typeof window !== undefined) {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
+  // no auto scroll-to-top on load more to avoid jumping
   // func to fetch and load more data
   const fetchData = async (offset: string | null) => {
     try {
@@ -105,9 +73,7 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
       //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&&fields%5B%5D=unwan&&fields%5B%5D=body&&fields%5B%5D=likes&&fields%5B%5D=comments&&fields%5B%5D=shares&&fields%5B%5D=id&filterByFormula=({shaer}='${decodeURIComponent(
-        params.name
-      ).replace("_", " ")}')`;
+      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&&fields%5B%5D=unwan&&fields%5B%5D=body&&fields%5B%5D=likes&&fields%5B%5D=comments&&fields%5B%5D=shares&&fields%5B%5D=id&filterByFormula=({shaer}='${displayName}')`;
       // &fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
 
       if (offset) {
@@ -134,7 +100,6 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
       } else {
         setDataItems((prevDataItems) => [...prevDataItems, ...records]);
       }
-      !offset && scrollToTop();
       // seting pagination depending on the response
       setOffset(result.offset);
       // seting the loading state to false to show the data
@@ -147,9 +112,13 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
     }
   };
   // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(voffset);
+  const handleLoadMore = async () => {
+    try {
+      setMoreLoading(true);
+      await fetchData(voffset);
+    } finally {
+      setMoreLoading(false);
+    }
   };
   // Fetch the initial set of records
   useEffect(() => {
@@ -162,8 +131,10 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
     index: any,
     id: string
   ): Promise<void> => {
-    if (typeof window !== undefined && window.localStorage && e.detail == 1) {
+    if (pendingLikes.has(id)) return; // prevent concurrent clicks
+    if (typeof window !== undefined && window.localStorage) {
       try {
+        setPendingLikes((prev) => new Set(prev).add(id));
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Rubai");
 
@@ -196,7 +167,7 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
           );
           try {
             // Make API request to update the record's "Likes" field
-            const updatedLikes = shaerData.fields.likes + 1;
+            const updatedLikes = Math.max(0, (shaerData.fields.likes ?? 0) + 1);
             const updateData = {
               records: [
                 {
@@ -260,7 +231,7 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
           );
           try {
             // Make API request to update the record's "Likes" field
-            const updatedLikes = shaerData.fields.likes - 1;
+            const updatedLikes = Math.max(0, (shaerData.fields.likes ?? 0) - 1);
             const updateData = {
               records: [
                 {
@@ -309,6 +280,12 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
           "Error adding/removing data to/from Local Storage:",
           error
         );
+      } finally {
+        setPendingLikes((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
       }
     }
   };
@@ -600,15 +577,9 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
 
   return (
     <div>
-      <div
-        className={`toast-container ${
-          hideAnimation ? " hide " : ""
-        } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-      >
-        {toast}
-      </div>
+      {/* Sonner Toaster is global - no local container needed */}
       {showDialog && (
-        <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
+        <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-[60]">
           <div
             dir="rtl"
             className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white"
@@ -644,7 +615,7 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
         </div>
       )}
       <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">
-        {`${decodeURIComponent(params.name).replace("_", " ")} کی رباعی `}
+        {`${displayName} کی رباعی `}
       </div>
       {loading && <SkeletonLoader />}
       {!loading && (
@@ -662,6 +633,7 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
                   handleHeartClick={handleHeartClick}
                   openComments={openComments}
                   handleShareClick={handleShareClick}
+                  isLiking={pendingLikes.has(data.id)}
                 />
               </div>
             ))}
@@ -675,8 +647,8 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                    ? "مزید رباعی نہیں ہیں"
-                    : "مزید رباعی لوڈ کریں"}
+                      ? "مزید رباعی نہیں ہیں"
+                      : "مزید رباعی لوڈ کریں"}
                 </button>
               </div>
             )}
@@ -684,7 +656,7 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
         </section>
       )}
       {/* //commetcard */}
-      {selectedCommentId && (
+      {selectedCommentId && !showDialog && (
         <button
           // style={{ overflow: "hidden" }}
           className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
@@ -694,7 +666,7 @@ const Page = ({ params }: { params: { name: string } }) => {  const [selectedCom
           <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
         </button>
       )}
-      {selectedCommentId && (
+      {selectedCommentId && !showDialog && (
         <CommentSection
           dataId={selectedCommentId}
           comments={comments}

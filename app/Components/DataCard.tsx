@@ -32,6 +32,12 @@ interface ShaerCardProps {
   ) => void; // Replace Shaer with the actual type
   handleShareClick: (shaerData: any, index: number) => void; // Replace Shaer with the actual type
   openComments: (id: string) => void;
+  // Optional state-driven heart control
+  heartLiked?: boolean;
+  onHeartToggle?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  heartDisabled?: boolean;
+  // Back-compat: some callsites rely on DOM id selection
+  id?: string;
 }
 
 const DataCard: React.FC<ShaerCardProps> = ({
@@ -45,6 +51,10 @@ const DataCard: React.FC<ShaerCardProps> = ({
   handleHeartClick,
   handleShareClick,
   openComments,
+  heartLiked,
+  onHeartToggle,
+  heartDisabled,
+  id,
 }) => {
   const [selectedShaer, setSelectedShaer] = useState<MinimalShaer | null>(null);
 
@@ -70,6 +80,8 @@ const DataCard: React.FC<ShaerCardProps> = ({
     if (Array.isArray(u)) return u.filter(Boolean);
     return u.split("\n").filter(Boolean);
   }, [sd]);
+
+  const heartElementId = id || `${sd?.id}`;
 
   return (
     <>
@@ -112,11 +124,13 @@ const DataCard: React.FC<ShaerCardProps> = ({
                 <Link href={{ pathname: `/Nazmen/${shaerData.id}`, query: { id: shaerData.id } }}>پڑھیں۔۔۔</Link>
               </button>
               <button
-                className={`m-3 text-gray-500 transition-all duration-500`}
+                id={heartElementId}
+                className={`m-3 transition-all duration-500 ${heartLiked ? "text-red-600" : "text-gray-500"}`}
                 onClick={(e) =>
-                  handleHeartClick(e, shaerData, index, `${shaerData?.id}`)
-                }
-                id={`${shaerData?.id}`}
+                  onHeartToggle
+                    ? onHeartToggle(e)
+                    : handleHeartClick(e, shaerData, index, heartElementId)
+                } disabled={heartDisabled}
               >
                 <Heart className="inline" fill="currentColor" size={16} />{" "}
                 <span id="likescount" className="text-gray-500 text-sm">
@@ -240,11 +254,14 @@ const DataCard: React.FC<ShaerCardProps> = ({
           </div>
           <div className="flex items-end text-center w-full">
             <button
-              className={`m-3 flex gap-1 items-center text-gray-500 transition-all duration-500`}
+              id={heartElementId}
+              className={`m-3 flex gap-1 items-center transition-all duration-500 ${heartLiked ? "text-red-600" : "text-gray-500"}`}
               onClick={(e) =>
-                handleHeartClick(e, shaerData, index, `${shaerData?.id}`)
+                onHeartToggle
+                  ? onHeartToggle(e)
+                  : handleHeartClick(e, shaerData, index, `${shaerData?.id}`)
               }
-              id={`${shaerData?.id}`}
+              disabled={heartDisabled}
             >
               <Heart className="inline" fill="currentColor" size={16} />{" "}
               <span id="likescount" className="text-gray-500 text-sm">

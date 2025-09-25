@@ -84,15 +84,7 @@ const Content = () => {
     });
   });
 
-  //function ot scroll to the top
-  function scrollToTop() {
-    if (typeof window !== undefined) {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
+  // no auto scroll to top on load-more
 
   const fetchData = async (offset: string | null) => {
     try {
@@ -113,12 +105,12 @@ const Content = () => {
         setLoading(false);
         setMoreLoading(false);
       }
-      // formating result to match the mock data type for ease of development
+      // set/append results and avoid jump to top
       if (!offset) {
         setDataItems(items);
+      } else {
+        setDataItems((prev) => [...prev, ...items]);
       }
-
-      !offset && scrollToTop();
       // seting pagination depending on the response
       setPagination({
         nextPageToken: result.nextPageToken,
@@ -134,9 +126,13 @@ const Content = () => {
     }
   };
   // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(pagination.nextPageToken);
+  const handleLoadMore = async () => {
+    try {
+      setMoreLoading(true);
+      await fetchData(pagination.nextPageToken);
+    } finally {
+      setMoreLoading(false);
+    }
   };
   // Fetch the initial set of items
   useEffect(() => {
@@ -177,7 +173,7 @@ const Content = () => {
             <div className="flex justify-center text-lg m-5">
               <button
                 onClick={handleLoadMore}
-                disabled={noMoreData}
+                disabled={noMoreData || moreloading}
                 className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
               >
                 {moreloading

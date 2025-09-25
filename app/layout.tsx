@@ -2,6 +2,7 @@ import "./globals.css";
 import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
 import Providers from "./providers";
+import SWRProvider from "./swr-provider";
 
 export default function RootLayout({
   children,
@@ -91,13 +92,15 @@ export default function RootLayout({
       </head>
       <body className="bg-background text-foreground font-noto-nastaliq">
         <Providers>
-          <div className="app-root min-h-screen flex flex-col">
-            <header className="w-full flex items-center justify-between gap-4">
-              <Navbar />
-            </header>
-            <main className="flex-1 mt-[120px] lg:mt-[65px]">{children}</main>
-            <Footer />
-          </div>
+          <SWRProvider>
+            <div className="app-root min-h-screen flex flex-col">
+              <header className="w-full flex items-center justify-between gap-4">
+                <Navbar />
+              </header>
+              <main className="flex-1 mt-[120px] lg:mt-[65px]">{children}</main>
+              <Footer />
+            </div>
+          </SWRProvider>
         </Providers>
       </body>
     </html>

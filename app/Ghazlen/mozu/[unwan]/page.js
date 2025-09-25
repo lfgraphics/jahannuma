@@ -1,13 +1,16 @@
+// @ts-nocheck
 "use client";
 import React, { useEffect, useState } from "react";
 import { XCircle } from "lucide-react";
 import { format } from "date-fns";
-import ToastComponent from "../../../Components/Toast";
 import CommentSection from "../../../Components/CommentSection";
 import DataCard from "../../../Components/DataCard";
-// aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
+
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 const SkeletonLoader = () => (
   <div className="flex flex-col items-center">
@@ -37,10 +40,9 @@ const Page = ({ params }) => {
   const [comments, setComments] = useState([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  //snackbar
-  const [toast, setToast] = useState(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState(null);
+  // hearts UI state
+  const [disableHearts, setDisableHearts] = useState(false);
+  const [likedMap, setLikedMap] = useState({});
 
   useEffect(() => {
     AOS.init({
@@ -50,44 +52,6 @@ const Page = ({ params }) => {
     });
   });
 
-  //function ot show toast
-  const showToast = (
-    msgtype,
-    message
-  ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
-  };
-
-
   // func to fetch and load more data
   const fetchData = async () => {
     try {
@@ -95,7 +59,6 @@ const Page = ({ params }) => {
       const TABLE_NAME = "Ghazlen";
 
       const headers = {
-
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
       };
 
@@ -116,6 +79,16 @@ const Page = ({ params }) => {
       }));
 
       setDataItems(formattedRecords);
+      // init liked map from localStorage
+      try {
+        const existingDataJSON = localStorage.getItem("Ghazlen");
+        const existingData = existingDataJSON ? JSON.parse(existingDataJSON) : [];
+        const map = {};
+        for (const item of formattedRecords) {
+          map[item.id] = existingData.some((d) => d.id === item.id);
+        }
+        setLikedMap(map);
+      } catch {}
 
       setLoading(false);
     } catch (error) {
@@ -129,28 +102,19 @@ const Page = ({ params }) => {
     fetchData();
   }, []);
   // handeling liking, adding to localstorage and updating on the server
-  const handleHeartClick = async (
-    e,
-    shaerData,
-    index,
-    id
-  ) => {
+  const handleHeartClick = async (e, shaerData, index, id) => {
     toggleanaween(null);
-    setDisableHearts(true)
-    if (typeof window !== undefined && window.localStorage && e.detail == 1) {
+    setDisableHearts(true);
+    if (typeof window !== undefined && window.localStorage && e.detail === 1) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ghazlen");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
+        const existingData = existingDataJSON ? JSON.parse(existingDataJSON) : [];
 
         // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.id === shaerData.id
-        );
+        const isDuplicate = existingData.some((data) => data.id === shaerData.id);
 
         if (!isDuplicate) {
           // Add the new shaerData to the existing data array
@@ -159,16 +123,12 @@ const Page = ({ params }) => {
           // Serialize the updated data back to JSON
           const updatedDataJSON = JSON.stringify(existingData);
 
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`).classList.remove("text-gray-500");
-          document.getElementById(`${id}`).classList.add("text-red-600");
+          // reflect UI state
+          setLikedMap((prev) => ({ ...prev, [id]: true }));
 
           localStorage.setItem("Ghazlen", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
+          // show sonner success toast
+          toast.success("آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes + 1;
@@ -204,35 +164,29 @@ const Page = ({ params }) => {
                 updatedDataItems[index].fields.likes = updatedLikes;
                 return updatedDataItems;
               });
-              setDisableHearts(false)
+              setDisableHearts(false);
             } else {
               console.error(`Failed to update likes: ${updateResponse.status}`);
-              setDisableHearts(false)
+              setDisableHearts(false);
             }
           } catch (error) {
             console.error("Error updating likes:", error);
-            setDisableHearts(false)
+            setDisableHearts(false);
           }
         } else {
           // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.id !== shaerData.id
-          );
+          const updatedData = existingData.filter((data) => data.id !== shaerData.id);
 
           // Serialize the updated data back to JSON
           const updatedDataJSON = JSON.stringify(updatedData);
 
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`).classList.remove("text-red-600");
-          document.getElementById(`${id}`).classList.add("text-gray-500");
+          // reflect UI state
+          setLikedMap((prev) => ({ ...prev, [id]: false }));
 
           localStorage.setItem("Ghazlen", updatedDataJSON);
 
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
+          // show sonner error/notice toast
+          toast.error("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
             // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
@@ -268,31 +222,25 @@ const Page = ({ params }) => {
                 updatedDataItems[index].fields.likes = updatedLikes;
                 return updatedDataItems;
               });
-              setDisableHearts(false)
+              setDisableHearts(false);
             } else {
               console.error(`Failed to update likes: ${updateResponse.status}`);
-              setDisableHearts(false)
+              setDisableHearts(false);
             }
           } catch (error) {
             console.error("Error updating likes:", error);
-            setDisableHearts(false)
+            setDisableHearts(false);
           }
         }
       } catch (error) {
         // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-        setDisableHearts(false)
+        console.error("Error adding/removing data to/from Local Storage:", error);
+        setDisableHearts(false);
       }
     }
   };
   //handeling sahre
-  const handleShareClick = async (
-    shaerData,
-    index
-  ) => {
+  const handleShareClick = async (shaerData, index) => {
     toggleanaween(null);
     try {
       if (navigator.share) {
@@ -373,42 +321,17 @@ const Page = ({ params }) => {
   const handleCloseModal = () => {
     setSelectedCard(null);
   };
-  //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
+  // derive likedMap from localStorage on data changes 
   useEffect(() => {
-    // if (document !== undefined) {
-    //   const elements = [...document.querySelectorAll('.langChange')];
-    //   elements.forEach((element) => element.classList.add('hidden'));
-    //   window.addEventListener('beforeunload', function () {
-    //     console.log('Beforeunload event triggered!');
-    //     elements.forEach((element) => element.classList.remove('hidden'));
-    //   });
-    // }
-    if (window !== undefined && window.localStorage) {
+    try {
       const storedData = localStorage.getItem("Ghazlen");
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          dataItems.forEach((shaerData, index) => {
-            const shaerId = shaerData.id; // Get the id of the current shaerData
-
-            // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data) => data.id === shaerId
-            );
-
-            if (storedShaer) {
-              // If shaerId exists in the stored data, update the card's appearance
-              const cardElement = document.getElementById(shaerId);
-              if (cardElement) {
-                cardElement.classList.add("text-red-600");
-              }
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing stored data:", error);
-        }
+      const parsed = storedData ? JSON.parse(storedData) : [];
+      const map = {};
+      for (const item of dataItems) {
+        map[item.id] = parsed.some((d) => d.id === item.id);
       }
-    }
+      setLikedMap(map);
+    } catch {}
   }, [dataItems]);
   //toggling anaween box
   const toggleanaween = (cardId) => {
@@ -444,14 +367,12 @@ const Page = ({ params }) => {
       const response = await fetch(url, { headers });
       const result = await response.json();
 
-      const fetchedComments = result.records.map(
-        (record) => ({
-          dataId: record.fields.dataId,
-          commentorName: record.fields.commentorName,
-          timestamp: record.fields.timestamp,
-          comment: record.fields.comment,
-        })
-      );
+      const fetchedComments = result.records.map((record) => ({
+        dataId: record.fields.dataId,
+        commentorName: record.fields.commentorName,
+        timestamp: record.fields.timestamp,
+        comment: record.fields.comment,
+      }));
       setCommentLoading(false);
       setComments(fetchedComments);
     } catch (error) {
@@ -502,10 +423,7 @@ const Page = ({ params }) => {
 
         if (response.ok) {
           // Update the UI with the new comment
-          setComments((prevComments) => [
-            ...prevComments,
-            commentData,
-          ]);
+          setComments((prevComments) => [...prevComments, commentData]);
 
           // Clear the input field
           setNewComment("");
@@ -524,9 +442,7 @@ const Page = ({ params }) => {
             return dataItem;
           });
 
-          const dataItemToUpdate = updatedDataItems.find(
-            (item) => item.id === dataId
-          );
+          const dataItemToUpdate = updatedDataItems.find((item) => item.id === dataId);
 
           if (!dataItemToUpdate?.fields.comments) {
             // If the comments field is not present, add it with the value 1
@@ -569,9 +485,7 @@ const Page = ({ params }) => {
 
             if (updateResponse.ok) {
             } else {
-              console.error(
-                `Failed to update comments on the server: ${updateResponse.status}`
-              );
+              console.error(`Failed to update comments on the server: ${updateResponse.status}`);
             }
           } catch (error) {
             console.error("Error updating comments on the server:", error);
@@ -592,70 +506,64 @@ const Page = ({ params }) => {
   };
   const closeComments = () => {
     setSelectedCommentId(null);
-    setComments([])
+    setComments([]);
   };
 
   return (
-    <div>
-      <div
-        className={`toast-container ${hideAnimation ? " hide " : ""
-          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-      >
-        {toast}
-      </div>
-      {showDialog && (
-        <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
-          <div
-            dir="rtl"
-            className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white"
-          >
-            <div className="dialog-content">
-              <p className="text-lg font-bold pb-3 border-b">
-                براہ کرم اپنا نام درج کریں
-              </p>
-              <p className="pt-2">
-                ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے
-                استعمال کریں گے
-              </p>
-              <input
-                type="text"
-                id="nameInput"
-                className="mt-2 p-2 border"
-                value={nameInput}
-                onChange={handleNameChange}
-              />
-              <div className=" mt-4">
-                <button
-                  id="submitBtn"
-                  disabled={nameInput.length < 4}
-                  className="px-4 py-2 bg-[#984A02] disabled:bg-gray-500 text-white rounded"
-                  onClick={handleNameSubmission}
-                >
-                  محفوظ کریں
-                </button>
-              </div>
+    // Page root: dark background + light text; responsive layout preserved
+    <div className="min-h-screen">
+      {/* Name collection using shadcn Dialog */}
+      <Dialog open={showDialog} onOpenChange={(open) => setShowDialog(open)}>
+        <DialogContent className="max-w-[380px] w-full mx-auto">
+          <div dir="rtl" className="p-6 rounded-md text-center">            <DialogHeader>
+            <DialogTitle className="text-lg font-bold pb-3 border-b border-slate-700">
+              براہ کرم اپنا نام درج کریں
+            </DialogTitle>
+          </DialogHeader>
+            <p className="pt-2">
+              ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے استعمال کریں گے
+            </p>
+            <input
+              type="text"
+              id="nameInput"
+              className="mt-4 p-2 border border-slate-700 w-full"
+              value={nameInput}
+              onChange={handleNameChange}
+            />
+            <div className="mt-4 flex justify-center">
+              <button
+                id="submitBtn"
+                disabled={nameInput.length < 4}
+                className="px-4 py-2 bg-[#984A02] disabled:bg-gray-500 rounded"
+                onClick={handleNameSubmission}
+              >
+                محفوظ کریں
+              </button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="flex flex-row w-full border-b border-slate-700 p-3 justify-center items-center">
+        <div className="text-2xl sm:text-3xl md:text-4xl m-5">
+          {`غزلیں بعنوان : ${decodedUnwan}`}
         </div>
-      )}
-      <div className="flex flex-row w-screen bg-white border-b-2 p-3 justify-center items-center">
-        <div className="text-4xl m-5">{`غزلیں بعنوان : ${decodedUnwan}`}</div>
       </div>
+
       {loading && <SkeletonLoader />}
+
       {!loading && (
         <section>
           <div
             id="section"
             dir="rtl"
-            className={`
-              grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4`}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-3"
           >
             {dataItems.map((shaerData, index) => (
-              <div data-aos="fade-up">
+              <div data-aos="fade-up" key={shaerData.id || index}>
                 <DataCard
                   page="ghazal"
                   download={false}
-                  key={index}
                   shaerData={shaerData}
                   index={index}
                   handleCardClick={handleCardClick}
@@ -664,54 +572,64 @@ const Page = ({ params }) => {
                   handleHeartClick={handleHeartClick}
                   handleShareClick={handleShareClick}
                   openComments={openComments}
+                  heartLiked={!!likedMap[shaerData.id]}
+                  heartDisabled={disableHearts}
+                  onHeartToggle={(e) => handleHeartClick(e, shaerData, index, `${shaerData.id}`)}
                 />
               </div>
             ))}
           </div>
         </section>
       )}
-      {selectedCard && (
-        <div
-          onClick={handleCloseModal}
-          id="modal"
-          className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5"
-        >
-          <div
-            dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0  bg-white transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
-          >
-            <div className="p-4 pr-0 relative">
-              <button
-                id="modlBtn"
-                className="sticky top-4 right-7 z-50"
-                onClick={handleCloseModal}
-              >
-                <XCircle className="text-gray-700 h-8 w-8 hover:text-[#984A02] transition-all duration-500 ease-in-out" />
-              </button>
-              <h2 className="text-black text-4xl text-center top-0 bg-white sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
-                {selectedCard.fields.shaer}
-              </h2>
-              {selectedCard.fields.ghazal.map((line, index) => (
-                <p
-                  key={index}
-                  className="justif w-[320px] text-black pb-3 pr-4 text-2xl"
-                >
-                  {line}
-                </p>
-              ))}
+
+      {/* Selected card shown via shadcn Drawer */}
+      <Drawer
+        open={!!selectedCard}
+        onOpenChange={(open) => {
+          if (!open) handleCloseModal();
+        }}
+      >
+        <DrawerContent className="p-0 bg-transparent shadow-none">
+          {selectedCard && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              dir="rtl"
+              className="opacity-100 fixed bottom-0 left-0 right-0 transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-auto z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0 border-slate-700"
+            >
+              <div className="p-4 pr-0 relative">
+                <DrawerClose asChild>
+                  <XCircle
+                    id="modlBtn"
+                    // onClick={handleCloseModal}
+                    className="text-slate-200 sticky top-4 right-7 z-50 h-8 w-8 hover:text-[#984A02] transition-all duration-500 ease-in-out" />
+                </DrawerClose>
+                <h2 className=" text-2xl sm:text-3xl md:text-4xl text-center top-0 bg-slate-900 sticky pt-3 -mt-8 pb-3 border-b-2 border-slate-700 mb-3">
+                  {selectedCard.fields.shaer}
+                </h2>
+                <div className="px-4 pb-8">
+                  {selectedCard.fields.ghazal.map((line, idx) => (
+                    <p
+                      key={idx}
+                      className="w-full  pb-3 pr-4 text-lg sm:text-xl md:text-2xl"
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-      {/* //commetcard */}
+          )}
+        </DrawerContent>
+      </Drawer>
+
+      {/* Comment section toggle */}
       {selectedCommentId && (
         <button
-          // style={{ overflow: "hidden" }}
           className=" fixed bottom-24 left-7 z-50 rounded-full  h-10 w-10 pt-2 "
           id="modlBtn"
           onClick={() => closeComments()}
         >
-          <XCircle className="text-gray-700 h-8 w-8 hover:text-[#984A02] transition-all duration-500 ease-in-out" />
+          <XCircle className="text-slate-200 h-8 w-8 hover:text-[#984A02] transition-all duration-500 ease-in-out" />
         </button>
       )}
       {selectedCommentId && (

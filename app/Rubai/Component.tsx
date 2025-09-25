@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Search, X, House } from "lucide-react";
 import { format } from "date-fns";
-import ToastComponent from "../Components/Toast";
+import { toast } from "sonner";
 import CommentSection from "../Components/CommentSection";
 import SkeletonLoader from "../Components/SkeletonLoader";
 import RubaiCard from "../Components/RubaiCard";
@@ -10,6 +10,10 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 import type { Rubai } from "../types";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { useAirtableCreate } from "@/hooks/useAirtableCreate";
+import { airtableFetchJson, TTL, invalidateAirtable } from "@/lib/airtable-fetcher";
 
 interface ApiResponse {
   records: Rubai[];
@@ -42,10 +46,7 @@ const Ashaar: React.FC<{}> = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // notifications handled by global Sonner Toaster
   useEffect(() => {
     AOS.init({
       offset: 50,
@@ -59,130 +60,60 @@ const Ashaar: React.FC<{}> = () => {
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
   //function ot scroll to the top
   function scrollToTop() {
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     }
   }
-  // func to fetch and load more data
-  const fetchData = async (offset: string | null, userQuery: boolean) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(voffset);
-    try {
-      const BASE_ID = "appIewyeCIcAD4Y11";
-      const TABLE_NAME = "rubai";
-      const pageSize = 30;
-      const headers = {
-        //authentication with environment variable
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&&fields%5B%5D=unwan&&fields%5B%5D=body&&fields%5B%5D=likes&&fields%5B%5D=comments&&fields%5B%5D=shares&&fields%5B%5D=id`;
-      // &fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
+  // Build filter formula and use unified list hook
+  const filterFormula = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return undefined;
+    const escaped = q.replace(/'/g, "\\'");
+    return `OR( FIND('${escaped}', LOWER({shaer})), FIND('${escaped}', LOWER({body})), FIND('${escaped}', LOWER({unwan})) )`;
+  }, [searchText]);
+  const { records, isLoading, hasMore, loadMore } = useAirtableList<Rubai>(
+    "appIewyeCIcAD4Y11",
+    "rubai",
+    { pageSize: 30, filterByFormula: filterFormula },
+    { debounceMs: 300 }
+  );
 
-      if (userQuery) {
-        // Encode the formula with OR condition
-        const encodedFormula = encodeURIComponent(
-          `OR(
-          FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazalHead})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({ghazal})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
-        )`
-        );
-        url += `&filterByFormula=${encodedFormula}`;
-      }
+  const { updateRecord: updateRubai } = useAirtableMutation(
+    "appIewyeCIcAD4Y11",
+    "rubai"
+  );
 
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
-      const response = await fetch(url, { method: "GET", headers });
-      const result: ApiResponse = await response.json();
-      const records = result.records || [];
-      setTimeout(() => {
-        result.offset && setOffset(result.offset);
-        !result.offset && setNoMoreData(true);
-      }, 3000);
+  const { createRecord: createRubaiComment } = useAirtableCreate(
+    "appseIUI98pdLBT1K",
+    "comments"
+  );
 
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
-      // formating result to match the mock data type for ease of development
-
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(dataItems);
-          setDataItems(records);
-        } else {
-          setDataItems(records);
-        }
-      } else {
-        setDataItems((prevDataItems) => [...prevDataItems, ...records]);
-      }
-      !offset && scrollToTop();
-      // seting pagination depending on the response
-      setOffset(result.offset);
-      // seting the loading state to false to show the data
-      setLoading(false);
-      setMoreLoading(false);
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false);
-      setMoreLoading(false);
-    }
-  };
-  // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(voffset, false);
-  };
-  // Fetch the initial set of records
   useEffect(() => {
-    fetchData(null, false);
-  }, []);
-  const searchQuery = () => {
-    fetchData(null, true);
-    setOffset(voffset);
-    if (typeof window !== undefined) {
-      setScrolledPosition(window.scrollY);
+    setDataItems(records || []);
+    setLoading(isLoading);
+    setMoreLoading(false);
+    setNoMoreData(!hasMore);
+  }, [records, isLoading, hasMore]);
+
+  const handleLoadMore = async () => {
+    try {
+      setMoreLoading(true);
+      await loadMore();
+    } finally {
+      setMoreLoading(false);
     }
+  };
+  const searchQuery = () => {
+    if (typeof window !== 'undefined') setScrolledPosition(window.scrollY);
   };
   //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -217,7 +148,7 @@ const Ashaar: React.FC<{}> = () => {
     index: any,
     id: string
   ): Promise<void> => {
-    if (typeof window !== undefined && window.localStorage && e.detail == 1) {
+  if (typeof window !== 'undefined' && window.localStorage && e.detail === 1) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Rubai");
@@ -250,46 +181,16 @@ const Ashaar: React.FC<{}> = () => {
             "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
           );
           try {
-            // Make API request to update the record's "Likes" field
-            const updatedLikes = shaerData.fields.likes + 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
+            const currentLikes = Number(shaerData?.fields?.likes ?? 0);
+            const updatedLikes = currentLikes + 1;
+            await updateRubai([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
+            setDataItems((prev) =>
+              prev.map((item) =>
+                item.id !== shaerData.id
+                  ? item
+                  : { ...item, fields: { ...item.fields, likes: updatedLikes } }
+              )
             );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -314,46 +215,16 @@ const Ashaar: React.FC<{}> = () => {
             "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
           try {
-            // Make API request to update the record's "Likes" field
-            const updatedLikes = shaerData.fields.likes - 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
+            const currentLikes = Number(shaerData?.fields?.likes ?? 0);
+            const updatedLikes = Math.max(0, currentLikes - 1);
+            await updateRubai([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
+            setDataItems((prev) =>
+              prev.map((item) =>
+                item.id !== shaerData.id
+                  ? item
+                  : { ...item, fields: { ...item.fields, likes: updatedLikes } }
+              )
             );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -386,46 +257,15 @@ const Ashaar: React.FC<{}> = () => {
           .then(() => console.info("Successful share"))
           .catch((error) => console.error("Error sharing", error));
         try {
-          // Make API request to update the record's "Likes" field
           const updatedShares = shaerData.fields.shares + 1;
-          const updateData = {
-            records: [
-              {
-                id: shaerData.id,
-                fields: {
-                  shares: updatedShares,
-                },
-              },
-            ],
-          };
-
-          const updateHeaders = {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-            "Content-Type": "application/json",
-          };
-
-          const updateResponse = await fetch(
-            `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
-            {
-              method: "PATCH",
-              headers: updateHeaders,
-              body: JSON.stringify(updateData),
-            }
+          await updateRubai([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+          setDataItems((prev) =>
+            prev.map((item) =>
+              item.id !== shaerData.id
+                ? item
+                : { ...item, fields: { ...item.fields, shares: updatedShares } }
+            )
           );
-
-          if (updateResponse.ok) {
-            // Update local state to reflect the change in likes
-            setDataItems((prevDataItems) => {
-              const updatedDataItems = [...prevDataItems];
-              const item = updatedDataItems[index];
-              if (item && item.fields) {
-                item.fields.shares = updatedShares;
-              }
-              return updatedDataItems;
-            });
-          } else {
-            console.error(`Failed to update shares: ${updateResponse.status}`);
-          }
         } catch (error) {
           console.error("Error updating shres:", error);
         }
@@ -440,7 +280,7 @@ const Ashaar: React.FC<{}> = () => {
 
   //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
   useEffect(() => {
-    if (window !== undefined && window.localStorage) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       const storedData = localStorage.getItem("Rubai");
       if (storedData) {
         try {
@@ -486,17 +326,15 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appseIUI98pdLBT1K";
-      const TABLE_NAME = "comments";
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
+      const result = await airtableFetchJson({
+        kind: "list",
+        baseId: "appseIUI98pdLBT1K",
+        table: "comments",
+        params: { filterByFormula: `dataId="${dataId}"` },
+        ttl: TTL.fast,
+      });
 
-      const response = await fetch(url, { headers });
-      const result = await response.json();
-
-      const fetchedComments = result.records.map(
+      const fetchedComments = (result.records || []).map(
         (record: {
           fields: {
             dataId: string;
@@ -534,14 +372,6 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appseIUI98pdLBT1K";
-        const TABLE_NAME = "comments";
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
-        const headers = {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-          "Content-Type": "application/json",
-        };
-
         const timestamp = new Date().toISOString();
         const date = new Date(timestamp);
 
@@ -553,14 +383,8 @@ const Ashaar: React.FC<{}> = () => {
           timestamp: formattedDate,
           comment: newComment,
         };
-
-        const response = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ records: [{ fields: commentData }] }),
-        });
-
-        if (response.ok) {
+  await createRubaiComment([{ fields: commentData }]);
+        {
           // Update the UI with the new comment
           setComments((prevComments: Comment[]) => [
             ...prevComments,
@@ -611,35 +435,13 @@ const Ashaar: React.FC<{}> = () => {
           });
 
           try {
-            const BASE_ID = "appIewyeCIcAD4Y11";
-            const TABLE_NAME = "Rubai";
-            const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
-            const headers = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(url, {
-              method: "PATCH",
-              headers,
-              body: JSON.stringify({
-                fields: {
-                  comments: dataItemToUpdate!.fields.comments,
-                },
-              }),
-            });
-
-            if (updateResponse.ok) {
-            } else {
-              console.error(
-                `Failed to update comments on the server: ${updateResponse.status}`
-              );
-            }
+            if (dataItemToUpdate?.fields?.comments !== undefined) {
+              await updateRubai([{ id: dataId, fields: { comments: dataItemToUpdate.fields.comments } }]);
+            }            // Invalidate comments cache so the next fetch includes the new comment
+            invalidateAirtable("appseIUI98pdLBT1K", "comments");
           } catch (error) {
             console.error("Error updating comments on the server:", error);
           }
-        } else {
-          console.error(`Failed to add comment: ${response.statusText}`);
         }
       } catch (error) {
         console.error(`Error adding comment: ${error}`);
@@ -659,7 +461,7 @@ const Ashaar: React.FC<{}> = () => {
     setDataOffset(voffset);
     searchText && clearSearch();
     setDataItems(initialDataItems);
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       let section = window;
       section!.scrollTo({
         top: scrolledPosition ?? 0,
@@ -671,12 +473,7 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      <div
-        className={`toast-container ${hideAnimation ? " hide " : ""
-          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-      >
-        {toast}
-      </div>
+      {/* Toast handled globally by Sonner Toaster */}
       {showDialog && (
         <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
           <div
@@ -774,7 +571,7 @@ const Ashaar: React.FC<{}> = () => {
               <div className="flex justify-center text-lg m-5">
                 <button
                   onClick={handleLoadMore}
-                  disabled={noMoreData}
+                  disabled={noMoreData || moreloading}
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {moreloading

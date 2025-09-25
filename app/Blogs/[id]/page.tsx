@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import Aos from "aos";
 import "aos/dist/aos.css";
 import { useEffect, useState } from "react";
@@ -35,7 +36,9 @@ interface BloggerReplies {
   selfLink: string;
 }
 
-const page = ({ params }: { params: { id: string } }) => {
+const page = ({ params }: { params: Promise<{ id: string }> }) => {
+  const resolved = React.use(params);
+  const postId = resolved.id;
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<BloggerPost | null>(null);
   useEffect(() => {
@@ -47,7 +50,7 @@ const page = ({ params }: { params: { id: string } }) => {
   });
   const fetchData = async () => {
     try {
-      let url = `https://www.googleapis.com/blogger/v3/blogs/7934253485914932501/posts/${params.id}?key=${process.env.NEXT_PUBLIC_Blogger_API}`;
+      let url = `https://www.googleapis.com/blogger/v3/blogs/7934253485914932501/posts/${postId}?key=${process.env.NEXT_PUBLIC_Blogger_API}`;
       const response = await fetch(url, { method: "GET" });
       const result: BloggerPost = await response.json();
 

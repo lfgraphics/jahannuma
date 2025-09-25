@@ -1,9 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import Card from "./BookCard";
 import Link from "next/link";
 import Loader from "./Loader";
 import { ChevronRightCircle } from "lucide-react";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { TTL } from "@/lib/airtable-fetcher";
 
 interface Book {
   filename: string;
@@ -52,52 +54,13 @@ interface EBooksType {
 }
 
 const HorizontalBooks = () => {
-  const [data, setData] = useState<EBooksType[]>([]);
-  const [loading, setLoading] = useState(true);
-  //
-  const fetchData = async () => {
-    try {
-      const BASE_ID = "appXcBoNMGdIaSUyA";
-      const TABLE_NAME = "E-Books";
-      const pageSize = 10;
-      const headers = {
-        //authentication with environment variable
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
-
-      const response = await fetch(url, { method: "GET", headers });
-      const result = await response.json();
-      // : ApiResponse
-      const records = result?.records || [];
-
-      setData(result?.records);
-      // formating result to match the mock data type for ease of development
-      const formattedRecords: EBooksType[] = result?.records.map(
-        (record: any) => ({
-          ...record,
-          fields: {
-            ...record.fields,
-            bookName: record.fields?.bookName,
-            writer: record.fields?.writer,
-            publishingData: record.fields?.publishingData,
-            tafseel: record.fields?.desc,
-            book: record.fields?.book,
-            likes: record.fields?.likes,
-          },
-        })
-      );
-      // seting the loading state to false to show the data
-      setLoading(false);
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { records, isLoading } = useAirtableList<EBooksType>(
+    "appXcBoNMGdIaSUyA",
+    "E-Books",
+    { pageSize: 10 },
+    { ttl: TTL.static }
+  );
+  const data = useMemo(() => records || [], [records]);  const loading = isLoading;
   return (
     <div dir="ltr">
       <h2 className="pt-6 text-center text-4xl">کتابیں</h2>

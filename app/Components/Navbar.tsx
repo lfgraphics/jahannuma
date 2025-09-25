@@ -82,7 +82,7 @@ const Navbar: React.FC = () => {
       }
       setRedirectHref(newHref);
       // Navigate to the new language URL
-      try { router.push(newHref); } catch {}
+      try { router.push(newHref); } catch { }
     }
   }, [language]);
 
@@ -133,11 +133,7 @@ const Navbar: React.FC = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="bg-secondary text-primary min-h-screen">
-                <div className="flex justify-between items-center mb-4">
-                  <Button variant="ghost" size="icon" aria-label="close" onClick={() => setMobileMenuOpen(false)}>
-                    <X className="h-6 w-6" />
-                  </Button>
-                </div>
+                <SheetTitle />
                 <div className="w-[80vw] max-w-sm flex flex-col gap-8 items-center">
                   {/* langchange */}
                   <div className="langChange grid grid-flow-col gap-2 mt-4">
@@ -164,7 +160,7 @@ const Navbar: React.FC = () => {
                   {/* Navigation Links (Mobile) */}
                   <div className="flex gap-7" onClick={() => setMobileMenuOpen(false)}>
                     <div>
-                      <h3 className="text-foreground font-bold">Navs</h3>
+                      <h3 className="font-bold text-black">Navs</h3>
                       <ul id="navelems" className="flex flex-col gap-3 text-center w-[80px]">
                         {navPages.map((page, index) => {
                           const active = isActive(page.EN);
@@ -185,7 +181,7 @@ const Navbar: React.FC = () => {
                       </ul>
                     </div>
                     <div>
-                      <h3 className="text-foreground font-bold">More</h3>
+                      <h3 className="font-bold text-black">More</h3>
                       <nav className="flex flex-col space-y-2">
                         {["About_site", "About_owner", "Contact", "Programs"].map((item) => {
                           const active = isActive(item);
@@ -221,7 +217,7 @@ const Navbar: React.FC = () => {
                     return (
                       <li
                         key={page.EN}
-                        className={`${active ? "text-accent-blue" : "text-primary"} hover:text-accent-blue font-medium text-xl mr-2`}
+                        className={`${active ? "text-blue-600" : "text-primary"} hover:text-accent-blue font-medium text-xl mr-2`}
                       >
                         <Link href={{ pathname: `/${language === "UR" ? page.EN : `${language}/${page.EN}`}` }}>
                           {(page as any)[language]}
@@ -230,9 +226,6 @@ const Navbar: React.FC = () => {
                     );
                   })}
                 </ul>
-              </div>
-              <div className="lg:flex items-center gap-2 hidden">
-                <ModeToggle />
               </div>
             </div>
 
@@ -256,7 +249,9 @@ const Navbar: React.FC = () => {
 
             {/* Search */}
             <Search className="h-6 w-6 text-primary" />
-
+            <div className="lg:flex items-center gap-2 hidden">
+              <ModeToggle />
+            </div>
             {/* donation button  */}
             <Link
               href={`https://rzp.io/l/QpiIjiU`}
@@ -308,7 +303,7 @@ const Navbar: React.FC = () => {
                     const active = isActive(page.EN);
                     return (
                       <Link
-                        className={`${active ? "text-accent-blue" : ""} hover:text-accent-blue p-1 rounded-sm`}
+                        className={`${active ? "text-blue-600" : ""} hover:text-accent-blue p-1 rounded-sm`}
                         key={index}
                         href={{ pathname: `/${language == "UR" ? page.EN : language + "/" + page.EN}` }}
                         onClick={() => setMobileMenuOpen(false)}
@@ -331,7 +326,7 @@ const Navbar: React.FC = () => {
                       <Link
                         key={item}
                         href={{ pathname: `/${language == "UR" ? item : language + "/" + item}` }}
-                        className={`${active ? "text-accent-blue" : "text-primary"} hover:text-accent-blue`}
+                        className={`${active ? "text-blue-600" : "text-primary"} hover:text-accent-blue`}
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <span>{item}</span>
@@ -348,12 +343,12 @@ const Navbar: React.FC = () => {
       {/* Top horizontal nav for small screens */}
       <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full lg:hidden p-4 overflow-x-scroll px-4 bg-transparent border-border fixed top-[59px] left-0 right-0 z-50 backdrop-blur-sm">
         <div className="flex text-xs gap-3 justify-between">
-                        {navPages.map((page) => {
+          {navPages.map((page) => {
             const active = isActive(page.EN);
             return (
               <div
                 key={page.EN}
-                className={`${active ? "text-accent" : "text-primary"} hover:text-accent-blue font-medium text-sm min-w-[60px] text-center`}
+                className={`${active ? "text-blue-600" : "text-primary"} hover:text-accent-blue font-medium text-sm min-w-[60px] text-center`}
               >
                 <Link
                   href={{

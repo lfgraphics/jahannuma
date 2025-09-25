@@ -185,7 +185,7 @@ const Page: React.FC = () => {
   };
 
   return (
-    <div dir="rtl" className="flex flex-col items-center dark:bg-[#2d2d2f]">
+    <div dir="rtl" className="flex flex-col items-center">
       <div className="w-full sm:w-[400px]">
         {loading ? (
           <ComponentsLoader />

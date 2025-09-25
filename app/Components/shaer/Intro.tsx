@@ -32,7 +32,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
       delay: 0,
       duration: 300,
     });
-  });
+  }, []);
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Code is running in a browser

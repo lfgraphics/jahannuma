@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
@@ -57,7 +58,7 @@ const Page = () => {
     <div dir="rtl" className="flex justify-center">
       {loading ? <ComponentsLoader /> : (
         <div className="p-4 mt-3 w-screen md:w-[400px]">
-          <div className="ghazalHead text-3xl text-center text-black mb-2" style={{ lineHeight: "46px" }}>
+          <div className="ghazalHead text-3xl text-center mb-2" style={{ lineHeight: "46px" }}>
             <h2>{data.unwan}</h2>
           </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
@@ -78,7 +79,7 @@ const Page = () => {
                 <p
                   data-aos="fade-up"
                   key={index}
-                  className={`justif w-full px-10 text-black pb-3 text-2xl ${line == "****" ? "text-transparent my-3 select-none" : ""} [&]:text-[length:clamp(1rem,2vw,1.5rem)] break-words`}
+                  className={`justif w-full px-10 pb-3 text-2xl ${line == "****" ? "text-transparent my-3 select-none" : ""} [&]:text-[length:clamp(1rem,2vw,1.5rem)] break-words`}
                 >
                   {line}
                 </p>

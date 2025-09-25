@@ -1,8 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Loader from "./Loader";
 import DataCard from "./DataCard";
-import ToastComponent from "./Toast";
+import { toast } from "sonner";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { airtableFetchJson, TTL } from "@/lib/airtable-fetcher";
 
 interface Shaer {
   fields: {
@@ -20,185 +23,82 @@ interface Shaer {
   createdTime: string;
 }
 
+// Local comment shape used by comment list/state for this component
+interface Comment {
+  dataId: string;
+  commentorName: string | null;
+  timestamp: string;
+  comment: string;
+}
+
 const RandCard: React.FC<{}> = () => {
-  const [dataItems, setDataItems] = useState<Shaer[]>([]);
-  const [randomData, setRandomData] = useState<number>(0);
-  const [loading, setLoading] = useState(true); // New state for loading
+  // Fetch Ashaar list via SWR and randomly pick one; caching ensures instant loads on revisit
+  const { records, isLoading } = useAirtableList<Shaer>(
+    "appeI2xzzyvUN5bR7",
+    "Ashaar",
+    { pageSize: 50 },
+    { ttl: TTL.static }
+  );
+  const loading = isLoading;
+  const randomIndexRef = useRef<number | null>(null);
   //comments
-  const [selectedCommentId, setSelectedCommentId] = React.useState<
-    string | null
-  >(null);
+  const [selectedCommentId, setSelectedCommentId] = React.useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [commentorName, setCommentorName] = useState<string | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // toast via sonner
 
   //function ot show toast
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") return toast.success(message);
+    if (msgtype === "error") return toast.error(message);
+    return toast.warning(message);
   };
 
-  const fetchData = async () => {
-    try {
-      const BASE_ID = "appeI2xzzyvUN5bR7";
-      const TABLE_NAME = "Ashaar";
-
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
-
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-
-      const response = await fetch(url, { method: "GET", headers });
-      const result = await response.json();
-      console.log("RandCard data:", result);
-
-      const records = (await result.records) || [];
-
-      const formattedRecords = records.map((record: any) => ({
-        ...record,
-        fields: {
-          ...record.fields,
-          ghazal: record.fields?.body.split("\n"),
-          ghazalHead: record.fields?.sher.split("\n"),
-          // unwan: record.fields?.unwan.split("\n"),
-        },
-      }));
-
-      const randomRecord = await formattedRecords[
-        Math.floor(Math.random() * formattedRecords.length)
-      ];
-
-      setDataItems(randomRecord);
-      setLoading(false); // Set loading to false when fetching is done
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false); // Set loading to false when fetching is done
-    }
-  };
-
+  // keep the same random item until the dataset changes
   useEffect(() => {
-    fetchData();
-  }, []);
-  useEffect(() => {
-    // Generate randomData only if dataItems is not empty
-    if (dataItems.length > 0) {
-      const randomIndex = Math.floor(Math.random() * dataItems.length);
-      setRandomData(randomIndex);
+    if (records && records.length > 0 && randomIndexRef.current === null) {
+      randomIndexRef.current = Math.floor(Math.random() * records.length);
     }
-  }, []);
-
-  const handleShareClick = async (
-    shaerData: Shaer,
-    index: number
-  ): Promise<void> => {
-    toggleanaween(null);
-    try {
-      if (navigator.share) {
-        navigator
-          .share({
-            title: shaerData.fields.shaer, // Use the shaer's name as the title
-            text:
-              shaerData.fields.ghazalHead.map((line) => line).join("\n") +
-              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
-          })
-
-          .then(() => console.info("Successful share"))
-          .catch((error) => console.error("Error sharing", error));
-        try {
-          // Make API request to update the record's "Likes" field
-          const updatedShares = shaerData.fields.shares + 1;
-          const updateData = {
-            records: [
-              {
-                id: shaerData.id,
-                fields: {
-                  shares: updatedShares,
-                },
-              },
-            ],
-          };
-
-          const updateHeaders = {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-            "Content-Type": "application/json",
-          };
-
-          const updateResponse = await fetch(
-            `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
-            {
-              method: "PATCH",
-              headers: updateHeaders,
-              body: JSON.stringify(updateData),
-            }
-          );
-
-          if (updateResponse.ok) {
-            // Update local state to reflect the change in likes
-            setDataItems((prevDataItems) => {
-              const updatedDataItems = [...prevDataItems];
-              const item = updatedDataItems[index];
-              if (item && item.fields) {
-                item.fields.shares = updatedShares;
-              }
-              return updatedDataItems;
-            });
-          } else {
-            console.error(`Failed to update shares: ${updateResponse.status}`);
-          }
-        } catch (error) {
-          console.error("Error updating shres:", error);
-        }
-      } else {
-        console.warn("Web Share API is not supported.");
-      }
-    } catch (error) {
-      // Handle any errors that may occur when using the Web Share API
-      console.error("Error sharing:", error);
+    if (
+      records &&
+      randomIndexRef.current !== null &&
+      randomIndexRef.current >= records.length
+    ) {
+      // dataset shrank; re-roll
+      randomIndexRef.current = Math.floor(Math.random() * records.length);
     }
-  };
+  }, [records]);
+
+  const randomItem = useMemo(() => {
+    if (!records || records.length === 0) return undefined as unknown as Shaer | undefined;
+    const idx = randomIndexRef.current ?? 0;
+    const rec = records[idx];
+    // normalize to match component expectations
+    const ghazal = (rec as any)?.fields?.body
+      ? String((rec as any).fields.body).replace(/\r\n?/g, "\n").split("\n")
+      : (rec as any)?.fields?.ghazal ?? [];
+    const ghazalHead = (rec as any)?.fields?.sher
+      ? String((rec as any).fields.sher).replace(/\r\n?/g, "\n").split("\n")
+      : (rec as any)?.fields?.ghazalHead ?? [];
+    return { ...rec, fields: { ...(rec as any).fields, ghazal, ghazalHead } } as Shaer;
+  }, [records]);
+
+  // Mutations aligned to Ashaar table for likes/shares
+  const { updateRecord: updateAshaar } = useAirtableMutation(
+    "appeI2xzzyvUN5bR7",
+    "Ashaar"
+  );
   const [insideBrowser, setInsideBrowser] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       // Code is running in a browser
       setInsideBrowser(true);
     } else {
@@ -213,7 +113,7 @@ const RandCard: React.FC<{}> = () => {
   };
 
   const visitSher = () => {
-    // window.location.href = `/Ghazlen/${dataItems[randomData].fields.id}`;
+    // window.location.href = `/Ghazlen/${randomItem?.fields.id}`;
   };
   const handleHeartClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -222,10 +122,10 @@ const RandCard: React.FC<{}> = () => {
     id: string
   ): Promise<void> => {
     toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage && e.detail == 1) {
+    if (typeof window !== 'undefined' && window.localStorage && e.detail === 1) {
       try {
         // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ghazlen");
+        const existingDataJSON = localStorage.getItem("Ashaar");
 
         // Parse the existing data into an array or initialize an empty array if it doesn't exist
         const existingData: Shaer[] = existingDataJSON
@@ -248,7 +148,7 @@ const RandCard: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-gray-500");
           document.getElementById(`${id}`)!.classList.add("text-red-600");
 
-          localStorage.setItem("Ghazlen", updatedDataJSON);
+          localStorage.setItem("Ashaar", updatedDataJSON);
           // Optionally, you can update the UI or show a success message
           showToast(
             "success",
@@ -276,30 +176,7 @@ const RandCard: React.FC<{}> = () => {
               "Content-Type": "application/json",
             };
 
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              if (dataItems[0] && dataItems[0].fields) {
-                dataItems[0].fields.likes = updatedLikes;
-              }
-              // setDataItems((prevDataItems) => {
-              //   const updatedDataItems = [...prevDataItems];
-              //   updatedDataItems[index].fields.likes = updatedLikes;
-
-              //   // const updted = dataItems.lik;
-              //   return updatedDataItems;
-              // });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            await updateAshaar([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -316,7 +193,7 @@ const RandCard: React.FC<{}> = () => {
           document.getElementById(`${id}`)!.classList.remove("text-red-600");
           document.getElementById(`${id}`)!.classList.add("text-gray-500");
 
-          localStorage.setItem("Ghazlen", updatedDataJSON);
+          localStorage.setItem("Ashaar", updatedDataJSON);
 
           // Optionally, you can update the UI or show a success message
           showToast(
@@ -343,38 +220,14 @@ const RandCard: React.FC<{}> = () => {
               "Content-Type": "application/json",
             };
 
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appvzkf6nX376pZy6/Ghazlen`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              if (dataItems[0] && dataItems[0].fields) {
-                dataItems[0].fields.likes = updatedLikes;
-              }
-              // setDataItems((prevDataItems) => {
-              //   const updatedDataItems = [...prevDataItems];
-              //   updatedDataItems[index].fields.likes = updatedLikes;
-              //   return updatedDataItems;
-              // });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            await updateAshaar([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
           } catch (error) {
             console.error("Error updating likes:", error);
           }
         }
       } catch (error) {
         // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
+        console.error("Error adding/removing data to/from Local Storage:", error);
       }
     }
   };
@@ -388,28 +241,18 @@ const RandCard: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appzB656cMxO0QotZ";
-      const TABLE_NAME = "Comments";
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-
-      const response = await fetch(url, { headers });
-      const result = await response.json();
-
-      const fetchedComments = result.records.map(
-        (record: {
-          fields: {
-            dataId: string;
-            commentorName: string | null;
-            timestamp: string | Date;
-            comment: string;
-          };
-        }) => ({
+      const result = await airtableFetchJson({
+        kind: "list",
+        baseId: "appzB656cMxO0QotZ",
+        table: "Comments",
+        params: { filterByFormula: `dataId="${dataId}"` },
+        ttl: TTL.fast,
+      });
+      const fetchedComments = (result.records ?? []).map(
+        (record: { fields: { dataId: string; commentorName: string | null; timestamp: string | Date; comment: string } }) => ({
           dataId: record.fields.dataId,
           commentorName: record.fields.commentorName,
-          timestamp: record.fields.timestamp,
+          timestamp: String(record.fields.timestamp),
           comment: record.fields.comment,
         })
       );
@@ -425,11 +268,45 @@ const RandCard: React.FC<{}> = () => {
     toggleanaween(null);
     setSelectedCommentId(dataId);
     fetchComments(dataId);
-    // setIsModleOpen(true);
   };
+
+  const handleShareClick = async (shaerData: Shaer, index: number): Promise<void> => {
+    toggleanaween(null);
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share({
+          title: shaerData.fields.shaer,
+          text:
+            (shaerData.fields.ghazalHead ?? []).map((line) => line).join("\n") +
+            `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `,
+          url:
+            typeof window !== "undefined"
+              ? `${window.location.origin}/Ghazlen/${shaerData.id}`
+              : "",
+        });
+        try {
+          const updatedShares = (shaerData.fields.shares ?? 0) + 1;
+          await updateAshaar([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+        } catch (error) {
+          console.error("Error updating shares:", error);
+        }
+      } else {
+        console.warn("Web Share API is not supported.");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
   const closeComments = () => {
     setSelectedCommentId(null);
   };
+
+  const handleCardClick = (shaerData: Shaer) => {
+    toggleanaween(null);
+  };
+
+  if (loading || !randomItem) return <Loader />;
 
   return (
     <div className="justify-center flex flex-col items-center m-4">
@@ -446,8 +323,8 @@ const RandCard: React.FC<{}> = () => {
           <DataCard
             page="rand"
             download={true}
-            key={4}
-            shaerData={dataItems}
+            key={randomItem.id}
+            shaerData={randomItem}
             index={0}
             handleCardClick={visitSher}
             toggleanaween={toggleanaween}
@@ -461,5 +338,4 @@ const RandCard: React.FC<{}> = () => {
     </div>
   );
 };
-
 export default RandCard;

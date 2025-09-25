@@ -15,6 +15,7 @@ interface RubaiCardProps {
     id: string
   ) => void | Promise<void>; // Allow async
   openComments: (id: string) => void;
+  isLiking?: boolean;
 }
 
 const RubaiCard: React.FC<RubaiCardProps> = ({
@@ -23,6 +24,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
   handleShareClick,
   handleHeartClick,
   openComments,
+  isLiking,
 }) => {
   return (
     <>
@@ -50,7 +52,8 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
         </Link>
         <div className="flex text-center icons">
           <button
-            className={`m-3 text-gray-500 transition-all duration-500`}
+            disabled={!!isLiking}
+            className={`m-3 text-gray-500 transition-all duration-500 ${isLiking ? 'opacity-60 cursor-not-allowed' : ''}`}
             onClick={(e) =>
               handleHeartClick(e, RubaiData, index, `${RubaiData?.id}`)
             }

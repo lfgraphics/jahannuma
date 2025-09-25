@@ -93,7 +93,7 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
             <div
               dir="rtl"
               // style={{ filter: "backGroundBlur(10px)" }}
-              className="h-full w-full bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center gap-2"
+              className="h-full w-full bg-black/70 backdrop-blur-sm flex items-center justify-center gap-2"
             >
               <div className="photo lg:h-32 h-24 md:h-28 lg:w-32 w-24 md:w-28 rounded-full overflow-clip border-[#984a0291] border-4 ">
                 {data && insideBrowser && data.photo && data.photo.length > 0 && data.photo[0]?.thumbnails?.large ? (

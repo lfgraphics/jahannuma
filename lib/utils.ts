@@ -48,6 +48,18 @@ export function sanitizeInput(input: string): string {
     .replace(/[<>]/g, (m) => ({ "<": "&lt;", ">": "&gt;" }[m]!))
 }
 
+// Escape a value for Airtable formula strings. Wrap with single quotes in caller.
+// Rules:
+// - Escape single quotes by doubling them: ' -> ''
+// - Remove control chars; allow unicode letters
+// - Trim excessive whitespace
+export function escapeAirtableFormulaValue(value: string): string {
+  const cleaned = (value ?? "")
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
+    .trim();
+  return cleaned.replace(/'/g, "''");
+}
+
 // Deterministic JSON serializer: sorts object keys and handles cycles
 function stableStringify(value: any): string {
   const seen = new WeakSet<object>()

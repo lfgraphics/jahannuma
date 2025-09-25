@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { House, XCircle } from "lucide-react";
 import { format } from "date-fns";
-import ToastComponent from "../Components/Toast";
+import { toast } from "sonner";
 import CommentSection from "../Components/CommentSection";
 import SkeletonLoader from "../Components/SkeletonLoader";
 import DataCard from "../Components/DataCard";
@@ -14,6 +14,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { useAirtableCreate } from "@/hooks/useAirtableCreate";
+import { airtableFetchJson, TTL, invalidateAirtable } from "@/lib/airtable-fetcher";
 
 interface Shaer {
   fields: {
@@ -74,10 +78,7 @@ const Ashaar: React.FC<{}> = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // toast via sonner
 
   useEffect(() => {
     AOS.init({
@@ -85,150 +86,79 @@ const Ashaar: React.FC<{}> = () => {
       delay: 0,
       duration: 300,
     });
-  });
+  }, []);
 
-  //function ot show toast
+  // simple toast helper
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") return toast.success(message);
+    if (msgtype === "error") return toast.error(message);
+    return toast.warning(message);
   };
 
   //function ot scroll to the top
   function scrollToTop() {
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     }
   }
-  // func to fetch and load more data
-  const fetchData = async (offset: string | null, userQuery: boolean) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(pagination.offset);
+  const filterFormula = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return undefined;
+    // Escape single quotes and other special characters for Airtable formula
+    const escapedQ = q.replace(/'/g, "\\'");
+    return `OR( FIND('${escapedQ}', LOWER({shaer})), FIND('${escapedQ}', LOWER({displayLine})), FIND('${escapedQ}', LOWER({nazm})), FIND('${escapedQ}', LOWER({unwan})) )`;
+  }, [searchText]);
+  const { records, isLoading, hasMore, loadMore } = useAirtableList<Shaer>(
+    "app5Y2OsuDgpXeQdz",
+    "nazmen",
+    { pageSize: 30, filterByFormula: filterFormula },
+    { debounceMs: 300 }
+  );
+
+  const { updateRecord: updateNazmen } = useAirtableMutation(
+    "app5Y2OsuDgpXeQdz",
+    "nazmen"
+  );
+  const { createRecord: createNazmenComment } = useAirtableCreate(
+    "appjF9QvJeKAM9c9F",
+    "Comments"
+  );
+
+  const formattedRecords: Shaer[] = useMemo(() => {
+    return (records || []).map((record: any) => ({
+      ...record,
+      fields: {
+        ...record.fields,
+        ghazal: String(record.fields?.nazm || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazalHead: String(record.fields?.displayLine || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        unwan: String(record.fields?.unwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+      },
+    }));
+  }, [records]);
+
+  useEffect(() => {
+    setDataItems(formattedRecords);
+    setLoading(isLoading);
+    setMoreLoading(false);
+    setNoMoreData(!hasMore);
+  }, [formattedRecords, isLoading, hasMore]);
+
+  const handleLoadMore = async () => {
     try {
-      const BASE_ID = "app5Y2OsuDgpXeQdz";
-      const TABLE_NAME = "nazmen";
-      const pageSize = 30;
-      const headers = {
-        //authentication with environment variable
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&fields%5B%5D=displayLine&fields%5B%5D=nazm&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id`;
-
-      if (userQuery) {
-        // Encode the formula with OR condition
-        const encodedFormula = encodeURIComponent(
-          `OR(
-          FIND('${searchText.trim().toLowerCase()}', LOWER({shaer})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({displayLine})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({nazm})),
-          FIND('${searchText.trim().toLowerCase()}', LOWER({unwan}))
-        )`
-        );
-        url += `&filterByFormula=${encodedFormula}`;
-      }
-
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
-      const response = await fetch(url, { method: "GET", headers });
-      const result: ApiResponse = await response.json();
-      const records = result.records || [];
-      setTimeout(() => {
-        result.offset && setOffset(result.offset);
-        !result.offset && setNoMoreData(true);
-      }, 3000);
-
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
-      // formating result to match the mock data type for ease of development
-      const formattedRecords = records.map((record: any) => ({
-        ...record,
-        fields: {
-          ...record.fields,
-          ghazal: record.fields?.nazm.split("\n"),
-          ghazalHead: record.fields?.displayLine.split("\n"),
-          unwan: record.fields?.unwan.split("\n"),
-        },
-      }));
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(dataItems);
-          setDataItems(formattedRecords);
-        } else {
-          setDataItems(formattedRecords);
-        }
-      } else {
-        setDataItems((prevDataItems) => [
-          ...prevDataItems,
-          ...formattedRecords,
-        ]);
-      }
-      !offset && scrollToTop();
-      // seting pagination depending on the response
-      setOffset(result.offset);
-      // seting the loading state to false to show the data
-      setLoading(false);
-      setMoreLoading(false);
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false);
+      setMoreLoading(true);
+      await loadMore();
+    } finally {
       setMoreLoading(false);
     }
   };
-  // fetching more data by load more data button
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(voffset, false);
-  };
-  // Fetch the initial set of records
-  useEffect(() => {
-    fetchData(null, false);
-  }, []);
   const searchQuery = () => {
-    setPagination({
-      offset: pagination.offset,
-      pageSize: 30,
-    });
-    fetchData(null, true);
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       setScrolledPosition(window.scrollY);
     }
   };
@@ -266,7 +196,7 @@ const Ashaar: React.FC<{}> = () => {
     id: string
   ): Promise<void> => {
     toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage && e.detail == 1) {
+    if (typeof window !== 'undefined' && window.localStorage && e.detail === 1) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Nazmen");
@@ -302,45 +232,14 @@ const Ashaar: React.FC<{}> = () => {
             "آپ کی پروفائل میں یہ نظم کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
           try {
-            // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes + 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            await updateNazmen([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
+            setDataItems((prev) => {
+              const copy = [...prev];
+              const item = copy[index];
+              if (item?.fields) item.fields.likes = updatedLikes;
+              return copy;
+            });
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -366,46 +265,14 @@ const Ashaar: React.FC<{}> = () => {
           );
           console.log("آپ کی پروفائل سے یہ نظم کامیابی کے ساتھ ہٹا دی گئی ہے۔");
           try {
-            // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            await updateNazmen([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
+            setDataItems((prev) => {
+              const copy = [...prev];
+              const item = copy[index];
+              if (item?.fields) item.fields.likes = updatedLikes;
+              return copy;
+            });
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -439,46 +306,14 @@ const Ashaar: React.FC<{}> = () => {
           .then(() => console.info("Successful share"))
           .catch((error) => console.error("Error sharing", error));
         try {
-          // Make API request to update the record's "Likes" field
           const updatedShares = shaerData.fields.shares + 1;
-          const updateData = {
-            records: [
-              {
-                id: shaerData.id,
-                fields: {
-                  shares: updatedShares,
-                },
-              },
-            ],
-          };
-
-          const updateHeaders = {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-            "Content-Type": "application/json",
-          };
-
-          const updateResponse = await fetch(
-            `https://api.airtable.com/v0/app5Y2OsuDgpXeQdz/nazmen`,
-            {
-              method: "PATCH",
-              headers: updateHeaders,
-              body: JSON.stringify(updateData),
-            }
-          );
-
-          if (updateResponse.ok) {
-            // Update local state to reflect the change in likes
-            setDataItems((prevDataItems) => {
-              const updatedDataItems = [...prevDataItems];
-              const item = updatedDataItems[index];
-              if (item && item.fields) {
-                item.fields.shares = updatedShares;
-              }
-              return updatedDataItems;
-            });
-          } else {
-            console.error(`Failed to update shares: ${updateResponse.status}`);
-          }
+          await updateNazmen([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+          setDataItems((prev) => {
+            const copy = [...prev];
+            const item = copy[index];
+            if (item?.fields) item.fields.shares = updatedShares;
+            return copy;
+          });
         } catch (error) {
           console.error("Error updating shres:", error);
         }
@@ -556,17 +391,15 @@ const Ashaar: React.FC<{}> = () => {
       } else {
         setCommentorName(commentorName || storedName);
       }
-      const BASE_ID = "appjF9QvJeKAM9c9F";
-      const TABLE_NAME = "Comments";
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
+      const result = await airtableFetchJson({
+        kind: "list",
+        baseId: "appjF9QvJeKAM9c9F",
+        table: "Comments",
+        params: { filterByFormula: `dataId="${dataId}"` },
+        ttl: TTL.fast,
+      });
 
-      const response = await fetch(url, { headers });
-      const result = await response.json();
-
-      const fetchedComments = result.records.map(
+      const fetchedComments = (result.records || []).map(
         (record: {
           fields: {
             dataId: string;
@@ -603,14 +436,6 @@ const Ashaar: React.FC<{}> = () => {
     }
     if (newComment !== "") {
       try {
-        const BASE_ID = "appjF9QvJeKAM9c9F";
-        const TABLE_NAME = "Comments";
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
-        const headers = {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-          "Content-Type": "application/json",
-        };
-
         const timestamp = new Date().toISOString();
         const date = new Date(timestamp);
 
@@ -622,93 +447,62 @@ const Ashaar: React.FC<{}> = () => {
           timestamp: formattedDate,
           comment: newComment,
         };
+        await createNazmenComment([{ fields: commentData }]);
+        // Update the UI with the new comment
+        setComments((prevComments: Comment[]) => [
+          ...prevComments,
+          commentData,
+        ]);
 
-        const response = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ records: [{ fields: commentData }] }),
+        // Clear the input field
+        setNewComment("");
+        const updatedDataItems = dataItems.map((dataItem) => {
+          if (dataItem.id === dataId) {
+            // If the dataItem has the matching id, update comments field
+            const currentComments = dataItem.fields.comments || 0;
+            return {
+              ...dataItem,
+              fields: {
+                ...dataItem.fields,
+                comments: currentComments + 1,
+              },
+            };
+          }
+          return dataItem;
         });
 
-        if (response.ok) {
-          // Update the UI with the new comment
-          setComments((prevComments: Comment[]) => [
-            ...prevComments,
-            commentData,
-          ]);
+        const dataItemToUpdate = updatedDataItems.find(
+          (item) => item.id === dataId
+        );
 
-          // Clear the input field
-          setNewComment("");
-          const updatedDataItems = dataItems.map((dataItem) => {
-            if (dataItem.id === dataId) {
-              // If the dataItem has the matching id, update comments field
-              const currentComments = dataItem.fields.comments || 0;
+        if (dataItemToUpdate && dataItemToUpdate.fields) {
+          if (!dataItemToUpdate.fields.comments) {
+            // If the comments field is not present, add it with the value 1
+            dataItemToUpdate.fields.comments = 1;
+          }
+        }
+        setDataItems((prevDataItems) => {
+          return prevDataItems.map((prevItem) => {
+            if (prevItem.id === dataId) {
               return {
-                ...dataItem,
+                ...prevItem,
                 fields: {
-                  ...dataItem.fields,
-                  comments: currentComments + 1,
+                  ...prevItem.fields,
+                  comments: (prevItem.fields.comments || 0) + 1,
                 },
               };
-            }
-            return dataItem;
-          });
-
-          const dataItemToUpdate = updatedDataItems.find(
-            (item) => item.id === dataId
-          );
-
-          if (dataItemToUpdate && dataItemToUpdate.fields) {
-            if (!dataItemToUpdate.fields.comments) {
-              // If the comments field is not present, add it with the value 1
-              dataItemToUpdate.fields.comments = 1;
-            }
-          }
-          setDataItems((prevDataItems) => {
-            return prevDataItems.map((prevItem) => {
-              if (prevItem.id === dataId) {
-                return {
-                  ...prevItem,
-                  fields: {
-                    ...prevItem.fields,
-                    comments: (prevItem.fields.comments || 0) + 1,
-                  },
-                };
-              } else {
-                return prevItem;
-              }
-            });
-          });
-
-          try {
-            const BASE_ID = "app5Y2OsuDgpXeQdz";
-            const TABLE_NAME = "nazmen";
-            const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
-            const headers = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(url, {
-              method: "PATCH",
-              headers,
-              body: JSON.stringify({
-                fields: {
-                  comments: dataItemToUpdate!.fields.comments,
-                },
-              }),
-            });
-
-            if (updateResponse.ok) {
             } else {
-              console.error(
-                `Failed to update comments on the server: ${updateResponse.status}`
-              );
+              return prevItem;
             }
-          } catch (error) {
-            console.error("Error updating comments on the server:", error);
-          }
-        } else {
-          console.error(`Failed to add comment: ${response.statusText}`);
+          });
+        });
+
+        try {
+          await updateNazmen([{ id: dataId, fields: { comments: dataItemToUpdate!.fields.comments } }]);
+          // Invalidate comments cache to ensure subsequent fetch reflects new comment
+          invalidateAirtable("appjF9QvJeKAM9c9F", "Comments");
+        } catch (error) {
+          console.error("Error updating comments on the server:", error);
         }
       } catch (error) {
         console.error(`Error adding comment: ${error}`);
@@ -739,12 +533,7 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      <div
-        className={`toast-container ${hideAnimation ? " hide " : ""
-          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-      >
-        {toast}
-      </div>
+      {/* Sonner Toaster is provided globally in providers.tsx */}
       <Dialog open={showDialog} onOpenChange={hideDialog}>
         <DialogContent dir="rtl" className="max-w-[380px]">
           <DialogHeader>
@@ -846,7 +635,7 @@ const Ashaar: React.FC<{}> = () => {
               <div className="flex justify-center text-lg m-5">
                 <button
                   onClick={handleLoadMore}
-                  disabled={noMoreData}
+                  disabled={noMoreData || moreloading}
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {moreloading
@@ -859,29 +648,6 @@ const Ashaar: React.FC<{}> = () => {
             )}
           </div>
         </section>
-      )}
-      {selectedCard && (
-        <Drawer open={!!selectedCard} onOpenChange={(open) => { if (!open) setSelectedCard(null) }}>
-          <DrawerContent className="min-h-[60svh] max-h-[70svh] overflow-y-auto rounded-t-lg border w-[98%] mx-auto">
-            <div dir="rtl" className="p-4 pr-0 relative">
-              <DrawerClose asChild>
-                <button id="modlBtn" className="sticky top-4 right-7 z-50">
-                  <XCircle className="text-muted-foreground text-3xl hover:text-primary transition-all duration-500 ease-in-out" />
-                </button>
-              </DrawerClose>
-              <DrawerHeader className="p-0">
-                <DrawerTitle className="text-foreground text-4xl text-center top-0 bg-background sticky pt-3 -mt-8 pb-3 border-b-2 mb-3">
-                  {selectedCard.fields.shaer}
-                </DrawerTitle>
-              </DrawerHeader>
-              {selectedCard.fields.ghazal.map((line, index) => (
-                <p key={index} className="text-foreground pb-3 pr-4 text-2xl">
-                  {line}
-                </p>
-              ))}
-            </div>
-          </DrawerContent>
-        </Drawer>
       )}
       {/* //commetcard */}
       {/* Removed external close button as it's included in the Drawer component */}

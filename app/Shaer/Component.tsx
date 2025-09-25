@@ -1,17 +1,16 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Card from "../Components/shaer/Profilecard";
 import { Heart, House, Search, X } from "lucide-react";
-import ToastComponent from "../Components/Toast";
+import { toast } from "sonner";
 import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
-
-interface ApiResponse {
-  records: any[];
-  offset: string | null;
-}
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { escapeAirtableFormulaValue } from "@/lib/utils";
+import { TTL } from "@/lib/airtable-fetcher";
 
 interface Photo {
   filename: string;
@@ -71,22 +70,12 @@ const Page: React.FC<{}> = () => {
   const [loading, setLoading] = useState(true);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [searchText, setSearchText] = useState("");
-  const [moreloading, setMoreLoading] = useState(true);
+  const [moreloading, setMoreLoading] = useState(false);
   const [initialDataItems, setInitialdDataItems] = useState<FormattedRecord[]>(
     []
   );
   const [noMoreData, setNoMoreData] = useState(false);
-  const [pagination, setPagination] = useState<Pagination>({
-    offset: null,
-    pageSize: 30,
-  });
-
-  const [offset, setOffset] = useState<string | null>("");
-  const [dataOffset, setDataOffset] = useState<string | null>(null);
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // notifications handled by global Sonner Toaster
 
   useEffect(() => {
     AOS.init({
@@ -94,111 +83,27 @@ const Page: React.FC<{}> = () => {
       delay: 0,
       duration: 300,
     });
-  });
+  }, []);
 
-  const fetchData = async (offset: string | null, userQuery: boolean) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(pagination.offset);
-    try {
-      const BASE_ID = "appgWv81tu4RT3uRB";
-      const TABLE_NAME = "Intro";
-      const pageSize = 30;
-      const headers = {
-        //authentication with environment variable
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+  // Build search filter formula safely
+  const filterFormula = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return undefined;
+    const safe = escapeAirtableFormulaValue(q);
+    return `OR( FIND('${safe}', LOWER({takhallus})), FIND('${safe}', LOWER({name})), FIND('${safe}', LOWER({dob})), FIND('${safe}', LOWER({location})), FIND('${safe}', LOWER({tafseel})), FIND('${safe}', LOWER({searchKeys})), FIND('${safe}', LOWER({enTakhallus})), FIND('${safe}', LOWER({hiTakhallus})), FIND('${safe}', LOWER({enName})), FIND('${safe}', LOWER({hiName})), FIND('${safe}', LOWER({enLocation})), FIND('${safe}', LOWER({hiLocation})) )`;
+  }, [searchText]);
 
-      if (userQuery) {
-        // Encode the formula with OR condition
-        const encodedFormula = encodeURIComponent(
-          `OR(
-        FIND('${searchText.trim().toLowerCase()}', LOWER({takhallus})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({name})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({dob})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({location})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({tafseel})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({searchKeys})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({enTakhallus})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({hiTakhallus})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({enName})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({hiName})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({enLocation})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({hiLocation}))
-      )`
-        );
-        url += `&filterByFormula=${encodedFormula}`;
-      }
+  const { records, isLoading, hasMore, loadMore, mutate } = useAirtableList<FormattedRecord>(
+    "appgWv81tu4RT3uRB",
+    "Intro",
+    { pageSize: 30, filterByFormula: filterFormula },
+    { debounceMs: 300, ttl: TTL.list }
+  );
 
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
-      const response = await fetch(url, { method: "GET", headers });
-      const result: ApiResponse = await response.json();
-      setTimeout(() => {
-        result.offset && setOffset(result.offset);
-        !result.offset && setNoMoreData(true);
-      }, 3000);
-
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
-      setData(result.records);
-      // formating result to match the mock data type for ease of development
-      const formattedRecords: FormattedRecord[] = result.records.map(
-        (record: any) => ({
-          ...record,
-          fields: {
-            ...record.fields,
-            tafseel: record.fields?.tafseel?.split("\n"),
-            searchKeys: record.fields?.searchKeys?.split("\n"),
-            enTakhallus: record.fields?.enTakhallus?.split("\n"),
-            hiTakhallus: record.fields?.hiTakhallus?.split("\n"),
-            enName: record.fields?.enName?.split("\n"),
-            hiName: record.fields?.hiName?.split("\n"),
-            enLocation: record.fields?.enLocation?.split("\n"),
-            hiLocation: record.fields?.hiLocation?.split("\n"),
-            ghazal: record.fields?.ghazal,
-            eBooks: record.fields?.eBooks,
-            nazmen: record.fields?.nazmen,
-            likes: record.fields?.likes,
-          },
-        })
-      );
-      // console.log(result);
-      // console.log("formated records are >" + formattedRecords);
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(data);
-          setData(formattedRecords);
-          // console.log(result);
-        } else {
-          setData(formattedRecords);
-          // console.log(result);
-        }
-      } else {
-        setData((prevDataItems) => [...prevDataItems, ...formattedRecords]);
-        // console.log(result);
-      }
-      !offset && scrollToTop();
-      // seting pagination depending on the response
-      setOffset(result.offset);
-      // seting the loading state to false to show the data
-      setLoading(false);
-      setMoreLoading(false);
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false);
-      setMoreLoading(false);
-    }
-  };
+  const { updateRecord } = useAirtableMutation("appgWv81tu4RT3uRB", "Intro");
 
   function scrollToTop() {
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -207,42 +112,37 @@ const Page: React.FC<{}> = () => {
   }
 
   useEffect(() => {
-    fetchData(null, false);
-  }, []);
+    // format records to expected local shape
+    const formatted: FormattedRecord[] = (records || []).map((record: any) => ({
+      ...record,
+      fields: {
+        ...record.fields,
+        tafseel: String(record.fields?.tafseel || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        searchKeys: String(record.fields?.searchKeys || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        enTakhallus: String(record.fields?.enTakhallus || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        hiTakhallus: String(record.fields?.hiTakhallus || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        enName: String(record.fields?.enName || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        hiName: String(record.fields?.hiName || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        enLocation: String(record.fields?.enLocation || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        hiLocation: String(record.fields?.hiLocation || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazal: Boolean(record.fields?.ghazal),
+        eBooks: Boolean(record.fields?.eBooks),
+        nazmen: Boolean(record.fields?.nazmen),
+        likes: Number(record.fields?.likes || 0),
+      },
+    }));
+    setData(formatted);
+    setLoading(isLoading);
+    setNoMoreData(!hasMore);
+    setMoreLoading(false);
+  }, [records, isLoading, hasMore]);
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
 
   const handleHeartClick = async (
@@ -256,7 +156,7 @@ const Page: React.FC<{}> = () => {
     console.log("Event object:", e.detail);
 
     // toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Shura");
@@ -292,46 +192,25 @@ const Page: React.FC<{}> = () => {
             "آپ کی پروفائل میں یہ شاعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
           );
           try {
-            // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes + 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
+            await updateRecord(
+              [
+                { id: shaerData.id, fields: { likes: updatedLikes } },
               ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appgWv81tu4RT3uRB/Intro`,
               {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
+                optimistic: true,
+                updater: (current: any) => {
+                  // No direct SWR key provided here; local state adjusted below as well
+                  return current;
+                },
               }
             );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setData((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            setData((prevDataItems) => {
+              const updatedDataItems = [...prevDataItems];
+              const item = updatedDataItems[index];
+              if (item && item.fields) item.fields.likes = updatedLikes;
+              return updatedDataItems;
+            });
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -359,46 +238,19 @@ const Page: React.FC<{}> = () => {
             "آپ کی پروفائل سے یہ شاعر کامیابی کے ساتھ ہٹا دی گئی ہے۔"
           );
           try {
-            // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
+            await updateRecord(
+              [
+                { id: shaerData.id, fields: { likes: updatedLikes } },
               ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appgWv81tu4RT3uRB/Intro`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
+              { optimistic: true }
             );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setData((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            setData((prevDataItems) => {
+              const updatedDataItems = [...prevDataItems];
+              const item = updatedDataItems[index];
+              if (item && item.fields) item.fields.likes = updatedLikes;
+              return updatedDataItems;
+            });
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -413,7 +265,7 @@ const Page: React.FC<{}> = () => {
     }
   };
   useEffect(() => {
-    if (window !== undefined && window.localStorage) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       const storedData = localStorage.getItem("Shura");
       if (storedData) {
         try {
@@ -442,11 +294,7 @@ const Page: React.FC<{}> = () => {
   }, [data]);
 
   const searchQuery = () => {
-    setPagination({
-      offset: pagination.offset,
-      pageSize: 30,
-    });
-    fetchData(null, true);
+    // with debounced hook, updating searchText triggers re-fetch; nothing else needed
   };
   //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -459,6 +307,10 @@ const Page: React.FC<{}> = () => {
     value === ""
       ? sMark?.classList.add("hidden")
       : sMark?.classList.remove("hidden");
+    // Cache initial list before applying first search, for reset
+    if (value && initialDataItems.length === 0 && data.length > 0) {
+      setInitialdDataItems(data);
+    }
     setSearchText(value);
   };
   //clear search box handeling
@@ -477,7 +329,7 @@ const Page: React.FC<{}> = () => {
   const resetSearch = () => {
     searchText && clearSearch();
     setData(initialDataItems);
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       let section = document.getElementById("section");
       section!.scrollTo({
         top: Number(scrolledPosition) || 0,
@@ -486,14 +338,17 @@ const Page: React.FC<{}> = () => {
     }
     setInitialdDataItems([]);
   };
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(offset, false);
+  const handleLoadMore = async () => {
+    try {
+      setMoreLoading(true);
+      await loadMore();
+    } finally {
+      setMoreLoading(false);
+    }
   };
 
   return (
     <>
-      {toast}
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && data.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
@@ -510,57 +365,59 @@ const Page: React.FC<{}> = () => {
         </button>
       )}
       {!loading && (
-        <div>
-          <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
-            <div className="filter-btn basis-[75%] text-center flex">
-              <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
-                <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
-                <input
-                  type="text"
-                  placeholder="لکھ کر تلاش کریں"
-                  className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
-                  id="searchBox"
-                  onKeyUp={(e) => {
-                    handleSearchKeyUp(e);
-                    if (e.key === "Enter") {
-                      if (document.activeElement === e.target) {
-                        e.preventDefault();
-                        searchQuery();
+        <>
+          <div className="flex flex-col gap-4">
+            <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
+              <div className="filter-btn basis-[75%] text-center flex">
+                <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
+                  <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
+                  <input
+                    type="text"
+                    placeholder="لکھ کر تلاش کریں"
+                    className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
+                    id="searchBox"
+                    onKeyUp={(e) => {
+                      handleSearchKeyUp(e);
+                      if (e.key === "Enter") {
+                        if (document.activeElement === e.target) {
+                          e.preventDefault();
+                          searchQuery();
+                        }
                       }
-                    }
-                  }}
-                />
-                <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
-                  <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
-                </div>
-                <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
-                  <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
+                    }}
+                  />
+                  <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+                    <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
+                  </div>
+                  <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+                    <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div id="section" dir="rtl" className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sticky top-[128px] m-3`}>
-            {data.map((item, index) => (
-              <div className="relative" key={index} data-aos="fade-up">
-                <div
-                  className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-[9px] -right-3 rounded-tr-sm w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 backdrop-blur-sm z-10"
-                  onClick={(e) =>
-                    handleHeartClick(e, item, index, `${item.id}`)
-                  }
-                  id={`${item.id}`}
-                >
-                  <Heart className="text-xl ml-3" fill="#6b7280" />
-                  <span className="text-foreground">{`${item.fields?.likes}`}</span>
+            <div id="section" dir="rtl" className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sticky top-[128px] m-3`}>
+              {data.map((item, index) => (
+                <div className="relative" key={index} data-aos="fade-up">
+                  <div
+                    className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-[9px] -right-3 rounded-tr-sm w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 backdrop-blur-sm z-10"
+                    onClick={(e) =>
+                      handleHeartClick(e, item, index, `${item.id}`)
+                    }
+                    id={`${item.id}`}
+                  >
+                    <Heart className="text-xl ml-3" fill="#6b7280" />
+                    <span className="text-foreground">{`${item.fields?.likes}`}</span>
+                  </div>
+                  <Card data={item} />
                 </div>
-                <Card data={item} />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           {data.length > 0 && (
             <div className="flex justify-center text-lg m-5">
               <button
                 onClick={handleLoadMore}
-                disabled={noMoreData}
+                disabled={noMoreData || moreloading}
                 className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
               >
                 {moreloading
@@ -571,7 +428,7 @@ const Page: React.FC<{}> = () => {
               </button>
             </div>
           )}
-        </div>
+        </>
       )}
     </>
   );

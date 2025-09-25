@@ -1,8 +1,9 @@
+// @ts-nocheck
 "use client";
 import React, { useEffect, useState } from "react";
 import { XCircle } from "lucide-react";
 import { format } from "date-fns";
-import ToastComponent from "../../../Components/Toast";
+import { toast } from "sonner";
 import CommentSection from "../../../Components/CommentSection";
 import DataCard from "../../../Components/DataCard";
 // aos for cards animation
@@ -44,10 +45,7 @@ const Page = ({ params }) => {
   const [comments, setComments] = useState([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  //snackbar
-  const [toast, setToast] = useState(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState(null);
+  // notifications via Sonner Toaster (global)
 
   useEffect(() => {
     AOS.init({
@@ -57,41 +55,11 @@ const Page = ({ params }) => {
     });
   });
 
-  //function ot show toast
-  const showToast = (
-    msgtype,
-    message
-  ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
+  // function ot show toast via Sonner
+  const showToast = (msgtype, message) => {
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
 
   //function ot scroll to the top
@@ -592,12 +560,7 @@ const Page = ({ params }) => {
 
   return (
     <div>
-      <div
-        className={`toast-container ${hideAnimation ? " hide " : ""
-          } flex justify-center items-center absolute z-50 top-5 left-0 right-0 mx-auto`}
-      >
-        {toast}
-      </div>
+      {/* Sonner Toaster mounted globally; removed local toast container */}
       {showDialog && (
         <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
           <div

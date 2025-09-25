@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Loader from "./Loader";
 import "./quiz.css";
+import { useAirtableList } from "@/hooks/useAirtableList";
 
 interface QuizRecordFields {
   date?: string;
@@ -26,44 +27,50 @@ const Quiz = () => {
   const [insideBrowser, setInsideBrowser] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const todayDate = new Date().toLocaleDateString("en-GB");
-  const dateComponents = todayDate.split("/");
-  const formattedDate = `${dateComponents[2]}-${dateComponents[1]}-${dateComponents[0]}`;
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const BASE_ID = "appX2cOtbO23MjpGI";
-      const TABLE_NAME = "Quiz";
-
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
-
-      const response = await fetch(url, { method: "GET", headers });
-      const result = await response.json();
-      const records: QuizRecord[] = result.records || [];
-
-      const recordWithTodayDate = records.find(
-        (record) =>
-          new Date(record.fields.date as string).getTime() ===
-          new Date(formattedDate).getTime()
-      );
-      setQuizData(recordWithTodayDate);
-      setAns((recordWithTodayDate?.fields?.ans as number) || 0);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch quiz data:", error);
-      setLoading(false);
-    }
-  };
-
+  // Derive today's normalized key in UTC (YYYY-MM-DD)
+  const todayKey = new Date().toISOString().split("T")[0];
+  const { records, isLoading } = useAirtableList<QuizRecord>(
+    "appX2cOtbO23MjpGI",
+    "Quiz",
+    { pageSize: 50 }
+  );
   useEffect(() => {
     setInsideBrowser(true);
-    fetchData();
-  }, []);
+
+    // Validate records as an array before use
+    const recs: QuizRecord[] = Array.isArray(records) ? (records as QuizRecord[]) : [];
+
+    // Normalize a record's date into a YYYY-MM-DD key (UTC)
+    const toDateKey = (value: unknown): string | null => {
+      if (typeof value !== "string" || !value.trim()) return null;
+      const s = value.trim();
+      // If already date-only ISO (YYYY-MM-DD), use directly
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+      // Fallback to Date parsing and normalize to UTC date-only
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return null;
+      const y = d.getUTCFullYear();
+      const mo = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const da = String(d.getUTCDate()).padStart(2, "0");
+      return `${y}-${mo}-${da}`;
+    };
+
+    // Precompute today's key once (already memoized via todayKey)
+    const keyToday = todayKey;
+
+    const recordWithTodayDate = recs.find((record) => {
+      const recKey = toDateKey(record?.fields?.date);
+      return recKey !== null && recKey === keyToday;
+    });
+
+    setQuizData(recordWithTodayDate ?? undefined);
+    const parsedAns = typeof recordWithTodayDate?.fields?.ans === "number"
+      ? recordWithTodayDate.fields.ans
+      : Number(recordWithTodayDate?.fields?.ans);
+    setAns(Number.isFinite(parsedAns) ? parsedAns : 0);
+    setLoading(isLoading);
+  }, [records, isLoading, todayKey]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.localStorage && quizData) {

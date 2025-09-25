@@ -1,12 +1,14 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Card from "../Components/BookCard";
 import { Heart, House, Search, X } from "lucide-react";
-import ToastComponent from "../Components/Toast";
+import { toast } from "sonner";
 import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 
 interface Book {
   filename: string;
@@ -71,10 +73,7 @@ const Page: React.FC<{}> = () => {
   });
   const [voffset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // toast via sonner
 
   useEffect(() => {
     AOS.init({
@@ -82,134 +81,54 @@ const Page: React.FC<{}> = () => {
       delay: 0,
       duration: 300,
     });
-  });
-  //
-  const fetchData = async (offset: string | null, userQuery: boolean) => {
-    userQuery && setLoading(true);
-    userQuery && setDataOffset(pagination.offset);
-    try {
-      const BASE_ID = "appXcBoNMGdIaSUyA";
-      const TABLE_NAME = "E-Books";
-      const pageSize = 30;
-      const headers = {
-        //authentication with environment variable
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
-
-      if (userQuery) {
-        // Encode the formula with OR condition
-        const encodedFormula = encodeURIComponent(
-          `OR(
-        FIND('${searchText.trim().toLowerCase()}', LOWER({bookName})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({enBookName})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({hiBookName})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({desc})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({enDesc})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({hiDesc})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({publishingData})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({writer})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({enWriter})),
-        FIND('${searchText.trim().toLowerCase()}', LOWER({hiWriter}))
-      )`
-        );
-        url += `&filterByFormula=${encodedFormula}`;
-      }
-
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
-      const response = await fetch(url, { method: "GET", headers });
-      const result = await response.json();
-      setTimeout(() => {
-        result.offset && setOffset(result.offset);
-        !result.offset && setNoMoreData(true);
-      }, 3000);
-
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
-      setData(result.records);
-      // formating result to match the mock data type for ease of development
-      const formattedRecords: EBooksType[] = result.records.map(
-        (record: any) => ({
-          ...record,
-          fields: {
-            ...record.fields,
-            bookName: record.fields?.bookName,
-            writer: record.fields?.writer,
-            publishingData: record.fields?.publishingData,
-            tafseel: record.fields?.desc,
-            book: record.fields?.book,
-            likes: record.fields?.likes,
-          },
-        })
-      );
-      if (!offset) {
-        if (userQuery) {
-          setInitialdDataItems(data);
-          setData(formattedRecords);
-          // console.log(formattedRecords);
-        } else {
-          setData(formattedRecords);
-          // console.log(result);
-        }
-      } else {
-        setData((prevDataItems) => [...prevDataItems, ...formattedRecords]);
-        // console.log(result);
-      }
-      // seting pagination depending on the response
-      setOffset(result.offset);
-      // seting the loading state to false to show the data
-      setLoading(false);
-      setMoreLoading(false);
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false);
-      setMoreLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchData(null, false);
   }, []);
+  const filterFormula = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return undefined;
+    // Escape single quotes to prevent formula injection
+    const escaped = q.replace(/'/g, "\\'");
+    return `OR( FIND('${escaped}', LOWER({bookName})), FIND('${escaped}', LOWER({enBookName})), FIND('${escaped}', LOWER({hiBookName})), FIND('${escaped}', LOWER({desc})), FIND('${escaped}', LOWER({enDesc})), FIND('${escaped}', LOWER({hiDesc})), FIND('${escaped}', LOWER({publishingDate})), FIND('${escaped}', LOWER({writer})), FIND('${escaped}', LOWER({enWriter})), FIND('${escaped}', LOWER({hiWriter})) )`;
+  }, [searchText]);
+  const { records, isLoading, hasMore, loadMore } = useAirtableList<EBooksType>(
+    "appXcBoNMGdIaSUyA",
+    "E-Books",
+    { pageSize: 30, filterByFormula: filterFormula },
+    { debounceMs: 300 }
+  );
+
+  const { updateRecord: updateBooks } = useAirtableMutation(
+    "appXcBoNMGdIaSUyA",
+    "E-Books"
+  );
+
+  const formattedRecords: EBooksType[] = useMemo(() => {
+    return (records || []).map((record: any) => ({
+      ...record,
+      fields: {
+        ...record.fields,
+        bookName: record.fields?.bookName,
+        writer: record.fields?.writer,
+        publishingData: record.fields?.publishingData,
+        tafseel: record.fields?.desc,
+        book: record.fields?.book,
+        likes: record.fields?.likes,
+      },
+    }));
+  }, [records]);
+
+  useEffect(() => {
+    setData(formattedRecords);
+    setLoading(isLoading);
+    setMoreLoading(false);
+    setNoMoreData(!hasMore);
+  }, [formattedRecords, isLoading, hasMore]);
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") return toast.success(message);
+    if (msgtype === "error") return toast.error(message);
+    return toast.warning(message);
   };
 
   const handleHeartClick = async (
@@ -222,7 +141,7 @@ const Page: React.FC<{}> = () => {
     //for reference of double click to like: these are to be completed
 
     // toggleanaween(null);
-    if (typeof window !== undefined && window.localStorage) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Books");
@@ -256,47 +175,14 @@ const Page: React.FC<{}> = () => {
           );
 
           try {
-            // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes + 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-            const BASE_ID = "appXcBoNMGdIaSUyA";
-            const TABLE_NAME = "E-Books";
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setData((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            await updateBooks([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
+            setData((prev) => {
+              const copy = [...prev];
+              const item = copy[index];
+              if (item?.fields) item.fields.likes = updatedLikes;
+              return copy;
+            });
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -322,47 +208,14 @@ const Page: React.FC<{}> = () => {
           );
 
           try {
-            // Make API request to update the record's "Likes" field
             const updatedLikes = shaerData.fields.likes - 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-            const BASE_ID = "appXcBoNMGdIaSUyA";
-            const TABLE_NAME = "E-Books";
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setData((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
+            await updateBooks([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
+            setData((prev) => {
+              const copy = [...prev];
+              const item = copy[index];
+              if (item?.fields) item.fields.likes = updatedLikes;
+              return copy;
+            });
           } catch (error) {
             console.error("Error updating likes:", error);
           }
@@ -377,7 +230,7 @@ const Page: React.FC<{}> = () => {
     }
   };
   useEffect(() => {
-    if (window !== undefined && window.localStorage) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       const storedData = localStorage.getItem("Books");
       if (storedData) {
         try {
@@ -406,8 +259,7 @@ const Page: React.FC<{}> = () => {
   }, [data]);
 
   const searchQuery = () => {
-    fetchData(null, true);
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       setScrolledPosition(document!.getElementById("section")!.scrollTop);
     }
   };
@@ -440,7 +292,7 @@ const Page: React.FC<{}> = () => {
   const resetSearch = () => {
     searchText && clearSearch();
     setData(initialDataItems);
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       const section = document.getElementById("section");
       section?.scrollTo({
         top: scrolledPosition ?? 0,
@@ -449,14 +301,17 @@ const Page: React.FC<{}> = () => {
     }
     setInitialdDataItems([]);
   };
-  const handleLoadMore = () => {
-    setMoreLoading(true);
-    fetchData(voffset, false);
+  const handleLoadMore = async () => {
+    try {
+      setMoreLoading(true);
+      await loadMore();
+    } finally {
+      setMoreLoading(false);
+    }
   };
 
   return (
     <>
-      {toast}
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && data.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
@@ -527,7 +382,7 @@ const Page: React.FC<{}> = () => {
             <div className="flex justify-center text-lg m-5">
               <button
                 onClick={handleLoadMore}
-                disabled={noMoreData}
+                disabled={noMoreData || moreloading}
                 className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
               >
                 {moreloading

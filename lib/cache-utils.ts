@@ -30,7 +30,7 @@ class SessionCache {
         this.trim();
     }
 
-    get<T>(key: string): T | undefined {
+  get<T>(key: string): T | undefined {
         const entry = this.store.get(key) as CacheEntry<T> | undefined;
         if (!entry) return undefined;
         if (Date.now() > entry.expiry) {
@@ -43,6 +43,13 @@ class SessionCache {
         this.lastAccesses.set(key, Date.now());
         return entry.data;
     }
+
+  // Return possibly expired entry without touching LRU; for stale-on-error
+  getStale<T>(key: string): T | undefined {
+    const entry = this.store.get(key) as CacheEntry<T> | undefined;
+    if (!entry) return undefined;
+    return entry.data;
+  }
 
     has(key: string): boolean {
         const entry = this.store.get(key);
@@ -110,6 +117,10 @@ export function cacheAirtableRecord<T>(key: string, data: T, ttl?: number) {
 
 export function getCachedRecord<T>(key: string): T | undefined {
   return sessionCache.get(`airtable:${key}`);
+}
+
+export function getStaleCachedRecord<T>(key: string): T | undefined {
+  return sessionCache.getStale(`airtable:${key}`);
 }
 
 export function invalidateCache(pattern?: string) {

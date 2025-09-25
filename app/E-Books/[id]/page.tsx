@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -8,6 +8,8 @@ import SkeletonLoader from "../../Components/SkeletonLoader";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { toast } from "sonner";
+import { TTL } from "@/lib/airtable-fetcher";
+import { useAirtableRecord } from "@/hooks/useAirtableRecord";
 
 // Dynamically import PdfViewer on the client only to avoid SSR/window issues
 const PdfViewer = dynamic(() => import("@/app/Components/PdfViewer"), { ssr: false });
@@ -34,10 +36,17 @@ interface BookRecordFields {
 }
 
 export default function Page() {
-    const [data, setData] = useState<BookRecordFields | null>(null);
     const [bookUrl, setBookUrl] = useState<string | undefined>(undefined);
-    const [loading, setLoading] = useState(true);
     const params = useParams<{ id: string }>();
+    const id = params?.id;
+
+    // use unified single-record hook when we have a stable recordId
+    const { data: record, isLoading, error } = useAirtableRecord<{ fields: BookRecordFields }>(
+        "appXcBoNMGdIaSUyA",
+        "E-Books",
+        id,
+        { ttl: TTL.fast }
+    );
 
     useEffect(() => {
         AOS.init({
@@ -97,55 +106,18 @@ export default function Page() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const id = params?.id;
-
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const BASE_ID = "appXcBoNMGdIaSUyA";
-            const TABLE_NAME = "E-Books";
-            const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
-            const token = process.env.NEXT_PUBLIC_Api_Token;
-            const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-            const init: RequestInit = { method: "GET" };
-            if (Object.keys(headers).length > 0) {
-                init.headers = headers;
-            }
-
-            const response = await fetch(url, init);
-            const result = await response.json();
-
-            const records = result.records || [];
-            if (records.length > 0) {
-                const fieldsData = records[0].fields as BookRecordFields;
-                setData(fieldsData);
-            } else {
-                console.error("No records found in the response.");
-                setData(null);
-            }
-            setLoading(false);
-        } catch (error) {
-            setLoading(false);
-            console.error(`Failed to fetch data: ${error}`);
-            toast.error("Failed to load book data. Check console for details.");
-        }
-    };
+    // no manual fetch; data provided by hook
 
     useEffect(() => {
-        if (!id) return;
-        fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id]);
-
-    useEffect(() => {
-        if (data?.book && data.book.length > 0) {
-            const firstBook = data.book[0];
+        const fields = record?.fields;
+        if (fields?.book && fields.book.length > 0) {
+            const firstBook = fields.book[0];
             const url = firstBook.url;
             setBookUrl(url);
-        } else if (data) {
+        } else if (fields) {
             console.error("No book data found in the record. please contact the organization");
         }
-    }, [data]);
+    }, [record]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -154,43 +126,43 @@ export default function Page() {
 
     return (
         <div dir="rtl" className="flex flex-col min-h-screen w-screen">
-            {loading && <SkeletonLoader />}
-            {!loading && (
+            {isLoading && <SkeletonLoader />}
+            {!isLoading && (
                 <>
                     <div className="flex flex-col sm:flex-row p-6">
                         <Link href="#pdf">
                             <div className="photo mb-4">
                                 <img
                                     className="h-full w-[50%] p-2 border-2 block mx-auto"
-                                    src={`${data?.book?.[0]?.thumbnails?.large?.url ?? ""}`}
-                                    height={data?.book?.[0]?.thumbnails?.large?.height}
-                                    width={data?.book?.[0]?.thumbnails?.large?.width}
+                                    src={`${record?.fields?.book?.[0]?.thumbnails?.large?.url ?? ""}`}
+                                    height={record?.fields?.book?.[0]?.thumbnails?.large?.height}
+                                    width={record?.fields?.book?.[0]?.thumbnails?.large?.width}
                                     alt="Book cover"
                                     loading="lazy"
                                 />
                             </div>
                         </Link>
                         <div className="details" data-aos="fade-up">
-                            {data ? (
+                            {record?.fields ? (
                                 <div className="text-lg" data-aos="fade-up">
-                                    <p className="my-2">کتاب کا نام: {data.bookName}</p>
-                                    <p className="my-2">اشاعت: {formatDate(data.publishingDate)}</p>
+                                    <p className="my-2">کتاب کا نام: <span className="text-primary-foreground">{record.fields.bookName}</span></p>
+                                    <p className="my-2">اشاعت: {formatDate(record?.fields?.publishingDate).split("/")[2] || formatDate(record?.fields?.publishingDate).split("/")[0] || record?.fields?.publishingDate}</p>
                                     <p className="my-2">
                                         مصنف:
-                                        <Link href={`/Shaer/${data.writer}`}>{data.writer}</Link>
+                                        <Link href={`/Shaer/${record.fields.writer}`}>{record.fields.writer}</Link>
                                     </p>
-                                    <p className="my-2">تفصیل: {data.desc}</p>
-                                    {data.maloomat && (
+                                    <p className="my-2">تفصیل: {record.fields.desc}</p>
+                                    {record.fields.maloomat && (
                                         <div className="bg-gray-100 py-2 mt-4 rounded-sm border">
                                             <p className="text-xs mr-4 text-foreground">دلچسپ معلومات:</p>
-                                            <p className="maloomat mr-4 mt-2 text-sm">{data.maloomat}</p>
+                                            <p className="maloomat mr-4 mt-2 text-sm">{record.fields.maloomat}</p>
                                         </div>
                                     )}
                                     <div className="scale-75">
                                         <Link href={`#pdf`} className=" text-background block mx-auto m-4 p-2 bg-blue-500 text-center w-[200px] px-8 rounded-md">
                                             کتاب پڑھیں
                                         </Link>
-                                        {bookUrl && data.download && (
+                                        {bookUrl && record.fields.download && (
                                             <Link href={bookUrl} className=" text-foreground block mx-auto m-4 mb-1 p-2 border-2 border-blue-500 text-center w-[200px] px-8 rounded-md">
                                                 کتاب ڈاؤنلوڈ کریں
                                             </Link>

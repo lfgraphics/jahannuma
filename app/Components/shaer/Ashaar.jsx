@@ -2,7 +2,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
 import { Heart } from "lucide-react";
-import ToastComponent from "../Toast";
+import { toast } from "sonner";
 
 const Ashaar = ({ takhallus }) => {
   const [dataItems, setDataItems] = useState([]); // Specify the type explicitly as Shaer[]
@@ -75,6 +75,11 @@ const Ashaar = ({ takhallus }) => {
   }, [dataItems]);
 
   const [heartColors, setHeartColors] = useState([]);
+  const showToast = (msgtype, message) => {
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
+  };
   const handleHeartClick = async (shaerData, index, id) => {
     if (typeof window !== undefined && window.localStorage) {
       try {

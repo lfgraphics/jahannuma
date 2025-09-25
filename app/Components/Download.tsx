@@ -11,6 +11,7 @@ import {
 } from "../../components/ui/dialog";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../components/ui/accordion";
 import { Button } from "../../components/ui/button";
+import PromptDialog from "../../components/ui/prompt-dialog";
 
 // Use the unified domain type
 import type { Shaer } from "../types";
@@ -35,6 +36,7 @@ const DynamicDownloadHandler: React.FC<{
     "/backgrounds/1.jpeg"
   );
   const [fileName, setFileName] = useState<string>("poetry");
+  const [askNameOpen, setAskNameOpen] = useState<boolean>(false);
 
   // Ref for the download handler container
   const downloadHandlerRef = useRef<HTMLDivElement>(null);
@@ -63,30 +65,23 @@ const DynamicDownloadHandler: React.FC<{
     setSelectedImage(image);
   };
 
+  // Strict filename sanitizer
+  const sanitizeFilename = (input: string): string => {
+    let name = (input ?? "").trim();
+    name = name.replace(/\.(png|jpe?g|webp|gif|bmp|tiff)$/i, "");
+    name = name.replace(/\s+/g, "_");
+    name = name.replace(/[^A-Za-z0-9_-]/g, "");
+    name = name.replace(/[_-]{2,}/g, (m) => m[0]);
+    name = name.replace(/^[_-]+|[_-]+$/g, "");
+    if (name.length > 100) name = name.slice(0, 100);
+    if (!name) name = "poetry";
+    return name;
+  };
+
   // Function to handle the download button click
-  const download = async () => {
+  const runDownload = async () => {
     // Logic to convert the selected area to image using html-to-image
     if (!downloadHandlerRef.current) return;
-
-    // Strict filename sanitizer
-    const sanitizeFilename = (input: string): string => {
-      let name = (input ?? "").trim();
-      // Strip common image extensions at the end
-      name = name.replace(/\.(png|jpe?g|webp|gif|bmp|tiff)$/i, "");
-      // Convert spaces to underscores
-      name = name.replace(/\s+/g, "_");
-      // Remove any character not in [A-Za-z0-9_-]
-      name = name.replace(/[^A-Za-z0-9_-]/g, "");
-      // Collapse multiple underscores or hyphens
-      name = name.replace(/[_-]{2,}/g, (m) => m[0]);
-      // Trim leading/trailing separators
-      name = name.replace(/^[_-]+|[_-]+$/g, "");
-      // Limit length
-      if (name.length > 100) name = name.slice(0, 100);
-      // Fallback
-      if (!name) name = "poetry";
-      return name;
-    };
 
     // html-to-image options
     const options = {
@@ -127,102 +122,111 @@ const DynamicDownloadHandler: React.FC<{
   };
 
   return (
-    <Dialog open={true} onOpenChange={(open) => { if (!open) onCancel(); }}>
-      <DialogContent className="sm:max-w-[420px] bg-background text-foreground border border-border p-0">
-        <DialogHeader className="px-4 pt-4">
-          <DialogTitle>تصویر ڈاؤنلوڈ</DialogTitle>
-          <DialogDescription>پس منظر منتخب کریں اور تصویر محفوظ کریں</DialogDescription>
-        </DialogHeader>
-        <div ref={downloadHandlerRef} className="max-h-[75svh] overflow-y-auto px-4 pb-4">
-          {/* Display shaer information */}
-          <div
-            id="downloadArea"
-            className="relative text-center bg-cover bg-center text-foreground overflow-hidden aspect-square w-full max-w-[360px] mx-auto"
-            style={{ backgroundImage: `url(${selectedImage || images[0]})` }}
-          >
-            <div className="bg-black/70 flex flex-col justify-center bg-opacity-60 relative text-white w-full h-full pt-12 p-8">
-              <div>
-                <p className="text-center pl-2">
-                  {ghazalHeadLines.map((line, index) => (
-                    <React.Fragment key={index}>
-                      {line}
-                      <br />
-                    </React.Fragment>
-                  ))}
-                </p>
-                <div className="m-4 text-sm">{data.fields.shaer}</div>
-                <div className="absolute text-white text-lg top-4 right-6">
-                  جہاں نما
-                </div>
-                <div className="absolute text-white text-2xl font-bold w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-10 z-0">
-                  Jahan Numa
+    <>
+      <Dialog open={true} onOpenChange={(open) => { if (!open) onCancel(); }}>
+        <DialogContent className="sm:max-w-[380px] bg-background text-foreground border border-border p-0">
+          <DialogHeader className="px-3 pt-3 mx-auto">
+            <DialogTitle className="text-center" >تصویر ڈاؤنلوڈ</DialogTitle>
+            <DialogDescription>پس منظر منتخب کریں اور تصویر محفوظ کریں</DialogDescription>
+          </DialogHeader>
+          <div ref={downloadHandlerRef} className="max-h-[70svh] overflow-y-auto px-3 pb-3">
+            {/* Display shaer information */}
+            <div
+              id="downloadArea"
+              className="relative text-center bg-cover bg-center text-foreground overflow-hidden aspect-square w-full max-w-[320px] mx-auto"
+              style={{ backgroundImage: `url(${selectedImage || images[0]})` }}
+            >
+              <div className="bg-black/70 flex flex-col justify-center bg-opacity-60 relative text-white w-full h-full pt-10 p-6">
+                <div>
+                  <p className="text-center pl-2 text-sm leading-7">
+                    {ghazalHeadLines.map((line, index) => (
+                      <React.Fragment key={index}>
+                        {line}
+                        <br />
+                      </React.Fragment>
+                    ))}
+                  </p>
+                  <div className="m-3 text-xs">{data.fields.shaer}</div>
+                  <div className="absolute text-white text-sm top-3 right-4">
+                    جہاں نما
+                  </div>
+                  <div className="absolute text-white text-xl font-bold w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-10 z-0">
+                    Jahan Numa
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Display background image selection */}
-          <div className={`flex flex-col mt-2 mb-2 items-center justify-center`}>
-            <p className="text-lg">پس منظر تصویر منتخب کریں </p>
-            <div className="images_wraper flex w-[280px] overflow-x-auto">
-              {images.map((image, index) => (
-                <img
-                  width={280}
-                  height={280}
-                  key={index}
-                  src={image}
-                  alt={`Image ${index}`}
-                  className={`w-8 h-8 m-1 cursor-pointer transition-all duration-500 rounded-sm mt-4 ${image == selectedImage ? "border-2 border-primary scale-125" : ""}`}
-                  onClick={() => handleImageSelect(image)}
-                ></img>
-              ))}
+            {/* Display background image selection */}
+            <div className={`flex flex-col mt-2 mb-2 items-center justify-center`}>
+              <p className="text-base">پس منظر تصویر منتخب کریں </p>
+              <div className="images_wraper flex w-[260px] overflow-x-auto">
+                {images.map((image, index) => (
+                  <img
+                    width={260}
+                    height={260}
+                    key={index}
+                    src={image}
+                    alt={`Image ${index}`}
+                    className={`w-7 h-7 m-1 cursor-pointer transition-all duration-500 rounded-sm mt-3 ${image == selectedImage ? "border-2 border-primary scale-125" : ""}`}
+                    onClick={() => handleImageSelect(image)}
+                  ></img>
+                ))}
+              </div>
+              <Accordion dir="rtl" type="single" collapsible className="w-full mb-4">
+                <AccordionItem value="tweaks">
+                  <AccordionTrigger dir="rtl" className="px-3">
+                    <span className="flex gap-2 items-center justify-between">مزید ترمیمی <Settings2 className="h-4 w-4" /></span>
+                  </AccordionTrigger>
+                  <AccordionContent className="border-t">
+                    <div className="flex max-w-full overflow-x-auto flex-row h-[110px] gap-2 flex-wrap p-3">
+                      <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                        <Baseline />
+                        <p className="text-xs">خط کا رنگ تبدیل کریں</p>
+                      </div>
+                      <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                        <PaintBucket />
+                        <p className="text-xs">پسِ منظر کا رنگ تبدیل کریں</p>
+                      </div>
+                      <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                        <ImagePlus />
+                        <p className="text-xs">اپنی تصویل اپلوڈ کریں</p>
+                      </div>
+                      <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                        <Plus />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
-            <div className="w-full mt-3">
-              <label htmlFor="file-name" className="text-sm">فائل کے نام</label>
-              <input
-                id="file-name"
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                placeholder="مثلاً: poetry"
-                value={fileName}
-                onChange={(e) => setFileName(e.target.value)}
-              />
-            </div>
-            <Accordion dir="rtl" type="single" collapsible className="w-full mb-4">
-              <AccordionItem value="tweaks">
-                <AccordionTrigger dir="rtl" className="px-3">
-                  <span className="flex gap-2 items-center justify-between">مزید ترمیمی <Settings2 className="h-4 w-4" /></span>
-                </AccordionTrigger>
-                <AccordionContent className="border-t">
-                  <div className="flex max-w-full overflow-x-auto flex-row h-[120px] gap-3 flex-wrap p-3">
-                    <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
-                      <Baseline />
-                      <p className="text-xs">خط کا رنگ تبدیل کریں</p>
-                    </div>
-                    <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
-                      <PaintBucket />
-                      <p className="text-xs">پسِ منظر کا رنگ تبدیل کریں</p>
-                    </div>
-                    <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
-                      <ImagePlus />
-                      <p className="text-xs">اپنی تصویل اپلوڈ کریں</p>
-                    </div>
-                    <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-3 w-[120px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
-                      <Plus />
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
 
-          {/* Display buttons for download and cancel */}
-          <div className="flex justify-around gap-3 mt-4 px-4 pb-4 flex-row-reverse">
-            <Button onClick={download} className="bg-primary text-primary-foreground hover:bg-primary/90">ڈاؤنلوڈ کریں</Button>
-            <Button onClick={onCancel} variant="outline">منسوخ کریں</Button>
+            {/* Display buttons for download and cancel */}
+            <div className="flex justify-around gap-3 mt-3 px-3 pb-3 flex-row-reverse">
+              <Button onClick={() => setAskNameOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">ڈاؤنلوڈ کریں</Button>
+              <Button onClick={onCancel} variant="outline">منسوخ کریں</Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      {/* Filename prompt dialog */}
+      <PromptDialog
+        open={askNameOpen}
+        title="فائل کے نام"
+        description="براہ کرم فائل کے نام درج کریں (بغیر ایکسٹینشن)"
+        defaultValue={fileName}
+        placeholder="مثلاً: poetry"
+        confirmText="محفوظ کریں"
+        cancelText="منسوخ کریں"
+        onSubmit={(val) => {
+          setFileName(val);
+          setAskNameOpen(false);
+          // defer runDownload to next tick so dialog fully closes before capture
+          setTimeout(() => runDownload(), 50);
+        }}
+        onCancel={() => setAskNameOpen(false)}
+      />
+    </>
   );
 };
 

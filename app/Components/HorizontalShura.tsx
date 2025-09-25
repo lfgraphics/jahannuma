@@ -1,9 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import Card from "./shaer/Profilecard";
 import Link from "next/link";
 import Loader from "./Loader";
 import { ChevronRightCircle } from "lucide-react";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { TTL } from "@/lib/airtable-fetcher";
 
 interface Photo {
   filename: string;
@@ -56,63 +58,66 @@ interface FormattedRecord {
 }
 
 const HorizontalShura = () => {
-  const [data, setData] = useState<FormattedRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  //
-  const fetchData = async () => {
-    try {
-      const BASE_ID = "appgWv81tu4RT3uRB";
-      const TABLE_NAME = "Intro";
-      const pageSize = 10;
-      const headers = {
-        //authentication with environment variable
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}`;
+  const { records, isLoading } = useAirtableList<FormattedRecord>(
+    "appgWv81tu4RT3uRB",
+    "Intro",
+    { pageSize: 10 },
+    { ttl: TTL.static }
+  );
+  // Normalize/format without state to avoid re-render loops
+  const data = useMemo(() => {
+    // Return only string items; split strings by newline safely
+    const toArray = (v: unknown): string[] => {
+      if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string").map(s => s.trim()).filter(Boolean);
+      if (typeof v === "string") return v.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      return [];
+    };
 
-      const response = await fetch(url, { method: "GET", headers });
-      const result = await response.json();
-      const records = Array.isArray(result.records) ? result.records : [];
+    type BaseRecord = { id: string; createdTime: string; fields: Record<string, unknown> };
+    const isRecord = (x: unknown): x is BaseRecord => {
+      return (
+        typeof x === "object" && x !== null &&
+        typeof (x as any).id === "string" &&
+        typeof (x as any).createdTime === "string" &&
+        typeof (x as any).fields === "object" && (x as any).fields !== null
+      );
+    };
 
-      // helper to normalize string | string[] | undefined to string[]
-      const toArray = (v: unknown): string[] => {
-        if (Array.isArray(v)) return v.filter(Boolean) as string[];
-        return typeof v === "string" ? v.split("\n").filter(Boolean) : [];
-      };
+    const safeNum = (v: unknown): number => {
+      if (typeof v === "number") return v;
+      const n = Number(v ?? 0);
+      return Number.isFinite(n) ? n : 0;
+    };
 
-      // format records to match FormattedRecord safely
-      const formattedRecords: FormattedRecord[] = records.map((record: any) => ({
-        ...record,
+    const raw: unknown[] = Array.isArray(records) ? (records as unknown[]) : [];
+    return raw.filter(isRecord).map((record) => {
+      const f = record.fields;
+      const photo = Array.isArray(f["photo"]) ? (f["photo"] as Photo[]) : [];
+      return {
+        id: record.id,
+        createdTime: record.createdTime,
         fields: {
-          ...record.fields,
-          tafseel: toArray(record?.fields?.tafseel),
-          searchKeys: toArray(record?.fields?.searchKeys),
-          enTakhallus: toArray(record?.fields?.enTakhallus),
-          hiTakhallus: toArray(record?.fields?.hiTakhallus),
-          enName: toArray(record?.fields?.enName),
-          hiName: toArray(record?.fields?.hiName),
-          enLocation: toArray(record?.fields?.enLocation),
-          hiLocation: toArray(record?.fields?.hiLocation),
-          ghazal: Boolean(record?.fields?.ghazal),
-          eBooks: Boolean(record?.fields?.eBooks),
-          nazmen: Boolean(record?.fields?.nazmen),
-          likes: Number(record?.fields?.likes ?? 0),
-          photo: Array.isArray(record?.fields?.photo) ? record.fields.photo : [],
+          takhallus: typeof f.takhallus === "string" ? (f.takhallus as string) : "",
+          dob: typeof f.dob === "string" ? (f.dob as string) : "",
+          location: typeof f.location === "string" ? (f.location as string) : "",
+          tafseel: toArray(f["tafseel"]),
+          searchKeys: toArray(f["searchKeys"]),
+          enTakhallus: toArray(f["enTakhallus"]),
+          hiTakhallus: toArray(f["hiTakhallus"]),
+          enName: toArray(f["enName"]),
+          hiName: toArray(f["hiName"]),
+          enLocation: toArray(f["enLocation"]),
+          hiLocation: toArray(f["hiLocation"]),
+          ghazal: Boolean(f["ghazal"]),
+          eBooks: Boolean(f["eBooks"]),
+          nazmen: Boolean(f["nazmen"]),
+          likes: safeNum(f["likes"]),
+          photo,
         },
-      }));
-
-      setData(formattedRecords);
-      // seting the loading state to false to show the data
-      setLoading(false);
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
+      } as FormattedRecord;
+    });
+  }, [records]);
+  const loading = isLoading;
   return (
     <div dir="ltr">
       <h2 className="py-4 pb-0 text-center text-4xl">شعرا</h2>
@@ -126,7 +131,7 @@ const HorizontalShura = () => {
           >
             {data.map((item, index) => (
               <div className="w-[240px]" key={index}>
-                <Card data={item}/>
+                <Card data={item} />
               </div>
             ))}
             <Link className=" text-white text-4xl font-bold" href={"/Shaer"}>

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import ToastComponent from "./Toast";
+import { toast } from "sonner";
 import { Heart, XCircle } from "lucide-react";
 import Card from "./BookCard";
 
@@ -23,10 +23,7 @@ interface Shaer {
 
 const EBooks = () => {
   const [data, setData] = useState<Shaer[] | null>(null);
-  //snackbar
-  const [toast, setToast] = useState<React.ReactNode | null>(null);
-  const [hideAnimation, setHideAnimation] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // notifications handled by global Sonner Toaster
   const [insideBrowser, setInsideBrowser] = useState(false);
 
   useEffect(() => {
@@ -41,36 +38,9 @@ const EBooks = () => {
     msgtype: "success" | "error" | "invalid",
     message: string
   ) => {
-    // Clear the previous timeout if it exists
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      // showToast(msgtype, message);
-    }
-    setToast(
-      <div className={`toast-container ${hideAnimation ? "hide" : ""}`}>
-        <ToastComponent
-          msgtype={msgtype}
-          message={message}
-          onHide={() => {
-            setHideAnimation(true);
-            setTimeout(() => {
-              setHideAnimation(false);
-              setToast(null);
-            }, 500);
-          }}
-        />
-      </div>
-    );
-    // Set a new timeout
-    const newTimeoutId = setTimeout(() => {
-      setHideAnimation(true);
-      setTimeout(() => {
-        setHideAnimation(false);
-        setToast(null);
-      }, 500);
-    }, 6000);
-
-    setTimeoutId(newTimeoutId);
+    if (msgtype === "success") toast.success(message);
+    else if (msgtype === "error") toast.error(message);
+    else toast.warning(message);
   };
 
   const handleHeartClick = async (
@@ -185,7 +155,6 @@ const EBooks = () => {
 
   return (
     <>
-      {toast}
       {insideBrowser && (data === null || data.length === 0) && (
         <div className="w-screen h-screen grid place-items-center">
           آپ کے پسندیدہ میں کوئی کتاب موجود نہیں ہیں
