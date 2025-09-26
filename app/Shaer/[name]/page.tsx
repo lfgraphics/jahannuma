@@ -15,6 +15,7 @@ import "./shaer.css";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import { TTL } from "@/lib/airtable-fetcher";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
+import { extractIdFromSlug } from "@/lib/airtable-utils";
 
 interface IntroFields {
   takhallus: string;
@@ -55,6 +56,7 @@ const Page = ({ params }: { params: { name: string } | Promise<{ name: string }>
     {
       pageSize: 1,
       fields: [
+        "photo",
         "takhallus",
         "ghazlen",
         "eBooks",

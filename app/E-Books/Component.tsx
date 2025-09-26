@@ -74,6 +74,7 @@ const Page: React.FC<{}> = () => {
   const [voffset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   // toast via sonner
+  const [disableHearts, setDisableHearts] = useState(false);
 
   useEffect(() => {
     AOS.init({
@@ -142,6 +143,8 @@ const Page: React.FC<{}> = () => {
 
     // toggleanaween(null);
     if (typeof window !== 'undefined' && window.localStorage) {
+      if (disableHearts) return;
+      setDisableHearts(true);
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Books");
@@ -226,6 +229,8 @@ const Page: React.FC<{}> = () => {
           "Error adding/removing data to/from Local Storage:",
           error
         );
+      } finally {
+        setDisableHearts(false);
       }
     }
   };
@@ -370,6 +375,7 @@ const Page: React.FC<{}> = () => {
                     handleHeartClick(e, item, index, `${item.id}`)
                   }
                   id={`${item.id}`}
+                  aria-disabled={disableHearts}
                 >
                   <Heart className="text-xl ml-3" />
                   <span className="text-black">{`${item.fields?.likes}`}</span>

@@ -26,6 +26,7 @@ const Shura = () => {
   const [data, setData] = useState<Shaer[] | null>(null);
   // notifications handled by global Sonner Toaster
   const [insideBrowser, setInsideBrowser] = useState(false);
+  const [disableHearts, setDisableHearts] = useState(false);
 
   useEffect(() => {
     let retrivedData = localStorage.getItem("Shura");
@@ -52,6 +53,8 @@ const Shura = () => {
     id: string
   ): Promise<void> => {
     if (typeof window !== undefined && window.localStorage) {
+      if (disableHearts) return;
+      setDisableHearts(true);
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Shura");
@@ -121,6 +124,8 @@ const Shura = () => {
           "Error adding/removing data to/from Local Storage:",
           error
         );
+      } finally {
+        setDisableHearts(false);
       }
     }
   };
@@ -176,6 +181,7 @@ const Shura = () => {
                 className="heart cursor-pointer text-gray-500 pr-3 absolute top-0 right-0 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-full m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
                 onClick={(e) => handleHeartClick(item, index, `${item.id}`)}
                 id={`${item.id}`}
+                aria-disabled={disableHearts}
               >
                 <Heart className="text-xl ml-3" />
               </div>

@@ -66,7 +66,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
           </button>
           <button
             className="m-3"
-            onClick={() => openComments(RubaiData.fields?.id)}
+            onClick={() => openComments(RubaiData.id)}
           >
             <MessageSquare color="#984A02" className="ml-2 inline-block" />{" "}
             <span className="text-gray-500 text-sm">

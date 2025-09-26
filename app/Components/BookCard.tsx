@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { createSlug } from "@/lib/airtable-utils";
 
 interface BookAttachmentThumb {
   url?: string;
@@ -37,12 +38,15 @@ const formatDate = (dateString?: string) => {
 
 const Card: React.FC<CardProps> = ({ data }) => {
   const { fields } = data;
-  const { bookName, publishingDate, book, id: fieldId, desc, writer } = fields;
+  const { bookName, publishingDate, book, id: fieldId, desc, writer, slugId } = fields;
   const recordId = fieldId || data.id; // prefer fields.id, fallback to record.id
   const image = book?.[0]?.thumbnails?.large;
 
+  // Use slugId if available, otherwise create slug from book name
+  const bookSlug = slugId || (bookName ? `${createSlug(bookName)}` : recordId);
+
   return (
-    <Link href={{ pathname: `/E-Books/${recordId}` }}>
+    <Link href={{ pathname: `/E-Books/${bookSlug}/${recordId}` }}>
       <div className="rounded overflow-hidden shadow-lg mx-auto border border-border bg-background text-foreground">
         <div className="relative bg-cover bg-center w-[200px] h-[260px]">
           {image?.url && (

@@ -49,6 +49,7 @@ const RandCard: React.FC<{}> = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [disableHearts, setDisableHearts] = useState(false);
   // toast via sonner
 
   //function ot show toast
@@ -123,6 +124,8 @@ const RandCard: React.FC<{}> = () => {
   ): Promise<void> => {
     toggleanaween(null);
     if (typeof window !== 'undefined' && window.localStorage && e.detail === 1) {
+      if (disableHearts) return;
+      setDisableHearts(true);
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ashaar");
@@ -228,6 +231,8 @@ const RandCard: React.FC<{}> = () => {
       } catch (error) {
         // Handle any errors that may occur when working with Local Storage
         console.error("Error adding/removing data to/from Local Storage:", error);
+      } finally {
+        setDisableHearts(false);
       }
     }
   };
@@ -332,6 +337,7 @@ const RandCard: React.FC<{}> = () => {
             handleHeartClick={handleHeartClick}
             handleShareClick={handleShareClick}
             openComments={openComments}
+            heartDisabled={disableHearts}
           />
         </div>
       )}

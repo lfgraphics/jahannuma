@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createSlug } from "@/lib/airtable-utils";
 
 type Photo = {
   thumbnails?: {
@@ -12,16 +13,19 @@ type CardProps = {
 };
 
 const Card = ({ data }: CardProps) => {
-  const { fields } = data;
-  const { takhallus, photo } = fields;
+  const { fields, id: recordId } = data;
+  const { takhallus, photo, slugId } = fields;
 
   const img = photo?.[0]?.thumbnails?.full as
     | { url?: string; height?: number; width?: number }
     | undefined;
   const name = (takhallus || "").replace(" ", "-");
 
+  // Use slugId if available, otherwise create slug from takhallus and record ID
+  const shaerSlug = slugId || (takhallus ? `${createSlug(takhallus)}` : recordId);
+
   return (
-  <Link href={{ pathname: `/Shaer/${name}` }}>
+    <Link href={{ pathname: `/Shaer/${name}` }}>
       <div className="w-[180px] h-[205px] rounded overflow-hidden shadow-[#00000080] shadow-md mx-auto my-1">
         <div
           className="relative bg-cover bg-center"

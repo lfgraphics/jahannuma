@@ -47,7 +47,10 @@ interface Comment {
 
 const Ashaar = ({ params }: { params: Promise<{ name: string }> }) => {
   const resolved = React.use(params);
-  const name = decodeURIComponent(resolved.name).replace("_", " ");
+  // Handle both old format (plain name) and new slug format (name-with-hyphens)
+  const rawName = decodeURIComponent(resolved.name).replace("_", " ");
+  // Convert slug back to normal name by replacing hyphens with spaces
+  const name = rawName.includes("-") ? rawName.replace(/-/g, " ") : rawName;
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);

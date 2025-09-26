@@ -1,52 +1,42 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import Loader from "../../Components/Loader";
-import type { Rubai } from "../../types";
+import Loader from "../../../Components/Loader";
+import type { AirtableRecord } from "../../../types";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableRecord } from "@/hooks/useAirtableRecord";
+import { buildIdFilter } from "@/lib/airtable-utils";
+
+type RubaiFields = {
+  shaer: string;
+  unwan: string;
+  body: string;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  id?: string;
+};
+
+const BASE_ID = "appIewyeCIcAD4Y11";
+const TABLE = "rubai";
 
 export default function Page() {
-  const [data, setData] = useState<Rubai>();
   const params = useParams<{ id: string }>();
   const id = params?.id;
-  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    AOS.init({
-      offset: 50,
-      delay: 0,
-      duration: 300,
-    });
+    AOS.init({ offset: 50, delay: 0, duration: 300 });
+  }, []);
+
+  const { records, isLoading: listLoading, error: listError } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
+    filterByFormula: id ? buildIdFilter(id) : undefined,
+    pageSize: 1,
   });
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const BASE_ID = "appIewyeCIcAD4Y11";
-      const TABLE_NAME = "rubai";
-
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-
-      const response = await fetch(url, { method: "GET", headers });
-      const result = await response.json();
-
-      setData(result.records[0]);
-      console.log(result.records[0]);
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      console.error(`Failed to fetch data: ${error}`);
-    }
-  };
-  useEffect(() => {
-    if (!id) return;
-    fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  const { data: recordData, isLoading: recordLoading, error: recordError } = useAirtableRecord<AirtableRecord<any>>(BASE_ID, TABLE, id || "");
+  const rec = records?.[0] ?? (recordData as AirtableRecord<any> | undefined);
+  const data = useMemo(() => rec?.fields as RubaiFields | undefined, [rec]);
   const visitRubai = () => {
     if (typeof window !== undefined) {
       const referrer = document.referrer || "";
@@ -59,22 +49,24 @@ export default function Page() {
   };
   return (
     <div dir="rtl" className="flex justify-center">
-      {loading ? (
+      {(listLoading && recordLoading) ? (
         <div className="h-[90vh] w-full flex items-center justify-center">
           <Loader />
         </div>
+      ) : (listError && recordError) || !data ? (
+        <div className="p-4 mt-3 w-screen md:w-[400px] text-center">ریکارڈ دستیاب نہیں۔</div>
       ) : (
         <div className="p-4 mt-3 w-full md:w-[400px]">
           <div className="text-center text-2xl">
-            <p>{data?.fields.unwan}</p>
+          <p>{data?.unwan}</p>
           </div>
           <div className="ghazalHead mb-3 text-primary">
-            <Link href={{ pathname: "/Shaer/[name]", query: { name: data?.fields.shaer ?? "" } }}>
-              <h2>{data?.fields.shaer}</h2>
+            <Link href={{ pathname: "/Shaer/[name]", query: { name: data?.shaer ?? "" } }}>
+              <h2>{data?.shaer}</h2>
             </Link>
           </div>
           <div className="text-2xl mb-4 flex flex-col justify-center">
-            {data?.fields.body.split("\n").map((line, index) => (
+            {String(data?.body ?? "").split("\n").map((line, index) => (
               <p
                 data-aos="fade-up"
                 key={index}
@@ -92,11 +84,11 @@ export default function Page() {
               مزید رباعی
             </button>
             <Link
-              href={{ pathname: "/Rubai/shaer/[name]", query: { name: data?.fields.shaer?.replace(" ", "_") ?? "" } }}
+              href={{ pathname: "/Rubai/shaer/[name]", query: { name: data?.shaer?.replace(" ", "_") ?? "" } }}
               className="text-blue-600 underline"
               scroll={false}
             >
-              {data?.fields.shaer} کی مزید رباعی
+              {data?.shaer} کی مزید رباعی
             </Link>
           </div>
         </div>

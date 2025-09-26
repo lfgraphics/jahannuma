@@ -19,13 +19,14 @@ export interface UseAirtableRecordOptions {
     ttl?: number;
     revalidateOnFocus?: boolean;
     revalidateOnReconnect?: boolean;
+    enabled?: boolean; // when false, do not fetch even if recordId is provided
 }
 
 export function useAirtableRecord<T = any>(baseId: string, table: string, recordId?: string | null, options: UseAirtableRecordOptions = {}) {
     const { language } = useLanguage();
-    const key: AirtableRecordKey | null = recordId
-        ? { kind: "record", baseId, table, recordId, lang: language, ttl: options.ttl ?? TTL.fast }
-        : null;
+    const key: AirtableRecordKey | null = (options.enabled === false || !recordId)
+        ? null
+        : { kind: "record", baseId, table, recordId, lang: language, ttl: options.ttl ?? TTL.fast };
     const { data, error, isLoading, mutate } = useSWR<T>(key, airtableSWRFetcher, {
         revalidateOnFocus: options.revalidateOnFocus ?? false,
         revalidateOnReconnect: options.revalidateOnReconnect ?? true,

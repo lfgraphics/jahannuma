@@ -1,7 +1,7 @@
 "use client";
 import useSWRInfinite from "swr/infinite";
 import { useMemo } from "react";
-import { airtableSWRFetcher, TTL, type AirtableListKey } from "@/lib/airtable-fetcher";
+import { airtableSWRFetcher, TTL, type AirtableListKey, buildAirtableCacheKey } from "@/lib/airtable-fetcher";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDebouncedValue } from "./useDebouncedValue";
 
@@ -19,6 +19,7 @@ export interface UseAirtableListOptions {
     revalidateOnFocus?: boolean;
     revalidateOnReconnect?: boolean;
     debounceMs?: number;
+    enabled?: boolean;
 }
 
 export function useAirtableList<T = any>(baseId: string, table: string, params: ListParams = {}, options: UseAirtableListOptions = {}) {
@@ -36,9 +37,12 @@ export function useAirtableList<T = any>(baseId: string, table: string, params: 
         if (params.fields && params.fields.length) p.fields = params.fields;
         if (params.sort && params.sort.length) {
             params.sort.forEach((s, i) => {
-                p[`sort[${i}][field]`] = s.field;
-                if (s.direction) p[`sort[${i}][direction]`] = s.direction;
+            p[`sort[${i}][field]`] = s.field;
+            if (s.direction) p[`sort[${i}][direction]`] = s.direction;
             });
+        } else {
+            // No default sorting - let Airtable return records in natural order
+            // This avoids errors with non-existent fields like "createdTime" or "id"
         }
         if (debouncedSearch) {
             p["search"] = debouncedSearch; // for keying; actual formula to be provided by caller when needed
@@ -48,6 +52,7 @@ export function useAirtableList<T = any>(baseId: string, table: string, params: 
     }, [params.pageSize, debouncedFilter, JSON.stringify(params.fields), JSON.stringify(params.sort), debouncedSearch, JSON.stringify(params.extra), language]);
 
     const getKey = (pageIndex: number, previousPageData: any): AirtableListKey | null => {
+        if (options.enabled === false) return null;
         if (previousPageData && !previousPageData.offset) return null; // reached end
         const offset = pageIndex === 0 ? undefined : previousPageData?.offset;
         return { kind: "list", baseId, table, params: queryParams, lang: language, offset, ttl: options.ttl ?? TTL.list };
@@ -70,10 +75,16 @@ export function useAirtableList<T = any>(baseId: string, table: string, params: 
 
     const loadMore = () => swr.setSize((size) => size + 1);
 
+    // Expose the first page key and its string cache key for optimistic updates
+    const firstPageKey = getKey(0, undefined as any);
+    const cacheKey = firstPageKey ? buildAirtableCacheKey(firstPageKey) : null;
+
     return {
         ...swr,
         records: records as T[],
         hasMore,
         loadMore,
+        swrKey: firstPageKey,
+        cacheKey,
     } as const;
 }

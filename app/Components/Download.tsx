@@ -14,14 +14,21 @@ import { Button } from "../../components/ui/button";
 import PromptDialog from "../../components/ui/prompt-dialog";
 
 // Use the unified domain type
-import type { Shaer } from "../types";
+// Accept a minimal shaer-like shape to avoid strict coupling
+type MinimalDownloadData = {
+  id: string;
+  fields?: {
+    shaer?: string;
+    ghazalHead?: string | string[];
+  };
+};
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getButtonText } from "@/lib/multilingual-texts";
 
 // Define the DynamicDownloadHandler component
 const DynamicDownloadHandler: React.FC<{
-  data: Shaer;
+  data: MinimalDownloadData;
   onCancel: () => void;
 }> = ({ data, onCancel }) => {
   const ghazalHeadLines = useMemo(() => {
@@ -146,7 +153,7 @@ const DynamicDownloadHandler: React.FC<{
                       </React.Fragment>
                     ))}
                   </p>
-                  <div className="m-3 text-xs">{data.fields.shaer}</div>
+                  <div className="m-3 text-xs">{data.fields?.shaer}</div>
                   <div className="absolute text-white text-sm top-3 right-4">
                     جہاں نما
                   </div>

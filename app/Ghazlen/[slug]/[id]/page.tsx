@@ -1,66 +1,40 @@
 "use client";
 import Link from "next/link";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import ComponentsLoader from "@/app/Components/shaer/ComponentsLoader";
 import { toPng } from "html-to-image";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableRecord } from "@/hooks/useAirtableRecord";
+import type { AirtableRecord, GhazlenRecord } from "@/app/types";
+import { buildIdFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
 
-type AirtableRecordFields = {
-  id?: string;
-  ghazalHead?: string;
-  ghazal?: string;
-  shaer?: string;
-  unwan?: string;
-};
-
-type AirtableResponse = {
-  records: Array<{
-    fields: AirtableRecordFields;
-  }>;
-};
+const BASE_ID = "appvzkf6nX376pZy6";
+const TABLE = "Ghazlen";
 
 const Page: React.FC = () => {
-  const [data, setData] = useState<AirtableRecordFields>({});
   const params = useParams();
   const id = params?.id as string | undefined;
-  const [loading, setLoading] = useState<boolean>(true);
   const mainRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     AOS.init({ offset: 50, delay: 0, duration: 300 });
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const BASE_ID = "appvzkf6nX376pZy6";
-        const TABLE_NAME = "Ghazlen";
+  const { records, isLoading: listLoading, error: listError } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
+    filterByFormula: id ? buildIdFilter(id) : undefined,
+    pageSize: 1,
+  });
+  const { data: recordData, isLoading: recordLoading, error: recordError } = useAirtableRecord<AirtableRecord<any>>(BASE_ID, TABLE, id || "");
 
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=({id}='${id}')`;
-        const headers = {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-        } as const;
-
-        const response = await fetch(url, { method: "GET", headers });
-        const result = (await response.json()) as AirtableResponse;
-
-        setData(result.records?.[0]?.fields ?? {});
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        console.error(`Failed to fetch data: ${error}`);
-      }
-    };
-
-    if (id) void fetchData();
-  }, [id]);
-
-  const ghazalLines = useMemo(() => data.ghazal?.split("\n") ?? [], [data.ghazal]);
-  const anaween = useMemo(() => data.unwan?.split("\n") ?? [], [data.unwan]);
+  const rec = (records?.[0] ?? (recordData as AirtableRecord<any> | undefined));
+  const formatted = useMemo(() => (rec ? formatGhazlenRecord(rec) : undefined), [rec]);
+  const data = formatted?.fields as GhazlenRecord | undefined;
+  const ghazalLines = useMemo(() => (Array.isArray(data?.ghazal) ? data?.ghazal : String(data?.ghazal ?? "").split("\n")), [data?.ghazal]);
+  const anaween = useMemo(() => (Array.isArray(data?.unwan) ? data?.unwan : String(data?.unwan ?? "").split("\n")), [data?.unwan]);
 
   const visitGhazlen = () => {
     if (typeof window !== "undefined") {
@@ -168,7 +142,7 @@ const Page: React.FC = () => {
       const finalUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       document.body.appendChild(a);
-      const base = sanitizeFilename(data.ghazalHead || "ghazal");
+  const base = sanitizeFilename((Array.isArray(data?.ghazalHead) ? data?.ghazalHead[0] : String(data?.ghazalHead ?? "")) || "ghazal");
       a.download = `${base}.png`;
       a.href = finalUrl;
       a.target = "_blank";
@@ -187,25 +161,25 @@ const Page: React.FC = () => {
   return (
     <div dir="rtl" className="flex flex-col items-center">
       <div className="w-full sm:w-[400px]">
-        {loading ? (
+        {(listLoading && recordLoading) ? (
           <ComponentsLoader />
         ) : (
           <div id="main" ref={mainRef} className="p-4 mt-3 relative bg-background text-foreground">
             <div className={`ghazalHead text-2xl text-foreground text-center leading-[3rem]`}>
-              {data.ghazalHead?.split("\n").map((line, index) => (
+              {(Array.isArray(data?.ghazalHead) ? data?.ghazalHead : String(data?.ghazalHead ?? "").split("\n")).map((line, index) => (
                 <h2 key={index} className="text-foreground">
                   {line}
                 </h2>
               ))}
             </div>
             <div className="shaer mb-3 text-[#984A02]">
-              <Link href={`/Shaer/${data.shaer}`}>
-                <h2>{data.shaer}</h2>
+              <Link href={`/Shaer/${data?.shaer ?? ""}`}>
+                <h2>{data?.shaer}</h2>
               </Link>
             </div>
             <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
             <div className="text-2xl mb-4 flex flex-col justify-center">
-              {ghazalLines.map((line, index) => (
+              {ghazalLines?.map((line, index) => (
                 <p
                   data-aos="fade-up"
                   key={index}
@@ -216,7 +190,7 @@ const Page: React.FC = () => {
               ))}
             </div>
             <div className="flex gap-5 text-md mb-4 justify-center" data-aos="fade-up">
-              {anaween.map((unwan, index) => (
+              {anaween?.map((unwan, index) => (
                 <Link
                   href={`/Ghazlen/mozu/${unwan}`}
                   className={`unwan text-blue-500 underline cursor-pointer`}
@@ -229,7 +203,7 @@ const Page: React.FC = () => {
             </div>
           </div>
         )}
-        {!loading && (
+        {!(listLoading && recordLoading) && (
           <div className="mazeed flex mb-4 justify-around" data-aos="fade-up">
             <button
               onClick={visitGhazlen}
@@ -242,7 +216,7 @@ const Page: React.FC = () => {
               href={`/Ghazlen/shaer/${(data?.shaer || "").replace(" ", "_")}`}
               className="text-blue-600 underline"
             >
-              {data.shaer} کی مزید غزلیں
+              {data?.shaer} کی مزید غزلیں
             </Link>
             <button
               onClick={downloadImageWithWatermark}

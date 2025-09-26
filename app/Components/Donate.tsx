@@ -1,46 +1,42 @@
 "use client";
-// import { PayPalButton } from "react-paypal-button-v2";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 
-const Donate = () => {
+declare global {
+  interface Window { paypal?: any }
+}
+
+const Donate: React.FC = () => {
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [inputInFocus, setInputInFocus] = useState(false);
+  const [amount, setAmount] = useState<number>(50);
+  const [usdAmount, setUsdAmount] = useState<number>(15);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
 
   const addPaypalScript = () => {
-    console.log("adding paypal script");
-    if (window.paypal) {
+    if (typeof window !== "undefined" && window.paypal) {
       setScriptLoaded(true);
       return;
     }
     const script = document.createElement("script");
     script.src =
       "https://www.paypal.com/sdk/js?client-id=ATtdrMZ28So6sHSQrAs3aD5Ix9GoAAxsZJd0wl6qjmlIM2j58a48ClY0rmk3pP7Pkx_d4HmFYFOAlNL_";
-    console.log("created paypal script");
-    script.type = "text/javascript"; // Corrected the type
+    script.type = "text/javascript";
     script.async = true;
     script.onload = () => setScriptLoaded(true);
     document.body.appendChild(script);
-    console.log("appended paypal script");
   };
 
   useEffect(() => {
     addPaypalScript();
   }, []);
 
-  const [amount, setAmount] = useState(50);
-  const [usdAmount, setUsdAmount] = useState(15);
-  const [exchangeRate, setExchangeRate] = useState(null);
-
   useEffect(() => {
-    // Replace 'YOUR_API_KEY' with the actual API key from ExchangeRate-API
-    // const apiKey = "YOUR_API_KEY";
     const apiUrl = `https://open.er-api.com/v6/latest/INR`;
-
-    axios
-      .get(apiUrl)
+    fetch(apiUrl)
+      .then((res) => res.json())
       .then((response) => {
-        const rate = response.data.rates.USD;
+        const rate = response?.rates?.USD as number | undefined;
+        if (!rate) return;
         setExchangeRate(rate);
         setUsdAmount(amount * rate);
       })
@@ -49,9 +45,9 @@ const Donate = () => {
       });
   }, [amount]);
 
-  const handleAmountSelect = (selectedAmount) => {
+  const handleAmountSelect = (selectedAmount: number) => {
     setAmount(selectedAmount);
-    setUsdAmount(selectedAmount * exchangeRate);
+    if (exchangeRate) setUsdAmount(selectedAmount * exchangeRate);
   };
 
   return (
@@ -88,29 +84,15 @@ const Donate = () => {
               type="number"
               className="ml-2 border p-1"
               placeholder="Other amount"
-              value={inputInFocus ? amount : ""}
+              value={inputInFocus ? amount : ("" as any)}
               onClick={() => setInputInFocus(true)}
               onChange={(e) => handleAmountSelect(Number(e.target.value))}
             />
           </div>
         </div>
-        <p dir="rtl">ہندوستانی روپیہ : {(amount / exchangeRate).toFixed(2)}</p>
+        <p dir="rtl">ہندوستانی روپیہ : {exchangeRate ? (amount / exchangeRate).toFixed(2) : "—"}</p>
       </div>
       {scriptLoaded ? (
-        // <PayPalButton
-        //   amount={amount}
-        //   onSuccess={(details, data) => {
-        //     alert("Transaction completed by " + details.payer.name.given_name);
-
-        //     // OPTIONAL: Call your server to save the transaction
-        //     return fetch("/paypal-transaction-complete", {
-        //       method: "post",
-        //       body: JSON.stringify({
-        //         orderID: data.orderID,
-        //       }),
-        //     });
-        //   }}
-        // />
         <p>Paypal button isn't working shift the code to Paytm checkout</p>
       ) : (
         <span className="">Loading...</span>
@@ -125,7 +107,3 @@ const Donate = () => {
 };
 
 export default Donate;
-{
-  /* <script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID"></script>; */
-}
-// ATtdrMZ28So6sHSQrAs3aD5Ix9GoAAxsZJd0wl6qjmlIM2j58a48ClY0rmk3pP7Pkx_d4HmFYFOAlNL_

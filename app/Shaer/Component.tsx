@@ -97,7 +97,7 @@ const Page: React.FC<{}> = () => {
     "appgWv81tu4RT3uRB",
     "Intro",
     { pageSize: 30, filterByFormula: filterFormula },
-    { debounceMs: 300, ttl: TTL.list }
+    { debounceMs: 1200, ttl: TTL.list }
   );
 
   const { updateRecord } = useAirtableMutation("appgWv81tu4RT3uRB", "Intro");

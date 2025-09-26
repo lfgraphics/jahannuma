@@ -4,7 +4,7 @@ import { Heart, MessageCircle, Share2, Tag, Download } from "lucide-react";
 import Link from "next/link";
 import DynamicDownloadHandler from "./Download";
 // Use a minimal local shape for safety without forcing all callers to match a strict type
-type MinimalShaer = {
+export type MinimalShaer = {
   id: string;
   fields?: {
     shaer?: string;
@@ -13,24 +13,27 @@ type MinimalShaer = {
     likes?: number;
     comments?: number;
     shares?: number;
+    // Some sources embed identifiers in fields
+    id?: string;
+    slugId?: string;
   };
 };
 
-interface ShaerCardProps {
+export interface ShaerCardProps<T extends MinimalShaer = MinimalShaer> {
   page: string;
-  shaerData: any; // Accept any shape from callers; we normalize internally
+  shaerData: T; // strongly type record shape (minimal)
   index: number;
   download: boolean;
-  handleCardClick: (shaerData: any) => void; // Keep bivariant for consumers
+  handleCardClick: (shaerData: T) => void; // Keep specific type
   toggleanaween: (cardId: string | null) => void;
   openanaween: string | null; // Updated type
   handleHeartClick: (
     e: React.MouseEvent<HTMLButtonElement>,
-    shaerData: any,
+    shaerData: T,
     index: number,
     id: string
   ) => void; // Replace Shaer with the actual type
-  handleShareClick: (shaerData: any, index: number) => void; // Replace Shaer with the actual type
+  handleShareClick: (shaerData: T, index: number) => void; // Replace Shaer with the actual type
   openComments: (id: string) => void;
   // Optional state-driven heart control
   heartLiked?: boolean;
@@ -40,7 +43,7 @@ interface ShaerCardProps {
   id?: string;
 }
 
-const DataCard: React.FC<ShaerCardProps> = ({
+const DataCard = <T extends MinimalShaer>({
   page,
   shaerData,
   index,
@@ -55,7 +58,7 @@ const DataCard: React.FC<ShaerCardProps> = ({
   onHeartToggle,
   heartDisabled,
   id,
-}) => {
+}: ShaerCardProps<T>) => {
   const [selectedShaer, setSelectedShaer] = useState<MinimalShaer | null>(null);
 
   const cancelDownload = () => {
@@ -121,7 +124,9 @@ const DataCard: React.FC<ShaerCardProps> = ({
                 </p>
               ))}
               <button className="text-[#984A02] font-semibold m-3">
-                <Link href={{ pathname: `/Nazmen/${shaerData.id}`, query: { id: shaerData.id } }}>پڑھیں۔۔۔</Link>
+                <Link href={{ pathname: `/Nazmen/${encodeURIComponent((shaerData?.fields?.ghazalHead?.[0] || '') as string)}/${encodeURIComponent(shaerData?.id)}` }}>
+                  پڑھیں۔۔۔
+                </Link>
               </button>
               <button
                 id={heartElementId}
@@ -227,22 +232,22 @@ const DataCard: React.FC<ShaerCardProps> = ({
               </span>
               {page !== "rand" && (
                 download ? (
-                  <Link className="text-blue-500 underline" href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwanList[0] ?? "")}` }}>
+                  <Link className="text-blue-500 underline" href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwanList[0] || "")}` }}>
                     {unwanList[0] ?? ""}
                   </Link>
                 ) : (
-                  <Link className="text-blue-500 underline" href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] ?? "")}` }}>
+                  <Link className="text-blue-500 underline" href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] || "")}` }}>
                     {unwanList[0] ?? ""}
                   </Link>
                 )
               )}
               {page == "rand" && (
                 download ? (
-                  <Link className="text-blue-500 underline" href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwanList[0] ?? "nothing")}` }}>
+                  <Link className="text-blue-500 underline" href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwanList[0] || "nothing")}` }}>
                     {unwanList[0] ?? "nothing"}
                   </Link>
                 ) : (
-                  <Link className="text-blue-500 underline" href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] ?? "nothing")}` }}>
+                  <Link className="text-blue-500 underline" href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] || "nothing")}` }}>
                     {unwanList[0] ?? "nothing"}
                   </Link>
                 )
@@ -288,9 +293,13 @@ const DataCard: React.FC<ShaerCardProps> = ({
               onClick={() => handleCardClick(shaerData)}
             >
               {download ? (
-                <Link href={{ pathname: `/Ashaar/${encodeURIComponent(shaerData.id)}` }}>غزل پڑھیں</Link>
+                <Link href={{ pathname: `/Ashaar/${encodeURIComponent(shaerData?.fields?.ghazalHead?.[0] || '')}/${encodeURIComponent(shaerData?.id)}` }}>
+                  غزل پڑھیں
+                </Link>
               ) : (
-                <Link href={{ pathname: `/Ghazlen/${encodeURIComponent(shaerData.id)}` }}>غزل پڑھیں</Link>
+                <Link href={{ pathname: `/Ghazlen/${encodeURIComponent(shaerData?.fields?.ghazalHead?.[0] || '')}/${encodeURIComponent(shaerData?.id)}` }}>
+                  غزل پڑھیں
+                </Link>
               )}
             </button>
             {download && (

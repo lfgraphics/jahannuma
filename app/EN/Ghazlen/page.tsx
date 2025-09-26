@@ -21,6 +21,7 @@ const Ashaar: React.FC<{}> = () => {
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
   const [nameDialogOpen, setNameDialogOpen] = useState(false);
   const [pendingDownloadEl, setPendingDownloadEl] = useState<string | null>(null);
+  const [disableHearts, setDisableHearts] = useState(false);
 
   useEffect(() => {
     // This effect runs when the component mounts
@@ -88,6 +89,8 @@ const Ashaar: React.FC<{}> = () => {
 
   const handleHeartClick = (shaerData: Shaer, index: any, id: string): void => {
     if (typeof window !== "undefined" && window.localStorage) {
+      if (disableHearts) return;
+      setDisableHearts(true);
       try {
         // Get the existing data from Local Storage (if any)
         const existingDataJSON = localStorage.getItem("Ashaar");
@@ -143,6 +146,8 @@ const Ashaar: React.FC<{}> = () => {
           "Error adding/removing data to/from Local Storage:",
           error
         );
+      } finally {
+        setDisableHearts(false);
       }
     }
   };
@@ -334,6 +339,7 @@ const Ashaar: React.FC<{}> = () => {
                       handleHeartClick(shaerData, index, `heart-icon-${index}`)
                     }
                     id={`heart-icon-${index}`}
+                    disabled={disableHearts}
                   >
                     <Heart />
                   </button>

@@ -3,13 +3,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import SkeletonLoader from "../../Components/SkeletonLoader";
+import SkeletonLoader from "../../../Components/SkeletonLoader";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { toast } from "sonner";
 import { TTL } from "@/lib/airtable-fetcher";
 import { useAirtableRecord } from "@/hooks/useAirtableRecord";
+import { Button } from "@/components/ui/button";
+import { RefreshCwIcon } from "lucide-react";
 
 // Dynamically import PdfViewer on the client only to avoid SSR/window issues
 const PdfViewer = dynamic(() => import("@/app/Components/PdfViewer"), { ssr: false });
@@ -37,6 +39,7 @@ interface BookRecordFields {
 
 export default function Page() {
     const [bookUrl, setBookUrl] = useState<string | undefined>(undefined);
+    const [bookKey, setBookKey] = useState<number | undefined>(undefined);
     const params = useParams<{ id: string }>();
     const id = params?.id;
 
@@ -129,7 +132,7 @@ export default function Page() {
             {isLoading && <SkeletonLoader />}
             {!isLoading && (
                 <>
-                    <div className="flex flex-col sm:flex-row p-6">
+                    <div className="flex flex-col sm:flex-row p-6 pb-0">
                         <Link href="#pdf">
                             <div className="photo mb-4">
                                 <img
@@ -145,7 +148,7 @@ export default function Page() {
                         <div className="details" data-aos="fade-up">
                             {record?.fields ? (
                                 <div className="text-lg" data-aos="fade-up">
-                                    <p className="my-2">کتاب کا نام: <span className="text-primary-foreground">{record.fields.bookName}</span></p>
+                                    <p className="my-2">کتاب کا نام: <span className="text-primary">{record.fields.bookName}</span></p>
                                     <p className="my-2">اشاعت: {formatDate(record?.fields?.publishingDate).split("/")[2] || formatDate(record?.fields?.publishingDate).split("/")[0] || record?.fields?.publishingDate}</p>
                                     <p className="my-2">
                                         مصنف:
@@ -176,7 +179,8 @@ export default function Page() {
                             )}
                         </div>
                     </div>
-                    <div id="pdf" className="p-4">
+                    <RefreshCwIcon onClick={() => setBookKey(Math.random() + 1)} className="m-4" />
+                    <div id="pdf" className="p-4" key={bookKey}>
                         {bookUrl && <PdfViewer url={bookUrl} />}
                     </div>
                 </>

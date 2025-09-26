@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -8,661 +8,157 @@ import SkeletonLoader from "../../../Components/SkeletonLoader";
 import RubaiCard from "../../../Components/RubaiCard";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { useAirtableList } from "../../../../hooks/useAirtableList";
+import { useAirtableMutation } from "../../../../hooks/useAirtableMutation";
+import { useAirtableCreate } from "../../../../hooks/useAirtableCreate";
+import type { AirtableRecord, CommentRecord, Rubai } from "../../../../app/types";
+import { buildDataIdFilter, buildShaerFilter, isItemLiked, prepareLikeUpdate, prepareShareUpdate, toggleLikedItem } from "../../../../lib/airtable-utils";
 
-import type { Rubai } from "../../../types";
-
-interface ApiResponse {
-  records: Rubai[];
-  offset: string | null;
-}
-interface Comment {
-  dataId: string | null;
-  commentorName: string | null;
-  timestamp: string;
-  comment: string;
-}
+const RUBAI_BASE = "appIewyeCIcAD4Y11";
+const RUBAI_TABLE = "rubai";
+const COMMENTS_BASE = "appseIUI98pdLBT1K";
+const COMMENTS_TABLE = "comments";
 
 const Page = ({ params }: { params: Promise<{ name: string }> }) => {
   const resolved = React.use(params);
-  const displayName = decodeURIComponent(resolved.name).replace("_", " ");
-  const [selectedCommentId, setSelectedCommentId] = React.useState<
-    string | null
-  >(null);
-  const [pendingLikes, setPendingLikes] = useState<Set<string>>(new Set());
-  const [voffset, setOffset] = useState<string | null>("");
-  const [dataOffset, setDataOffset] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [moreloading, setMoreLoading] = useState(true);
-  const [dataItems, setDataItems] = useState<Rubai[]>([]);
-  const [noMoreData, setNoMoreData] = useState(false);
-  //comments
+  // Handle both old format (plain name) and new slug format (name-with-hyphens)
+  const rawName = decodeURIComponent(resolved.name).replace("_", " ");
+  // Convert slug back to normal name by replacing hyphens with spaces
+  const displayName = rawName.includes("-") ? rawName.replace(/-/g, " ") : rawName;
+
+  const [selectedCommentId, setSelectedCommentId] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [commentorName, setCommentorName] = useState<string | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentRecord[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  // notifications handled by Sonner globally
-  useEffect(() => {
-    AOS.init({
-      offset: 50,
-      delay: 0,
-      duration: 300,
-    });
+
+  useEffect(() => { AOS.init({ offset: 50, delay: 0, duration: 300 }); }, []);
+
+  const { records, isLoading } = useAirtableList<AirtableRecord<any>>(RUBAI_BASE, RUBAI_TABLE, {
+    filterByFormula: buildShaerFilter(displayName),
+    pageSize: 30,
   });
+  const dataItems = records as unknown as Rubai[];
 
-  // function to show toast via Sonner
-  const showToast = (
-    msgtype: "success" | "error" | "invalid",
-    message: string
-  ) => {
-    if (msgtype === "success") toast.success(message);
-    else if (msgtype === "error") toast.error(message);
-    else toast.warning(message);
-  };
-  //function ot scroll to the top
-  // no auto scroll-to-top on load more to avoid jumping
-  // func to fetch and load more data
-  const fetchData = async (offset: string | null) => {
-    try {
-      const BASE_ID = "appIewyeCIcAD4Y11";
-      const TABLE_NAME = "rubai";
-      const pageSize = 30;
-      const headers = {
-        //authentication with environment variable
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-      //airtable fetch url and methods
-      let url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?pageSize=${pageSize}&fields%5B%5D=shaer&&fields%5B%5D=unwan&&fields%5B%5D=body&&fields%5B%5D=likes&&fields%5B%5D=comments&&fields%5B%5D=shares&&fields%5B%5D=id&filterByFormula=({shaer}='${displayName}')`;
-      // &fields%5B%5D=shaer&fields%5B%5D=ghazalHead&fields%5B%5D=ghazal&fields%5B%5D=unwan&fields%5B%5D=likes&fields%5B%5D=comments&fields%5B%5D=shares&fields%5B%5D=id
+  const { updateRecord } = useAirtableMutation(RUBAI_BASE, RUBAI_TABLE);
+  const { createRecord } = useAirtableCreate(COMMENTS_BASE, COMMENTS_TABLE);
 
-      if (offset) {
-        url += `&offset=${offset}`;
-      }
-      const response = await fetch(url, { method: "GET", headers });
-      const result: ApiResponse = await response.json();
-      const records = result.records || [];
-      setTimeout(() => {
-        result.offset && setOffset(result.offset);
-        !result.offset && setNoMoreData(true);
-      }, 3000);
-
-      if (!result.offset && dataOffset == "") {
-        // No more data, disable the button
-        setNoMoreData(true);
-        setLoading(false);
-        setMoreLoading(false);
-      }
-      // formating result to match the mock data type for ease of development
-
-      if (!offset) {
-        setDataItems(records);
-      } else {
-        setDataItems((prevDataItems) => [...prevDataItems, ...records]);
-      }
-      // seting pagination depending on the response
-      setOffset(result.offset);
-      // seting the loading state to false to show the data
-      setLoading(false);
-      setMoreLoading(false);
-    } catch (error) {
-      console.error(`Failed to fetch data: ${error}`);
-      setLoading(false);
-      setMoreLoading(false);
-    }
-  };
-  // fetching more data by load more data button
-  const handleLoadMore = async () => {
-    try {
-      setMoreLoading(true);
-      await fetchData(voffset);
-    } finally {
-      setMoreLoading(false);
-    }
-  };
-  // Fetch the initial set of records
-  useEffect(() => {
-    fetchData(null);
-  }, []);
-  // handeling liking, adding to localstorage and updating on the server
   const handleHeartClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
-    shaerData: Rubai,
-    index: any,
+    item: Rubai,
+    index: number,
     id: string
-  ): Promise<void> => {
-    if (pendingLikes.has(id)) return; // prevent concurrent clicks
-    if (typeof window !== undefined && window.localStorage) {
-      try {
-        setPendingLikes((prev) => new Set(prev).add(id));
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Rubai");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Rubai[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.id === shaerData.id
-        );
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-
-          localStorage.setItem("Rubai", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
-          try {
-            // Make API request to update the record's "Likes" field
-            const updatedLikes = Math.max(0, (shaerData.fields.likes ?? 0) + 1);
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.id !== shaerData.id
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Rubai", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
-          try {
-            // Make API request to update the record's "Likes" field
-            const updatedLikes = Math.max(0, (shaerData.fields.likes ?? 0) - 1);
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(
-              `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
-              {
-                method: "PATCH",
-                headers: updateHeaders,
-                body: JSON.stringify(updateData),
-              }
-            );
-
-            if (updateResponse.ok) {
-              // Update local state to reflect the change in likes
-              setDataItems((prevDataItems) => {
-                const updatedDataItems = [...prevDataItems];
-                const item = updatedDataItems[index];
-                if (item && item.fields) {
-                  item.fields.likes = updatedLikes;
-                }
-                return updatedDataItems;
-              });
-            } else {
-              console.error(`Failed to update likes: ${updateResponse.status}`);
-            }
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-      } finally {
-        setPendingLikes((prev) => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
-        });
-      }
+  ) => {
+    if (typeof window === "undefined" || e.detail !== 1) return;
+    try {
+      const { liked } = toggleLikedItem("Rubai", { id: item.id });
+      const inc = liked ? 1 : -1;
+      await updateRecord([{ id: item.id, fields: prepareLikeUpdate(item.fields?.likes, inc) }]);
+      toast[liked ? "success" : "warning"](liked ? "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔" : "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
+    } catch (error) {
+      toggleLikedItem("Rubai", { id });
+      console.error("Error updating likes:", error);
     }
   };
-  //handeling sahre
-  const handleShareClick = async (
-    shaerData: Rubai,
-    index: number
-  ): Promise<void> => {
+
+  const handleShareClick = async (item: Rubai, index: number) => {
     try {
       if (navigator.share) {
-        navigator
-          .share({
-            title: shaerData.fields.shaer, // Use the shaer's name as the title
-            text:
-              shaerData.fields.body +
-              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
-          })
-
-          .then(() => console.info("Successful share"))
-          .catch((error) => console.error("Error sharing", error));
-        try {
-          // Make API request to update the record's "Likes" field
-          const updatedShares = shaerData.fields.shares + 1;
-          const updateData = {
-            records: [
-              {
-                id: shaerData.id,
-                fields: {
-                  shares: updatedShares,
-                },
-              },
-            ],
-          };
-
-          const updateHeaders = {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-            "Content-Type": "application/json",
-          };
-
-          const updateResponse = await fetch(
-            `https://api.airtable.com/v0/appIewyeCIcAD4Y11/rubai`,
-            {
-              method: "PATCH",
-              headers: updateHeaders,
-              body: JSON.stringify(updateData),
-            }
-          );
-
-          if (updateResponse.ok) {
-            // Update local state to reflect the change in likes
-            setDataItems((prevDataItems) => {
-              const updatedDataItems = [...prevDataItems];
-              const item = updatedDataItems[index];
-              if (item && item.fields) {
-                item.fields.shares = updatedShares;
-              }
-              return updatedDataItems;
-            });
-          } else {
-            console.error(`Failed to update shares: ${updateResponse.status}`);
-          }
-        } catch (error) {
-          console.error("Error updating shres:", error);
-        }
-      } else {
-        console.warn("Web Share API is not supported.");
+        await navigator.share({
+          title: item.fields?.shaer,
+          text: String(item.fields?.body ?? "") + `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `,
+          url: `${window.location.href + "/" + item.id}`,
+        });
       }
+      await updateRecord([{ id: item.id, fields: prepareShareUpdate(item.fields?.shares) }]);
     } catch (error) {
-      // Handle any errors that may occur when using the Web Share API
-      console.error("Error sharing:", error);
+      console.error("Error updating shres:", error);
     }
   };
 
-  //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setNameInput(e.target.value);
+  const handleNameSubmission = () => { if (typeof window !== "undefined") localStorage.setItem("commentorName", nameInput); setCommentorName(nameInput); setShowDialog(false); };
+
+  const { records: commentRecords, isLoading: commentsLoading } = useAirtableList<AirtableRecord<CommentRecord>>(
+    COMMENTS_BASE,
+    COMMENTS_TABLE,
+    { filterByFormula: selectedCommentId ? buildDataIdFilter(selectedCommentId) : undefined, pageSize: 30 }
+  );
   useEffect(() => {
-    if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Rubai");
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          dataItems.forEach((shaerData, index) => {
-            const shaerId = shaerData.fields.id; // Get the id of the current shaerData
+    if (!selectedCommentId) return;
+    const storedName = typeof window !== "undefined" ? localStorage.getItem("commentorName") : null;
+    if (!commentorName && storedName === null) setShowDialog(true);
+    else setCommentorName(commentorName || storedName);
+  }, [selectedCommentId]);
+  useEffect(() => {
+    setCommentLoading(commentsLoading);
+    setComments((commentRecords || []).map((r: AirtableRecord<CommentRecord>) => r.fields) as CommentRecord[]);
+  }, [commentRecords, commentsLoading]);
 
-            // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data: { id: string }) => data.id === shaerId
-            );
-
-            if (storedShaer) {
-              // If shaerId exists in the stored data, update the card's appearance
-              const cardElement = document.getElementById(shaerId);
-              if (cardElement) {
-                cardElement.classList.add("text-red-600");
-              }
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing stored data:", error);
-        }
-      }
-    }
-  }, [dataItems]);
-
-  // name change handeling in name input filed
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNameInput(event.target.value);
-  };
-  // handeling name save on the button click
-  const handleNameSubmission = () => {
-    localStorage.setItem("commentorName", nameInput);
-    setCommentorName(nameInput);
-  };
-  const fetchComments = async (dataId: string) => {
-    const storedName = localStorage.getItem("commentorName");
-    try {
-      setCommentLoading(true);
-      if (!commentorName && storedName === null) {
-        setShowDialog(true);
-      } else {
-        setCommentorName(commentorName || storedName);
-      }
-      const BASE_ID = "appseIUI98pdLBT1K";
-      const TABLE_NAME = "comments";
-      const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=dataId="${dataId}"`;
-      const headers = {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-      };
-
-      const response = await fetch(url, { headers });
-      const result = await response.json();
-
-      const fetchedComments = result.records.map(
-        (record: {
-          fields: {
-            dataId: string;
-            commentorName: string | null;
-            timestamp: string | Date;
-            comment: string;
-          };
-        }) => ({
-          dataId: record.fields.dataId,
-          commentorName: record.fields.commentorName,
-          timestamp: record.fields.timestamp,
-          comment: record.fields.comment,
-        })
-      );
-      setCommentLoading(false);
-      setComments(fetchedComments);
-    } catch (error) {
-      setCommentLoading(false);
-      console.error(`Failed to fetch comments: ${error}`);
-    }
-  };
-  // showing the current made comment in comment box
-  const handleNewCommentChange = (comment: string) => {
-    setNewComment(comment);
-  };
+  const handleNewCommentChange = (comment: string) => setNewComment(comment);
   const handleCommentSubmit = async (dataId: string) => {
-    // Check if the user has provided a name
     if (typeof window !== "undefined") {
       const storedName = localStorage.getItem("commentorName");
-      if (!commentorName && storedName === null) {
-        setShowDialog(true);
-      } else {
-        setCommentorName(commentorName || storedName);
-      }
+      if (!commentorName && storedName === null) setShowDialog(true);
+      else setCommentorName(commentorName || storedName);
     }
-    if (newComment !== "") {
-      try {
-        const BASE_ID = "appseIUI98pdLBT1K";
-        const TABLE_NAME = "comments";
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
-        const headers = {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-          "Content-Type": "application/json",
-        };
-
-        const timestamp = new Date().toISOString();
-        const date = new Date(timestamp);
-
-        const formattedDate = format(date, "MMMM dd, yyyy h:mm", {});
-
-        const commentData = {
-          dataId,
-          commentorName,
-          timestamp: formattedDate,
-          comment: newComment,
-        };
-
-        const response = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ records: [{ fields: commentData }] }),
-        });
-
-        if (response.ok) {
-          // Update the UI with the new comment
-          setComments((prevComments: Comment[]) => [
-            ...prevComments,
-            commentData,
-          ]);
-
-          // Clear the input field
-          setNewComment("");
-          const updatedDataItems = dataItems.map((dataItem) => {
-            if (dataItem.id === dataId) {
-              // If the dataItem has the matching id, update comments field
-              const currentComments = dataItem.fields.comments || 0;
-              return {
-                ...dataItem,
-                fields: {
-                  ...dataItem.fields,
-                  comments: currentComments + 1,
-                },
-              };
-            }
-            return dataItem;
-          });
-
-          const dataItemToUpdate = updatedDataItems.find(
-            (item) => item.id === dataId
-          );
-
-          if (!dataItemToUpdate?.fields.comments) {
-            // If the comments field is not present, add it with the value 1
-            dataItemToUpdate!.fields.comments = 1;
-          }
-          setDataItems((prevDataItems) => {
-            return prevDataItems.map((prevItem) => {
-              if (prevItem.id === dataId) {
-                return {
-                  ...prevItem,
-                  fields: {
-                    ...prevItem.fields,
-                    comments: (prevItem.fields.comments || 0) + 1,
-                  },
-                };
-              } else {
-                return prevItem;
-              }
-            });
-          });
-
-          try {
-            const BASE_ID = "appIewyeCIcAD4Y11";
-            const TABLE_NAME = "Rubai";
-            const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${dataId}`;
-            const headers = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            const updateResponse = await fetch(url, {
-              method: "PATCH",
-              headers,
-              body: JSON.stringify({
-                fields: {
-                  comments: dataItemToUpdate!.fields.comments,
-                },
-              }),
-            });
-
-            if (updateResponse.ok) {
-            } else {
-              console.error(
-                `Failed to update comments on the server: ${updateResponse.status}`
-              );
-            }
-          } catch (error) {
-            console.error("Error updating comments on the server:", error);
-          }
-        } else {
-          console.error(`Failed to add comment: ${response.statusText}`);
-        }
-      } catch (error) {
-        console.error(`Error adding comment: ${error}`);
-      }
+    if (!newComment) return;
+    try {
+      const timestamp = new Date().toISOString();
+      const date = new Date(timestamp);
+      const formattedDate = format(date, "MMMM dd, yyyy h:mm", {});
+      const commentData: CommentRecord = { dataId, commentorName: commentorName || "Anonymous", timestamp: formattedDate, comment: newComment };
+      await createRecord([{ fields: commentData as any }]);
+      setComments((prev) => [...prev, commentData]);
+      setNewComment("");
+      await updateRecord([{ id: dataId, fields: { comments: ((dataItems.find(d => d.id === dataId)?.fields?.comments ?? 0) + 1) as number } }]);
+    } catch (error) {
+      console.error(`Error adding comment: ${error}`);
     }
   };
-  const openComments = (dataId: string) => {
-    setSelectedCommentId(dataId);
-    fetchComments(dataId);
-    // setIsModleOpen(true);
-  };
-  const closeComments = () => {
-    setSelectedCommentId(null);
-  };
+  const openComments = (dataId: string) => { setSelectedCommentId(dataId); };
+  const closeComments = () => { setSelectedCommentId(null); setComments([]); };
 
   return (
     <div>
-      {/* Sonner Toaster is global - no local container needed */}
       {showDialog && (
         <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-[60]">
-          <div
-            dir="rtl"
-            className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white"
-          >
+          <div dir="rtl" className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white">
             <div className="dialog-content">
-              <p className="text-lg font-bold pb-3 border-b">
-                براہ کرم اپنا نام درج کریں
-              </p>
-              <p className="pt-2">
-                {" "}
-                آپ کا نام۔صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے استعمال
-                کریں گے۔
-              </p>
-              <input
-                type="text"
-                id="nameInput"
-                className="mt-2 p-2 border"
-                value={nameInput}
-                onChange={handleNameChange}
-              />
+              <p className="text-lg font-bold pb-3 border-b">براہ کرم اپنا نام درج کریں</p>
+              <p className="pt-2">آپ کا نام۔صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے استعمال کریں گے۔</p>
+              <input type="text" id="nameInput" className="mt-2 p-2 border" value={nameInput} onChange={handleNameChange} />
               <div className=" mt-4">
-                <button
-                  id="submitBtn"
-                  disabled={nameInput.length < 4}
-                  className="px-4 py-2 bg-[#984A02] disabled:bg-gray-500 text-white rounded"
-                  onClick={handleNameSubmission}
-                >
-                  محفوظ کریں
-                </button>
+                <button id="submitBtn" disabled={nameInput.length < 4} className="px-4 py-2 bg-[#984A02] disabled:bg-gray-500 text-white rounded" onClick={handleNameSubmission}>محفوظ کریں</button>
               </div>
             </div>
           </div>
         </div>
       )}
-      <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">
-        {`${displayName} کی رباعی `}
-      </div>
-      {loading && <SkeletonLoader />}
-      {!loading && (
+      <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">{`${displayName} رباعی `}</div>
+      {isLoading && <SkeletonLoader />}
+      {!isLoading && (
         <section>
-          <div
-            id="section"
-            dir="rtl"
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4`}
-          >
+          <div id="section" dir="rtl" className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4`}>
             {dataItems.map((data, index) => (
-              <div data-aos="fade-up">
+              <div data-aos="fade-up" key={data.id}>
                 <RubaiCard
                   RubaiData={data}
                   index={index}
-                  handleHeartClick={handleHeartClick}
+                  handleHeartClick={handleHeartClick as any}
                   openComments={openComments}
-                  handleShareClick={handleShareClick}
-                  isLiking={pendingLikes.has(data.id)}
+                  handleShareClick={handleShareClick as any}
+                  isLiking={false}
                 />
               </div>
             ))}
-            {dataItems.length > 0 && (
-              <div className="flex justify-center text-lg m-5">
-                <button
-                  onClick={handleLoadMore}
-                  disabled={noMoreData}
-                  className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
-                >
-                  {moreloading
-                    ? "لوڈ ہو رہا ہے۔۔۔"
-                    : noMoreData
-                      ? "مزید رباعی نہیں ہیں"
-                      : "مزید رباعی لوڈ کریں"}
-                </button>
-              </div>
-            )}
           </div>
         </section>
       )}
-      {/* //commetcard */}
       {selectedCommentId && !showDialog && (
-        <button
-          // style={{ overflow: "hidden" }}
-          className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 "
-          id="modlBtn"
-          onClick={() => closeComments()}
-        >
+        <button className=" fixed  bottom-[48svh] right-3 z-50 rounded-full  h-10 w-10 pt-2 " id="modlBtn" onClick={() => closeComments()}>
           <XCircle className="text-gray-700 text-3xl hover:text-[#984A02] transition-all duration-500 ease-in-out" />
         </button>
       )}
