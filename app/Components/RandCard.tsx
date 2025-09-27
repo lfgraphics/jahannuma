@@ -33,7 +33,7 @@ interface Comment {
 
 const RandCard: React.FC<{}> = () => {
   // Fetch Ashaar list via SWR and randomly pick one; caching ensures instant loads on revisit
-  const { records, isLoading } = useAirtableList<Shaer>(
+  const { records, isLoading, swrKey } = useAirtableList<Shaer>(
     "appeI2xzzyvUN5bR7",
     "Ashaar",
     { pageSize: 50 },
@@ -49,7 +49,7 @@ const RandCard: React.FC<{}> = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [disableHearts, setDisableHearts] = useState(false);
+  // likes are now handled inside DataCard via useLikeButton
   // toast via sonner
 
   //function ot show toast
@@ -96,17 +96,6 @@ const RandCard: React.FC<{}> = () => {
     "appeI2xzzyvUN5bR7",
     "Ashaar"
   );
-  const [insideBrowser, setInsideBrowser] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Code is running in a browser
-      setInsideBrowser(true);
-    } else {
-      // Code is running on the server
-      setInsideBrowser(false);
-    }
-  }, []);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
 
   const toggleanaween = (cardId: string | null) => {
@@ -116,127 +105,6 @@ const RandCard: React.FC<{}> = () => {
   const visitSher = () => {
     // window.location.href = `/Ghazlen/${randomItem?.fields.id}`;
   };
-  const handleHeartClick = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-    shaerData: Shaer,
-    index: any,
-    id: string
-  ): Promise<void> => {
-    toggleanaween(null);
-    if (typeof window !== 'undefined' && window.localStorage && e.detail === 1) {
-      if (disableHearts) return;
-      setDisableHearts(true);
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ashaar");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Shaer[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.id === shaerData.id
-        );
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-
-          localStorage.setItem("Ashaar", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
-          console.log(
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
-          );
-          try {
-            // Make API request to update the record's "Likes" field
-            const updatedLikes = shaerData.fields.likes + 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            await updateAshaar([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.id !== shaerData.id
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Ashaar", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
-          console.log("آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
-          try {
-            // Make API request to update the record's "Likes" field
-            const updatedLikes = shaerData.fields.likes - 1;
-            const updateData = {
-              records: [
-                {
-                  id: shaerData.id,
-                  fields: {
-                    likes: updatedLikes,
-                  },
-                },
-              ],
-            };
-
-            const updateHeaders = {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_Api_Token}`,
-              "Content-Type": "application/json",
-            };
-
-            await updateAshaar([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error("Error adding/removing data to/from Local Storage:", error);
-      } finally {
-        setDisableHearts(false);
-      }
-    }
-  };
-
   const fetchComments = async (dataId: string) => {
     const storedName = localStorage.getItem("commentorName");
     try {
@@ -332,12 +200,17 @@ const RandCard: React.FC<{}> = () => {
             shaerData={randomItem}
             index={0}
             handleCardClick={visitSher}
+            baseId="appeI2xzzyvUN5bR7"
+            table="Ashaar"
+            storageKey="Ashaar"
             toggleanaween={toggleanaween}
             openanaween={openanaween}
-            handleHeartClick={handleHeartClick}
             handleShareClick={handleShareClick}
             openComments={openComments}
-            heartDisabled={disableHearts}
+            swrKey={swrKey}
+            onLikeChange={() => {
+              // placeholder analytics
+            }}
           />
         </div>
       )}

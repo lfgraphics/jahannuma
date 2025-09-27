@@ -103,7 +103,7 @@ const Ashaar: React.FC<{}> = () => {
     const safeQ = q.replace(/\\/g, "\\\\").replace(/'/g, "''");
     return `OR( FIND('${safeQ}', LOWER({shaer})), FIND('${safeQ}', LOWER({ghazalHead})), FIND('${safeQ}', LOWER({ghazal})), FIND('${safeQ}', LOWER({unwan})) )`;  }, [searchText]);
 
-  const { records, isLoading, hasMore, loadMore } = useAirtableList<Shaer>(
+  const { records, isLoading, hasMore, loadMore, swrKey } = useAirtableList<Shaer>(
     "appvzkf6nX376pZy6",
     "Ghazlen",
     { pageSize: 30, filterByFormula: filterFormula },
@@ -162,100 +162,7 @@ const Ashaar: React.FC<{}> = () => {
     setSearchText("");
     setShowIcons(false);
   };
-  // handeling liking, adding to localstorage and updating on the server
-  const handleHeartClick = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-    shaerData: Shaer,
-    index: any,
-    id: string
-  ): Promise<void> => {
-    toggleanaween(null);
-  if (typeof window !== 'undefined' && window.localStorage && e.detail === 1) {
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ghazlen");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Shaer[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.id === shaerData.id
-        );
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-
-          localStorage.setItem("Ghazlen", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
-          try {
-            const updatedLikes = shaerData.fields.likes + 1;
-            await updateGhazlen([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
-            setDataItems((prev) => {
-              const copy = [...prev];
-              const item = copy[index];
-              if (item?.fields) item.fields.likes = updatedLikes;
-              return copy;
-            });
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.id !== shaerData.id
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Ghazlen", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
-          try {
-            const updatedLikes = shaerData.fields.likes - 1;
-            await updateGhazlen([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
-            setDataItems((prev) => {
-              const copy = [...prev];
-              const item = copy[index];
-              if (item?.fields) item.fields.likes = updatedLikes;
-              return copy;
-            });
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-      }
-    }
-  };
+  // Likes handled inside DataCard; legacy no-op removed
   //handeling sahre
   const handleShareClick = async (
     shaerData: Shaer,
@@ -317,33 +224,7 @@ const Ashaar: React.FC<{}> = () => {
     latestDataRef.current = dataItems;
   }, [dataItems]);
 
-  // On mount and when list length changes, mark hearts based on localStorage in a batched, efficient way
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      const storedData = localStorage.getItem("Ghazlen");
-      if (!storedData) return;
-      try {
-        const parsed: Array<{ id: string }> = JSON.parse(storedData);
-        const likedIds = new Set(parsed.map((d) => d.id));
-        const items = latestDataRef.current;
-
-        // Batch DOM updates: loop once and update classes
-        for (const item of items) {
-          const el = document.getElementById(item.id);
-          if (!el) continue;
-          if (likedIds.has(item.id)) {
-            el.classList.add("text-red-600");
-            el.classList.remove("text-gray-500");
-          } else {
-            el.classList.remove("text-red-600");
-            el.classList.add("text-gray-500");
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing stored data:", error);
-      }
-    }
-  }, [dataItems.length]);
+  // Removed legacy localStorage-driven heart coloring; like state is owned by card
   //toggling anaween box
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
@@ -526,7 +407,7 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       )}
-      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
           <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
             <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
@@ -581,11 +462,17 @@ const Ashaar: React.FC<{}> = () => {
                   shaerData={shaerData}
                   index={index}
                   handleCardClick={handleCardClick}
+                  baseId="appvzkf6nX376pZy6"
+                  table="Ghazlen"
+                  storageKey="Ghazlen"
                   toggleanaween={toggleanaween}
                   openanaween={openanaween}
-                  handleHeartClick={handleHeartClick}
                   handleShareClick={handleShareClick}
                   openComments={openComments}
+                  swrKey={swrKey}
+                  onLikeChange={({ id, liked, likes }) => {
+                    // placeholder analytics
+                  }}
                 />
               </div>
             ))}

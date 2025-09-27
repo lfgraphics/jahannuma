@@ -1,8 +1,10 @@
+"use client";
 // ShaerCard.tsx
 import React, { useMemo, useState } from "react";
 import { Heart, MessageCircle, Share2, Tag, Download } from "lucide-react";
 import Link from "next/link";
 import DynamicDownloadHandler from "./Download";
+import { useLikeButton } from "@/hooks/useLikeButton";
 // Use a minimal local shape for safety without forcing all callers to match a strict type
 export type MinimalShaer = {
   id: string;
@@ -24,10 +26,18 @@ export interface ShaerCardProps<T extends MinimalShaer = MinimalShaer> {
   shaerData: T; // strongly type record shape (minimal)
   index: number;
   download: boolean;
+  // Optional built-in like integration (when provided, enables internal like handling)
+  baseId?: string;
+  table?: string;
+  storageKey?: string;
+  // SWR key for precise cache invalidation when internal like is enabled
+  swrKey?: any;
+  // Optional analytics callback invoked after like toggles
+  onLikeChange?: (args: { id: string; liked: boolean; likes: number }) => void;
   handleCardClick: (shaerData: T) => void; // Keep specific type
   toggleanaween: (cardId: string | null) => void;
   openanaween: string | null; // Updated type
-  handleHeartClick: (
+  handleHeartClick?: (
     e: React.MouseEvent<HTMLButtonElement>,
     shaerData: T,
     index: number,
@@ -49,6 +59,10 @@ const DataCard = <T extends MinimalShaer>({
   index,
   download,
   handleCardClick,
+  baseId,
+  table,
+  storageKey,
+  swrKey,
   toggleanaween,
   openanaween,
   handleHeartClick,
@@ -58,6 +72,7 @@ const DataCard = <T extends MinimalShaer>({
   onHeartToggle,
   heartDisabled,
   id,
+  onLikeChange,
 }: ShaerCardProps<T>) => {
   const [selectedShaer, setSelectedShaer] = useState<MinimalShaer | null>(null);
 
@@ -84,7 +99,30 @@ const DataCard = <T extends MinimalShaer>({
     return u.split("\n").filter(Boolean);
   }, [sd]);
 
-  const heartElementId = id || `${sd?.id}`;
+  const recordId = sd?.id || sd?.fields?.id || "";
+  const heartElementId = id || recordId;
+
+  // Built-in like logic: enabled only if baseId/table/storageKey and record id are available
+  const likeEnabled = !!(baseId && table && storageKey && recordId);
+  const like = likeEnabled
+    ? useLikeButton({
+        baseId,
+        table,
+        storageKey,
+        recordId,
+        currentLikes: (sd?.fields?.likes as number | undefined) ?? 0,
+        swrKey,
+        onChange: onLikeChange,
+      })
+    : null;
+  const resolvedHeartLiked = like ? like.isLiked : !!heartLiked;
+  const resolvedHeartDisabled = like ? like.isDisabled : !!heartDisabled;
+  const onHeart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (like) return like.handleLikeClick();
+    if (onHeartToggle) return onHeartToggle(e);
+  if (handleHeartClick) return handleHeartClick(e, shaerData, index, recordId);
+    // default: if internal like not enabled and no external handler, do nothing
+  };
 
   return (
     <>
@@ -130,16 +168,13 @@ const DataCard = <T extends MinimalShaer>({
               </button>
               <button
                 id={heartElementId}
-                className={`m-3 transition-all duration-500 ${heartLiked ? "text-red-600" : "text-gray-500"}`}
-                onClick={(e) =>
-                  onHeartToggle
-                    ? onHeartToggle(e)
-                    : handleHeartClick(e, shaerData, index, heartElementId)
-                } disabled={heartDisabled}
+                className={`m-3 transition-all duration-500 ${resolvedHeartLiked ? "text-red-600" : "text-gray-500"}`}
+                onClick={onHeart}
+                disabled={resolvedHeartDisabled}
               >
                 <Heart className="inline" fill="currentColor" size={16} />{" "}
                 <span id="likescount" className="text-gray-500 text-sm">
-                  {shaerData?.fields?.likes ?? 0}
+                  {like ? like.likesCount : (shaerData?.fields?.likes ?? 0)}
                 </span>
               </button>
               <button
@@ -260,17 +295,13 @@ const DataCard = <T extends MinimalShaer>({
           <div className="flex items-end text-center w-full">
             <button
               id={heartElementId}
-              className={`m-3 flex gap-1 items-center transition-all duration-500 ${heartLiked ? "text-red-600" : "text-gray-500"}`}
-              onClick={(e) =>
-                onHeartToggle
-                  ? onHeartToggle(e)
-                  : handleHeartClick(e, shaerData, index, `${shaerData?.id}`)
-              }
-              disabled={heartDisabled}
+              className={`m-3 flex gap-1 items-center transition-all duration-500 ${resolvedHeartLiked ? "text-red-600" : "text-gray-500"}`}
+              onClick={onHeart}
+              disabled={resolvedHeartDisabled}
             >
               <Heart className="inline" fill="currentColor" size={16} />{" "}
               <span id="likescount" className="text-gray-500 text-sm">
-                {shaerData?.fields?.likes ?? 0}
+                {like ? like.likesCount : (shaerData?.fields?.likes ?? 0)}
               </span>
             </button>
             <button className="m-3 flex items-center gap-1" onClick={() => openComments(shaerData?.id)}>

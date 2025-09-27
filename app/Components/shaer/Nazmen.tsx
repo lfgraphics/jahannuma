@@ -3,11 +3,11 @@ import Link from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
 import { Heart, Share2 } from "lucide-react";
-import { toast } from "sonner";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import type { AirtableRecord, NazmenRecord } from "@/app/types";
-import { buildShaerFilter, formatNazmenRecord, isItemLiked, toggleLikedItem, prepareLikeUpdate, prepareShareUpdate, generateListCacheKey } from "@/lib/airtable-utils";
+import { buildShaerFilter, formatNazmenRecord, prepareShareUpdate } from "@/lib/airtable-utils";
+import { useLikeButton } from "@/hooks/useLikeButton";
 
 interface Props { takhallus: string }
 
@@ -17,7 +17,7 @@ const TABLE = "nazmen";
 const Nazmen: React.FC<Props> = ({ takhallus }) => {
   const [loading, setLoading] = useState(true);
 
-  const { records, isLoading } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
+  const { records, isLoading, swrKey } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
     filterByFormula: buildShaerFilter(takhallus),
     pageSize: 30,
   });
@@ -25,17 +25,27 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
   useEffect(() => { setLoading(isLoading); }, [isLoading]);
 
   const { updateRecord } = useAirtableMutation(BASE_ID, TABLE);
-
-  const handleHeartClick = async (shaerData: AirtableRecord<NazmenRecord>, index: number, id: string) => {
-    if (typeof window === "undefined") return;
-    try {
-      const { liked } = toggleLikedItem("Nazmen", { id: shaerData.id });
-      const inc = liked ? 1 : -1;
-      await updateRecord([{ id: shaerData.id, fields: prepareLikeUpdate(shaerData.fields.likes, inc) }]);
-    } catch (e) {
-      toggleLikedItem("Nazmen", { id });
-      console.error(e);
-    }
+  const LikeBtn: React.FC<{ rec: AirtableRecord<NazmenRecord> }> = ({ rec }) => {
+    const like = useLikeButton({
+      baseId: BASE_ID,
+      table: TABLE,
+      storageKey: "Nazmen",
+      recordId: rec.id,
+      currentLikes: rec.fields.likes ?? 0,
+      swrKey,
+    });
+    return (
+      <button
+        id={rec.id}
+        className={`btn ml-5 ${like.isLiked ? "text-red-600" : "text-gray-500"} transition-all duration-300 text-lg`}
+        onClick={() => like.handleLikeClick()}
+        disabled={like.isDisabled}
+        aria-disabled={like.isDisabled}
+      >
+        <Heart className="cursor-pointer" size={18} />
+        <span className="ml-1 text-sm">{like.likesCount}</span>
+      </button>
+    );
   };
 
   const handleShareClick = async (shaerData: AirtableRecord<NazmenRecord>, index: number) => {
@@ -56,6 +66,9 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
   return (
     <div>
       {loading && <ComponentsLoader />}
+      {!loading && items.length === 0 && (
+        <div className="h-[30vh] grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
+      )}
       {items.map((shaerData, index) => (
         <div
           key={shaerData.id}
@@ -74,13 +87,7 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
               </Link>
             </div>
             <div className="flex items-center justify-center">
-              <button
-                id={`${shaerData.id}`}
-                className={`btn ml-5 ${isItemLiked("Nazmen", shaerData.id) ? "text-red-600" : "text-gray-500"} transition-all duration-500 text-lg`}
-                onClick={() => handleHeartClick(shaerData, index, `${shaerData.id}`)}
-              >
-                <Heart className="cursor-pointer" size={18} />
-              </button>
+              <LikeBtn rec={shaerData as any} />
               <button className="m-3 flex items-center justify-center gap-2" onClick={() => handleShareClick(shaerData, index)}>
                 <Share2 fill="gray" color="gray" />
                 <span>{`${shaerData.fields?.shares ?? 0}`}</span>

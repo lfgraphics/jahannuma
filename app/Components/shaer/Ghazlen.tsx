@@ -4,10 +4,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
 import { Heart } from "lucide-react";
 import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import type { AirtableRecord, GhazlenRecord } from "@/app/types";
-import { buildShaerFilter, formatGhazlenRecord, isItemLiked, toggleLikedItem, prepareLikeUpdate, generateListCacheKey } from "@/lib/airtable-utils";
-import { buildAirtableCacheKey } from "@/lib/airtable-fetcher";
+import { buildShaerFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
+import { useLikeButton } from "@/hooks/useLikeButton";
 
 interface Props { takhallus: string }
 
@@ -16,9 +15,8 @@ const TABLE = "Ghazlen";
 
 const Ghazlen: React.FC<Props> = ({ takhallus }) => {
   const [loading, setLoading] = useState(true);
-  const [disableHearts, setDisableHearts] = useState(false);
 
-  const { records, isLoading } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
+  const { records, isLoading, swrKey } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
     filterByFormula: buildShaerFilter(takhallus),
     pageSize: 30,
   });
@@ -27,39 +25,35 @@ const Ghazlen: React.FC<Props> = ({ takhallus }) => {
 
   useEffect(() => { setLoading(isLoading); }, [isLoading]);
 
-  // Like mutation handler
-  const { updateRecord } = useAirtableMutation(BASE_ID, TABLE);
-
-  const handleHeartClick = async (shaerData: AirtableRecord<GhazlenRecord>, index: number, id: string) => {
-    if (typeof window === "undefined") return;
-    try {
-      setDisableHearts(true);
-      const storageKey = "Ghazlen";
-      const { liked } = toggleLikedItem(storageKey, { id: shaerData.id });
-      const increment = liked ? 1 : -1;
-      const updated = prepareLikeUpdate(shaerData.fields.likes, increment);
-
-      // Optimistic update by revalidating list key
-      const listKey = generateListCacheKey(BASE_ID, TABLE, { filterByFormula: buildShaerFilter(takhallus), pageSize: 30 });
-      await updateRecord([{ id: shaerData.id, fields: updated }], {
-        optimistic: false,
-        affectedKeys: [
-          (key: any) => typeof key === "object" && key?.baseId === BASE_ID && key?.table === TABLE,
-          listKey,
-        ],
-      });
-    } catch (e) {
-      // rollback like in localStorage by toggling again
-      toggleLikedItem("Ghazlen", { id });
-      console.error(e);
-    } finally {
-      setDisableHearts(false);
-    }
+  // Inline like button via centralized hook
+  const LikeBtn: React.FC<{ rec: AirtableRecord<GhazlenRecord> }> = ({ rec }) => {
+    const like = useLikeButton({
+      baseId: BASE_ID,
+      table: TABLE,
+      storageKey: "Ghazlen",
+      recordId: rec.id,
+      currentLikes: rec.fields.likes ?? 0,
+      swrKey,
+    });
+    return (
+      <button
+        id={rec.id}
+        disabled={like.isDisabled}
+        className={`btn ml-5 transition-all duration-300 text-lg cursor-pointer flex items-center justify-center gap-2 ${like.isLiked ? "text-red-600" : "text-gray-500"}`}
+        onClick={() => like.handleLikeClick()}
+      >
+        <Heart />
+        <span className="text-sm text-foreground">{like.likesCount}</span>
+      </button>
+    );
   };
 
   return (
     <div>
       {loading && <ComponentsLoader />}
+      {!loading && dataItems.length === 0 && (
+        <div className="h-[30vh] grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
+      )}
       {dataItems.map((shaerData, index) => {
         return (
           <div
@@ -81,15 +75,7 @@ const Ghazlen: React.FC<Props> = ({ takhallus }) => {
                   ))}
                 </Link>
               </div>
-              <button
-                id={`${shaerData.id}`}
-                disabled={disableHearts}
-                className={`btn ml-5 ${isItemLiked("Ghazlen", shaerData.id) ? "text-red-600" : "text-gray-500"} transition-all duration-500 text-lg cursor-pointer flex items-center justify-center gap-2`}
-                onClick={() => handleHeartClick(shaerData, index, `${shaerData.id}`)}
-              >
-                <Heart fill="gray" color="gray" />
-                <span>{`${shaerData.fields?.likes ?? 0}`}</span>
-              </button>
+              <LikeBtn rec={shaerData as any} />
             </div>
           </div>
         );

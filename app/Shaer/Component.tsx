@@ -79,7 +79,7 @@ const Page: React.FC<{}> = () => {
 
   useEffect(() => {
     AOS.init({
-      offset: 50,
+      offset: 20,
       delay: 0,
       duration: 300,
     });
@@ -100,7 +100,7 @@ const Page: React.FC<{}> = () => {
     { debounceMs: 1200, ttl: TTL.list }
   );
 
-  const { updateRecord } = useAirtableMutation("appgWv81tu4RT3uRB", "Intro");
+  // const { updateRecord } = useAirtableMutation("appgWv81tu4RT3uRB", "Intro");
 
   function scrollToTop() {
     if (typeof window !== 'undefined') {
@@ -136,134 +136,7 @@ const Page: React.FC<{}> = () => {
     setNoMoreData(!hasMore);
     setMoreLoading(false);
   }, [records, isLoading, hasMore]);
-  const showToast = (
-    msgtype: "success" | "error" | "invalid",
-    message: string
-  ) => {
-    if (msgtype === "success") toast.success(message);
-    else if (msgtype === "error") toast.error(message);
-    else toast.warning(message);
-  };
 
-  const handleHeartClick = async (
-    //for reference of double click to like
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    shaerData: FormattedRecord,
-    index: any,
-    id: string
-  ): Promise<void> => {
-    //for reference of double click to like: these are to be completed
-    console.log("Event object:", e.detail);
-
-    // toggleanaween(null);
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Shura");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: FormattedRecord[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.id === shaerData.id
-        );
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-
-          localStorage.setItem("Shura", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "success",
-            "آپ کی پروفائل میں یہ شاعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
-          console.log(
-            "آپ کی پروفائل میں یہ شاعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
-          );
-          try {
-            const updatedLikes = shaerData.fields.likes + 1;
-            await updateRecord(
-              [
-                { id: shaerData.id, fields: { likes: updatedLikes } },
-              ],
-              {
-                optimistic: true,
-                updater: (current: any) => {
-                  // No direct SWR key provided here; local state adjusted below as well
-                  return current;
-                },
-              }
-            );
-            setData((prevDataItems) => {
-              const updatedDataItems = [...prevDataItems];
-              const item = updatedDataItems[index];
-              if (item && item.fields) item.fields.likes = updatedLikes;
-              return updatedDataItems;
-            });
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.id !== shaerData.id
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Shura", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "invalid",
-            "آپ کی پروفائل سے یہ شاعر کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
-          console.log(
-            "آپ کی پروفائل سے یہ شاعر کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
-          try {
-            const updatedLikes = shaerData.fields.likes - 1;
-            await updateRecord(
-              [
-                { id: shaerData.id, fields: { likes: updatedLikes } },
-              ],
-              { optimistic: true }
-            );
-            setData((prevDataItems) => {
-              const updatedDataItems = [...prevDataItems];
-              const item = updatedDataItems[index];
-              if (item && item.fields) item.fields.likes = updatedLikes;
-              return updatedDataItems;
-            });
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-      }
-    }
-  };
   useEffect(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
       const storedData = localStorage.getItem("Shura");
@@ -367,7 +240,7 @@ const Page: React.FC<{}> = () => {
       {!loading && (
         <>
           <div className="flex flex-col gap-4">
-            <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
+            <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
               <div className="filter-btn basis-[75%] text-center flex">
                 <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
                   <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
@@ -395,10 +268,10 @@ const Page: React.FC<{}> = () => {
                 </div>
               </div>
             </div>
-            <div id="section" dir="rtl" className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sticky top-[128px] m-3`}>
+            <div id="section" dir="rtl" className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[128px] m-3`}>
               {data.map((item, index) => (
                 <div className="relative" key={index} data-aos="fade-up">
-                  <div
+                  {/* <div
                     className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-[9px] -right-3 rounded-tr-sm w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 backdrop-blur-sm z-10"
                     onClick={(e) =>
                       handleHeartClick(e, item, index, `${item.id}`)
@@ -407,7 +280,7 @@ const Page: React.FC<{}> = () => {
                   >
                     <Heart className="text-xl ml-3" fill="#6b7280" />
                     <span className="text-foreground">{`${item.fields?.likes}`}</span>
-                  </div>
+                  </div> */}
                   <Card data={item} />
                 </div>
               ))}

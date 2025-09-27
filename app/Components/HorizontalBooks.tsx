@@ -54,7 +54,7 @@ interface EBooksType {
 }
 
 const HorizontalBooks = () => {
-  const { records, isLoading } = useAirtableList<EBooksType>(
+  const { records, isLoading, swrKey } = useAirtableList<EBooksType>(
     "appXcBoNMGdIaSUyA",
     "E-Books",
     { pageSize: 10 },
@@ -74,7 +74,7 @@ const HorizontalBooks = () => {
           >
             {data.map((item, index) => (
               <div className="relative" key={index}>
-                <Card data={item} />
+                <Card data={item} showLikeButton baseId="appXcBoNMGdIaSUyA" table="E-Books" storageKey="Books" swrKey={swrKey} />
               </div>
             ))}
             <Link className=" text-white text-4xl font-bold" href={"/E-Books"}>

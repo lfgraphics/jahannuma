@@ -3,12 +3,10 @@ import Link from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
 import { Heart } from "lucide-react";
-import { toast } from "sonner";
 import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import type { AirtableRecord, AshaarRecord } from "@/app/types";
-import { buildShaerFilter, formatAshaarRecord, getLikedItems, toggleLikedItem, showMutationToast } from "@/lib/airtable-utils";
-import { updatePagedListField } from "@/lib/swr-updater";
+import { buildShaerFilter, formatAshaarRecord } from "@/lib/airtable-utils";
+import { useLikeButton } from "@/hooks/useLikeButton";
 
 interface Props { takhallus: string }
 
@@ -20,57 +18,44 @@ const Ashaar: React.FC<Props> = ({ takhallus }) => {
     filterByFormula: buildShaerFilter(takhallus),
     pageSize: 30,
   });
-  const { updateRecord } = useAirtableMutation(BASE_ID, TABLE);
 
   // Format records for UI
   const dataItems: AirtableRecord<AshaarRecord>[] = useMemo(() => {
     return (records || []).map((r: AirtableRecord<AshaarRecord>) => formatAshaarRecord(r));
   }, [records]);
 
-  // liked map derived from localStorage
-  const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
-  const [disableHearts, setDisableHearts] = useState(false);
-  useEffect(() => {
-    try {
-      const saved = getLikedItems<{ id: string }>("Ashaar");
-      const map: Record<string, boolean> = {};
-      for (const item of dataItems) map[item.id] = saved.some((d: { id: string }) => d.id === item.id);
-      setLikedMap(map);
-    } catch {}
-  }, [dataItems]);
-
-  // Use shared toast helper
-
-  const handleHeartClick = async (shaerData: AirtableRecord<AshaarRecord>, index: number, id: string) => {
-    const prev = likedMap[id];
-    if (disableHearts) return;
-    setDisableHearts(true);
-    try {
-      const { liked } = toggleLikedItem("Ashaar", shaerData);
-      setLikedMap((prevMap) => ({ ...prevMap, [id]: liked }));
-      showMutationToast(liked ? "success" : "warning", liked ? "آپ کی پروفائل میں یہ شعر کامیابی کے ساتھ جوڑ دی گئی ہے۔" : "آپ کی پروفائل سے یہ شعر کامیابی کے ساتھ ہٹا دی گئی ہے۔");
-
-      const inc = liked ? 1 : -1;
-      const nextLikes = (shaerData.fields.likes ?? 0) + inc;
-      await updateRecord([
-        { id: shaerData.id, fields: { likes: nextLikes } },
-      ], {
-        optimistic: true,
-        affectedKeys: swrKey ? [swrKey] : undefined,
-        updater: (current: any) => updatePagedListField(current, shaerData.id, 'likes', inc),
-      });
-    } catch (e) {
-      setLikedMap((prevMap) => ({ ...prevMap, [id]: prev }));
-      toast.error("لائیک اپڈیٹ میں مسئلہ آیا۔");
-    } finally {
-      setDisableHearts(false);
-    }
+  // Inline like button using centralized hook
+  const LikeBtn: React.FC<{ rec: AirtableRecord<AshaarRecord> }> = ({ rec }) => {
+    const like = useLikeButton({
+      baseId: BASE_ID,
+      table: TABLE,
+      storageKey: "Ashaar",
+      recordId: rec.id,
+      currentLikes: rec.fields.likes ?? 0,
+      swrKey,
+    });
+    return (
+      <button
+        id={rec.id}
+        className={`ml-5 transition-all duration-300 text-lg flex items-center gap-1 ${like.isLiked ? "text-red-600" : "text-gray-500"}`}
+        onClick={() => like.handleLikeClick()}
+        disabled={like.isDisabled}
+        aria-disabled={like.isDisabled}
+        title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+      >
+        <Heart size={22} />
+        <span className="text-sm text-foreground">{like.likesCount}</span>
+      </button>
+    );
   };
 
   return (
     <div>
       {isLoading && <ComponentsLoader />}
-  {dataItems.map((shaerData: AirtableRecord<AshaarRecord>, index: number) => {
+      {!isLoading && dataItems.length === 0 && (
+        <div className="h-[30vh] grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
+      )}
+      {dataItems.map((shaerData: AirtableRecord<AshaarRecord>, index: number) => {
         // rely on formatted outputs: ghazalHead is string[] via formatAshaarRecord
         const head: string[] = shaerData.fields.ghazalHead || [];
         return (
@@ -89,14 +74,7 @@ const Ashaar: React.FC<Props> = ({ takhallus }) => {
                   ))}
                 </Link>
               </div>
-              <button
-                id={`${shaerData.id}`}
-                className={`btn ml-5 transition-all duration-500 text-lg ${likedMap[shaerData.id] ? "text-red-600" : "text-gray-500"}`}
-                onClick={() => handleHeartClick(shaerData, index, `${shaerData.id}`)}
-                disabled={disableHearts}
-              >
-                <Heart size={24} />
-              </button>
+              <LikeBtn rec={shaerData} />
             </div>
           </div>
         );

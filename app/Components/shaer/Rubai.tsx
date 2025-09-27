@@ -69,6 +69,9 @@ const Rubai: React.FC<Props> = ({ takhallus }) => {
       {isLoading && <ComponentsLoader />}
       {!isLoading && (
         <div id="section" dir="rtl" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3">
+          {dataItems.length === 0 && (
+            <div className="col-span-full h-[30vh] grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
+          )}
           {dataItems.map((item, index) => (
             <div className="relative" key={item.id}>
               <RubaiCard

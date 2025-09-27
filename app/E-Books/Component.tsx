@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import Card from "../Components/BookCard";
-import { Heart, House, Search, X } from "lucide-react";
+import { House, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
@@ -74,7 +74,6 @@ const Page: React.FC<{}> = () => {
   const [voffset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   // toast via sonner
-  const [disableHearts, setDisableHearts] = useState(false);
 
   useEffect(() => {
     AOS.init({
@@ -90,7 +89,7 @@ const Page: React.FC<{}> = () => {
     const escaped = q.replace(/'/g, "\\'");
     return `OR( FIND('${escaped}', LOWER({bookName})), FIND('${escaped}', LOWER({enBookName})), FIND('${escaped}', LOWER({hiBookName})), FIND('${escaped}', LOWER({desc})), FIND('${escaped}', LOWER({enDesc})), FIND('${escaped}', LOWER({hiDesc})), FIND('${escaped}', LOWER({publishingDate})), FIND('${escaped}', LOWER({writer})), FIND('${escaped}', LOWER({enWriter})), FIND('${escaped}', LOWER({hiWriter})) )`;
   }, [searchText]);
-  const { records, isLoading, hasMore, loadMore } = useAirtableList<EBooksType>(
+  const { records, isLoading, hasMore, loadMore, swrKey } = useAirtableList<EBooksType>(
     "appXcBoNMGdIaSUyA",
     "E-Books",
     { pageSize: 30, filterByFormula: filterFormula },
@@ -123,145 +122,7 @@ const Page: React.FC<{}> = () => {
     setMoreLoading(false);
     setNoMoreData(!hasMore);
   }, [formattedRecords, isLoading, hasMore]);
-  const showToast = (
-    msgtype: "success" | "error" | "invalid",
-    message: string
-  ) => {
-    if (msgtype === "success") return toast.success(message);
-    if (msgtype === "error") return toast.error(message);
-    return toast.warning(message);
-  };
-
-  const handleHeartClick = async (
-    //for reference of double click to like
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    shaerData: EBooksType,
-    index: any,
-    id: string
-  ): Promise<void> => {
-    //for reference of double click to like: these are to be completed
-
-    // toggleanaween(null);
-    if (typeof window !== 'undefined' && window.localStorage) {
-      if (disableHearts) return;
-      setDisableHearts(true);
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Books");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: EBooksType[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.id === shaerData.id
-        );
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-
-          localStorage.setItem("Books", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "success",
-            "آپ کی پروفائل میں یہ کتاب کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
-
-          try {
-            const updatedLikes = shaerData.fields.likes + 1;
-            await updateBooks([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
-            setData((prev) => {
-              const copy = [...prev];
-              const item = copy[index];
-              if (item?.fields) item.fields.likes = updatedLikes;
-              return copy;
-            });
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.id !== shaerData.id
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Books", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "invalid",
-            "آپ کی پروفائل سے یہ کتاب کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
-
-          try {
-            const updatedLikes = shaerData.fields.likes - 1;
-            await updateBooks([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
-            setData((prev) => {
-              const copy = [...prev];
-              const item = copy[index];
-              if (item?.fields) item.fields.likes = updatedLikes;
-              return copy;
-            });
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-      } finally {
-        setDisableHearts(false);
-      }
-    }
-  };
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedData = localStorage.getItem("Books");
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          data.forEach((shaerData, index) => {
-            const shaerId = shaerData.id; // Get the id of the current shaerData
-
-            // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data: { id: string }) => data.id === shaerId
-            );
-
-            if (storedShaer) {
-              // If shaerId exists in the stored data, update the card's appearance
-              const cardElement = document.getElementById(shaerId);
-              if (cardElement) {
-                cardElement.classList.add("text-red-600");
-              }
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing stored data:", error);
-        }
-      }
-    }
-  }, [data]);
+  // likes handled inside BookCard
 
   const searchQuery = () => {
     if (typeof window !== 'undefined') {
@@ -334,7 +195,7 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground border-b-2">
+          <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
             <div className="filter-btn basis-[75%] text-center flex">
               <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
                 <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
@@ -365,22 +226,22 @@ const Page: React.FC<{}> = () => {
           <div
             id="section"
             dir="rtl"
-            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sticky m-3`}
+            className={`grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-2 sticky m-3 md:mt-4`}
           >
             {data.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">
-                <div
-                  className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-[13px] -right-[18px] w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl rounded-tr-sm m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
-                  onClick={(e) =>
-                    handleHeartClick(e, item, index, `${item.id}`)
-                  }
-                  id={`${item.id}`}
-                  aria-disabled={disableHearts}
-                >
-                  <Heart className="text-xl ml-3" />
-                  <span className="text-black">{`${item.fields?.likes}`}</span>
-                </div>
-                <Card data={item} />
+                <Card
+                  data={item}
+                  showLikeButton
+                  baseId="appXcBoNMGdIaSUyA"
+                  table="E-Books"
+                  storageKey="Books"
+                  onLikeChange={({ id, liked, likes }) => {
+                    // placeholder for analytics
+                    // console.info("Book like changed", { id, liked, likes });
+                  }}
+                  swrKey={swrKey}
+                />
               </div>
             ))}
           </div>
