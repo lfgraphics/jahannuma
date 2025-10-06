@@ -40,9 +40,10 @@ interface IntroProps {
     ashaar: boolean;
     eBooks: boolean;
   } | null;
+  currentTab?: string; // currently selected tab label for sharing (?tab=...)
 }
 
-const Intro: React.FC<IntroProps> = ({ data }) => {
+const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
   const [insideBrowser, setInsideBrowser] = useState(false);
   // const [loading, setLoading] = useState(true);
   const handleShareClick = () => {
@@ -50,13 +51,17 @@ const Intro: React.FC<IntroProps> = ({ data }) => {
       if (navigator.share) {
         const title = data?.takhallus || "Default Title"; // Replace 'Default Title' with your desired default title
         const text = (data?.tafseel || "").trim(); // Keep multiple lines
-        const decodedUrl = decodeURIComponent(window.location.href);
+        // Build a fully human-readable URL (decoded path and query value)
+        const origin = window.location.origin;
+        const decodedPath = decodeURI(window.location.pathname);
+        const currentParams = new URLSearchParams(window.location.search);
+        const tab = (currentTab || currentParams.get("tab") || "").trim();
+        const shareUrl = `${origin}${decodedPath}${tab ? `?tab=${tab}` : ""}`;
 
         navigator
           .share({
-            text: `${title}\n\n${text !== "" ? `${text}\n` : ""
-              }Found this on Jahannuma webpage\nVisit it here\n`,
-            url: decodedUrl,
+            text: `${title}\n\n${text !== "" ? `${text}\n` : ""}Found this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
+            url: shareUrl,
           })
           .then(() => console.log("Successful share"))
           .catch((error) => console.log("Error sharing", error));

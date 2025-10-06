@@ -385,9 +385,10 @@ const DataCard = <T extends MinimalShaer>({
               />
             </div>
           )}
-          <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "like"} />
         </div>
       )}
+      {/* Ensure login dialog renders for all variants (nazm and others) */}
+      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "like"} />
     </>
   );
 };

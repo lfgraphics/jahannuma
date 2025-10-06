@@ -28,6 +28,9 @@ type CarouselContextProps = {
   scrollNext: () => void
   canScrollPrev: boolean
   canScrollNext: boolean
+  selectedIndex: number
+  snapCount: number
+  scrollTo: (index: number) => void
 } & CarouselProps
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
@@ -67,6 +70,8 @@ const Carousel = React.forwardRef<
     )
     const [canScrollPrev, setCanScrollPrev] = React.useState(false)
     const [canScrollNext, setCanScrollNext] = React.useState(false)
+  const [selectedIndex, setSelectedIndex] = React.useState(0)
+  const [snapCount, setSnapCount] = React.useState(0)
 
     const onSelect = React.useCallback((api: CarouselApi) => {
       if (!api) {
@@ -75,6 +80,12 @@ const Carousel = React.forwardRef<
 
       setCanScrollPrev(api.canScrollPrev())
       setCanScrollNext(api.canScrollNext())
+      try {
+        setSelectedIndex(api.selectedScrollSnap())
+        setSnapCount(api.scrollSnapList().length)
+      } catch {
+        // ignore when API not ready
+      }
     }, [])
 
     const scrollPrev = React.useCallback(() => {
@@ -83,6 +94,9 @@ const Carousel = React.forwardRef<
 
     const scrollNext = React.useCallback(() => {
       api?.scrollNext()
+    }, [api])
+    const scrollTo = React.useCallback((index: number) => {
+      api?.scrollTo(index)
     }, [api])
 
     const handleKeyDown = React.useCallback(
@@ -132,12 +146,15 @@ const Carousel = React.forwardRef<
           scrollNext,
           canScrollPrev,
           canScrollNext,
+          selectedIndex,
+          snapCount,
+          scrollTo,
         }}
       >
         <div
           ref={ref}
           onKeyDownCapture={handleKeyDown}
-          className={cn("relative", className)}
+          className={cn("relative group", className)}
           role="region"
           aria-roledescription="carousel"
           {...props}
@@ -150,10 +167,7 @@ const Carousel = React.forwardRef<
 )
 Carousel.displayName = "Carousel"
 
-const CarouselContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+const CarouselContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => {
   const { carouselRef, orientation } = useCarousel()
 
   return (
@@ -172,10 +186,7 @@ const CarouselContent = React.forwardRef<
 })
 CarouselContent.displayName = "CarouselContent"
 
-const CarouselItem = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+const CarouselItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => {
   const { orientation } = useCarousel()
 
   return (
@@ -194,10 +205,7 @@ const CarouselItem = React.forwardRef<
 })
 CarouselItem.displayName = "CarouselItem"
 
-const CarouselPrevious = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<typeof Button>
->(({ className, variant = "outline", size = "icon", ...props }, ref) => {
+const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(({ className, variant = "outline", size = "icon", ...props }, ref) => {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
   return (
@@ -206,7 +214,7 @@ const CarouselPrevious = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute h-8 w-8 rounded-full",
+        "absolute h-8 w-8 rounded-full opacity-0 group-hover:opacity-70 pointer-events-none group-hover:pointer-events-auto transition-opacity",
         orientation === "horizontal"
           ? "left-2 top-1/2 -translate-y-1/2"
           : "top-2 left-1/2 -translate-x-1/2 rotate-90",
@@ -223,10 +231,7 @@ const CarouselPrevious = React.forwardRef<
 })
 CarouselPrevious.displayName = "CarouselPrevious"
 
-const CarouselNext = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<typeof Button>
->(({ className, variant = "outline", size = "icon", ...props }, ref) => {
+const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(({ className, variant = "outline", size = "icon", ...props }, ref) => {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
   return (
@@ -235,7 +240,7 @@ const CarouselNext = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute h-8 w-8 rounded-full",
+        "absolute h-8 w-8 rounded-full opacity-0 group-hover:opacity-70 pointer-events-none group-hover:pointer-events-auto transition-opacity",
         orientation === "horizontal"
           ? "right-2 top-1/2 -translate-y-1/2"
           : "bottom-2 left-1/2 -translate-x-1/2 rotate-90",
@@ -252,6 +257,38 @@ const CarouselNext = React.forwardRef<
 })
 CarouselNext.displayName = "CarouselNext"
 
+const CarouselIndicators = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => {
+  const { snapCount, selectedIndex, scrollTo } = useCarousel()
+
+  if (snapCount <= 1) return null
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2",
+        className
+      )}
+      {...props}
+    >
+      {Array.from({ length: snapCount }).map((_, i) => (
+        <button
+          key={i}
+          type="button"
+          aria-label={`Go to slide ${i + 1}`}
+          data-active={i === selectedIndex}
+          onClick={() => scrollTo(i)}
+          className={cn(
+            "h-2 w-2 rounded-full bg-muted-foreground/40 transition-colors",
+            i === selectedIndex && "bg-foreground"
+          )}
+        />
+      ))}
+    </div>
+  )
+})
+CarouselIndicators.displayName = "CarouselIndicators"
+
 export {
   type CarouselApi,
   Carousel,
@@ -259,4 +296,5 @@ export {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
+  CarouselIndicators,
 }

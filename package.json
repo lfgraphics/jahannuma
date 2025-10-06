@@ -2,11 +2,7 @@
   "name": "jahan-numa",
   "version": "3.0.1",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
-  "engines": {
-    "node": ">=18.18.0",
-    "pnpm": ">=9"
-  },
+  "packageManager": "pnpm@10.18.0",
   "scripts": {
     "preinstall": "node -e \"if(!String(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('This repository uses pnpm. Please run: pnpm install'); process.exit(1)}\"",
     "dev": "next dev --turbopack",
@@ -24,6 +20,7 @@
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@shadcn/ui": "^0.0.4",
     "aos": "^2.3.4",
     "class-variance-authority": "^0.7.1",

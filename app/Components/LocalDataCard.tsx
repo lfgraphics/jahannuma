@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { Heart, Share2, Tag, Download } from "lucide-react";
 import Link from "next/link";
 import DynamicDownloadHandler from "./Download";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 interface Shaer {
   fields: {
     sher: string[];
@@ -44,6 +46,7 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
   // const [openDownloadHandler, setOpenDownloadHandler] =
   //   useState<boolean>(false);
   const [selectedShaer, setSelectedShaer] = useState<Shaer | null>(null);
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
 
   const cancelDownload = () => {
     // Reset the selectedShaer state to null
@@ -130,7 +133,7 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
           غزل پڑھیں
         </button>
         {download && (
-          <button className="m-3" onClick={() => setSelectedShaer(shaerData)}>
+          <button className="m-3" onClick={() => { if (requireAuth("download")) setSelectedShaer(shaerData); }}>
             <Download color="#984A02" />
           </button>
         )}
@@ -141,6 +144,7 @@ const LocalGhazalCard: React.FC<ShaerCardProps> = ({
           <DynamicDownloadHandler data={shaerData} onCancel={cancelDownload} />
         </div>
       )}
+      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "download"} />
     </div>
   );
 };

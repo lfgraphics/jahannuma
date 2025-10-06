@@ -47,6 +47,16 @@ const Navbar: React.FC = () => {
 
   const currentPath = normalizePath(pathname || "/");
 
+  // Track last visited URL on client-side navigations
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const url = window.location.pathname + window.location.search + window.location.hash;
+        window.localStorage.setItem("lastVisited", url);
+      } catch {}
+    }
+  }, [pathname]);
+
   // Determine if a given top-level section (e.g., "E-Books") is active.
   // We map section EN slug (the pathname segment) to active state by checking:
   //  - exact match: "/E-Books"
@@ -65,6 +75,12 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Persist last visited path for post-auth redirects
+      try {
+        const url = window.location.pathname + window.location.search + window.location.hash;
+        window.localStorage.setItem("lastVisited", url);
+      } catch {}
+
       const currentPath = window.location.pathname;
 
       // Remove the existing language code at the start only (e.g., /EN, /HI, /UR)
@@ -127,7 +143,7 @@ const Navbar: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden text-primary"
+                  className="hidden lg:hidden text-primary"
                   aria-label="menu"
                 >
                   <Menu className="h-6 w-6" />
@@ -209,8 +225,8 @@ const Navbar: React.FC = () => {
                       </SignedIn>
                       <SignedOut>
                         <div className="flex gap-2">
-                          <Link href="/sign-in"><Button variant="outline">{getButtonText("signIn" as any, language as any)}</Button></Link>
-                          <Link href="/sign-up"><Button>{getButtonText("signUp" as any, language as any)}</Button></Link>
+                          <Link href={{ pathname: "/sign-in", query: { returnUrl: typeof window !== 'undefined' ? window.location.pathname + window.location.search + window.location.hash : undefined } }}><Button variant="outline">{getButtonText("signIn" as any, language as any)}</Button></Link>
+                          <Link href={{ pathname: "/sign-up", query: { returnUrl: typeof window !== 'undefined' ? window.location.pathname + window.location.search + window.location.hash : undefined } }}><Button>{getButtonText("signUp" as any, language as any)}</Button></Link>
                         </div>
                       </SignedOut>
                     </div>
@@ -224,9 +240,9 @@ const Navbar: React.FC = () => {
               <Image className="lg:w-20 md:w-16 h-auto" src="/logo.png" alt="Logo" height={80} width={60} priority />
             </Link>
 
-            {/* Desktop Nav */}
-            <div dir="rtl" className="w-0 lg:w-max flex gap-2 items-center justify-center">
-              <div className="hidden lg:flex items-center justify-between">
+            {/* Desktop Nav (centered, grows) */}
+            <div dir="rtl" className="hidden lg:flex flex-1 items-center justify-center">
+              <div className="flex items-center justify-between">
                 <ul className="flex md:text-xs justify-center gap-4">
                   {navPages.map((page) => {
                     const active = isActive(page.EN);
@@ -244,38 +260,30 @@ const Navbar: React.FC = () => {
                 </ul>
               </div>
             </div>
-
-            {/* Language Select */}
-            <div className="m-2">
-              <Select value={language} onValueChange={(val) => handleLanguageChange(val as Language)}>
-                <SelectTrigger
-                  id="langChange"
-                  className="langChange shadow-none bg-transparent dark:bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-primary"
-                  aria-label="Select language"
-                >
-                  <SelectValue className="bg-transparent dark:bg-transparent shadow-none" />
-                </SelectTrigger>
-                <SelectContent className="bg-transparent text-primary backdrop-blur-sm border border-border w-fit">
-                  <SelectItem value="UR">اردو</SelectItem>
-                  <SelectItem value="EN">English</SelectItem>
-                  <SelectItem value="HI">हिंदी</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Search */}
-            <Search className="h-6 w-6 text-primary" />
-            {/* donation button  */}
-            <Link
-              href={`https://rzp.io/l/QpiIjiU`}
-              className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out p-2 rounded-sm mr-3 text-[1rem] hidden lg:inline-block"
-            >
-              <button>
-                {language === "UR" ? "ہمیں عطیہ کریں" : language == "EN" ? "Donate Us" : "हमें दान करें"}
-              </button>
-            </Link>
-            <div className="lg:flex items-center gap-2 hidden ml-auto">
+            {/* Desktop Right Controls: search | language | theme | user | donate */}
+            <div className="hidden lg:flex items-center gap-3 ml-auto">
+              {/* Search first */}
+              <Search className="h-6 w-6 text-primary" />
+              {/* Language Select */}
+              <div className="m-0">
+                <Select value={language} onValueChange={(val) => handleLanguageChange(val as Language)}>
+                  <SelectTrigger
+                    id="langChange"
+                    className="langChange shadow-none bg-transparent dark:bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-primary"
+                    aria-label="Select language"
+                  >
+                    <SelectValue className="bg-transparent dark:bg-transparent shadow-none" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-transparent text-primary backdrop-blur-sm border border-border w-fit">
+                    <SelectItem value="UR">اردو</SelectItem>
+                    <SelectItem value="EN">English</SelectItem>
+                    <SelectItem value="HI">हिंदी</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Theme toggle */}
               <ModeToggle />
+              {/* User controls */}
               {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
                 <>
                   <SignedIn>
@@ -283,17 +291,42 @@ const Navbar: React.FC = () => {
                   </SignedIn>
                   <SignedOut>
                     <div className="flex items-center gap-3">
-                      <Link href={{ pathname: "/sign-in" }} className="text-primary underline">{getButtonText("signIn" as any, language as any)}</Link>
-                      <Link href={{ pathname: "/sign-up" }} className="text-primary underline">{getButtonText("signUp" as any, language as any)}</Link>
+                      <Link href={{ pathname: "/sign-in", query: { returnUrl: typeof window !== 'undefined' ? window.location.pathname + window.location.search + window.location.hash : undefined } }} className="text-primary underline">{getButtonText("signIn" as any, language as any)}</Link>
+                      <Link href={{ pathname: "/sign-up", query: { returnUrl: typeof window !== 'undefined' ? window.location.pathname + window.location.search + window.location.hash : undefined } }} className="text-primary underline">{getButtonText("signUp" as any, language as any)}</Link>
                     </div>
                   </SignedOut>
                 </>
-              ) : (
-                <></>
-              )}
+              ) : null}
+              {/* Donation last */}
+              <Link
+                href={`https://rzp.io/l/QpiIjiU`}
+                className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out px-3 py-2 rounded-sm text-[1rem]"
+              >
+                {language === "UR" ? "ہمیں عطیہ کریں" : language == "EN" ? "Donate Us" : "हमें दान करें"}
+              </Link>
             </div>
-            {/* Mobile header right-aligned auth and controls */}
+            {/* Mobile header right-aligned controls: search | language | theme | user */}
             <div className="lg:hidden ml-auto flex items-center gap-2">
+              {/* Search */}
+              <Search className="h-5 w-5 text-primary" />
+              {/* Language Select (mobile) */}
+              <div className="m-0">
+                <Select value={language} onValueChange={(val) => handleLanguageChange(val as Language)}>
+                  <SelectTrigger
+                    id="langChange"
+                    className="langChange shadow-none bg-transparent dark:bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none focus:rounded-none text-primary h-8 w-20"
+                    aria-label="Select language"
+                  >
+                    <SelectValue className="bg-transparent dark:bg-transparent shadow-none" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-transparent text-primary backdrop-blur-sm border border-border w-fit">
+                    <SelectItem value="UR">اردو</SelectItem>
+                    <SelectItem value="EN">EN</SelectItem>
+                    <SelectItem value="HI">HI</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Theme */}
               <ModeToggle />
               {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
                 <>
@@ -302,12 +335,18 @@ const Navbar: React.FC = () => {
                   </SignedIn>
                   <SignedOut>
                     <div className="flex items-center gap-2">
-                      <Link href={{ pathname: "/sign-in" }} className="text-primary underline text-sm">{getButtonText("signIn" as any, language as any)}</Link>
-                      <Link href={{ pathname: "/sign-up" }} className="text-primary underline text-sm">{getButtonText("signUp" as any, language as any)}</Link>
+                      <Link href={{ pathname: "/sign-in", query: { returnUrl: typeof window !== 'undefined' ? window.location.pathname + window.location.search + window.location.hash : undefined } }} className="text-primary underline text-sm">{getButtonText("signIn" as any, language as any)}</Link>
+                      <Link href={{ pathname: "/sign-up", query: { returnUrl: typeof window !== 'undefined' ? window.location.pathname + window.location.search + window.location.hash : undefined } }} className="text-primary underline text-sm">{getButtonText("signUp" as any, language as any)}</Link>
                     </div>
                   </SignedOut>
                 </>
               ) : null}
+              <Link
+                href={`https://rzp.io/l/QpiIjiU`}
+                className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out px-3 py-2 rounded-sm text-[1rem]"
+              >
+                {language === "UR" ? "ہمیں عطیہ کریں" : language == "EN" ? "Donate Us" : "हमें दान करें"}
+              </Link>
             </div>
           </div>
         </div>

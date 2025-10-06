@@ -32,6 +32,10 @@ const messageKeyByAction: Record<AuthActionType, keyof typeof uiTexts.messages> 
 export function LoginRequiredDialog({ open, onOpenChange, actionType }: LoginRequiredDialogProps) {
   const { language } = useLanguage();
   const dir = language === "UR" ? "rtl" : "ltr";
+  const currentUrl =
+    typeof window !== "undefined"
+      ? window.location.pathname + window.location.search + window.location.hash
+      : "/";
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent dir={dir} className="bg-background text-foreground border border-border">
@@ -41,18 +45,24 @@ export function LoginRequiredDialog({ open, onOpenChange, actionType }: LoginReq
             {getMessageText(messageKeyByAction[actionType], language)}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex gap-2">
+        <AlertDialogFooter className="flex gap-2 flex-col-reverse sm:flex-row">
           <AlertDialogCancel>{getButtonText("cancel", language)}</AlertDialogCancel>
-          <Link href="/sign-up">
-            <AlertDialogAction className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
+          <AlertDialogAction className="p-0">
+            <Link
+              href={{ pathname: "/sign-up", query: { returnUrl: currentUrl } }}
+              className="inline-flex items-center justify-center h-10 px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90"
+            >
               {getButtonText("signUp", language)}
-            </AlertDialogAction>
-          </Link>
-          <Link href="/sign-in">
-            <AlertDialogAction>
+            </Link>
+          </AlertDialogAction>
+          <AlertDialogAction className="p-0">
+            <Link
+              href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }}
+              className="inline-flex items-center justify-center h-10 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:opacity-90"
+            >
               {getButtonText("signIn", language)}
-            </AlertDialogAction>
-          </Link>
+            </Link>
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

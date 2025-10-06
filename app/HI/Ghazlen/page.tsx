@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useShareAction } from "@/hooks/useShareAction";
 import DynamicDownloadHandler from "@/app/Components/Download";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 
 interface Shaer {
   shaer: string;
@@ -78,6 +80,7 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   const { language } = useLanguage();
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
   const [downloadData, setDownloadData] = useState<{
     id: string;
     fields: { shaer?: string; ghazalHead?: string[] };
@@ -100,6 +103,7 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   const handleDownload = (shaerData: Shaer) => {
+    if (!requireAuth("download")) return;
     setDownloadData({
       id: `ghazlen-${shaerData.shaer}`,
       fields: { shaer: shaerData.shaer, ghazalHead: shaerData.sherHead },
@@ -272,6 +276,7 @@ const Ashaar: React.FC<{}> = () => {
           onCancel={() => setDownloadData(null)}
         />
       )}
+      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "download"} />
     </div>
   );
 };

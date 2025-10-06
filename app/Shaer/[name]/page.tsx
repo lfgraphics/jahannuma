@@ -9,8 +9,9 @@ import Ashaar from "@/app/Components/shaer/Ashaar";
 import EBkooks from "@/app/Components/shaer/EBooks";
 import Rubai from "@/app/Components/shaer/Rubai";
 import ComponentsLoader from "@/app/Components/shaer/ComponentsLoader";
-import Link from "next/link";
 import "./shaer.css";
+
+// Using simple custom nav instead of shadcn Tabs
 
 import { useAirtableList } from "@/hooks/useAirtableList";
 import { TTL } from "@/lib/airtable-fetcher";
@@ -121,69 +122,90 @@ const Page = ({ params }: { params: { name: string } | Promise<{ name: string }>
     setActiveNav(nav);
   };
 
+  const handleLinkClick = (nav: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Only intercept plain left-clicks so ctrl/cmd/shift/middle-click still work
+    if (e.defaultPrevented) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    handleNavClick(nav);
+  };
+
   return (
     <>
       {isLoading && <ComponentsLoader />}
       {!isLoading && (
         <div dir="rtl" className="flex flex-col">
-          <Intro data={data as any} />
+          <Intro data={data as any} currentTab={activeNav} />
+
           <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 border-b-2 self-center pb-0 px-4 pt-4 text-xl">
             <div
-              className={`nav-item ${activeNav === "تعارف" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
-              onClick={() => handleNavClick("تعارف")}
+              className={`nav-item ${activeNav === "تعارف" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500`}
             >
-              <Link href={`${"/Shaer/" + nameParam + "?tab=تعارف"}`} prefetch>
+              <a
+                href={`/Shaer/${nameParam}?tab=${encodeURIComponent("تعارف")}`}
+                onClick={handleLinkClick("تعارف")}
+              >
                 تعارف
-              </Link>
+              </a>
             </div>
             {data.ghazlen && (
               <div
-                className={`nav-item ${activeNav === "غزلیں" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
-                onClick={() => handleNavClick("غزلیں")}
+                className={`nav-item ${activeNav === "غزلیں" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
-                <Link href={`${"/Shaer/" + nameParam + "?tab=غزلیں"}`} prefetch>
+                <a
+                  href={`/Shaer/${nameParam}?tab=${encodeURIComponent("غزلیں")}`}
+                  onClick={handleLinkClick("غزلیں")}
+                >
                   غزلیں
-                </Link>
+                </a>
               </div>
             )}
             {data.nazmen && (
               <div
-                className={`nav-item ${activeNav === "نظمیں" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
-                onClick={() => handleNavClick("نظمیں")}
+                className={`nav-item ${activeNav === "نظمیں" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
-                <Link href={`${"/Shaer/" + nameParam + "?tab=نظمیں"}`} prefetch>
+                <a
+                  href={`/Shaer/${nameParam}?tab=${encodeURIComponent("نظمیں")}`}
+                  onClick={handleLinkClick("نظمیں")}
+                >
                   نظمیں
-                </Link>
+                </a>
               </div>
             )}
             {data.ashaar && (
               <div
-                className={`nav-item ${activeNav === "اشعار" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
-                onClick={() => handleNavClick("اشعار")}
+                className={`nav-item ${activeNav === "اشعار" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
-                <Link href={`${"/Shaer/" + nameParam + "?tab=اشعار"}`} prefetch>
+                <a
+                  href={`/Shaer/${nameParam}?tab=${encodeURIComponent("اشعار")}`}
+                  onClick={handleLinkClick("اشعار")}
+                >
                   اشعار
-                </Link>
+                </a>
               </div>
             )}
             {data.eBooks && (
               <div
-                className={`nav-item ${activeNav === "ئی - بکس" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
-                onClick={() => handleNavClick("ئی - بکس")}
+                className={`nav-item ${activeNav === "ئی - بکس" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
-                <Link href={`${"/Shaer/" + nameParam + "?tab=ئی - بکس"}`} prefetch>
+                <a
+                  href={`/Shaer/${nameParam}?tab=${encodeURIComponent("ئی - بکس")}`}
+                  onClick={handleLinkClick("ئی - بکس")}
+                >
                   ئی - بکس
-                </Link>
+                </a>
               </div>
             )}
             {data.rubai && (
               <div
-                className={`nav-item ${activeNav === "رباعی" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500 `}
-                onClick={() => handleNavClick("رباعی")}
+                className={`nav-item ${activeNav === "رباعی" ? "active" : ""} min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
-                <Link href={`${"/Shaer/" + nameParam + "?tab=رباعی"}`} prefetch>
+                <a
+                  href={`/Shaer/${nameParam}?tab=${encodeURIComponent("رباعی")}`}
+                  onClick={handleLinkClick("رباعی")}
+                >
                   رباعی
-                </Link>
+                </a>
               </div>
             )}
           </div>
@@ -192,7 +214,7 @@ const Page = ({ params }: { params: { name: string } | Promise<{ name: string }>
           {activeNav === "غزلیں" && <Ghazlen takhallus={data.takhallus as string} />}
           {activeNav === "نظمیں" && <Nazmen takhallus={data.takhallus as string} />}
           {activeNav === "اشعار" && <Ashaar takhallus={data.takhallus as string} />}
-          {activeNav === "ئی - بکس" && <EBkooks takhallus={data.takhallus as string} />} 
+          {activeNav === "ئی - بکس" && <EBkooks takhallus={data.takhallus as string} />}
           {activeNav === "رباعی" && <Rubai takhallus={data.takhallus as string} />}
         </div>
       )}

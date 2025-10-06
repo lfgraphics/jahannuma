@@ -6,6 +6,8 @@ import Loader from "./Loader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useShareAction } from "@/hooks/useShareAction";
 import DynamicDownloadHandler from "@/app/Components/Download";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 
 interface Shaer {
   shaer: string;
@@ -19,12 +21,14 @@ const EnduRandcard: React.FC<{}> = () => {
   const randomData = dataItems.length > 0 ? dataItems[randomIndex] : undefined;
 
   const { language } = useLanguage();
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
   const [downloadData, setDownloadData] = useState<{
     id: string;
     fields: { shaer?: string; ghazalHead?: string[] };
   } | null>(null);
 
   const handleDownload = (shaerData: Shaer) => {
+    if (!requireAuth("download")) return;
     setDownloadData({
       id: `rand-${shaerData.shaer}`,
       fields: { shaer: shaerData.shaer, ghazalHead: shaerData.sherHead },
@@ -119,6 +123,7 @@ const EnduRandcard: React.FC<{}> = () => {
           onCancel={() => setDownloadData(null)}
         />
       )}
+      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "download"} />
     </div>
   );
 };

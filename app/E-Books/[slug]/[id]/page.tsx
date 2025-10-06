@@ -12,6 +12,8 @@ import { TTL } from "@/lib/airtable-fetcher";
 import { useAirtableRecord } from "@/hooks/useAirtableRecord";
 import { Button } from "@/components/ui/button";
 import { RefreshCwIcon } from "lucide-react";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 
 // Dynamically import PdfViewer on the client only to avoid SSR/window issues
 const PdfViewer = dynamic(() => import("@/app/Components/PdfViewer"), { ssr: false });
@@ -42,6 +44,7 @@ export default function Page() {
     const [bookKey, setBookKey] = useState<number | undefined>(undefined);
     const params = useParams<{ id: string }>();
     const id = params?.id;
+    const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
 
     // use unified single-record hook when we have a stable recordId
     const { data: record, isLoading, error } = useAirtableRecord<{ fields: BookRecordFields }>(
@@ -166,7 +169,16 @@ export default function Page() {
                                             کتاب پڑھیں
                                         </Link>
                                         {bookUrl && record.fields.download && (
-                                            <Link href={bookUrl} className=" text-foreground block mx-auto m-4 mb-1 p-2 border-2 border-blue-500 text-center w-[200px] px-8 rounded-md">
+                                            <Link
+                                                href={bookUrl}
+                                                onClick={(e) => {
+                                                    // Enforce auth on download
+                                                    if (!requireAuth("download")) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                                className=" text-foreground block mx-auto m-4 mb-1 p-2 border-2 border-blue-500 text-center w-[200px] px-8 rounded-md"
+                                            >
                                                 کتاب ڈاؤنلوڈ کریں
                                             </Link>
                                         )}
@@ -185,6 +197,7 @@ export default function Page() {
                     </div>
                 </>
             )}
+        <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "download"} />
         </div>
     );
 }

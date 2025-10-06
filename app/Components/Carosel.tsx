@@ -9,6 +9,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CarouselIndicators,
 } from "@/components/ui/carousel";
 
 interface WindowSize {
@@ -149,6 +150,7 @@ const Carousel: React.FC = () => {
         </CarouselContent>
         <CarouselPrevious className="left-4" />
         <CarouselNext className="right-4" />
+        <CarouselIndicators />
       </ShadcnCarousel>
     </div>
   );

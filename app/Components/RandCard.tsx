@@ -123,7 +123,7 @@ const RandCard: React.FC<{}> = () => {
     toggleanaween(null);
     await shareRecordWithCount(
       {
-        section: "Ghazlen",
+        section: "Ashaar",
         id: shaerData.id,
         title: shaerData.fields.shaer,
         textLines: shaerData.fields.ghazalHead ?? [],
