@@ -45,7 +45,7 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
           ))}
         </div>
         <Link
-          href={{ pathname: `/Shaer/${RubaiData.fields?.shaer?.replace(" ", "-") ?? ""}` }}
+          href={{ pathname: `/Shaer/${encodeURIComponent((RubaiData.fields?.shaer || '').replace(/\s+/g, '-'))}`, query: { tab: "تعارف" } }}
           className="text-center"
         >
           <h2 className="text-foreground text-lg mb-4">{RubaiData.fields?.shaer}</h2>

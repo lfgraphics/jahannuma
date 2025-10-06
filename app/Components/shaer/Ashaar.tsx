@@ -1,12 +1,11 @@
 "use client";
-import Link from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
-import { Heart } from "lucide-react";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import type { AirtableRecord, AshaarRecord } from "@/app/types";
 import { buildShaerFilter, formatAshaarRecord } from "@/lib/airtable-utils";
-import { useLikeButton } from "@/hooks/useLikeButton";
+import DataCard from "@/app/Components/DataCard";
+import { useShareAction } from "@/hooks/useShareAction";
 
 interface Props { takhallus: string }
 
@@ -24,61 +23,46 @@ const Ashaar: React.FC<Props> = ({ takhallus }) => {
     return (records || []).map((r: AirtableRecord<AshaarRecord>) => formatAshaarRecord(r));
   }, [records]);
 
-  // Inline like button using centralized hook
-  const LikeBtn: React.FC<{ rec: AirtableRecord<AshaarRecord> }> = ({ rec }) => {
-    const like = useLikeButton({
-      baseId: BASE_ID,
-      table: TABLE,
-      storageKey: "Ashaar",
-      recordId: rec.id,
-      currentLikes: rec.fields.likes ?? 0,
-      swrKey,
-    });
-    return (
-      <button
-        id={rec.id}
-        className={`ml-5 transition-all duration-300 text-lg flex items-center gap-1 ${like.isLiked ? "text-red-600" : "text-gray-500"}`}
-        onClick={() => like.handleLikeClick()}
-        disabled={like.isDisabled}
-        aria-disabled={like.isDisabled}
-        title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
-      >
-        <Heart size={22} />
-        <span className="text-sm text-foreground">{like.likesCount}</span>
-      </button>
-    );
-  };
+  const [openanaween, setOpenanaween] = useState<string | null>(null);
+  const toggleanaween = (cardId: string | null) => setOpenanaween((prev) => (prev === cardId ? null : cardId));
+  const handleCardClick = (_rec: AirtableRecord<AshaarRecord>) => {};
+  const openComments = (_id: string) => {};
+  const share = useShareAction({ section: "Ashaar", title: "" });
 
   return (
-    <div>
+    <div dir="rtl" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
       {isLoading && <ComponentsLoader />}
       {!isLoading && dataItems.length === 0 && (
-        <div className="h-[30vh] grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
+        <div className="h-[30vh] col-span-full grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
       )}
-      {dataItems.map((shaerData: AirtableRecord<AshaarRecord>, index: number) => {
-        // rely on formatted outputs: ghazalHead is string[] via formatAshaarRecord
-        const head: string[] = shaerData.fields.ghazalHead || [];
-        return (
-          <div
-            key={shaerData.id}
-            id={`card${index}`}
-            className="bg-white dark:bg-[#2d2d2f] rounded-sm border-b relative flex flex-col justify-between m-5 pt-0 md:mx-36 lg:mx-36"
-          >
-            <div className="flex justify-between items-center">
-              <div className="mr-5">
-                <Link href={"/Ashaar/" + encodeURIComponent(((shaerData?.fields as any)?.slugId ?? shaerData.id))}>
-                  {head.map((lin: string, i: number) => (
-                    <p style={{ lineHeight: "normal" }} key={i} className="line-normal text-xl">
-                      {lin}
-                    </p>
-                  ))}
-                </Link>
-              </div>
-              <LikeBtn rec={shaerData} />
-            </div>
-          </div>
-        );
-      })}
+      {!isLoading && dataItems.map((rec, index) => (
+        <DataCard
+          key={rec.id}
+          page="rand"
+          shaerData={rec as any}
+          index={index}
+          download={false}
+          baseId={BASE_ID}
+          table={TABLE}
+          storageKey="Ashaar"
+          swrKey={swrKey}
+          toggleanaween={toggleanaween}
+          openanaween={openanaween}
+          handleCardClick={handleCardClick as any}
+          handleShareClick={(r: any) => share.handleShare({
+            baseId: BASE_ID,
+            table: TABLE,
+            recordId: (r as AirtableRecord<AshaarRecord>).id,
+            title: (r as AirtableRecord<AshaarRecord>).fields.shaer,
+            textLines: (r as AirtableRecord<AshaarRecord>).fields.ghazalHead || [],
+            slugId: (r as AirtableRecord<AshaarRecord>).fields.slugId,
+            swrKey,
+            currentShares: (r as AirtableRecord<AshaarRecord>).fields.shares ?? 0,
+          })}
+          openComments={openComments}
+        />
+      ))}
+  {/* Share no longer requires login */}
     </div>
   );
 };

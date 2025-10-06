@@ -61,7 +61,7 @@ export default function Page() {
           <p>{data?.unwan}</p>
           </div>
           <div className="ghazalHead mb-3 text-primary">
-            <Link href={{ pathname: "/Shaer/[name]", query: { name: data?.shaer ?? "" } }}>
+            <Link href={`/Shaer/${encodeURIComponent(String(data?.shaer ?? "").replace(/\s+/g, "-"))}`}>
               <h2>{data?.shaer}</h2>
             </Link>
           </div>
@@ -84,7 +84,7 @@ export default function Page() {
               مزید رباعی
             </button>
             <Link
-              href={{ pathname: "/Rubai/shaer/[name]", query: { name: data?.shaer?.replace(" ", "_") ?? "" } }}
+              href={`/Rubai/shaer/${encodeURIComponent(String(data?.shaer ?? "").replace(/\s+/g, "-"))}`}
               className="text-blue-600 underline"
               scroll={false}
             >

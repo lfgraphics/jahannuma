@@ -3,6 +3,9 @@ import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
 import Providers from "./providers";
 import SWRProvider from "./swr-provider";
+import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
+import InitLikesMigration from "@/app/Components/InitLikesMigration";
 
 export default function RootLayout({
   children,
@@ -91,17 +94,32 @@ export default function RootLayout({
         <meta name="theme-color" content="#F0D586" />
       </head>
       <body className="bg-background text-foreground font-noto-nastaliq">
-        <Providers>
-          <SWRProvider>
-            <div className="app-root min-h-screen flex flex-col">
-              <header className="w-full flex items-center justify-between gap-4">
-                <Navbar />
-              </header>
-              <main className="flex-1 mt-[120px] lg:mt-[65px]">{children}</main>
-              <Footer />
+        <ClerkProvider
+          appearance={{
+            baseTheme: dark,
+            layout: { socialButtonsVariant: "iconButton", shimmer: true },
+            variables: { colorPrimary: "#984A02", colorBackground: "#0b0b0b", colorText: "#F0D586" },
+          }}
+        >
+          {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? null : (
+            <div className="w-full bg-yellow-700/30 text-yellow-200 text-sm text-center py-1">
+              Clerk publishable key missing. Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in .env.local (dev only banner).
             </div>
-          </SWRProvider>
-        </Providers>
+          )}
+          {/* Migrate legacy localStorage likes to Clerk metadata immediately after sign-in */}
+          <InitLikesMigration />
+          <Providers>
+            <SWRProvider>
+              <div className="app-root min-h-screen flex flex-col">
+                <header className="w-full flex items-center justify-between gap-4">
+                  <Navbar />
+                </header>
+                <main className="flex-1 mt-[120px] lg:mt-[65px]">{children}</main>
+                <Footer />
+              </div>
+            </SWRProvider>
+          </Providers>
+        </ClerkProvider>
       </body>
     </html>
   );

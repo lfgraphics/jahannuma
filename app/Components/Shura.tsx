@@ -1,196 +1,171 @@
 "use client";
-import { useEffect, useState } from "react";
-import LocalGhazalCard from "./LocalDataCard";
-import { toast } from "sonner";
-import { Heart } from "lucide-react";
-import Card from "./shaer/Profilecard"
+import React, { useEffect, useMemo, useState } from "react";
+import Card from "./shaer/Profilecard";
+import SkeletonLoader from "./SkeletonLoader";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { escapeAirtableFormulaValue } from "@/lib/utils";
+import { TTL } from "@/lib/airtable-fetcher";
+import { House, Search, X } from "lucide-react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
-// import React {useEffect} from 'react'
-interface Shaer {
+type Photo = {
+  thumbnails?: { full?: { url?: string; height?: number; width?: number } };
+};
+
+type IntroRecord = {
   fields: {
-    sher: string[];
-    shaer: string;
-    ghazalHead: string[];
-    ghazal: string[];
-    unwan: string[];
-    likes: number;
-    comments: number;
-    shares: number;
-    id: string;
+    takhallus: string;
+    dob?: string;
+    location?: string;
+    tafseel?: string | string[];
+    searchKeys?: string | string[];
+    enTakhallus?: string | string[];
+    hiTakhallus?: string | string[];
+    enName?: string | string[];
+    hiName?: string | string[];
+    enLocation?: string | string[];
+    hiLocation?: string | string[];
+    ghazal?: boolean;
+    eBooks?: boolean;
+    nazmen?: boolean;
+    likes?: number;
+    photo?: Photo[];
+    id?: string;
+    slugId?: string;
   };
   id: string;
   createdTime: string;
-}
+};
 
-const Shura = () => {
-  const [data, setData] = useState<Shaer[] | null>(null);
-  // notifications handled by global Sonner Toaster
-  const [insideBrowser, setInsideBrowser] = useState(false);
-  const [disableHearts, setDisableHearts] = useState(false);
+export default function Shura() {
+  const [searchText, setSearchText] = useState("");
+  const [initialDataItems, setInitialDataItems] = useState<IntroRecord[]>([]);
+  const [moreLoading, setMoreLoading] = useState(false);
+  const [noMoreData, setNoMoreData] = useState(false);
 
   useEffect(() => {
-    let retrivedData = localStorage.getItem("Shura");
-    let parsedData = retrivedData ? JSON.parse(retrivedData) : null;
-    setData(parsedData);
+    AOS.init({ offset: 20, delay: 0, duration: 300 });
   }, []);
 
-  useEffect(() => {
-    setInsideBrowser(true);
-  }, []);
+  const filterFormula = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return undefined;
+    const safe = escapeAirtableFormulaValue(q);
+    return `OR( FIND('${safe}', LOWER({takhallus})), FIND('${safe}', LOWER({name})), FIND('${safe}', LOWER({dob})), FIND('${safe}', LOWER({location})), FIND('${safe}', LOWER({tafseel})), FIND('${safe}', LOWER({searchKeys})), FIND('${safe}', LOWER({enTakhallus})), FIND('${safe}', LOWER({hiTakhallus})), FIND('${safe}', LOWER({enName})), FIND('${safe}', LOWER({hiName})), FIND('${safe}', LOWER({enLocation})), FIND('${safe}', LOWER({hiLocation})) )`;
+  }, [searchText]);
 
-  const showToast = (
-    msgtype: "success" | "error" | "invalid",
-    message: string
-  ) => {
-    if (msgtype === "success") toast.success(message);
-    else if (msgtype === "error") toast.error(message);
-    else toast.warning(message);
+  const { records, isLoading, hasMore, loadMore } = useAirtableList<IntroRecord>(
+    "appgWv81tu4RT3uRB",
+    "Intro",
+    { pageSize: 30, filterByFormula: filterFormula },
+    { debounceMs: 1200, ttl: TTL.list }
+  );
+
+  const data: IntroRecord[] = useMemo(() => {
+    return (records || []).map((r: any) => ({
+      ...r,
+      fields: {
+        ...r.fields,
+        tafseel: String(r.fields?.tafseel || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        searchKeys: String(r.fields?.searchKeys || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        enTakhallus: String(r.fields?.enTakhallus || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        hiTakhallus: String(r.fields?.hiTakhallus || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        enName: String(r.fields?.enName || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        hiName: String(r.fields?.hiName || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        enLocation: String(r.fields?.enLocation || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        hiLocation: String(r.fields?.hiLocation || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazal: Boolean(r.fields?.ghazal),
+        eBooks: Boolean(r.fields?.eBooks),
+        nazmen: Boolean(r.fields?.nazmen),
+        likes: Number(r.fields?.likes || 0),
+      },
+    }));
+  }, [records]);
+
+  useEffect(() => {
+    setNoMoreData(!hasMore);
+  }, [hasMore]);
+
+  const handleSearchKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const value = e.currentTarget.value.toLowerCase();
+    let xMark = document.getElementById("shuraSearchClear");
+    let sMark = document.getElementById("shuraSearchIcon");
+    value === "" ? xMark?.classList.add("hidden") : xMark?.classList.remove("hidden");
+    value === "" ? sMark?.classList.add("hidden") : sMark?.classList.remove("hidden");
+    if (value && initialDataItems.length === 0 && data.length > 0) {
+      setInitialDataItems(data);
+    }
+    setSearchText(value);
   };
 
-  const handleHeartClick = async (
-    shaerData: Shaer,
-    index: any,
-    id: string
-  ): Promise<void> => {
-    if (typeof window !== undefined && window.localStorage) {
-      if (disableHearts) return;
-      setDisableHearts(true);
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Shura");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Shaer[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.id === shaerData.id
-        );
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-
-          localStorage.setItem("Shura", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "success",
-            "آپ کی پروفائل میں یہ شاعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
-          console.log(
-            "آپ کی پروفائل میں یہ شاعر کامیابی کے ساتھ جوڑ دی گئی ہے۔ ."
-          );
-        } else {
-          if (
-            confirm(
-              "کیا آپ سچ میں اس شاعر کو اپنے پسندیدہ میں سے ہٹانا چاہتے ہیں؟"
-            )
-          ) {
-            const updatedData = existingData.filter(
-              (data) => data.id !== shaerData.id
-            );
-
-            // Serialize the updated data back to JSON
-            const updatedDataJSON = JSON.stringify(updatedData);
-
-            // Toggle the color between "#984A02" and "grey" based on the current color
-            document.getElementById(`${id}`)!.classList.remove("text-red-600");
-            document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-            localStorage.setItem("Shura", updatedDataJSON);
-
-            // Optionally, you can update the UI or show a success message
-            showToast(
-              "invalid",
-              "آپ کی پروفائل سے یہ شاعر کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-            );
-            console.log(
-              "آپ کی پروفائل سے یہ شاعر کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-            );
-          }
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-      } finally {
-        setDisableHearts(false);
-      }
-    }
+  const clearSearch = () => {
+    let input = document.getElementById("shuraSearchBox") as HTMLInputElement;
+    let xMark = document.getElementById("shuraSearchClear");
+    let sMark = document.getElementById("shuraSearchIcon");
+    if (input) input.value = "";
+    xMark?.classList.add("hidden");
+    sMark?.classList.add("hidden");
+    setSearchText("");
+    setInitialDataItems([]);
   };
-  //handeling sahre
-  //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
-  useEffect(() => {
-    if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Shura");
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          data &&
-            data.forEach((shaerData, index) => {
-              const shaerId = shaerData.id; // Get the id of the current shaerData
 
-              // Check if the shaerId exists in the stored data
-              const storedShaer = parsedData.find(
-                (data: { id: string }) => data.id === shaerId
-              );
-
-              if (storedShaer) {
-                // If shaerId exists in the stored data, update the card's appearance
-                const cardElement = document.getElementById(shaerId);
-                if (cardElement) {
-                  cardElement.classList.add("text-red-600");
-                }
-              }
-            });
-        } catch (error) {
-          console.error("Error parsing stored data:", error);
-        }
-      }
-    }
-  }, [data]);
+  const handleLoadMore = async () => {
+    try { setMoreLoading(true); await loadMore(); } finally { setMoreLoading(false); }
+  };
 
   return (
     <>
-      {insideBrowser && (data === null || data.length === 0) && (
-        <div className="w-screen h-screen grid place-items-center">
-          آپ کے پسندیدہ میں کوئی شاعر موجود نہیں ہیں
-        </div>
+      {isLoading && <SkeletonLoader />}
+      {initialDataItems.length > 0 && data.length === 0 && (
+        <div className="block mx-auto text-center my-3 text-2xl">سرچ میں کچھ نہیں ملا</div>
       )}
-      <div
-        id="section"
-        dir="rtl"
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
-      >
-        {insideBrowser &&
-          data &&
-          data.map((item, index) => (
-            <div className="relative" key={index}>
-              <div
-                className="heart cursor-pointer text-gray-500 pr-3 absolute top-0 right-0 w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-full m-2 bg-white bg-opacity-30 backdrop-blur-sm z-10"
-                onClick={(e) => handleHeartClick(item, index, `${item.id}`)}
-                id={`${item.id}`}
-                aria-disabled={disableHearts}
-              >
-                <Heart className="text-xl ml-3" />
+      {initialDataItems.length > 0 && (
+        <button className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md" onClick={clearSearch}>
+          تلاش ریسیٹ کریں
+        </button>
+      )}
+      {!isLoading && (
+        <>
+          <div className="flex flex-col gap-4">
+            <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
+              <div className="filter-btn basis-[75%] text-center flex">
+                <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
+                  <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { if (typeof window !== 'undefined') window.location.href = "/"; }} />
+                  <input
+                    type="text"
+                    placeholder="لکھ کر تلاش کریں"
+                    className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
+                    id="shuraSearchBox"
+                    onKeyUp={(e) => handleSearchKeyUp(e)}
+                  />
+                  <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+                    <X color="#984A02" size={24} onClick={clearSearch} id="shuraSearchClear" className="hidden text-[#984A02] cursor-pointer" />
+                  </div>
+                  <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+                    <Search color="#984A02" size={24} id="shuraSearchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
+                  </div>
+                </div>
               </div>
-              <Card data={item as any} />
             </div>
-          ))}
-      </div>
+            <div id="section" dir="rtl" className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[128px] m-3`}>
+              {data.map((item, index) => (
+                <div className="relative" key={index} data-aos="fade-up">
+                  <Card data={item} />
+                </div>
+              ))}
+            </div>
+          </div>
+          {data.length > 0 && (
+            <div className="flex justify-center text-lg m-5">
+              <button onClick={handleLoadMore} disabled={noMoreData || moreLoading} className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer">
+                {moreLoading ? "لوڈ ہو رہا ہے۔۔۔" : noMoreData ? "مزید شعراء کی تفصیلات موجود نہیں ہیں" : "مزید شعراء کی تفصیات لوڈ کریں"}
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </>
   );
-};
+}
 
-export default Shura;

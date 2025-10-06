@@ -12,6 +12,8 @@ import {
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../components/ui/accordion";
 import { Button } from "../../components/ui/button";
 import PromptDialog from "../../components/ui/prompt-dialog";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 
 // Use the unified domain type
 // Accept a minimal shaer-like shape to avoid strict coupling
@@ -31,6 +33,7 @@ const DynamicDownloadHandler: React.FC<{
   data: MinimalDownloadData;
   onCancel: () => void;
 }> = ({ data, onCancel }) => {
+  // This component assumes the parent gated rendering with requireAuth("download").
   const ghazalHeadLines = useMemo(() => {
     const head = data.fields?.ghazalHead;
     if (!head) return [] as string[];
@@ -44,6 +47,7 @@ const DynamicDownloadHandler: React.FC<{
   );
   const [fileName, setFileName] = useState<string>("poetry");
   const [askNameOpen, setAskNameOpen] = useState<boolean>(false);
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
 
   // Ref for the download handler container
   const downloadHandlerRef = useRef<HTMLDivElement>(null);
@@ -210,7 +214,7 @@ const DynamicDownloadHandler: React.FC<{
 
             {/* Display buttons for download and cancel */}
             <div className="flex justify-around gap-3 mt-3 px-3 pb-3 flex-row-reverse">
-              <Button onClick={() => setAskNameOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">ڈاؤنلوڈ کریں</Button>
+              <Button onClick={() => { setAskNameOpen(true); }} className="bg-primary text-primary-foreground hover:bg-primary/90">ڈاؤنلوڈ کریں</Button>
               <Button onClick={onCancel} variant="outline">منسوخ کریں</Button>
             </div>
           </div>
@@ -233,6 +237,7 @@ const DynamicDownloadHandler: React.FC<{
         }}
         onCancel={() => setAskNameOpen(false)}
       />
+      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "download"} />
     </>
   );
 };

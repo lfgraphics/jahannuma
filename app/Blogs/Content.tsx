@@ -154,13 +154,19 @@ const Content = () => {
             {dataItems.map((cardData, index) => (
               <div dir="ltr" key={index} data-aos="fade-up">
                 <Link href={`/Blogs/${cardData.id}`}>
-                  <div className="cardBody w-max border-gray-600 border overflow-hidden rounded-md hover:border-2">
-                    <Image
-                      src={`${getFirstImageSrcFromContent(cardData.content)}`}
-                      alt={`blog iamge ${cardData.id}`}
-                      height={350}
-                      width={350}
-                    ></Image>
+                  <div className="cardBody w-max border-gray-600 border overflow-hidden rounded-md">
+                    {(() => {
+                      const src = getFirstImageSrcFromContent(cardData.content);
+                      if (!src) return null;
+                      const sizedSrc = src.replace(/\/[^\/]+(?=\/[^\/]+$)/, "/s1200");
+                      return (
+                        <img
+                          src={sizedSrc}
+                          alt={`blog iamge ${cardData.id}`}
+                          className="object-cover h-auto sm:h-48 w-96"
+                        />
+                      );
+                    })()}
                     <div className="text-lg text-center p-2 line-clamp-2">
                       {cardData.title}
                     </div>

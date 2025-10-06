@@ -3,10 +3,11 @@ import React, { useEffect, useState } from "react";
 import * as data from "./data";
 import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
 
-import { Download, Heart, Share, X } from "lucide-react";
-import html2canvas from "html2canvas";
+import { Download, Share, X } from "lucide-react";
 import Image from "next/image";
-import InputDialog from "@/components/ui/input-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useShareAction } from "@/hooks/useShareAction";
+import DynamicDownloadHandler from "@/app/Components/Download";
 
 interface Shaer {
   shaer: string;
@@ -19,9 +20,11 @@ const Ashaar: React.FC<{}> = () => {
   const [searchText, setSearchText] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
   const [dataItems, setDataItems] = useState<Shaer[]>([]);
-  const [nameDialogOpen, setNameDialogOpen] = useState(false);
-  const [pendingDownloadEl, setPendingDownloadEl] = useState<string | null>(null);
-  const [disableHearts, setDisableHearts] = useState(false);
+  const [downloadData, setDownloadData] = useState<{
+    id: string;
+    fields: { shaer?: string; ghazalHead?: string[] };
+  } | null>(null);
+  const { language } = useLanguage();
 
   useEffect(() => {
     // This effect runs when the component mounts
@@ -87,92 +90,11 @@ const Ashaar: React.FC<{}> = () => {
     );
   };
 
-  const handleHeartClick = (shaerData: Shaer, index: any, id: string): void => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      if (disableHearts) return;
-      setDisableHearts(true);
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ashaar");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Shaer[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.shaer === shaerData.shaer
-        );
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-          // document.getElementById(`${id}`)!.style color = "#984A02";
-
-          localStorage.setItem("Ashaar", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          console.log("Data added to Local Storage successfully.");
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.shaer !== shaerData.shaer
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Store the updated data in Local Storage
-
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Ashaar", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          document.getElementById(`${id}`)?.classList.remove("text-red-600");
-          console.log("Data removed from Local Storage successfully.");
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-      } finally {
-        setDisableHearts(false);
-      }
-    }
-  };
-
-  const handleShareClick = (shaerData: Shaer, id: String): void => {
-    try {
-      if (navigator.share) {
-        navigator
-          .share({
-            title: shaerData.shaer, // Use the shaer's name as the title
-            text:
-              shaerData.sherHead.map((line) => line).join("\n") +
-              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join sherHead lines with line breaks
-            url: window.location.href, // Get the current page's URL
-          })
-
-          .then(() => console.log("Successful share"))
-          .catch((error) => console.log("Error sharing", error));
-      } else {
-        console.log("Web Share API is not supported.");
-      }
-    } catch (error) {
-      // Handle any errors that may occur when using the Web Share API
-      console.error("Error sharing:", error);
-    }
+  const share = useShareAction({ section: "Ghazlen", title: "" });
+  const handleShareClick = async (shaerData: Shaer, id: string) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const url = `${origin}/EN/Ghazlen#${id}`;
+    await share.handleShare({ title: shaerData.shaer, textLines: shaerData.sherHead, url });
   };
 
   // Function to animate modal opening
@@ -184,32 +106,10 @@ const Ashaar: React.FC<{}> = () => {
     setSelectedCard(null);
   };
 
-  const handleDownload = (elementId: string) => {
-    setPendingDownloadEl(elementId);
-    setNameDialogOpen(true);
-  };
-
-  const performDownloadWithName = (filename: string) => {
-    const name = (filename || "image").replace(/\.(png|jpg|jpeg)$/i, "");
-    const elementId = pendingDownloadEl;
-    if (!elementId) return;
-    const element = document.getElementById(elementId);
-    if (!element) return;
-    document.querySelectorAll(".icons").forEach((icon) => icon.classList.add("hidden"));
-    html2canvas(element).then((canvas) => {
-      const anchorTag = document.createElement("a");
-      document.body.appendChild(anchorTag);
-      anchorTag.download = `${name}.png`;
-      anchorTag.href = canvas.toDataURL();
-      anchorTag.target = "_blank";
-      anchorTag.click();
-      document.querySelectorAll(".icons").forEach((icon) => icon.classList.remove("hidden"));
-      setNameDialogOpen(false);
-      setPendingDownloadEl(null);
-    }).catch(() => {
-      document.querySelectorAll(".icons").forEach((icon) => icon.classList.remove("hidden"));
-      setNameDialogOpen(false);
-      setPendingDownloadEl(null);
+  const handleDownload = (shaerData: Shaer) => {
+    setDownloadData({
+      id: `ghazlen-${shaerData.shaer}`,
+      fields: { shaer: shaerData.shaer, ghazalHead: shaerData.sherHead },
     });
   };
 
@@ -222,29 +122,7 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   useEffect(() => {
-    // Check if the cardData is in localStorage
-    if (window !== undefined && window.localStorage) {
-      const storedData = localStorage.getItem("Ashaar");
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        dataItems.forEach((shaerData, index) => {
-          const cardData = shaerData.wholeSher.map((line) => line).join("|"); // Serialize the card data
-
-          if (
-            parsedData.some(
-              (data: { wholeSher: any[] }) =>
-                data.wholeSher.join("|") === cardData
-            )
-          ) {
-            // If card data exists in the stored data, update the card's appearance
-            const cardElement = document.getElementById(`heart-icon-${index}`);
-            if (cardElement) {
-              cardElement.classList.add("text-red-600");
-            }
-          }
-        });
-      }
-    }
+    // no-op: localStorage favorites removed in favor of Clerk metadata elsewhere
   }, [dataItems]);
 
   return (
@@ -334,16 +212,6 @@ const Ashaar: React.FC<{}> = () => {
                 ))}
                 <div className="felx text-center icons">
                   <button
-                    className={`m-3 text-gray-500 `}
-                    onClick={() =>
-                      handleHeartClick(shaerData, index, `heart-icon-${index}`)
-                    }
-                    id={`heart-icon-${index}`}
-                    disabled={disableHearts}
-                  >
-                    <Heart />
-                  </button>
-                  <button
                     className="m-3"
                     onClick={() => handleShareClick(shaerData, `card${index}`)}
                   >
@@ -351,7 +219,7 @@ const Ashaar: React.FC<{}> = () => {
                   </button>
                   <button
                     className="m-3"
-                    onClick={() => handleDownload(`card${index}`)}
+                    onClick={() => handleDownload(shaerData)}
                   >
                     <Download className="text-primary" />
                   </button>
@@ -369,7 +237,8 @@ const Ashaar: React.FC<{}> = () => {
             return null; // Skip rendering this Shaer
           }
         })}
-      </div>
+  </div>
+  {/* Share no longer requires login */}
 
       {selectedCard && (
         // <div className="justify-center w-max h-max">
@@ -405,17 +274,12 @@ const Ashaar: React.FC<{}> = () => {
         </div>
       )}
 
-      <InputDialog
-        open={nameDialogOpen}
-        onOpenChange={(o) => {
-          setNameDialogOpen(o);
-          if (!o) setPendingDownloadEl(null);
-        }}
-        title={"Enter file name"}
-        placeholder={"filename"}
-        defaultValue={"poetry"}
-        onConfirm={(val) => performDownloadWithName(val)}
-      />
+      {downloadData && (
+        <DynamicDownloadHandler
+          data={downloadData}
+          onCancel={() => setDownloadData(null)}
+        />
+      )}
     </div>
   );
 };

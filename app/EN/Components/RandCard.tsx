@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from "react";
 import * as data from "../Ghazlen/data";
 import { Download, Share2 } from "lucide-react";
-import html2canvas from "html2canvas";
 import Loader from "./Loader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useShareAction } from "@/hooks/useShareAction";
+import DynamicDownloadHandler from "@/app/Components/Download";
 
 interface Shaer {
   shaer: string;
@@ -16,55 +18,27 @@ const EnduRandcard: React.FC<{}> = () => {
   const randomIndex = dataItems.length > 0 ? Math.floor(Math.random() * dataItems.length) : 0;
   const randomData = dataItems.length > 0 ? dataItems[randomIndex] : undefined;
 
-  // Define handleDownload and handleShareClick functions here
-  const handleDownload = (elementId: string) => {
-    document.querySelectorAll(".icons").forEach(function (icon) {
-      icon.classList.add("hidden");
-    });
+  const { language } = useLanguage();
+  const [downloadData, setDownloadData] = useState<{
+    id: string;
+    fields: { shaer?: string; ghazalHead?: string[] };
+  } | null>(null);
 
-    const element = document.getElementById(elementId);
-    if (element) {
-      const fileName = prompt("Enter file name to save");
-
-      if (fileName !== null && fileName.trim() !== "") {
-        // Check if a valid file name is provided
-        html2canvas(element).then(function (canvas) {
-          var anchorTag = document.createElement("a");
-          document.body.appendChild(anchorTag);
-          anchorTag.download = `${fileName}.png`;
-          anchorTag.href = canvas.toDataURL();
-          anchorTag.target = "_blank";
-          anchorTag.click();
-        });
-      }
-
-      document.querySelectorAll(".icons").forEach(function (icon) {
-        icon.classList.remove("hidden");
-      });
-    }
-
-    document.querySelectorAll(".icons").forEach(function (icon) {
-      icon.classList.remove("hidden");
+  const handleDownload = (shaerData: Shaer) => {
+    setDownloadData({
+      id: `rand-${shaerData.shaer}`,
+      fields: { shaer: shaerData.shaer, ghazalHead: shaerData.sherHead },
     });
   };
 
-  const handleShareClick = (shaerData: Shaer, id: string): void => {
+  const share = useShareAction({ section: "EN", title: "Random sher", textLines: [], url: "" });
+  const handleShareClick = async (shaerData: Shaer, id: string): Promise<void> => {
     try {
-      if (typeof window !== undefined && navigator.share) {
-        navigator
-          .share({
-            title: shaerData.shaer,
-            text:
-              shaerData.sherHead.map((line) => line).join("\n") +
-              `\nFound this on Jahan Numa website\nCheckout there webpage here>>\n `, // Join sherHead lines with line breaks
-
-            url: window.location.href + `/#${id}`,
-          })
-          .then(() => console.log("Successful share"))
-          .catch((error) => console.log("Error sharing", error));
-      } else {
-        console.log("Web Share API is not supported.");
-      }
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const url = `${origin}/EN#${id}`;
+      const title = shaerData.shaer;
+      const textLines = [...shaerData.sherHead];
+      await share.handleShare({ url, title, textLines });
     } catch (error) {
       console.error("Error sharing:", error);
     }
@@ -122,7 +96,7 @@ const EnduRandcard: React.FC<{}> = () => {
               </button>
               <button
                 className="m-3 flex gap-2 items-center"
-                onClick={() => handleDownload("sherCard")}
+                onClick={() => randomData && handleDownload(randomData)}
               >
                 <Download color="#984A02" />
                 <p className="pb-[11px]">Download this</p>
@@ -138,6 +112,12 @@ const EnduRandcard: React.FC<{}> = () => {
             </div>
           </div>
         </div>
+      )}
+      {downloadData && (
+        <DynamicDownloadHandler
+          data={downloadData}
+          onCancel={() => setDownloadData(null)}
+        />
       )}
     </div>
   );

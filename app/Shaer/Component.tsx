@@ -1,14 +1,12 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import Card from "../Components/shaer/Profilecard";
-import { Heart, House, Search, X } from "lucide-react";
-import { toast } from "sonner";
+import { House, Search, X } from "lucide-react";
 import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 import { TTL } from "@/lib/airtable-fetcher";
 
@@ -100,8 +98,6 @@ const Page: React.FC<{}> = () => {
     { debounceMs: 1200, ttl: TTL.list }
   );
 
-  // const { updateRecord } = useAirtableMutation("appgWv81tu4RT3uRB", "Intro");
-
   function scrollToTop() {
     if (typeof window !== 'undefined') {
       window.scrollTo({
@@ -137,34 +133,7 @@ const Page: React.FC<{}> = () => {
     setMoreLoading(false);
   }, [records, isLoading, hasMore]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedData = localStorage.getItem("Shura");
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          data.forEach((shaerData, index) => {
-            const shaerId = shaerData.id; // Get the id of the current shaerData
-
-            // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data: { id: string }) => data.id === shaerId
-            );
-
-            if (storedShaer) {
-              // If shaerId exists in the stored data, update the card's appearance
-              const cardElement = document.getElementById(shaerId);
-              if (cardElement) {
-                cardElement.classList.add("text-red-600");
-              }
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing stored data:", error);
-        }
-      }
-    }
-  }, [data]);
+  // Removed legacy localStorage-based highlighting; likes are handled in Profilecard via Clerk
 
   const searchQuery = () => {
     // with debounced hook, updating searchText triggers re-fetch; nothing else needed
@@ -271,16 +240,6 @@ const Page: React.FC<{}> = () => {
             <div id="section" dir="rtl" className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[128px] m-3`}>
               {data.map((item, index) => (
                 <div className="relative" key={index} data-aos="fade-up">
-                  {/* <div
-                    className="heart scale-75 cursor-pointer text-gray-500 pr-3 absolute -top-[9px] -right-3 rounded-tr-sm w-[80px] max-w-[120px] h-10 flex items-center justify-center border rounded-t-none rounded-b-xl m-2 backdrop-blur-sm z-10"
-                    onClick={(e) =>
-                      handleHeartClick(e, item, index, `${item.id}`)
-                    }
-                    id={`${item.id}`}
-                  >
-                    <Heart className="text-xl ml-3" fill="#6b7280" />
-                    <span className="text-foreground">{`${item.fields?.likes}`}</span>
-                  </div> */}
                   <Card data={item} />
                 </div>
               ))}

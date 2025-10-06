@@ -1,12 +1,11 @@
 "use client";
-import Link from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
-import { Heart } from "lucide-react";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import type { AirtableRecord, GhazlenRecord } from "@/app/types";
 import { buildShaerFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
-import { useLikeButton } from "@/hooks/useLikeButton";
+import DataCard from "@/app/Components/DataCard";
+import { useShareAction } from "@/hooks/useShareAction";
 
 interface Props { takhallus: string }
 
@@ -20,66 +19,55 @@ const Ghazlen: React.FC<Props> = ({ takhallus }) => {
     filterByFormula: buildShaerFilter(takhallus),
     pageSize: 30,
   });
-
   const dataItems = useMemo(() => records.map(formatGhazlenRecord) as AirtableRecord<GhazlenRecord>[], [records]);
+
+  const [openanaween, setOpenanaween] = useState<string | null>(null);
+  const toggleanaween = (cardId: string | null) => setOpenanaween((prev) => (prev === cardId ? null : cardId));
+  const handleCardClick = (_rec: AirtableRecord<GhazlenRecord>) => {};
+  const openComments = (_id: string) => {};
+
+  const share = useShareAction({ section: "Ghazlen", title: "" });
 
   useEffect(() => { setLoading(isLoading); }, [isLoading]);
 
-  // Inline like button via centralized hook
-  const LikeBtn: React.FC<{ rec: AirtableRecord<GhazlenRecord> }> = ({ rec }) => {
-    const like = useLikeButton({
-      baseId: BASE_ID,
-      table: TABLE,
-      storageKey: "Ghazlen",
-      recordId: rec.id,
-      currentLikes: rec.fields.likes ?? 0,
-      swrKey,
-    });
-    return (
-      <button
-        id={rec.id}
-        disabled={like.isDisabled}
-        className={`btn ml-5 transition-all duration-300 text-lg cursor-pointer flex items-center justify-center gap-2 ${like.isLiked ? "text-red-600" : "text-gray-500"}`}
-        onClick={() => like.handleLikeClick()}
-      >
-        <Heart />
-        <span className="text-sm text-foreground">{like.likesCount}</span>
-      </button>
-    );
-  };
-
   return (
-    <div>
+    <div dir="rtl" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3">
       {loading && <ComponentsLoader />}
       {!loading && dataItems.length === 0 && (
-        <div className="h-[30vh] grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
+        <div className="h-[30vh] col-span-full grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
       )}
-      {dataItems.map((shaerData, index) => {
-        return (
-          <div
-            key={shaerData.id}
-            id={`card${index}`}
-            className="bg-white dark:bg-[#2d2d2f] rounded-sm border-b relative flex flex-col justify-between m-5 pt-0 md:mx-36 lg:mx-36"
-          >
-            <div className="flex justify-between items-center">
-              <div className="mr-5">
-                <Link href={"/Ghazlen/" + (shaerData.fields.slugId ?? shaerData.fields.id ?? shaerData.id)}>
-                  {(Array.isArray(shaerData.fields.ghazalHead) ? shaerData.fields.ghazalHead : String(shaerData.fields.ghazalHead ?? "").split("\n")).map((lin, i) => (
-                    <p
-                      style={{ lineHeight: "normal" }}
-                      key={i}
-                      className="line-normal text-xl"
-                    >
-                      {lin}
-                    </p>
-                  ))}
-                </Link>
-              </div>
-              <LikeBtn rec={shaerData as any} />
-            </div>
-          </div>
-        );
-      })}
+      {!loading && dataItems.map((rec, index) => (
+        <DataCard
+          key={rec.id}
+          page="ghazal"
+          shaerData={rec as any}
+          index={index}
+          download={false}
+          baseId={BASE_ID}
+          table={TABLE}
+          storageKey="Ghazlen"
+          swrKey={swrKey}
+          toggleanaween={toggleanaween}
+          openanaween={openanaween}
+          handleCardClick={handleCardClick as any}
+          handleShareClick={(r: any) => {
+            const rr = r as AirtableRecord<GhazlenRecord>;
+            const headArr = Array.isArray(rr.fields.ghazalHead) ? rr.fields.ghazalHead : String(rr.fields.ghazalHead || "").split("\n");
+            return share.handleShare({
+              baseId: BASE_ID,
+              table: TABLE,
+              recordId: rr.id,
+              title: rr.fields.shaer,
+              textLines: headArr,
+              slugId: rr.fields.slugId,
+              swrKey,
+              currentShares: rr.fields.shares ?? 0,
+            });
+          }}
+          openComments={openComments}
+        />
+      ))}
+  {/* Share no longer requires login */}
     </div>
   );
 };

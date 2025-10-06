@@ -11,13 +11,16 @@ import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import { useAirtableCreate } from "@/hooks/useAirtableCreate";
 import type { AirtableRecord, AshaarRecord, CommentRecord, LikedMap, MozuPageParams, SelectedCard } from "@/app/types";
-import { buildDataIdFilter, buildUnwanFilter, formatAshaarRecord, getLikedItems, toggleLikedItem, showMutationToast } from "@/lib/airtable-utils";
+import { buildDataIdFilter, buildUnwanFilter, formatAshaarRecord, showMutationToast } from "@/lib/airtable-utils";
 import { updatePagedListField } from "@/lib/swr-updater";
+import { useCommentSystem } from "@/hooks/useCommentSystem";
+import { ASHAAR_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 const ASHAAR_BASE = "appeI2xzzyvUN5bR7";
 const ASHAAR_TABLE = "Ashaar";
-const COMMENTS_BASE = "appzB656cMxO0QotZ";
-const COMMENTS_TABLE = "Comments";
+const COMMENTS_BASE = ASHAAR_COMMENTS_BASE;
+const COMMENTS_TABLE_NAME = COMMENTS_TABLE;
 
 const SkeletonLoader = () => (
     <div className="flex flex-col items-center">
@@ -33,7 +36,7 @@ export default function Page({ params }: { params: MozuPageParams }) {
     const encodedUnwan = params.unwan;
     const decodedUnwan = decodeURIComponent(encodedUnwan);
 
-    const { records, isLoading, swrKey: listSWRKey } = useAirtableList<AirtableRecord<any>>(ASHAAR_BASE, ASHAAR_TABLE, {
+    const { records, isLoading, swrKey: listSWRKey, mutate } = useAirtableList<AirtableRecord<any>>(ASHAAR_BASE, ASHAAR_TABLE, {
         filterByFormula: buildUnwanFilter(decodedUnwan),
         pageSize: 30,
     });
@@ -45,10 +48,9 @@ export default function Page({ params }: { params: MozuPageParams }) {
     const [selectedCommentId, setSelectedCommentId] = useState<string | null>(null);
     const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
     const [openanaween, setOpenanaween] = useState<string | null>(null);
-    const [commentorName, setCommentorName] = useState<string | null>(null);
-    const [comments, setComments] = useState<CommentRecord[]>([]);
-    const [commentLoading, setCommentLoading] = useState(false);
     const [newComment, setNewComment] = useState("");
+    const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem(COMMENTS_BASE, COMMENTS_TABLE_NAME, null);
+    const { requireAuth } = useAuthGuard();
     const [likedMap, setLikedMap] = useState<LikedMap>({});
     const [disableHearts, setDisableHearts] = useState(false);
 
@@ -58,51 +60,12 @@ export default function Page({ params }: { params: MozuPageParams }) {
 
     // use isLoading directly; remove legacy mirrored loading state
 
-    // init liked from localStorage for these records
-    useEffect(() => {
-        try {
-            const existing = getLikedItems<{ id: string }>("Ashaar");
-            const map: LikedMap = {};
-            for (const item of dataItems) map[item.id] = existing.some((d: { id: string }) => d.id === item.id);
-            setLikedMap(map);
-        } catch { }
-    }, [dataItems]);
+    // likes now come from Clerk metadata via DataCard/useLikeButton; no localStorage init
+    useEffect(() => { setLikedMap({}); }, [dataItems]);
 
     // use shared mutation toast helper from airtable-utils
 
-    const handleHeartClick = async (
-        e: React.MouseEvent<HTMLButtonElement>,
-        shaerData: AirtableRecord<AshaarRecord>,
-        index: number,
-        id: string
-    ) => {
-        toggleanaween(null);
-        if (e.detail === 1) {
-            setDisableHearts(true);
-            try {
-                const { liked } = toggleLikedItem("Ashaar", shaerData);
-                const prev = likedMap[id];
-                setLikedMap((prevMap: LikedMap) => ({ ...prevMap, [id]: liked }));
-                showMutationToast(liked ? "success" : "warning", liked ? "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔" : "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔");
-
-                const inc = liked ? 1 : -1;
-                const targetId = shaerData.id;
-                await updateRecord([
-                    { id: targetId, fields: { likes: (shaerData.fields.likes ?? 0) + inc } },
-                ], {
-                    optimistic: true,
-                    affectedKeys: listSWRKey ? [listSWRKey] : undefined,
-                    updater: (current: any) => updatePagedListField(current, targetId, "likes", inc),
-                });
-            } catch (error) {
-                const prev = likedMap[id];
-                setLikedMap((prevMap: LikedMap) => ({ ...prevMap, [id]: prev }));
-                toast.error("لائیک اپڈیٹ میں مسئلہ آیا۔");
-            } finally {
-                setDisableHearts(false);
-            }
-        }
-    };
+    // Legacy like handler removed; DataCard will manage likes internally
 
     const handleShareClick = async (shaerData: AirtableRecord<AshaarRecord>, index: number) => {
         toggleanaween(null);
@@ -143,63 +106,40 @@ export default function Page({ params }: { params: MozuPageParams }) {
     //toggling anaween box
     const toggleanaween = (cardId: string | null) => setOpenanaween((prev) => (prev === cardId ? null : cardId));
 
-    const [showDialog, setShowDialog] = useState(false);
-
-    const { records: commentRecords, isLoading: commentsLoading } = useAirtableList<AirtableRecord<CommentRecord>>(
-        COMMENTS_BASE,
-        COMMENTS_TABLE,
-        {
-            filterByFormula: selectedCommentId ? buildDataIdFilter(selectedCommentId) : undefined,
-            pageSize: 30,
-        },
-        { enabled: !!selectedCommentId }
-    );
-    useEffect(() => {
-        const storedName = typeof window !== "undefined" ? localStorage.getItem("commentorName") : null;
-        if (!commentorName && storedName) setCommentorName(storedName);
-    }, [selectedCommentId]);
-    useEffect(() => {
-        setCommentLoading(commentsLoading);
-    const mapped = (commentRecords || []).map((r: AirtableRecord<CommentRecord>) => r.fields);
-        setComments(mapped as CommentRecord[]);
-    }, [commentRecords, commentsLoading]);
-
     const handleNewCommentChange = (comment: string) => setNewComment(comment);
-
     const handleCommentSubmit = async (dataId: string) => {
-        if (typeof window !== "undefined") {
-            const storedName = localStorage.getItem("commentorName");
-            if (!commentorName && storedName) setCommentorName(storedName);
-        }
-        if (newComment !== "") {
+        if (!requireAuth("comment")) return;
+        if (!newComment) return;
+        try {
+            await submitComment({ recordId: dataId, content: newComment });
+            setNewComment("");
             try {
-                const timestamp = new Date().toISOString();
-                const date = new Date(timestamp);
-                const formattedDate = format(date, "MMMM dd, yyyy h:mm", {});
-                const commentData: CommentRecord = { dataId, commentorName: commentorName || "Anonymous", timestamp: formattedDate, comment: newComment };
-
-                await createRecord([{ fields: commentData as any }]);
-                setComments((prev) => [...prev, commentData]);
-                setNewComment("");
-
-                // increment comments count on main record
-                await updateRecord([{ id: dataId, fields: { comments: (dataItems.find((d: AirtableRecord<AshaarRecord>) => d.id === dataId)?.fields.comments ?? 0) + 1 } }], {
+                await updateRecord([
+                    { id: dataId, fields: { comments: (dataItems.find((d: AirtableRecord<AshaarRecord>) => d.id === dataId)?.fields.comments ?? 0) + 1 } }
+                ], {
                     optimistic: true,
                     affectedKeys: listSWRKey ? [listSWRKey] : undefined,
                     updater: (current: any) => updatePagedListField(current, dataId, "comments", 1),
                 });
-            } catch (error) {
-                console.error(`Error adding comment: ${error}`);
+            } catch (err) {
+                // Rollback the optimistic increment on failure
+                try {
+                    await mutate(
+                        (current: any) => updatePagedListField(current, dataId, "comments", -1),
+                        { revalidate: false }
+                    );
+                } catch {}
             }
-        }
+        } catch {}
     };
 
     const openComments = (dataId: string) => {
         setSelectedCommentId(dataId);
+        setRecordId(dataId);
     };
     const closeComments = () => {
         setSelectedCommentId(null);
-        setComments([]);
+        setRecordId(null);
     };
 
     // removed legacy search placeholders
@@ -223,11 +163,12 @@ export default function Page({ params }: { params: MozuPageParams }) {
                                     handleCardClick={handleCardClick}
                                     toggleanaween={toggleanaween}
                                     openanaween={openanaween}
-                                    handleHeartClick={handleHeartClick}
+                                    baseId={ASHAAR_BASE}
+                                    table={ASHAAR_TABLE}
+                                    storageKey="Ashaar"
+                                    swrKey={listSWRKey as any}
                                     handleShareClick={handleShareClick}
                                     openComments={openComments}
-                                    heartLiked={!!likedMap[shaerData.id]}
-                                    onHeartToggle={(e) => handleHeartClick(e, shaerData, index, `${shaerData.id}`)}
                                     heartDisabled={disableHearts}
                                 />
                             </div>
@@ -254,11 +195,7 @@ export default function Page({ params }: { params: MozuPageParams }) {
                 </div>
             )}
 
-            {selectedCommentId && (
-                <button className=" fixed bottom-24 left-7 z-50 rounded-full  h-10 w-10 pt-2 " id="modlBtn" onClick={() => closeComments()}>
-                    <XCircle className="text-gray-700 h-8 w-8 hover:text-[#984A02] transition-all duration-500 ease-in-out" />
-                </button>
-            )}
+            {/* Close handled via DrawerClose inside CommentSection */}
             {selectedCommentId && (
                 <CommentSection
                     dataId={selectedCommentId}

@@ -45,9 +45,12 @@ const formatDate = (dateString?: string) => {
 
 import { Heart } from "lucide-react";
 import { useLikeButton } from "@/hooks/useLikeButton";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 
 const Card: React.FC<CardProps> = ({ data, showLikeButton = false, baseId = "appXcBoNMGdIaSUyA", table = "E-Books", storageKey = "Books", onLikeChange, swrKey }) => {
   const { fields } = data;
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
   const { bookName, publishingDate, book, id: fieldId, desc, writer, slugId } = fields;
   const recordId = fieldId || data.id; // prefer fields.id, fallback to record.id
   const image = book?.[0]?.thumbnails?.large;
@@ -71,8 +74,8 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, baseId = "app
     : null;
 
   return (
-    <div className="rounded overflow-hidden shadow-lg mx-auto border border-border bg-background text-foreground w-[200px]">
-      <div className="relative bg-cover bg-center w-[200px] h-[260px]">
+    <div className="rounded overflow-hidden shadow-lg mx-auto border border-border bg-background text-foreground w-[180px]">
+      <div className="relative bg-cover bg-center w-[180px] h-[260px]">
         <Link href={{ pathname: `/E-Books/${bookSlug}/${recordId}` }} className="block w-full h-full">
           {image?.url && (
             <img
@@ -86,16 +89,16 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, baseId = "app
           )}
         </Link>
         {likeEnabled && like && (
-          <div
-            className={`absolute top-0 right-0 px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 ${like.isLiked ? "text-red-600" : "text-gray-600"}`}
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); like.handleLikeClick(); }}
-            // disabled={like.isDisabled}
-            aria-disabled={like.isDisabled}
-            title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+          <button
+            className={`absolute top-0 right-0 px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 ${like.isHydratingLikes ? "text-gray-600" : (like.isLiked ? "text-red-600" : "text-gray-600")}`}
+            onClick={async (e) => { e.preventDefault(); e.stopPropagation(); if (!requireAuth("like")) return; await like.handleLikeClick(); }}
+            disabled={like.isHydratingLikes || like.isDisabled}
+            aria-disabled={like.isHydratingLikes || like.isDisabled}
+            title={like.isHydratingLikes ? "" : (like.isLiked ? "پسندیدہ" : "پسند کریں")}
           >
             <Heart className="inline" fill="currentColor" size={16} />
             <span className="text-xs text-foreground">{like.likesCount}</span>
-          </div>
+          </button>
         )}
       </div>
       <div className="px-3 py-2">
@@ -109,6 +112,7 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, baseId = "app
           </span>
         </div>
       </div>
+      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "like"} />
     </div>
   );
 };

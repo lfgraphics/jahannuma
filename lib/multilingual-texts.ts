@@ -20,7 +20,7 @@ export const navPages: Array<TranslatedText & { EN: string }> = [
   { EN: "E-Books", UR: "ای-بکس", HI: "ई-बुक्स" },
   { EN: "Blogs", UR: "بلاگز", HI: "ब्लॉग्स" },
   { EN: "Interview", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
-  { EN: "Faviorites", UR: "پسندیدہ", HI: "पसंदीदा" },
+  { EN: "Favorites", UR: "پسندیدہ", HI: "पसंदीदा" },
 ];
 
 // UI Text Collections
@@ -35,6 +35,9 @@ export const uiTexts = {
     comment: { EN: "Comment", UR: "تبصرہ", HI: "टिप्पणी" },
     loadMore: { EN: "Load More", UR: "مزید لوڈ کریں", HI: "और लोड करें" },
     confirm: { EN: "Confirm", UR: "تصدیق کریں", HI: "पुष्टि करें" },
+    signIn: { EN: "Sign In", UR: "لاگ ان", HI: "साइन इन" },
+    signUp: { EN: "Sign Up", UR: "رجسٹر", HI: "साइन अप" },
+    signOut: { EN: "Sign Out", UR: "لاگ آؤٹ", HI: "साइन आउट" },
   },
   messages: {
     loading: { EN: "Loading...", UR: "لوڈ ہو رہا ہے...", HI: "लोड हो रहा है..." },
@@ -42,6 +45,24 @@ export const uiTexts = {
     success: { EN: "Success!", UR: "کامیاب!", HI: "सफल!" },
     noData: { EN: "No data found", UR: "کوئی ڈیٹا نہیں ملا", HI: "कोई डेटा नहीं मिला" },
     copied: { EN: "Copied to clipboard", UR: "کاپی ہو گیا", HI: "क्लिपबोर्ड में कॉपी किया" },
+    loginRequired: { EN: "Login Required", UR: "لاگ ان ضروری", HI: "लॉगिन आवश्यक" },
+    loginToDownload: { EN: "Please login to download", UR: "برائے کرم ڈاؤن لوڈ کے لیے لاگ ان کریں", HI: "डाउनलोड के लिए कृपया लॉगिन करें" },
+    loginToLike: { EN: "Please login to like", UR: "برائے کرم پسند کے لیے لاگ ان کریں", HI: "पसंद करने के लिए कृपया लॉगिन करें" },
+    loginToComment: { EN: "Please login to comment", UR: "برائے کرم تبصرہ کے لیے لاگ ان کریں", HI: "टिप्पणी करने के लिए कृपया लॉगिन करें" },
+    commentSubmitted: { EN: "Comment submitted successfully", UR: "تبصرہ کامیابی سے جمع کر دیا گیا", HI: "टिप्पणी सफलतापूर्वक सबमिट की गई" },
+    commentFailed: { EN: "Failed to submit comment", UR: "تبصرہ جمع کرنے میں ناکام", HI: "टिप्पणी सबमिट करने में विफल" },
+    commentProcessing: { EN: "Submitting comment...", UR: "تبصرہ جمع کیا جا رہا ہے...", HI: "टिप्पणी सबमिट की जा रही है..." },
+    likeProcessing: { EN: "Processing...", UR: "عمل جاری ہے...", HI: "प्रसंस्करण..." },
+    likeAdded: { EN: "Added to favorites!", UR: "پسندیدہ میں شامل کر دیا گیا!", HI: "पसंदीदा में जोड़ा गया!" },
+    likeRemoved: { EN: "Removed from favorites!", UR: "پسندیدہ سے ہٹا دیا گیا!", HI: "पसंदीदा से हटाया गया!" },
+    authRequired: { EN: "Please sign in to continue", UR: "جاری رکھنے کے لیے لاگ ان کریں", HI: "जारी रखने के लिए साइन इन करें" },
+    authSuccess: { EN: "Successfully signed in", UR: "کامیابی سے لاگ ان ہو گئے", HI: "सफलतापूर्वक साइन इन हो गए" },
+    // New share/download specific
+    shareSuccess: { EN: "Shared successfully", UR: "کامیابی سے شیئر کیا گیا", HI: "सफलतापूर्वक साझा किया गया" },
+    shareCancelled: { EN: "Share cancelled", UR: "شیئر منسوخ کر دیا گیا", HI: "साझा करना रद्द किया गया" },
+    shareRequired: { EN: "Please sign in to share", UR: "شیئر کرنے کے لیے لاگ ان کریں", HI: "साझा करने के लिए साइन इन करें" },
+    downloadRequired: { EN: "Please sign in to download", UR: "ڈاؤن لوڈ کے لیے لاگ ان کریں", HI: "डाउनलोड के लिए साइन इन करें" },
+    downloadSuccess: { EN: "Downloaded successfully", UR: "کامیابی سے ڈاؤن لوڈ ہو گیا", HI: "सफलतापूर्वक डाउनलोड किया गया" },
   },
   placeholders: {
     search: { EN: "Search...", UR: "تلاش کریں...", HI: "खोजें..." },

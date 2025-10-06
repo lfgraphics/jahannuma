@@ -146,32 +146,6 @@ export const buildIdFilter = (id: string) =>
   `(RECORD_ID() = '${esc(id)}')`;
 export const buildDataIdFilter = (dataId: string) => `({dataId}='${esc(dataId)}')`;
 
-// LocalStorage helpers
-export function getLikedItems<T = any>(storageKey: string): T[] {
-  try {
-    const raw = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
-    return raw ? (JSON.parse(raw) as T[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function toggleLikedItem<T extends { id: string }>(storageKey: string, item: T) {
-  type Minimal = { id: string };
-  const items = getLikedItems<Minimal>(storageKey);
-  const exists = items.some((i) => i.id === item.id);
-  const next = exists ? items.filter((i) => i.id !== item.id) : [...items, { id: item.id }];
-  try {
-    if (typeof window !== "undefined") localStorage.setItem(storageKey, JSON.stringify(next));
-  } catch {}
-  return { liked: !exists, list: next } as const;
-}
-
-export function isItemLiked(storageKey: string, id: string) {
-  const items = getLikedItems<{ id: string }>(storageKey);
-  return items.some((i) => i.id === id);
-}
-
 // Mutation helpers
 export const prepareLikeUpdate = (current: number | undefined, increment: number) => ({ likes: (current ?? 0) + increment });
 export const prepareShareUpdate = (current: number | undefined) => ({ shares: (current ?? 0) + 1 });

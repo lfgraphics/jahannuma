@@ -1,10 +1,14 @@
 "use client";
 // ShaerCard.tsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Heart, MessageCircle, Share2, Tag, Download } from "lucide-react";
 import Link from "next/link";
 import DynamicDownloadHandler from "./Download";
 import { useLikeButton } from "@/hooks/useLikeButton";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { AuthRequiredError } from "@/hooks/useLikeButton";
+import { createSlug } from "@/lib/airtable-utils";
 // Use a minimal local shape for safety without forcing all callers to match a strict type
 export type MinimalShaer = {
   id: string;
@@ -20,6 +24,9 @@ export type MinimalShaer = {
     slugId?: string;
   };
 };
+
+// Track records we've warned about to avoid noisy logs
+const __warnedNoHandlerIds = new Set<string>();
 
 export interface ShaerCardProps<T extends MinimalShaer = MinimalShaer> {
   page: string;
@@ -75,6 +82,7 @@ const DataCard = <T extends MinimalShaer>({
   onLikeChange,
 }: ShaerCardProps<T>) => {
   const [selectedShaer, setSelectedShaer] = useState<MinimalShaer | null>(null);
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
 
   const cancelDownload = () => {
     // Reset the selectedShaer state to null
@@ -106,21 +114,45 @@ const DataCard = <T extends MinimalShaer>({
   const likeEnabled = !!(baseId && table && storageKey && recordId);
   const like = likeEnabled
     ? useLikeButton({
-        baseId,
-        table,
-        storageKey,
-        recordId,
-        currentLikes: (sd?.fields?.likes as number | undefined) ?? 0,
-        swrKey,
-        onChange: onLikeChange,
-      })
+      baseId,
+      table,
+      storageKey,
+      recordId,
+      currentLikes: (sd?.fields?.likes as number | undefined) ?? 0,
+      swrKey,
+      onChange: onLikeChange,
+    })
     : null;
-  const resolvedHeartLiked = like ? like.isLiked : !!heartLiked;
-  const resolvedHeartDisabled = like ? like.isDisabled : !!heartDisabled;
-  const onHeart = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (like) return like.handleLikeClick();
+  const resolvedHeartLiked = like ? (like.isHydratingLikes ? false : like.isLiked) : !!heartLiked;
+  const resolvedHeartDisabled = like ? (like.isHydratingLikes ? true : like.isDisabled) : !!heartDisabled;
+  const noHandlers = !like && !handleHeartClick && !onHeartToggle;
+
+  // Warn once if the card has no like ability due to missing prerequisites/handlers
+  useEffect(() => {
+    if (noHandlers && recordId && !__warnedNoHandlerIds.has(recordId)) {
+      console.warn(
+        `[DataCard] Heart click is disabled: missing baseId/table/storageKey and no legacy handlers for recordId=${recordId}`
+      );
+      __warnedNoHandlerIds.add(recordId);
+    }
+  }, [noHandlers, recordId]);
+  const onHeart = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Internal-like-first when enabled
+    if (like) {
+      try {
+        if (!requireAuth("like")) return;
+        await like.handleLikeClick();
+      } catch (err) {
+        if (err && (err as any).name === "AuthRequiredError") {
+          setShowLoginDialog(true);
+        }
+      }
+      return;
+    }
+    // Legacy precedence when internal like is not enabled: handleHeartClick first, then onHeartToggle
+    if (handleHeartClick)
+      return handleHeartClick(e, shaerData, index, recordId);
     if (onHeartToggle) return onHeartToggle(e);
-  if (handleHeartClick) return handleHeartClick(e, shaerData, index, recordId);
     // default: if internal like not enabled and no external handler, do nothing
   };
 
@@ -162,15 +194,16 @@ const DataCard = <T extends MinimalShaer>({
                 </p>
               ))}
               <button className="text-[#984A02] font-semibold m-3">
-                <Link href={{ pathname: `/Nazmen/${encodeURIComponent((shaerData?.fields?.ghazalHead?.[0] || '') as string)}/${encodeURIComponent(shaerData?.id)}` }}>
+                <Link href={{ pathname: `/Nazmen/${encodeURIComponent((createSlug(shaerData?.fields?.ghazalHead?.[0] || '')) as string)}/${encodeURIComponent(shaerData?.id)}` }}>
                   پڑھیں۔۔۔
                 </Link>
               </button>
               <button
                 id={heartElementId}
-                className={`m-3 transition-all duration-500 ${resolvedHeartLiked ? "text-red-600" : "text-gray-500"}`}
+                className={`m-3 transition-all duration-500 ${resolvedHeartLiked ? "text-red-600" : "text-gray-500"} ${noHandlers ? "opacity-50 cursor-not-allowed" : ""}`}
                 onClick={onHeart}
-                disabled={resolvedHeartDisabled}
+                disabled={resolvedHeartDisabled || noHandlers}
+                aria-disabled={resolvedHeartDisabled || noHandlers}
               >
                 <Heart className="inline" fill="currentColor" size={16} />{" "}
                 <span id="likescount" className="text-gray-500 text-sm">
@@ -179,7 +212,7 @@ const DataCard = <T extends MinimalShaer>({
               </button>
               <button
                 className="m-3 flex items-center gap-1"
-                onClick={() => openComments(shaerData?.id)}
+                onClick={() => { if (requireAuth("comment")) openComments(shaerData?.id); }}
               >
                 <MessageCircle color="#984A02" className="ml-2" size={16} />{" "}
                 <span className="text-gray-500 text-sm">
@@ -295,16 +328,17 @@ const DataCard = <T extends MinimalShaer>({
           <div className="flex items-end text-center w-full">
             <button
               id={heartElementId}
-              className={`m-3 flex gap-1 items-center transition-all duration-500 ${resolvedHeartLiked ? "text-red-600" : "text-gray-500"}`}
+              className={`m-3 flex gap-1 items-center transition-all duration-500 ${resolvedHeartLiked ? "text-red-600" : "text-gray-500"} ${noHandlers ? "opacity-50 cursor-not-allowed" : ""}`}
               onClick={onHeart}
-              disabled={resolvedHeartDisabled}
+              disabled={resolvedHeartDisabled || noHandlers}
+              aria-disabled={resolvedHeartDisabled || noHandlers}
             >
               <Heart className="inline" fill="currentColor" size={16} />{" "}
               <span id="likescount" className="text-gray-500 text-sm">
                 {like ? like.likesCount : (shaerData?.fields?.likes ?? 0)}
               </span>
             </button>
-            <button className="m-3 flex items-center gap-1" onClick={() => openComments(shaerData?.id)}>
+            <button className="m-3 flex items-center gap-1" onClick={() => { if (requireAuth("comment")) openComments(shaerData?.id); }}>
               <MessageCircle color="#984A02" className="ml-2" size={16} />{" "}
               <span className="text-gray-500 text-sm">
                 {shaerData?.fields?.comments ?? 0}
@@ -324,11 +358,11 @@ const DataCard = <T extends MinimalShaer>({
               onClick={() => handleCardClick(shaerData)}
             >
               {download ? (
-                <Link href={{ pathname: `/Ashaar/${encodeURIComponent(shaerData?.fields?.ghazalHead?.[0] || '')}/${encodeURIComponent(shaerData?.id)}` }}>
+                <Link href={{ pathname: `/Ashaar/${encodeURIComponent(createSlug(shaerData?.fields?.ghazalHead?.[0] || ''))}/${encodeURIComponent(shaerData?.id)}` }}>
                   غزل پڑھیں
                 </Link>
               ) : (
-                <Link href={{ pathname: `/Ghazlen/${encodeURIComponent(shaerData?.fields?.ghazalHead?.[0] || '')}/${encodeURIComponent(shaerData?.id)}` }}>
+                <Link href={{ pathname: `/Ghazlen/${encodeURIComponent(createSlug(shaerData?.fields?.ghazalHead?.[0] || ''))}/${encodeURIComponent(shaerData?.id)}` }}>
                   غزل پڑھیں
                 </Link>
               )}
@@ -336,7 +370,7 @@ const DataCard = <T extends MinimalShaer>({
             {download && (
               <button
                 className="m-3 flex items-center gap-1"
-                onClick={() => setSelectedShaer(shaerData)}
+                onClick={() => { if (requireAuth("download")) setSelectedShaer(shaerData); }}
               >
                 <Download color="#984A02" />
               </button>
@@ -351,6 +385,7 @@ const DataCard = <T extends MinimalShaer>({
               />
             </div>
           )}
+          <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "like"} />
         </div>
       )}
     </>

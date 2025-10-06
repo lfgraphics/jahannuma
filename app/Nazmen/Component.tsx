@@ -10,14 +10,14 @@ import DataCard from "../Components/DataCard";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Home, Search, X } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
-import { useAirtableCreate } from "@/hooks/useAirtableCreate";
 import { airtableFetchJson, TTL, invalidateAirtable } from "@/lib/airtable-fetcher";
+import { useCommentSystem } from "@/hooks/useCommentSystem";
+import { NAZMEN_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { shareRecordWithCount } from "@/lib/social-utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Shaer {
   fields: {
@@ -71,46 +71,17 @@ const Ashaar: React.FC<{}> = () => {
   const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
   const [noMoreData, setNoMoreData] = useState(false);
   const [openanaween, setOpenanaween] = useState<string | null>(null);
-  //comments
-  const [showDialog, setShowDialog] = useState(false);
-  const [nameInput, setNameInput] = useState("");
-  const [commentorName, setCommentorName] = useState<string | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [commentLoading, setCommentLoading] = useState(false);
+  // Comment system
   const [newComment, setNewComment] = useState("");
+  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem(NAZMEN_COMMENTS_BASE, COMMENTS_TABLE, null);
+  const { requireAuth } = useAuthGuard();
+  const { language } = useLanguage();
   // toast via sonner
 
-  useEffect(() => {
-    AOS.init({
-      offset: 50,
-      delay: 0,
-      duration: 300,
-    });
-  }, []);
-
-  // simple toast helper
-  const showToast = (
-    msgtype: "success" | "error" | "invalid",
-    message: string
-  ) => {
-    if (msgtype === "success") return toast.success(message);
-    if (msgtype === "error") return toast.error(message);
-    return toast.warning(message);
-  };
-
-  //function ot scroll to the top
-  function scrollToTop() {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
+  // List records with SWR and filter
   const filterFormula = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     if (!q) return undefined;
-    // Escape single quotes and other special characters for Airtable formula
     const escapedQ = q.replace(/'/g, "\\'");
     return `OR( FIND('${escapedQ}', LOWER({shaer})), FIND('${escapedQ}', LOWER({displayLine})), FIND('${escapedQ}', LOWER({nazm})), FIND('${escapedQ}', LOWER({unwan})) )`;
   }, [searchText]);
@@ -120,16 +91,14 @@ const Ashaar: React.FC<{}> = () => {
     { pageSize: 30, filterByFormula: filterFormula },
     { debounceMs: 300 }
   );
-
   const { updateRecord: updateNazmen } = useAirtableMutation(
     "app5Y2OsuDgpXeQdz",
     "nazmen"
   );
-  const { createRecord: createNazmenComment } = useAirtableCreate(
-    "appjF9QvJeKAM9c9F",
-    "Comments"
-  );
 
+  const fetchComments = async (dataId: string) => {
+    setRecordId(dataId);
+  };
   const formattedRecords: Shaer[] = useMemo(() => {
     return (records || []).map((record: any) => ({
       ...record,
@@ -195,38 +164,32 @@ const Ashaar: React.FC<{}> = () => {
     index: number
   ): Promise<void> => {
     toggleanaween(null);
-    try {
-      if (navigator.share) {
-        navigator
-          .share({
-            title: shaerData.fields.shaer, // Use the shaer's name as the title
-            text:
-              shaerData.fields.ghazalHead.map((line) => line).join("\n") +
-              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
-          })
-
-          .then(() => console.info("Successful share"))
-          .catch((error) => console.error("Error sharing", error));
-        try {
-          const updatedShares = shaerData.fields.shares + 1;
-          await updateNazmen([{ id: shaerData.id, fields: { shares: updatedShares } }]);
-          setDataItems((prev) => {
-            const copy = [...prev];
-            const item = copy[index];
-            if (item?.fields) item.fields.shares = updatedShares;
-            return copy;
-          });
-        } catch (error) {
-          console.error("Error updating shres:", error);
-        }
-      } else {
-        console.warn("Web Share API is not supported.");
+    await shareRecordWithCount(
+      {
+        section: "Nazmen",
+        id: shaerData.id,
+        title: shaerData.fields.shaer,
+        textLines: shaerData.fields.ghazalHead ?? [],
+        fallbackSlugText: (shaerData.fields.ghazalHead || [])[0] || (shaerData.fields.unwan || [])[0] || "",
+        language,
+      },
+      {
+        onShared: async () => {
+          try {
+            const updatedShares = (shaerData.fields.shares ?? 0) + 1;
+            await updateNazmen([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+            setDataItems((prev) => {
+              const copy = [...prev];
+              const item = copy[index];
+              if (item?.fields) item.fields.shares = updatedShares;
+              return copy;
+            });
+          } catch (error) {
+            console.error("Error updating shares:", error);
+          }
+        },
       }
-    } catch (error) {
-      // Handle any errors that may occur when using the Web Share API
-      console.error("Error sharing:", error);
-    }
+    );
   };
   // Opening card now uses shadcn Drawer instead of manual modal/GSAP
   const handleCardClick = (shaerData: Shaer): void => {
@@ -246,142 +209,46 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-  const hideDialog = () => {
-    setShowDialog(false);
-  };
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNameInput(event.target.value);
-  };
-  const handleNameSubmission = () => {
-    localStorage.setItem("commentorName", nameInput);
-    setCommentorName(nameInput);
-    hideDialog();
-  };
-  const fetchComments = async (dataId: string) => {
-    const storedName = localStorage.getItem("commentorName");
-    try {
-      setCommentLoading(true);
-      if (!commentorName && storedName === null) {
-        setShowDialog(true);
-      } else {
-        setCommentorName(commentorName || storedName);
-      }
-      const result = await airtableFetchJson({
-        kind: "list",
-        baseId: "appjF9QvJeKAM9c9F",
-        table: "Comments",
-        params: { filterByFormula: `dataId="${dataId}"` },
-        ttl: TTL.fast,
-      });
-
-      const fetchedComments = (result.records || []).map(
-        (record: {
-          fields: {
-            dataId: string;
-            commentorName: string | null;
-            timestamp: string | Date;
-            comment: string;
-          };
-        }) => ({
-          dataId: record.fields.dataId,
-          commentorName: record.fields.commentorName,
-          timestamp: record.fields.timestamp,
-          comment: record.fields.comment,
-        })
-      );
-      setCommentLoading(false);
-      setComments(fetchedComments);
-    } catch (error) {
-      setCommentLoading(false);
-      console.error(`Failed to fetch comments: ${error}`);
-    }
-  };
+  // removed legacy name dialog and manual fetchComments
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
   const handleCommentSubmit = async (dataId: string) => {
-    // Check if the user has provided a name
-    if (typeof window !== "undefined") {
-      const storedName = localStorage.getItem("commentorName");
-      if (!commentorName && storedName === null) {
-        setShowDialog(true);
-      } else {
-        setCommentorName(commentorName || storedName);
-      }
-    }
-    if (newComment !== "") {
-      try {
-        const timestamp = new Date().toISOString();
-        const date = new Date(timestamp);
-
-        const formattedDate = format(date, "MMMM dd, yyyy h:mm", {});
-
-        const commentData = {
-          dataId,
-          commentorName,
-          timestamp: formattedDate,
-          comment: newComment,
-        };
-        await createNazmenComment([{ fields: commentData }]);
-        // Update the UI with the new comment
-        setComments((prevComments: Comment[]) => [
-          ...prevComments,
-          commentData,
-        ]);
-
-        // Clear the input field
-        setNewComment("");
-        const updatedDataItems = dataItems.map((dataItem) => {
-          if (dataItem.id === dataId) {
-            // If the dataItem has the matching id, update comments field
-            const currentComments = dataItem.fields.comments || 0;
+    if (!requireAuth("comment")) return;
+    if (!newComment) return;
+    try {
+      await submitComment({ recordId: dataId, content: newComment });
+      setNewComment("");
+      setDataItems((prevDataItems) => {
+        return prevDataItems.map((prevItem) => {
+          if (prevItem.id === dataId) {
             return {
-              ...dataItem,
+              ...prevItem,
               fields: {
-                ...dataItem.fields,
-                comments: currentComments + 1,
+                ...prevItem.fields,
+                comments: (prevItem.fields.comments || 0) + 1,
               },
             };
+          } else {
+            return prevItem;
           }
-          return dataItem;
         });
-
-        const dataItemToUpdate = updatedDataItems.find(
-          (item) => item.id === dataId
-        );
-
-        if (dataItemToUpdate && dataItemToUpdate.fields) {
-          if (!dataItemToUpdate.fields.comments) {
-            // If the comments field is not present, add it with the value 1
-            dataItemToUpdate.fields.comments = 1;
-          }
-        }
-        setDataItems((prevDataItems) => {
-          return prevDataItems.map((prevItem) => {
-            if (prevItem.id === dataId) {
-              return {
-                ...prevItem,
-                fields: {
-                  ...prevItem.fields,
-                  comments: (prevItem.fields.comments || 0) + 1,
-                },
-              };
-            } else {
-              return prevItem;
-            }
-          });
-        });
-
-        try {
-          await updateNazmen([{ id: dataId, fields: { comments: dataItemToUpdate!.fields.comments } }]);
-          // Invalidate comments cache to ensure subsequent fetch reflects new comment
-          invalidateAirtable("appjF9QvJeKAM9c9F", "Comments");
-        } catch (error) {
-          console.error("Error updating comments on the server:", error);
-        }
+      });
+      try {
+        const current = dataItems.find((i) => i.id === dataId);
+        const next = ((current?.fields.comments) || 0) + 1;
+        await updateNazmen([{ id: dataId, fields: { comments: next } }]);
       } catch (error) {
-        console.error(`Error adding comment: ${error}`);
+        // Rollback optimistic bump on failure
+        setDataItems((prevDataItems) => prevDataItems.map((prevItem) => (
+          prevItem.id === dataId
+            ? { ...prevItem, fields: { ...prevItem.fields, comments: Math.max(0, (prevItem.fields.comments || 1) - 1) } }
+            : prevItem
+        )));
+        console.error("Error updating comments on the server:", error);
       }
+    } catch (error) {
+      // toast handled inside hook
     }
   };
   const openComments = (dataId: string) => {
@@ -392,6 +259,7 @@ const Ashaar: React.FC<{}> = () => {
   };
   const closeComments = () => {
     setSelectedCommentId(null);
+    setRecordId(null);
   };
   const resetSearch = () => {
     searchText && clearSearch();
@@ -409,36 +277,7 @@ const Ashaar: React.FC<{}> = () => {
   return (
     <div>
       {/* Sonner Toaster is provided globally in providers.tsx */}
-      <Dialog open={showDialog} onOpenChange={hideDialog}>
-        <DialogContent dir="rtl" className="max-w-[380px]">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold pb-3 border-b text-center">
-              براہ کرم اپنا نام درج کریں
-            </DialogTitle>
-            <DialogDescription className="text-center pt-2">
-              ہم آپ کا نام صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے
-              استعمال کریں گے
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4"
-          >
-            <Input
-              id="nameInput"
-              value={nameInput}
-              onChange={handleNameChange}
-              className="mt-2"
-            />
-            <Button
-              id="submitBtn"
-              disabled={nameInput.length < 4}
-              onClick={handleNameSubmission}
-              className="bg-[#984A02] disabled:bg-gray-500 text-white hover:bg-[#984A02]/90"
-            >
-              محفوظ کریں
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Removed legacy name dialog; comments rely on authenticated user */}
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
           <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">

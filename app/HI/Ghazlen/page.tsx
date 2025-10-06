@@ -1,12 +1,13 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import * as data from "./data";
-import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
-import { toPng } from "html-to-image";
-import { Download, Heart, Share2, X } from "lucide-react";
-// import { Filter } from "react-feather";
+import { filterDataBySearch } from "./data";
+import { Download, Share2, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useShareAction } from "@/hooks/useShareAction";
+import DynamicDownloadHandler from "@/app/Components/Download";
 
 interface Shaer {
   shaer: string;
@@ -76,78 +77,17 @@ const Ashaar: React.FC<{}> = () => {
     );
   };
 
-  const [liked, setLiked] = useState<Set<string>>(new Set());
+  const { language } = useLanguage();
+  const [downloadData, setDownloadData] = useState<{
+    id: string;
+    fields: { shaer?: string; ghazalHead?: string[] };
+  } | null>(null);
 
-  const handleHeartClick = (shaerData: Shaer): void => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Ashaar");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Shaer[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some((d) => d.shaer === shaerData.shaer);
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-          localStorage.setItem("Ashaar", updatedDataJSON);
-          setLiked((prev) => new Set(prev).add(shaerData.shaer));
-          // Optionally, you can update the UI or show a success message
-          console.log("Data added to Local Storage successfully.");
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter((d) => d.shaer !== shaerData.shaer);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-          localStorage.setItem("Ashaar", updatedDataJSON);
-          setLiked((prev) => {
-            const next = new Set(prev);
-            next.delete(shaerData.shaer);
-            return next;
-          });
-          console.log("Data removed from Local Storage successfully.");
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-      }
-    }
-  };
-
-  const handleShareClick = (shaerData: Shaer, id: String): void => {
-    // console.log(shaerData.sherHead);
-    try {
-      if (navigator.share) {
-        navigator
-          .share({
-            title: shaerData.shaer, // Use the shaer's name as the title
-            text:
-              shaerData.sherHead.map((line) => line).join("\n") +
-              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join sherHead lines with line breaks
-            url: window.location.href, // Get the current page's URL
-          })
-
-          .then(() => console.log("Successful share"))
-          .catch((error) => console.log("Error sharing", error));
-      } else {
-        console.log("Web Share API is not supported.");
-      }
-    } catch (error) {
-      // Handle any errors that may occur when using the Web Share API
-      console.error("Error sharing:", error);
-    }
+  const share = useShareAction({ section: "Ghazlen", title: "" });
+  const handleShareClick = async (shaerData: Shaer, id: string) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const url = `${origin}/HI/Ghazlen#${id}`;
+    await share.handleShare({ title: shaerData.shaer, textLines: shaerData.sherHead, url });
   };
 
   // Function to animate modal opening
@@ -159,51 +99,11 @@ const Ashaar: React.FC<{}> = () => {
     setSelectedCard(null);
   };
 
-  const handleDownload = async (
-    elementId: string,
-    options?: {
-      pixelRatio?: number;
-      backgroundColor?: string;
-      quality?: number; // used by jpeg, ignored by png but kept for flexibility
-      width?: number;
-      height?: number;
-    }
-  ): Promise<void> => {
-    console.log("download is clicked");
-    const icons = document.querySelectorAll(".icons");
-    icons.forEach((icon) => icon.classList.add("hidden"));
-
-    try {
-      const element = document.getElementById(elementId) as HTMLElement | null;
-      if (!element) return;
-
-
-      const defaultPixelRatio =
-        typeof window !== "undefined"
-          ? Math.min((window.devicePixelRatio || 1) * 2, 4)
-          : 2;
-
-      const opts = {
-        cacheBust: true,
-        pixelRatio: defaultPixelRatio,
-        ...options,
-      };
-
-      const dataUrl = await toPng(element, opts as any);
-
-      const anchorTag = document.createElement("a");
-      document.body.appendChild(anchorTag);
-      const fileName = prompt("Enter file name to save") || "image";
-      anchorTag.download = `${fileName}.png`;
-      anchorTag.href = dataUrl;
-      anchorTag.target = "_blank";
-      anchorTag.click();
-      anchorTag.remove();
-    } catch (err) {
-      console.error("Error generating image:", err);
-    } finally {
-      icons.forEach((icon) => icon.classList.remove("hidden"));
-    }
+  const handleDownload = (shaerData: Shaer) => {
+    setDownloadData({
+      id: `ghazlen-${shaerData.shaer}`,
+      fields: { shaer: shaerData.shaer, ghazalHead: shaerData.sherHead },
+    });
   };
   const toggleFilter = () => {
     document.getElementById("filtersListBox")?.classList.toggle("max-h-0");
@@ -214,20 +114,7 @@ const Ashaar: React.FC<{}> = () => {
   };
 
   useEffect(() => {
-    // Initialize liked state from localStorage
-    if (typeof window !== "undefined" && window.localStorage) {
-      const storedData = localStorage.getItem("Ashaar");
-      if (storedData) {
-        try {
-          const parsed: Shaer[] = JSON.parse(storedData);
-          const next = new Set<string>();
-          parsed.forEach((d) => d?.shaer && next.add(d.shaer));
-          setLiked(next);
-        } catch {}
-      } else {
-        setLiked(new Set());
-      }
-    }
+    // No localStorage: likes are handled elsewhere via Clerk metadata in this app
   }, [dataItems.length]);
 
   return (
@@ -318,13 +205,6 @@ const Ashaar: React.FC<{}> = () => {
                 ))}
                 <div className="felx text-center icons">
                   <button
-                    className={cn("m-3", liked.has(shaerData.shaer) ? "text-red-600" : "text-gray-500")}
-                    onClick={() => handleHeartClick(shaerData)}
-                    id={`heart-icon-${index}`}
-                  >
-                    <Heart className="inline" fill="currentColor" size={16} />
-                  </button>
-                  <button
                     className="m-3"
                     onClick={() => handleShareClick(shaerData, `card${index}`)}
                   >
@@ -332,7 +212,7 @@ const Ashaar: React.FC<{}> = () => {
                   </button>
                   <button
                     className="m-3"
-                    onClick={() => handleDownload(`card${index}`)}
+                    onClick={() => handleDownload(shaerData)}
                   >
                     <Download color="#984A02" />
                   </button>
@@ -350,7 +230,8 @@ const Ashaar: React.FC<{}> = () => {
             return null; // Skip rendering this Shaer
           }
         })}
-      </div>
+  </div>
+  {/* Share no longer requires login */}
 
       {selectedCard && (
         // <div className="justify-center w-max h-max">
@@ -384,6 +265,12 @@ const Ashaar: React.FC<{}> = () => {
             ))}
           </div>
         </div>
+      )}
+      {downloadData && (
+        <DynamicDownloadHandler
+          data={downloadData}
+          onCancel={() => setDownloadData(null)}
+        />
       )}
     </div>
   );

@@ -1,19 +1,21 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { Search, X, House } from "lucide-react";
-import { format } from "date-fns";
-import { toast } from "sonner";
 import CommentSection from "../Components/CommentSection";
 import SkeletonLoader from "../Components/SkeletonLoader";
 import RubaiCard from "../Components/RubaiCard";
+import { useLikeButton } from "@/hooks/useLikeButton";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
 import type { Rubai } from "../types";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
-import { useAirtableCreate } from "@/hooks/useAirtableCreate";
-import { airtableFetchJson, TTL, invalidateAirtable } from "@/lib/airtable-fetcher";
+import { useCommentSystem } from "@/hooks/useCommentSystem";
+import { RUBAI_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { useShareAction } from "@/hooks/useShareAction";
 
 interface ApiResponse {
   records: Rubai[];
@@ -39,13 +41,11 @@ const Ashaar: React.FC<{}> = () => {
   const [dataItems, setDataItems] = useState<Rubai[]>([]);
   const [initialDataItems, setInitialdDataItems] = useState<Rubai[]>([]);
   const [noMoreData, setNoMoreData] = useState(false);
-  //comments
-  const [showDialog, setShowDialog] = useState(false);
-  const [nameInput, setNameInput] = useState("");
-  const [commentorName, setCommentorName] = useState<string | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [commentLoading, setCommentLoading] = useState(false);
+  // Comment system
   const [newComment, setNewComment] = useState("");
+  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem(RUBAI_COMMENTS_BASE, COMMENTS_TABLE, null);
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
+  const share = useShareAction({ section: "Rubai", title: "" });
   // notifications handled by global Sonner Toaster
   useEffect(() => {
     AOS.init({
@@ -55,15 +55,6 @@ const Ashaar: React.FC<{}> = () => {
     });
   });
 
-  //function ot show toast
-  const showToast = (
-    msgtype: "success" | "error" | "invalid",
-    message: string
-  ) => {
-    if (msgtype === "success") toast.success(message);
-    else if (msgtype === "error") toast.error(message);
-    else toast.warning(message);
-  };
   //function ot scroll to the top
   function scrollToTop() {
     if (typeof window !== 'undefined') {
@@ -80,7 +71,7 @@ const Ashaar: React.FC<{}> = () => {
     const escaped = q.replace(/'/g, "\\'");
     return `OR( FIND('${escaped}', LOWER({shaer})), FIND('${escaped}', LOWER({body})), FIND('${escaped}', LOWER({unwan})) )`;
   }, [searchText]);
-  const { records, isLoading, hasMore, loadMore } = useAirtableList<Rubai>(
+  const { records, isLoading, hasMore, loadMore, swrKey } = useAirtableList<Rubai>(
     "appIewyeCIcAD4Y11",
     "rubai",
     { pageSize: 30, filterByFormula: filterFormula },
@@ -90,11 +81,6 @@ const Ashaar: React.FC<{}> = () => {
   const { updateRecord: updateRubai } = useAirtableMutation(
     "appIewyeCIcAD4Y11",
     "rubai"
-  );
-
-  const { createRecord: createRubaiComment } = useAirtableCreate(
-    "appseIUI98pdLBT1K",
-    "comments"
   );
 
   useEffect(() => {
@@ -141,320 +127,109 @@ const Ashaar: React.FC<{}> = () => {
     setSearchText(""); // Clear the searchText state
     // setDataItems(data.getAllShaers()); // Restore the original data
   };
-  // handeling liking, adding to localstorage and updating on the server
-  const handleHeartClick = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-    shaerData: Rubai,
-    index: any,
-    id: string
-  ): Promise<void> => {
-  if (typeof window !== 'undefined' && window.localStorage && e.detail === 1) {
-      try {
-        // Get the existing data from Local Storage (if any)
-        const existingDataJSON = localStorage.getItem("Rubai");
-
-        // Parse the existing data into an array or initialize an empty array if it doesn't exist
-        const existingData: Rubai[] = existingDataJSON
-          ? JSON.parse(existingDataJSON)
-          : [];
-
-        // Check if the shaerData is already in the existing data
-        const isDuplicate = existingData.some(
-          (data) => data.id === shaerData.id
-        );
-
-        if (!isDuplicate) {
-          // Add the new shaerData to the existing data array
-          existingData.push(shaerData);
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(existingData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-gray-500");
-          document.getElementById(`${id}`)!.classList.add("text-red-600");
-
-          localStorage.setItem("Rubai", updatedDataJSON);
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "success",
-            "آپ کی پروفائل میں یہ غزل کامیابی کے ساتھ جوڑ دی گئی ہے۔ "
-          );
-          try {
-            const currentLikes = Number(shaerData?.fields?.likes ?? 0);
-            const updatedLikes = currentLikes + 1;
-            await updateRubai([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
-            setDataItems((prev) =>
-              prev.map((item) =>
-                item.id !== shaerData.id
-                  ? item
-                  : { ...item, fields: { ...item.fields, likes: updatedLikes } }
-              )
-            );
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        } else {
-          // Remove the shaerData from the existing data array
-          const updatedData = existingData.filter(
-            (data) => data.id !== shaerData.id
-          );
-
-          // Serialize the updated data back to JSON
-          const updatedDataJSON = JSON.stringify(updatedData);
-
-          // Toggle the color between "#984A02" and "grey" based on the current color
-          document.getElementById(`${id}`)!.classList.remove("text-red-600");
-          document.getElementById(`${id}`)!.classList.add("text-gray-500");
-
-          localStorage.setItem("Rubai", updatedDataJSON);
-
-          // Optionally, you can update the UI or show a success message
-          showToast(
-            "invalid",
-            "آپ کی پروفائل سے یہ غزل کامیابی کے ساتھ ہٹا دی گئی ہے۔"
-          );
-          try {
-            const currentLikes = Number(shaerData?.fields?.likes ?? 0);
-            const updatedLikes = Math.max(0, currentLikes - 1);
-            await updateRubai([{ id: shaerData.id, fields: { likes: updatedLikes } }]);
-            setDataItems((prev) =>
-              prev.map((item) =>
-                item.id !== shaerData.id
-                  ? item
-                  : { ...item, fields: { ...item.fields, likes: updatedLikes } }
-              )
-            );
-          } catch (error) {
-            console.error("Error updating likes:", error);
-          }
-        }
-      } catch (error) {
-        // Handle any errors that may occur when working with Local Storage
-        console.error(
-          "Error adding/removing data to/from Local Storage:",
-          error
-        );
-      }
-    }
+  // Update local list on like change (for instant UI feedback)
+  const handleLikeChange = (args: { id: string; liked: boolean; likes: number }) => {
+    setDataItems(prev => prev.map(it => it.id === args.id ? { ...it, fields: { ...it.fields, likes: args.likes } } : it));
   };
-  //handeling sahre
+
+  // Per-card wrapper to bind Clerk like hook to RubaiCard
+  const CardItem: React.FC<{ item: Rubai; index: number }> = ({ item, index }) => {
+    const like = useLikeButton({
+      baseId: "appIewyeCIcAD4Y11",
+      table: "rubai",
+      storageKey: "Rubai",
+      recordId: item.id,
+      currentLikes: item.fields?.likes ?? 0,
+      swrKey,
+      onChange: handleLikeChange,
+    });
+    const onHeartClick = async (_e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!requireAuth("like")) return;
+      await like.handleLikeClick();
+    };
+    return (
+      <RubaiCard
+        RubaiData={item}
+        index={index}
+        handleHeartClick={onHeartClick as any}
+        openComments={openComments}
+        handleShareClick={handleShareClick}
+        isLiking={like.isDisabled}
+      />
+    );
+  };
+  //handeling share via centralized hook
   const handleShareClick = async (
     shaerData: Rubai,
-    index: number
+    _index: number
   ): Promise<void> => {
-    try {
-      if (navigator.share) {
-        navigator
-          .share({
-            title: shaerData.fields.shaer, // Use the shaer's name as the title
-            text:
-              shaerData.fields.body +
-              `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `, // Join ghazalHead lines with line breaks
-            url: `${window.location.href + "/" + shaerData.id}`, // Get the current page's URL
-          })
-
-          .then(() => console.info("Successful share"))
-          .catch((error) => console.error("Error sharing", error));
-        try {
-          const updatedShares = shaerData.fields.shares + 1;
-          await updateRubai([{ id: shaerData.id, fields: { shares: updatedShares } }]);
-          setDataItems((prev) =>
-            prev.map((item) =>
-              item.id !== shaerData.id
-                ? item
-                : { ...item, fields: { ...item.fields, shares: updatedShares } }
-            )
-          );
-        } catch (error) {
-          console.error("Error updating shres:", error);
-        }
-      } else {
-        console.warn("Web Share API is not supported.");
-      }
-    } catch (error) {
-      // Handle any errors that may occur when using the Web Share API
-      console.error("Error sharing:", error);
-    }
+    await share.handleShare({
+      baseId: "appIewyeCIcAD4Y11",
+      table: "rubai",
+      recordId: shaerData.id,
+      title: shaerData.fields.shaer,
+      textLines: [String(shaerData.fields.body ?? "")],
+      // Use first non-empty line of body as slug text
+      fallbackSlugText: (String(shaerData.fields?.body ?? "").split("\n").find(l => l.trim().length > 0) ?? ""),
+      swrKey,
+      currentShares: shaerData.fields.shares ?? 0,
+    });
   };
 
-  //checking while render, if the data is in the loacstorage then make it's heart red else leave it grey
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedData = localStorage.getItem("Rubai");
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          dataItems.forEach((shaerData, index) => {
-            const shaerId = shaerData.fields.id; // Get the id of the current shaerData
+  // Removed localStorage highlighting; modern likes handled via Clerk metadata
 
-            // Check if the shaerId exists in the stored data
-            const storedShaer = parsedData.find(
-              (data: { id: string }) => data.id === shaerId
-            );
-
-            if (storedShaer) {
-              // If shaerId exists in the stored data, update the card's appearance
-              const cardElement = document.getElementById(shaerId);
-              if (cardElement) {
-                cardElement.classList.add("text-red-600");
-              }
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing stored data:", error);
-        }
-      }
-    }
-  }, [dataItems]);
-
-  // name change handeling in name input filed
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNameInput(event.target.value);
-  };
-  // handeling name save on the button click
-  const handleNameSubmission = () => {
-    localStorage.setItem("commentorName", nameInput);
-    setCommentorName(nameInput);
-  };
   const fetchComments = async (dataId: string) => {
-    const storedName = localStorage.getItem("commentorName");
-    try {
-      setCommentLoading(true);
-      if (!commentorName && storedName === null) {
-        setShowDialog(true);
-      } else {
-        setCommentorName(commentorName || storedName);
-      }
-      const result = await airtableFetchJson({
-        kind: "list",
-        baseId: "appseIUI98pdLBT1K",
-        table: "comments",
-        params: { filterByFormula: `dataId="${dataId}"` },
-        ttl: TTL.fast,
-      });
-
-      const fetchedComments = (result.records || []).map(
-        (record: {
-          fields: {
-            dataId: string;
-            commentorName: string | null;
-            timestamp: string | Date;
-            comment: string;
-          };
-        }) => ({
-          dataId: record.fields.dataId,
-          commentorName: record.fields.commentorName,
-          timestamp: record.fields.timestamp,
-          comment: record.fields.comment,
-        })
-      );
-      setCommentLoading(false);
-      setComments(fetchedComments);
-    } catch (error) {
-      setCommentLoading(false);
-      console.error(`Failed to fetch comments: ${error}`);
-    }
+    setRecordId(dataId);
   };
   // showing the current made comment in comment box
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
   const handleCommentSubmit = async (dataId: string) => {
-    // Check if the user has provided a name
-    if (typeof window !== "undefined") {
-      const storedName = localStorage.getItem("commentorName");
-      if (!commentorName && storedName === null) {
-        setShowDialog(true);
-      } else {
-        setCommentorName(commentorName || storedName);
-      }
-    }
-    if (newComment !== "") {
+    if (!requireAuth("comment")) return;
+    if (!newComment) return;
+    try {
+      await submitComment({ recordId: dataId, content: newComment });
+      setNewComment("");
+      setDataItems((prevDataItems) => {
+        return prevDataItems.map((prevItem) => {
+          if (prevItem.id === dataId) {
+            return {
+              ...prevItem,
+              fields: {
+                ...prevItem.fields,
+                comments: (prevItem.fields.comments || 0) + 1,
+              },
+            };
+          } else {
+            return prevItem;
+          }
+        });
+      });
       try {
-        const timestamp = new Date().toISOString();
-        const date = new Date(timestamp);
-
-        const formattedDate = format(date, "MMMM dd, yyyy h:mm", {});
-
-        const commentData = {
-          dataId,
-          commentorName,
-          timestamp: formattedDate,
-          comment: newComment,
-        };
-  await createRubaiComment([{ fields: commentData }]);
-        {
-          // Update the UI with the new comment
-          setComments((prevComments: Comment[]) => [
-            ...prevComments,
-            commentData,
-          ]);
-
-          // Clear the input field
-          setNewComment("");
-          const updatedDataItems = dataItems.map((dataItem) => {
-            if (dataItem.id === dataId) {
-              // If the dataItem has the matching id, update comments field
-              const currentComments = dataItem.fields.comments || 0;
-              return {
-                ...dataItem,
-                fields: {
-                  ...dataItem.fields,
-                  comments: currentComments + 1,
-                },
-              };
-            }
-            return dataItem;
-          });
-
-          const dataItemToUpdate = updatedDataItems.find(
-            (item) => item.id === dataId
-          );
-
-          if (dataItemToUpdate && dataItemToUpdate.fields) {
-            if (!dataItemToUpdate.fields.comments) {
-              // If the comments field is not present, add it with the value 1
-              dataItemToUpdate.fields.comments = 1;
-            }
-          }
-          setDataItems((prevDataItems) => {
-            return prevDataItems.map((prevItem) => {
-              if (prevItem.id === dataId) {
-                return {
-                  ...prevItem,
-                  fields: {
-                    ...prevItem.fields,
-                    comments: (prevItem.fields.comments || 0) + 1,
-                  },
-                };
-              } else {
-                return prevItem;
-              }
-            });
-          });
-
-          try {
-            if (dataItemToUpdate?.fields?.comments !== undefined) {
-              await updateRubai([{ id: dataId, fields: { comments: dataItemToUpdate.fields.comments } }]);
-            }            // Invalidate comments cache so the next fetch includes the new comment
-            invalidateAirtable("appseIUI98pdLBT1K", "comments");
-          } catch (error) {
-            console.error("Error updating comments on the server:", error);
-          }
-        }
+        const current = dataItems.find((i) => i.id === dataId);
+        const next = ((current?.fields.comments) || 0) + 1;
+        await updateRubai([{ id: dataId, fields: { comments: next } }]);
       } catch (error) {
-        console.error(`Error adding comment: ${error}`);
+        // Rollback optimistic comment increment
+        setDataItems((prevDataItems) => prevDataItems.map((prevItem) => (
+          prevItem.id === dataId
+            ? { ...prevItem, fields: { ...prevItem.fields, comments: Math.max(0, (prevItem.fields.comments || 1) - 1) } }
+            : prevItem
+        )));
+        console.error("Error updating comments on the server:", error);
       }
+    } catch (error) {
+      // toast handled inside hook
     }
   };
   const openComments = (dataId: string) => {
     setSelectedCommentId(dataId);
     fetchComments(dataId);
-    // setIsModleOpen(true);
   };
   const closeComments = () => {
     setSelectedCommentId(null);
+    setRecordId(null);
   };
   // reseting  search
   const resetSearch = () => {
@@ -473,43 +248,8 @@ const Ashaar: React.FC<{}> = () => {
 
   return (
     <div>
-      {/* Toast handled globally by Sonner Toaster */}
-      {showDialog && (
-        <div className="w-screen h-screen bg-black bg-opacity-60 flex flex-col justify-center fixed z-50">
-          <div
-            dir="rtl"
-            className="dialog-container h-max p-9 -mt-20 w-max max-w-[380px] rounded-md text-center block mx-auto bg-white"
-          >
-            <div className="dialog-content">
-              <p className="text-lg font-bold pb-3 border-b">
-                براہ کرم اپنا نام درج کریں
-              </p>
-              <p className="pt-2">
-                {" "}
-                آپ کا نام۔صرف آپ کے تبصروں کو آپ کے نام سے دکھانے کے لیے استعمال
-                کریں گے۔
-              </p>
-              <input
-                type="text"
-                id="nameInput"
-                className="mt-2 p-2 border"
-                value={nameInput}
-                onChange={handleNameChange}
-              />
-              <div className=" mt-4">
-                <button
-                  id="submitBtn"
-                  disabled={nameInput.length < 4}
-                  className="px-4 py-2 bg-[#984A02] disabled:bg-gray-500 text-white rounded"
-                  onClick={handleNameSubmission}
-                >
-                  محفوظ کریں
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+  {/* Toast handled globally by Sonner Toaster; share no longer requires login */}
+      {/* Removed legacy name dialog; comments rely on authenticated user */}
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
           <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
@@ -558,13 +298,7 @@ const Ashaar: React.FC<{}> = () => {
           <div id="section" dir="rtl" className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky mt-6`}>
             {dataItems.map((data, index) => (
               <div data-aos="fade-up" key={data.id}>
-                <RubaiCard
-                  RubaiData={data}
-                  index={index}
-                  handleHeartClick={handleHeartClick}
-                  openComments={openComments}
-                  handleShareClick={handleShareClick}
-                />
+                <CardItem item={data} index={index} />
               </div>
             ))}
             {dataItems.length > 0 && (

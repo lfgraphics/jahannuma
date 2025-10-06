@@ -226,7 +226,7 @@ const Page: React.FC<{}> = () => {
           <div
             id="section"
             dir="rtl"
-            className={`grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-2 sticky m-3 md:mt-4`}
+            className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2 sticky m-3 md:mt-4`}
           >
             {data.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">
@@ -255,8 +255,8 @@ const Page: React.FC<{}> = () => {
                 {moreloading
                   ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                    ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
-                    : "مزید شعراء کی تفصیات لوڈ کریں"}
+                    ? "مزید کتابیں موجود نہیں ہیں"
+                    : "مزید کتابیں لوڈ کریں"}
               </button>
             </div>
           )}

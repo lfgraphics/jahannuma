@@ -24,7 +24,8 @@ import {
   SheetClose
 } from "@/components/ui/sheet";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { navPages } from "@/lib/multilingual-texts";
+import { navPages, getButtonText } from "@/lib/multilingual-texts";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 type Language = "EN" | "UR" | "HI";
 
@@ -199,6 +200,21 @@ const Navbar: React.FC = () => {
                       </nav>
                     </div>
                   </div>
+
+                  {/* Authentication Section - Mobile (inside first Sheet) */}
+                  {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
+                    <div className="flex flex-col items-center gap-3 mt-2 p-4 border-t border-border w-full">
+                      <SignedIn>
+                        <UserButton appearance={{ elements: { userButtonAvatarBox: "h-8 w-8" } }} />
+                      </SignedIn>
+                      <SignedOut>
+                        <div className="flex gap-2">
+                          <Link href="/sign-in"><Button variant="outline">{getButtonText("signIn" as any, language as any)}</Button></Link>
+                          <Link href="/sign-up"><Button>{getButtonText("signUp" as any, language as any)}</Button></Link>
+                        </div>
+                      </SignedOut>
+                    </div>
+                  ) : null}
                 </div>
               </SheetContent>
             </Sheet>
@@ -249,96 +265,54 @@ const Navbar: React.FC = () => {
 
             {/* Search */}
             <Search className="h-6 w-6 text-primary" />
-            <div className="lg:flex items-center gap-2 hidden">
-              <ModeToggle />
-            </div>
             {/* donation button  */}
             <Link
               href={`https://rzp.io/l/QpiIjiU`}
-              className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out p-2 rounded-sm mr-3 text-[1rem]"
+              className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out p-2 rounded-sm mr-3 text-[1rem] hidden lg:inline-block"
             >
               <button>
                 {language === "UR" ? "ہمیں عطیہ کریں" : language == "EN" ? "Donate Us" : "हमें दान करें"}
               </button>
             </Link>
-            <div className="lg:hidden">
+            <div className="lg:flex items-center gap-2 hidden ml-auto">
               <ModeToggle />
+              {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
+                <>
+                  <SignedIn>
+                    <UserButton appearance={{ elements: { userButtonAvatarBox: "h-7 w-7" } }} />
+                  </SignedIn>
+                  <SignedOut>
+                    <div className="flex items-center gap-3">
+                      <Link href={{ pathname: "/sign-in" }} className="text-primary underline">{getButtonText("signIn" as any, language as any)}</Link>
+                      <Link href={{ pathname: "/sign-up" }} className="text-primary underline">{getButtonText("signUp" as any, language as any)}</Link>
+                    </div>
+                  </SignedOut>
+                </>
+              ) : (
+                <></>
+              )}
+            </div>
+            {/* Mobile header right-aligned auth and controls */}
+            <div className="lg:hidden ml-auto flex items-center gap-2">
+              <ModeToggle />
+              {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
+                <>
+                  <SignedIn>
+                    <UserButton appearance={{ elements: { userButtonAvatarBox: "h-7 w-7" } }} />
+                  </SignedIn>
+                  <SignedOut>
+                    <div className="flex items-center gap-2">
+                      <Link href={{ pathname: "/sign-in" }} className="text-primary underline text-sm">{getButtonText("signIn" as any, language as any)}</Link>
+                      <Link href={{ pathname: "/sign-up" }} className="text-primary underline text-sm">{getButtonText("signUp" as any, language as any)}</Link>
+                    </div>
+                  </SignedOut>
+                </>
+              ) : null}
             </div>
           </div>
         </div>
       </header>
-
-      {/* Mobile Menu (Sheet) */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="bg-secondary text-primary min-h-screen">
-          <div className="flex justify-between items-center mb-4">
-            <Button variant="ghost" size="icon" aria-label="close" onClick={() => setMobileMenuOpen(false)}>
-              <X className="h-6 w-6" />
-            </Button>
-          </div>
-          <div className="w-[80vw] max-w-sm flex flex-col gap-8 items-center">
-            {/* langchange */}
-            <div className="mt-4">
-              <Select value={language} onValueChange={(val) => handleLanguageChange(val as Language)}>
-                <SelectTrigger
-                  className="w-full bg-background border border-border text-foreground"
-                  aria-label="Select language"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-background border border-border text-foreground">
-                  <SelectItem value="UR">اردو</SelectItem>
-                  <SelectItem value="EN">English</SelectItem>
-                  <SelectItem value="HI">हिंदी</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Navigation Links (Mobile) */}
-            <div className="flex gap-7" onClick={() => setMobileMenuOpen(false)}>
-              <div>
-                <h3 className="text-foreground font-bold">Navs</h3>
-                <ul id="navelems" className="flex flex-col gap-3 text-center w-[80px]">
-                  {navPages.map((page, index) => {
-                    const active = isActive(page.EN);
-                    return (
-                      <Link
-                        className={`${active ? "text-blue-600" : ""} hover:text-accent-blue p-1 rounded-sm`}
-                        key={index}
-                        href={{ pathname: `/${language == "UR" ? page.EN : language + "/" + page.EN}` }}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <li>{page[language as Language]}</li>
-                      </Link>
-                    );
-                  })}
-                  <li>
-                    <InstallPWAButton />
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-foreground font-bold">More</h3>
-                <nav className="flex flex-col space-y-2">
-                  {["About_site", "About_owner", "Contact", "Programs"].map((item) => {
-                    const active = isActive(item);
-                    return (
-                      <Link
-                        key={item}
-                        href={{ pathname: `/${language == "UR" ? item : language + "/" + item}` }}
-                        className={`${active ? "text-blue-600" : "text-primary"} hover:text-accent-blue`}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span>{item}</span>
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Note: consolidated to single mobile Sheet (above). Removed duplicate Sheet. */}
 
       {/* Top horizontal nav for small screens */}
       <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full lg:hidden p-4 overflow-x-scroll px-4 bg-transparent border-border fixed top-[59px] left-0 right-0 z-50 backdrop-blur-sm">

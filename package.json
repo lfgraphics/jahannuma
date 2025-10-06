@@ -2,12 +2,20 @@
   "name": "jahan-numa",
   "version": "3.0.1",
   "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18.18.0",
+    "pnpm": ">=9"
+  },
   "scripts": {
+    "preinstall": "node -e \"if(!String(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('This repository uses pnpm. Please run: pnpm install'); process.exit(1)}\"",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.0.0",
+    "@clerk/themes": "^2.0.0",
     "@formspree/react": "^3.0.0",
     "@pdftron/webviewer": "10.6.0",
     "@radix-ui/react-accordion": "^1.2.12",

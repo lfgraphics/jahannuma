@@ -10,6 +10,8 @@ import {
   DrawerClose,
 } from "../../components/ui/drawer";
 import { XCircle } from "lucide-react";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 
 interface Comment {
   dataId: string | null;
@@ -37,6 +39,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   onCommentSubmit,
   onCloseComments,
 }) => {
+  const { requireAuth, showLoginDialog, setShowLoginDialog } = useAuthGuard();
   // Track when the keyboard is likely open so we can expand the drawer while typing
   const [isInputFocused, setIsInputFocused] = React.useState(false);
 
@@ -57,7 +60,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   }, []);
 
   const handleCommentSubmit = async () => {
-    // Pass the dataId from props to onCommentSubmit function
+    // Gate comment submission behind auth
+    if (!requireAuth("comment")) return;
     await onCommentSubmit(dataId);
   };
   return (
@@ -67,6 +71,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         if (!open) onCloseComments();
       }}
     >
+      {/* Login dialog for unauthenticated users attempting to comment */}
+      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType="comment" />
       <DrawerContent
         dir="rtl"
         className={`z-50 sm:max-w-[800px] mx-auto ${isInputFocused ? "max-h-[92dvh]" : "max-h-[65dvh]"

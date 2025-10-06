@@ -119,7 +119,6 @@ const Page = ({ params }: { params: { name: string } | Promise<{ name: string }>
 
   const handleNavClick = (nav: string) => {
     setActiveNav(nav);
-    if (typeof window !== "undefined") localStorage.setItem("activeNav", nav);
   };
 
   return (

@@ -6,6 +6,12 @@ import { toast } from "sonner";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import { airtableFetchJson, TTL } from "@/lib/airtable-fetcher";
+import CommentSection from "./CommentSection";
+import { useCommentSystem } from "@/hooks/useCommentSystem";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { shareRecordWithCount } from "@/lib/social-utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { updatePagedListField } from "@/lib/swr-updater";
 
 interface Shaer {
   fields: {
@@ -33,7 +39,7 @@ interface Comment {
 
 const RandCard: React.FC<{}> = () => {
   // Fetch Ashaar list via SWR and randomly pick one; caching ensures instant loads on revisit
-  const { records, isLoading, swrKey } = useAirtableList<Shaer>(
+  const { records, isLoading, swrKey, mutate } = useAirtableList<Shaer>(
     "appeI2xzzyvUN5bR7",
     "Ashaar",
     { pageSize: 50 },
@@ -41,14 +47,12 @@ const RandCard: React.FC<{}> = () => {
   );
   const loading = isLoading;
   const randomIndexRef = useRef<number | null>(null);
-  //comments
+  // Comment drawer state
   const [selectedCommentId, setSelectedCommentId] = React.useState<string | null>(null);
-  const [showDialog, setShowDialog] = useState(false);
-  const [nameInput, setNameInput] = useState("");
-  const [commentorName, setCommentorName] = useState<string | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [commentLoading, setCommentLoading] = useState(false);
+  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem("appzB656cMxO0QotZ", "Comments", null);
   const [newComment, setNewComment] = useState("");
+  const { requireAuth } = useAuthGuard();
+  const { language } = useLanguage();
   // likes are now handled inside DataCard via useLikeButton
   // toast via sonner
 
@@ -106,35 +110,7 @@ const RandCard: React.FC<{}> = () => {
     // window.location.href = `/Ghazlen/${randomItem?.fields.id}`;
   };
   const fetchComments = async (dataId: string) => {
-    const storedName = localStorage.getItem("commentorName");
-    try {
-      setCommentLoading(true);
-      if (!commentorName && storedName === null) {
-        setShowDialog(true);
-      } else {
-        setCommentorName(commentorName || storedName);
-      }
-      const result = await airtableFetchJson({
-        kind: "list",
-        baseId: "appzB656cMxO0QotZ",
-        table: "Comments",
-        params: { filterByFormula: `dataId="${dataId}"` },
-        ttl: TTL.fast,
-      });
-      const fetchedComments = (result.records ?? []).map(
-        (record: { fields: { dataId: string; commentorName: string | null; timestamp: string | Date; comment: string } }) => ({
-          dataId: record.fields.dataId,
-          commentorName: record.fields.commentorName,
-          timestamp: String(record.fields.timestamp),
-          comment: record.fields.comment,
-        })
-      );
-      setCommentLoading(false);
-      setComments(fetchedComments);
-    } catch (error) {
-      setCommentLoading(false);
-      console.error(`Failed to fetch comments: ${error}`);
-    }
+    setRecordId(dataId);
   };
 
   const openComments = (dataId: string) => {
@@ -145,34 +121,31 @@ const RandCard: React.FC<{}> = () => {
 
   const handleShareClick = async (shaerData: Shaer, index: number): Promise<void> => {
     toggleanaween(null);
-    try {
-      if (typeof navigator !== "undefined" && (navigator as any).share) {
-        await (navigator as any).share({
-          title: shaerData.fields.shaer,
-          text:
-            (shaerData.fields.ghazalHead ?? []).map((line) => line).join("\n") +
-            `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `,
-          url:
-            typeof window !== "undefined"
-              ? `${window.location.origin}/Ghazlen/${shaerData.id}`
-              : "",
-        });
-        try {
-          const updatedShares = (shaerData.fields.shares ?? 0) + 1;
-          await updateAshaar([{ id: shaerData.id, fields: { shares: updatedShares } }]);
-        } catch (error) {
-          console.error("Error updating shares:", error);
-        }
-      } else {
-        console.warn("Web Share API is not supported.");
+    await shareRecordWithCount(
+      {
+        section: "Ghazlen",
+        id: shaerData.id,
+        title: shaerData.fields.shaer,
+        textLines: shaerData.fields.ghazalHead ?? [],
+        fallbackSlugText: (shaerData.fields.ghazalHead || [])[0] || (shaerData.fields.unwan || [])[0] || "",
+        language,
+      },
+      {
+        onShared: async () => {
+          try {
+            const updatedShares = (shaerData.fields.shares ?? 0) + 1;
+            await updateAshaar([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+          } catch (error) {
+            console.error("Error updating shares:", error);
+          }
+        },
       }
-    } catch (error) {
-      console.error("Error sharing:", error);
-    }
+    );
   };
 
   const closeComments = () => {
     setSelectedCommentId(null);
+    setRecordId(null);
   };
 
   const handleCardClick = (shaerData: Shaer) => {
@@ -213,6 +186,36 @@ const RandCard: React.FC<{}> = () => {
             }}
           />
         </div>
+      )}
+      {selectedCommentId && (
+        <CommentSection
+          dataId={selectedCommentId}
+          comments={comments as any}
+          onCommentSubmit={async (dataId) => {
+            if (!requireAuth("comment")) return;
+            if (!newComment) return;
+            try {
+              await submitComment({ recordId: dataId, content: newComment });
+              setNewComment("");
+              // Persist comments count on Ashaar with optimistic updater and rollback
+              try {
+                await updateAshaar([
+                  { id: dataId, fields: { comments: (randomItem?.fields?.comments ?? 0) + 1 } }
+                ], {
+                  optimistic: true,
+                  affectedKeys: swrKey ? [swrKey] : undefined,
+                  updater: (current: any) => updatePagedListField(current, dataId, "comments", 1),
+                });
+              } catch (err) {
+                try { await mutate((current: any) => updatePagedListField(current, dataId, "comments", -1), { revalidate: false }); } catch {}
+              }
+            } catch {}
+          }}
+          commentLoading={commentLoading}
+          newComment={newComment}
+          onNewCommentChange={setNewComment}
+          onCloseComments={closeComments}
+        />
       )}
     </div>
   );
