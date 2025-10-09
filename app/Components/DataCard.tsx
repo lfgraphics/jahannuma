@@ -237,28 +237,19 @@ const DataCard = <T extends MinimalShaer>({
           dir="rtl"
           key={index}
           id={`card${index}`}
-          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-[#2d2d2f]" : ""
-            } p-4 rounded-sm relative flex flex-col h-[250px]`}
+          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-[#2d2d2f]" : ""} p-4 rounded-sm relative flex flex-col h-[250px]`}
         >
           <Link
             href={{
               pathname: `/Shaer/${(sd?.fields?.shaer || "").replace(" ", "-")}`,
-              query: {
-                tab: "تعارف",
-              },
+              query: { tab: "تعارف" },
             }}
           >
-            <h2 className="text-foreground text-lg mb-4">
-              {shaerData?.fields?.shaer}
-            </h2>
+            <h2 className="text-foreground text-lg mb-4">{shaerData?.fields?.shaer}</h2>
           </Link>
           <div className="unwan flex flex-col w-full items-center mb-2">
             {ghazalHeadLines.map((lin: string, index: number) => (
-              <p
-                key={index}
-                className="text-lg w-full text-center px-6"
-                onClick={() => handleCardClick(shaerData)}
-              >
+              <p key={index} className="text-lg w-full text-center px-6" onClick={() => handleCardClick(shaerData)}>
                 {lin}
               </p>
             ))}
@@ -266,9 +257,7 @@ const DataCard = <T extends MinimalShaer>({
           <div className="relative">
             <div
               className="anaween-container flex flex-col items-center absolute bottom-full -translate-y-2 z-10 overflow-y-scroll w-[90px] shadow-md transition-all duration-500 ease-in-out rounded-sm bg-opacity-70 backdrop-blur-sm"
-              style={{
-                height: openanaween === `card${index}` ? "120px" : "0",
-              }}
+              style={{ height: openanaween === `card${index}` ? "120px" : "0" }}
             >
               {page !== "rand" &&
                 unwanList.map((unwaan, index) => (
@@ -349,9 +338,7 @@ const DataCard = <T extends MinimalShaer>({
               onClick={() => handleShareClick(shaerData, index)}
             >
               <Share2 color="#984A02" size={16} />{" "}
-              <span className="text-gray-500 text-sm">
-                {shaerData?.fields?.shares ?? 0}
-              </span>
+              <span className="text-gray-500 text-sm">{shaerData?.fields?.shares ?? 0}</span>
             </button>
             <button
               className="text-[#984A02] font-semibold m-3"
@@ -368,21 +355,14 @@ const DataCard = <T extends MinimalShaer>({
               )}
             </button>
             {download && (
-              <button
-                className="m-3 flex items-center gap-1"
-                onClick={() => { if (requireAuth("download")) setSelectedShaer(shaerData); }}
-              >
+              <button className="m-3 flex items-center gap-1" onClick={() => { if (requireAuth("download")) setSelectedShaer(shaerData); }}>
                 <Download color="#984A02" />
               </button>
             )}
           </div>
-          {/* openDownloadHandler && */}
           {download && selectedShaer && (
             <div className="fixed z-50 ">
-              <DynamicDownloadHandler
-                data={shaerData}
-                onCancel={cancelDownload}
-              />
+              <DynamicDownloadHandler data={shaerData} onCancel={cancelDownload} />
             </div>
           )}
         </div>
@@ -393,4 +373,4 @@ const DataCard = <T extends MinimalShaer>({
   );
 };
 
-export default DataCard;
+export default DataCard; 

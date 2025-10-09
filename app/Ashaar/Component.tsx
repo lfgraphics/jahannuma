@@ -80,11 +80,12 @@ const Ashaar: React.FC<{}> = () => {
     return toast.warning(message);
   };
 
-  // Build filter formula used by SWR hook
+  // Build filter formula used by SWR hook - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     if (!q) return undefined;
     const safe = escapeAirtableFormulaValue(q);
+    // Priority order: shaer (poet name), then sher, body, unwan
     return `OR( FIND('${safe}', LOWER({shaer})), FIND('${safe}', LOWER({sher})), FIND('${safe}', LOWER({body})), FIND('${safe}', LOWER({unwan})) )`;
   }, [searchText]);
 
@@ -101,9 +102,9 @@ const Ashaar: React.FC<{}> = () => {
   );
   // Removed deprecated createAshaarComment; comment creation uses useCommentSystem
 
-  // Format records as before
+  // Format records and sort by search relevance
   const formattedRecords: Shaer[] = useMemo(() => {
-    return (records || []).map((record: any) => ({
+    const formatted = (records || []).map((record: any) => ({
       ...record,
       fields: {
         ...record.fields,
@@ -112,7 +113,43 @@ const Ashaar: React.FC<{}> = () => {
         unwan: String(record.fields?.unwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
       },
     }));
-  }, [records]);
+
+    // Sort by search relevance when there's a search query
+    if (searchText.trim()) {
+      const query = searchText.trim().toLowerCase();
+      return formatted.sort((a, b) => {
+        const aShaer = (a.fields.shaer || '').toLowerCase();
+        const aSher = (a.fields.sher?.join(' ') || '').toLowerCase();
+        const aBody = (a.fields.body || '').toLowerCase();
+        const aUnwan = (a.fields.unwan?.join(' ') || '').toLowerCase();
+        
+        const bShaer = (b.fields.shaer || '').toLowerCase();
+        const bSher = (b.fields.sher?.join(' ') || '').toLowerCase();
+        const bBody = (b.fields.body || '').toLowerCase();
+        const bUnwan = (b.fields.unwan?.join(' ') || '').toLowerCase();
+
+        // Priority scoring: shaer=4, sher=3, body=2, unwan=1
+        const getScore = (shaer: string, sher: string, body: string, unwan: string) => {
+          if (shaer.includes(query)) return 4;
+          if (sher.includes(query)) return 3;
+          if (body.includes(query)) return 2;
+          if (unwan.includes(query)) return 1;
+          return 0;
+        };
+
+        const scoreA = getScore(aShaer, aSher, aBody, aUnwan);
+        const scoreB = getScore(bShaer, bSher, bBody, bUnwan);
+        
+        // Higher score first, then alphabetical by shaer name
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return aShaer.localeCompare(bShaer);
+      });
+    }
+
+    return formatted;
+  }, [records, searchText]);
 
   const dataItems = formattedRecords;
   const loading = isLoading;
@@ -276,7 +313,7 @@ const Ashaar: React.FC<{}> = () => {
       {/* Sonner Toaster is global; no per-page toast container needed */}
       {/* Removed legacy name dialog; comments rely on authenticated user */}
       {/* top-[118px] */}
-      <div className="w-full z-10 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px]">
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[95px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
           <div
             dir="rtl"

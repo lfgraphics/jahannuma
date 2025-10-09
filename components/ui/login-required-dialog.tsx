@@ -13,6 +13,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { uiTexts, getMessageText, getButtonText } from "@/lib/multilingual-texts";
 import Link from "next/link";
+// Note: We intentionally avoid Clerk's styled buttons here per request.
 
 export type AuthActionType = "download" | "like" | "comment" | "share";
 
@@ -48,18 +49,12 @@ export function LoginRequiredDialog({ open, onOpenChange, actionType }: LoginReq
         <AlertDialogFooter className="flex gap-2 flex-col-reverse sm:flex-row">
           <AlertDialogCancel>{getButtonText("cancel", language)}</AlertDialogCancel>
           <AlertDialogAction className="p-0">
-            <Link
-              href={{ pathname: "/sign-up", query: { returnUrl: currentUrl } }}
-              className="inline-flex items-center justify-center h-10 px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90"
-            >
+            <Link href={{ pathname: "/sign-up", query: { returnUrl: currentUrl } }}>
               {getButtonText("signUp", language)}
             </Link>
           </AlertDialogAction>
           <AlertDialogAction className="p-0">
-            <Link
-              href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }}
-              className="inline-flex items-center justify-center h-10 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:opacity-90"
-            >
+            <Link href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }}>
               {getButtonText("signIn", language)}
             </Link>
           </AlertDialogAction>

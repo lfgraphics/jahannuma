@@ -82,12 +82,14 @@ const Page: React.FC<{}> = () => {
       duration: 300,
     });
   }, []);
+  // Build filter formula - prioritize writer (author name) and book names
   const filterFormula = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     if (!q) return undefined;
     // Escape single quotes to prevent formula injection
     const escaped = q.replace(/'/g, "\\'");
-    return `OR( FIND('${escaped}', LOWER({bookName})), FIND('${escaped}', LOWER({enBookName})), FIND('${escaped}', LOWER({hiBookName})), FIND('${escaped}', LOWER({desc})), FIND('${escaped}', LOWER({enDesc})), FIND('${escaped}', LOWER({hiDesc})), FIND('${escaped}', LOWER({publishingDate})), FIND('${escaped}', LOWER({writer})), FIND('${escaped}', LOWER({enWriter})), FIND('${escaped}', LOWER({hiWriter})) )`;
+    // Priority order: writer names first, then book names, then descriptions and dates
+    return `OR( FIND('${escaped}', LOWER({writer})), FIND('${escaped}', LOWER({enWriter})), FIND('${escaped}', LOWER({hiWriter})), FIND('${escaped}', LOWER({bookName})), FIND('${escaped}', LOWER({enBookName})), FIND('${escaped}', LOWER({hiBookName})), FIND('${escaped}', LOWER({desc})), FIND('${escaped}', LOWER({enDesc})), FIND('${escaped}', LOWER({hiDesc})), FIND('${escaped}', LOWER({publishingDate})) )`;
   }, [searchText]);
   const { records, isLoading, hasMore, loadMore, swrKey } = useAirtableList<EBooksType>(
     "appXcBoNMGdIaSUyA",
@@ -102,7 +104,7 @@ const Page: React.FC<{}> = () => {
   );
 
   const formattedRecords: EBooksType[] = useMemo(() => {
-    return (records || []).map((record: any) => ({
+    const formatted = (records || []).map((record: any) => ({
       ...record,
       fields: {
         ...record.fields,
@@ -114,7 +116,50 @@ const Page: React.FC<{}> = () => {
         likes: record.fields?.likes,
       },
     }));
-  }, [records]);
+
+    // Sort by search relevance when there's a search query
+    if (searchText.trim()) {
+      const query = searchText.trim().toLowerCase();
+      return formatted.sort((a, b) => {
+        const aWriter = (a.fields.writer || '').toLowerCase();
+        const aEnWriter = (a.fields.enWriter || '').toLowerCase();
+        const aHiWriter = (a.fields.hiWriter || '').toLowerCase();
+        const aBookName = (a.fields.bookName || '').toLowerCase();
+        const aEnBookName = (a.fields.enBookName || '').toLowerCase();
+        const aHiBookName = (a.fields.hiBookName || '').toLowerCase();
+        const aOther = `${a.fields.desc || ''} ${a.fields.enDesc || ''} ${a.fields.hiDesc || ''} ${a.fields.publishingDate || ''}`.toLowerCase();
+        
+        const bWriter = (b.fields.writer || '').toLowerCase();
+        const bEnWriter = (b.fields.enWriter || '').toLowerCase();
+        const bHiWriter = (b.fields.hiWriter || '').toLowerCase();
+        const bBookName = (b.fields.bookName || '').toLowerCase();
+        const bEnBookName = (b.fields.enBookName || '').toLowerCase();
+        const bHiBookName = (b.fields.hiBookName || '').toLowerCase();
+        const bOther = `${b.fields.desc || ''} ${b.fields.enDesc || ''} ${b.fields.hiDesc || ''} ${b.fields.publishingDate || ''}`.toLowerCase();
+
+        // Priority scoring: writer=5, writer translations=4, book names=3, book name translations=2, other=1
+        const getScore = (writer: string, enWriter: string, hiWriter: string, bookName: string, enBookName: string, hiBookName: string, other: string) => {
+          if (writer.includes(query)) return 5;
+          if (enWriter.includes(query) || hiWriter.includes(query)) return 4;
+          if (bookName.includes(query)) return 3;
+          if (enBookName.includes(query) || hiBookName.includes(query)) return 2;
+          if (other.includes(query)) return 1;
+          return 0;
+        };
+
+        const scoreA = getScore(aWriter, aEnWriter, aHiWriter, aBookName, aEnBookName, aHiBookName, aOther);
+        const scoreB = getScore(bWriter, bEnWriter, bHiWriter, bBookName, bEnBookName, bHiBookName, bOther);
+        
+        // Higher score first, then alphabetical by writer name
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return aWriter.localeCompare(bWriter);
+      });
+    }
+
+    return formatted;
+  }, [records, searchText]);
 
   useEffect(() => {
     setData(formattedRecords);
@@ -195,7 +240,7 @@ const Page: React.FC<{}> = () => {
       )}
       {!loading && (
         <div>
-          <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
+          <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[95px] lg:top-[56px] border-foreground">
             <div className="filter-btn basis-[75%] text-center flex">
               <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
                 <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />

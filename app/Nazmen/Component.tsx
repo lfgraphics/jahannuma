@@ -78,11 +78,20 @@ const Ashaar: React.FC<{}> = () => {
   const { language } = useLanguage();
   // toast via sonner
 
-  // List records with SWR and filter
+  useEffect(() => {
+    AOS.init({
+      offset: 50,
+      delay: 0,
+      duration: 300,
+    });
+  }, []);
+
+  // List records with SWR and filter - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     if (!q) return undefined;
     const escapedQ = q.replace(/'/g, "\\'");
+    // Priority order: shaer (poet name), then displayLine, nazm, unwan
     return `OR( FIND('${escapedQ}', LOWER({shaer})), FIND('${escapedQ}', LOWER({displayLine})), FIND('${escapedQ}', LOWER({nazm})), FIND('${escapedQ}', LOWER({unwan})) )`;
   }, [searchText]);
   const { records, isLoading, hasMore, loadMore, swrKey } = useAirtableList<Shaer>(
@@ -100,7 +109,7 @@ const Ashaar: React.FC<{}> = () => {
     setRecordId(dataId);
   };
   const formattedRecords: Shaer[] = useMemo(() => {
-    return (records || []).map((record: any) => ({
+    const formatted = (records || []).map((record: any) => ({
       ...record,
       fields: {
         ...record.fields,
@@ -109,7 +118,43 @@ const Ashaar: React.FC<{}> = () => {
         unwan: String(record.fields?.unwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
       },
     }));
-  }, [records]);
+
+    // Sort by search relevance when there's a search query
+    if (searchText.trim()) {
+      const query = searchText.trim().toLowerCase();
+      return formatted.sort((a, b) => {
+        const aShaer = (a.fields.shaer || '').toLowerCase();
+        const aDisplayLine = (a.fields.ghazalHead?.join(' ') || '').toLowerCase(); // ghazalHead is from displayLine
+        const aNazm = (a.fields.ghazal?.join(' ') || '').toLowerCase(); // ghazal is from nazm
+        const aUnwan = (a.fields.unwan?.join(' ') || '').toLowerCase();
+        
+        const bShaer = (b.fields.shaer || '').toLowerCase();
+        const bDisplayLine = (b.fields.ghazalHead?.join(' ') || '').toLowerCase();
+        const bNazm = (b.fields.ghazal?.join(' ') || '').toLowerCase();
+        const bUnwan = (b.fields.unwan?.join(' ') || '').toLowerCase();
+
+        // Priority scoring: shaer=4, displayLine=3, nazm=2, unwan=1
+        const getScore = (shaer: string, displayLine: string, nazm: string, unwan: string) => {
+          if (shaer.includes(query)) return 4;
+          if (displayLine.includes(query)) return 3;
+          if (nazm.includes(query)) return 2;
+          if (unwan.includes(query)) return 1;
+          return 0;
+        };
+
+        const scoreA = getScore(aShaer, aDisplayLine, aNazm, aUnwan);
+        const scoreB = getScore(bShaer, bDisplayLine, bNazm, bUnwan);
+        
+        // Higher score first, then alphabetical by shaer name
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return aShaer.localeCompare(bShaer);
+      });
+    }
+
+    return formatted;
+  }, [records, searchText]);
 
   useEffect(() => {
     setDataItems(formattedRecords);
@@ -278,7 +323,7 @@ const Ashaar: React.FC<{}> = () => {
     <div>
       {/* Sonner Toaster is provided globally in providers.tsx */}
       {/* Removed legacy name dialog; comments rely on authenticated user */}
-      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[95px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
           <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
             <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />

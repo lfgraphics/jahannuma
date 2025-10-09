@@ -64,11 +64,12 @@ const Ashaar: React.FC<{}> = () => {
       });
     }
   }
-  // Build filter formula and use unified list hook
+  // Build filter formula and use unified list hook - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     if (!q) return undefined;
     const escaped = q.replace(/'/g, "\\'");
+    // Priority order: shaer (poet name), then body, unwan
     return `OR( FIND('${escaped}', LOWER({shaer})), FIND('${escaped}', LOWER({body})), FIND('${escaped}', LOWER({unwan})) )`;
   }, [searchText]);
   const { records, isLoading, hasMore, loadMore, swrKey } = useAirtableList<Rubai>(
@@ -84,11 +85,43 @@ const Ashaar: React.FC<{}> = () => {
   );
 
   useEffect(() => {
-    setDataItems(records || []);
+    // Sort by search relevance when there's a search query
+    let sortedData = records || [];
+    if (searchText.trim()) {
+      const query = searchText.trim().toLowerCase();
+      sortedData = (records || []).slice().sort((a, b) => {
+        const aShaer = (a.fields.shaer || '').toLowerCase();
+        const aBody = (a.fields.body || '').toLowerCase();
+        const aUnwan = (a.fields.unwan || '').toLowerCase();
+        
+        const bShaer = (b.fields.shaer || '').toLowerCase();
+        const bBody = (b.fields.body || '').toLowerCase();
+        const bUnwan = (b.fields.unwan || '').toLowerCase();
+
+        // Priority scoring: shaer=3, body=2, unwan=1
+        const getScore = (shaer: string, body: string, unwan: string) => {
+          if (shaer.includes(query)) return 3;
+          if (body.includes(query)) return 2;
+          if (unwan.includes(query)) return 1;
+          return 0;
+        };
+
+        const scoreA = getScore(aShaer, aBody, aUnwan);
+        const scoreB = getScore(bShaer, bBody, bUnwan);
+        
+        // Higher score first, then alphabetical by shaer name
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return aShaer.localeCompare(bShaer);
+      });
+    }
+
+    setDataItems(sortedData);
     setLoading(isLoading);
     setMoreLoading(false);
     setNoMoreData(!hasMore);
-  }, [records, isLoading, hasMore]);
+  }, [records, isLoading, hasMore, searchText]);
 
   const handleLoadMore = async () => {
     try {
@@ -151,10 +184,12 @@ const Ashaar: React.FC<{}> = () => {
       <RubaiCard
         RubaiData={item}
         index={index}
-        handleHeartClick={onHeartClick as any}
+        handleHeartClick={onHeartClick}
         openComments={openComments}
         handleShareClick={handleShareClick}
         isLiking={like.isDisabled}
+        isLiked={like.isLiked}
+        likesCount={like.likesCount}
       />
     );
   };
@@ -250,7 +285,7 @@ const Ashaar: React.FC<{}> = () => {
     <div>
   {/* Toast handled globally by Sonner Toaster; share no longer requires login */}
       {/* Removed legacy name dialog; comments rely on authenticated user */}
-      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[95px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
           <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
             <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />

@@ -4,7 +4,6 @@ import Footer from "@/app/Components/Footer";
 import Providers from "./providers";
 import SWRProvider from "./swr-provider";
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
 import InitLikesMigration from "@/app/Components/InitLikesMigration";
 
 export default function RootLayout({
@@ -94,13 +93,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#F0D586" />
       </head>
       <body className="bg-background text-foreground font-noto-nastaliq">
-        <ClerkProvider
-          appearance={{
-            baseTheme: dark,
-            layout: { socialButtonsVariant: "iconButton", shimmer: true },
-            variables: { colorPrimary: "#984A02", colorBackground: "#0b0b0b", colorText: "#F0D586" },
-          }}
-        >
+        <ClerkProvider>
           {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? null : (
             <div className="w-full bg-yellow-700/30 text-yellow-200 text-sm text-center py-1">
               Clerk publishable key missing. Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in .env.local (dev only banner).
@@ -114,7 +107,7 @@ export default function RootLayout({
                 <header className="w-full flex items-center justify-between gap-4">
                   <Navbar />
                 </header>
-                <main className="flex-1 mt-[120px] lg:mt-[65px]">{children}</main>
+                <main className="flex-1 mt-[96px] lg:mt-[60px]">{children}</main>
                 <Footer />
               </div>
             </SWRProvider>

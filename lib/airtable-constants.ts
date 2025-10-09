@@ -8,3 +8,11 @@ export const RUBAI_COMMENTS_BASE = "appseIUI98pdLBT1K";
 
 // Table names are consistent across bases
 export const COMMENTS_TABLE = "Comments";
+
+// Main content bases
+export const ADS_BASE = "app1eVOGD6PdjD3vS"; // Replace with actual Airtable base ID
+export const BLOGS_BASE = "app1eVOGD6PdjD3vS"; // Replace with actual Airtable base ID
+
+// Main content tables
+export const ADS_TABLE = "Ads";
+export const BLOGS_TABLE = "Blogs links and data";

@@ -8,14 +8,11 @@ interface RubaiCardProps {
   RubaiData: Rubai; // Replace Shaer with the actual type of shaerData
   index: number;
   handleShareClick: (shaerData: Rubai, index: number) => void | Promise<void>; // Allow async
-  handleHeartClick: (
-    e: React.MouseEvent<HTMLButtonElement>,
-    shaerData: Rubai,
-    index: number,
-    id: string
-  ) => void | Promise<void>; // Allow async
+  handleHeartClick: (e: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>; // Simplified handler
   openComments: (id: string) => void;
   isLiking?: boolean;
+  isLiked?: boolean;
+  likesCount?: number;
 }
 
 const RubaiCard: React.FC<RubaiCardProps> = ({
@@ -25,6 +22,8 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
   handleHeartClick,
   openComments,
   isLiking,
+  isLiked = false,
+  likesCount,
 }) => {
   return (
     <>
@@ -53,15 +52,13 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
         <div className="flex text-center icons">
           <button
             disabled={!!isLiking}
-            className={`m-3 text-gray-500 transition-all duration-500 ${isLiking ? 'opacity-60 cursor-not-allowed' : ''}`}
-            onClick={(e) =>
-              handleHeartClick(e, RubaiData, index, `${RubaiData?.id}`)
-            }
+            className={`m-3 transition-all duration-500 ${isLiking ? 'opacity-60 cursor-not-allowed' : ''} ${isLiked ? 'text-rose-600' : 'text-gray-500'}`}
+            onClick={(e) => handleHeartClick(e)}
             id={`${RubaiData.id}`}
           >
-            <Heart className="inline-block" />{" "}
+            <Heart className="inline-block" fill={isLiked ? "currentColor" : "none"} />{" "}
             <span id="likescount" className="text-gray-500 text-sm">
-              {RubaiData.fields?.likes}
+              {typeof likesCount === 'number' ? likesCount : RubaiData.fields?.likes}
             </span>
           </button>
           <button

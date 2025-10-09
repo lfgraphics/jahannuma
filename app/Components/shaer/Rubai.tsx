@@ -44,9 +44,11 @@ const Rubai: React.FC<Props> = ({ takhallus }) => {
         RubaiData={rec as any}
         index={index}
         handleShareClick={handleShareClick}
-        handleHeartClick={onHeart as any}
+        handleHeartClick={onHeart}
         openComments={openComments}
         isLiking={like.isDisabled}
+        isLiked={like.isLiked}
+        likesCount={like.likesCount}
       />
     );
   };
@@ -75,7 +77,7 @@ const Rubai: React.FC<Props> = ({ takhallus }) => {
           {dataItems.length === 0 && (
             <div className="col-span-full h-[30vh] grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
           )}
-          {dataItems.map((item, index) => (
+          {dataItems.map((item: AirtableRecord<RubaiType>, index: number) => (
             <div className="relative" key={item.id}>
               <CardItem rec={item as any} index={index} />
             </div>

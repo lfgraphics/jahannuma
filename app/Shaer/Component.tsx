@@ -83,12 +83,13 @@ const Page: React.FC<{}> = () => {
     });
   }, []);
 
-  // Build search filter formula safely
+  // Build search filter formula safely - prioritize takhallus and poet names
   const filterFormula = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     if (!q) return undefined;
     const safe = escapeAirtableFormulaValue(q);
-    return `OR( FIND('${safe}', LOWER({takhallus})), FIND('${safe}', LOWER({name})), FIND('${safe}', LOWER({dob})), FIND('${safe}', LOWER({location})), FIND('${safe}', LOWER({tafseel})), FIND('${safe}', LOWER({searchKeys})), FIND('${safe}', LOWER({enTakhallus})), FIND('${safe}', LOWER({hiTakhallus})), FIND('${safe}', LOWER({enName})), FIND('${safe}', LOWER({hiName})), FIND('${safe}', LOWER({enLocation})), FIND('${safe}', LOWER({hiLocation})) )`;
+    // Priority order: takhallus first, then names, then other fields
+    return `OR( FIND('${safe}', LOWER({takhallus})), FIND('${safe}', LOWER({enTakhallus})), FIND('${safe}', LOWER({hiTakhallus})), FIND('${safe}', LOWER({name})), FIND('${safe}', LOWER({enName})), FIND('${safe}', LOWER({hiName})), FIND('${safe}', LOWER({dob})), FIND('${safe}', LOWER({location})), FIND('${safe}', LOWER({enLocation})), FIND('${safe}', LOWER({hiLocation})), FIND('${safe}', LOWER({tafseel})), FIND('${safe}', LOWER({searchKeys})) )`;
   }, [searchText]);
 
   const { records, isLoading, hasMore, loadMore, mutate } = useAirtableList<FormattedRecord>(
@@ -108,7 +109,7 @@ const Page: React.FC<{}> = () => {
   }
 
   useEffect(() => {
-    // format records to expected local shape
+    // format records to expected local shape and sort by search relevance
     const formatted: FormattedRecord[] = (records || []).map((record: any) => ({
       ...record,
       fields: {
@@ -127,11 +128,51 @@ const Page: React.FC<{}> = () => {
         likes: Number(record.fields?.likes || 0),
       },
     }));
-    setData(formatted);
+
+    // Sort by search relevance when there's a search query
+    let sortedData = formatted;
+    if (searchText.trim()) {
+      const query = searchText.trim().toLowerCase();
+      sortedData = formatted.sort((a, b) => {
+        const aTakhallus = (a.fields.takhallus || '').toLowerCase();
+        const aEnTakhallus = (a.fields.enTakhallus?.join(' ') || '').toLowerCase();
+        const aHiTakhallus = (a.fields.hiTakhallus?.join(' ') || '').toLowerCase();
+        const aEnName = (a.fields.enName?.join(' ') || '').toLowerCase();
+        const aHiName = (a.fields.hiName?.join(' ') || '').toLowerCase();
+        const aOther = `${a.fields.dob || ''} ${a.fields.location || ''} ${a.fields.tafseel?.join(' ') || ''}`.toLowerCase();
+        
+        const bTakhallus = (b.fields.takhallus || '').toLowerCase();
+        const bEnTakhallus = (b.fields.enTakhallus?.join(' ') || '').toLowerCase();
+        const bHiTakhallus = (b.fields.hiTakhallus?.join(' ') || '').toLowerCase();
+        const bEnName = (b.fields.enName?.join(' ') || '').toLowerCase();
+        const bHiName = (b.fields.hiName?.join(' ') || '').toLowerCase();
+        const bOther = `${b.fields.dob || ''} ${b.fields.location || ''} ${b.fields.tafseel?.join(' ') || ''}`.toLowerCase();
+
+        // Priority scoring: takhallus=5, takhallus translations=4, name translations=3, other=1
+        const getScore = (takhallus: string, enTakhallus: string, hiTakhallus: string, enName: string, hiName: string, other: string) => {
+          if (takhallus.includes(query)) return 5;
+          if (enTakhallus.includes(query) || hiTakhallus.includes(query)) return 4;
+          if (enName.includes(query) || hiName.includes(query)) return 3;
+          if (other.includes(query)) return 1;
+          return 0;
+        };
+
+        const scoreA = getScore(aTakhallus, aEnTakhallus, aHiTakhallus, aEnName, aHiName, aOther);
+        const scoreB = getScore(bTakhallus, bEnTakhallus, bHiTakhallus, bEnName, bHiName, bOther);
+        
+        // Higher score first, then alphabetical by takhallus
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return aTakhallus.localeCompare(bTakhallus);
+      });
+    }
+
+    setData(sortedData);
     setLoading(isLoading);
     setNoMoreData(!hasMore);
     setMoreLoading(false);
-  }, [records, isLoading, hasMore]);
+  }, [records, isLoading, hasMore, searchText]);
 
   // Removed legacy localStorage-based highlighting; likes are handled in Profilecard via Clerk
 
@@ -209,7 +250,7 @@ const Page: React.FC<{}> = () => {
       {!loading && (
         <>
           <div className="flex flex-col gap-4">
-            <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[116px] md:top-[80px] border-foreground">
+            <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[95px] lg:top-[56px] border-foreground">
               <div className="filter-btn basis-[75%] text-center flex">
                 <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
                   <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
@@ -237,7 +278,7 @@ const Page: React.FC<{}> = () => {
                 </div>
               </div>
             </div>
-            <div id="section" dir="rtl" className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[128px] m-3`}>
+            <div id="section" dir="rtl" className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[110px] lg:top-[71px] m-3`}>
               {data.map((item, index) => (
                 <div className="relative" key={index} data-aos="fade-up">
                   <Card data={item} />

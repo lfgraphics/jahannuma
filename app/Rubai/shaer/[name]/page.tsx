@@ -11,13 +11,13 @@ import { useAirtableList } from "../../../../hooks/useAirtableList";
 import { useAirtableMutation } from "../../../../hooks/useAirtableMutation";
 import type { AirtableRecord, Rubai } from "../../../../app/types";
 import { buildShaerFilter, prepareShareUpdate } from "../../../../lib/airtable-utils";
-import { shareRecordWithCount } from "@/lib/social-utils";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useCommentSystem } from "@/hooks/useCommentSystem";
-import { RUBAI_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
-import useAuthGuard from "@/hooks/useAuthGuard";
-import { useLikeButton } from "@/hooks/useLikeButton";
-import { updatePagedListField } from "@/lib/swr-updater";
+import { shareRecordWithCount } from "../../../../lib/social-utils";
+import { useLanguage } from "../../../../contexts/LanguageContext";
+import { useCommentSystem } from "../../../../hooks/useCommentSystem";
+import { RUBAI_COMMENTS_BASE, COMMENTS_TABLE } from "../../../../lib/airtable-constants";
+import useAuthGuard from "../../../../hooks/useAuthGuard";
+import { useLikeButton } from "../../../../hooks/useLikeButton";
+import { updatePagedListField } from "../../../../lib/swr-updater";
 
 const RUBAI_BASE = "appIewyeCIcAD4Y11";
 const RUBAI_TABLE = "rubai";
@@ -46,8 +46,9 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
   const { language } = useLanguage();
 
   const handleLikeChange = (args: { id: string; liked: boolean; likes: number }) => {
-    // Update local list for instant feedback
-    // optional; SWR revalidation will also converge
+    try {
+      mutate((curr: any) => updatePagedListField(curr, args.id, "likes", args.liked ? 1 : -1), { revalidate: false });
+    } catch {}
   };
 
   const CardItem: React.FC<{ item: Rubai; index: number }> = ({ item, index }) => {
@@ -68,10 +69,12 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
       <RubaiCard
         RubaiData={item}
         index={index}
-        handleHeartClick={onHeart as any}
+        handleHeartClick={onHeart}
         openComments={openComments}
-        handleShareClick={handleShareClick as any}
+        handleShareClick={handleShareClick}
         isLiking={like.isDisabled}
+        isLiked={like.isLiked}
+        likesCount={like.likesCount}
       />
     );
   };
