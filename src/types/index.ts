@@ -54,6 +54,11 @@ export type {
   AirtableSingleResponse,
   ApiError,
   ApiResponse,
+  AsharDetailResponse,
+  AsharListResponse,
+  GhazalDetailResponse,
+  GhazalListResponse,
+  LikeToggleResponse,
   MutationResponse,
   PaginatedResponse,
 } from "./api/responses";
@@ -62,7 +67,9 @@ export type {
 export type {
   CreateRecordBody,
   DeleteRecordParams,
+  LikeToggleRequest,
   ListQueryParams,
   RecordQueryParams,
   UpdateRecordBody,
 } from "./api/requests";
+

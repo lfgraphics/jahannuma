@@ -3,20 +3,18 @@
  * Fetch a specific Ghazal by ID.
  */
 
-import { getGhazlenRecord } from "@/src/lib/airtable/airtable-client";
-import { getUserLikeStatus } from "@/src/lib/user/user-metadata-utils";
-import type { GhazalDetailResponse } from "@/src/types/api";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { getGhazlenRecord } from "../../../../../src/lib/airtable/airtable-client";
+import { getUserLikeStatus } from "../../../../../src/lib/user/user-metadata-utils";
+import { GhazalDetailResponse } from "../../../../../src/types/api/responses";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = params;
-
-    if (!id) {
+    try {
+        const { id } = await params;    if (!id) {
       return NextResponse.json(
         {
           success: false,
@@ -46,7 +44,7 @@ export async function GET(
 
     // Get user-specific data if authenticated
     const { userId } = await auth();
-    let userMetadata = null;
+    let userMetadata: { userId: string; isLiked: boolean } | undefined = undefined;
 
     if (userId) {
       const isLiked = await getUserLikeStatus(userId, "ghazlen", id);

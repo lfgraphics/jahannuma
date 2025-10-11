@@ -9,7 +9,7 @@ import type {
   AshaarRecord,
   GhazlenRecord,
   NazmenRecord,
-} from "@/types";
+} from "@/src/types";
 
 // === Data Transformation Utilities ===
 

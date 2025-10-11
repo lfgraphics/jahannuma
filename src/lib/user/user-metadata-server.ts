@@ -70,7 +70,7 @@ async function withUserLock<T>(
  */
 export async function getCurrentUserId(): Promise<string | null> {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     return userId;
   } catch {
     return null;

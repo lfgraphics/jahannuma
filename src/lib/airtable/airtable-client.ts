@@ -245,3 +245,151 @@ export async function deleteRecord(
 
   return response.json();
 }
+
+// ============================================================================
+// Feature-specific convenience functions
+// ============================================================================
+
+/**
+ * List Ashaar records with typed response.
+ */
+export async function listAshaarRecords(params: {
+  pageSize?: number;
+  offset?: string;
+  filterByFormula?: string;
+  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  view?: string;
+} = {}) {
+  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
+  return fetchRecords('Ashaar', {
+    ...params,
+    sort: sortParam,
+  });
+}
+
+/**
+ * Get a specific Ashaar record by ID.
+ */
+export async function getAshaarRecord(recordId: string) {
+  return fetchRecord('Ashaar', recordId);
+}
+
+/**
+ * List Ghazlen records with typed response.
+ */
+export async function listGhazlenRecords(params: {
+  pageSize?: number;
+  offset?: string;
+  filterByFormula?: string;
+  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  view?: string;
+} = {}) {
+  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
+  return fetchRecords('Ghazlen', {
+    ...params,
+    sort: sortParam,
+  });
+}
+
+/**
+ * Get a specific Ghazal record by ID.
+ */
+export async function getGhazlenRecord(recordId: string) {
+  return fetchRecord('Ghazlen', recordId);
+}
+
+/**
+ * List Nazmen records with typed response.
+ */
+export async function listNazmenRecords(params: {
+  pageSize?: number;
+  offset?: string;
+  filterByFormula?: string;
+  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  view?: string;
+} = {}) {
+  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
+  return fetchRecords('Nazmen', {
+    ...params,
+    sort: sortParam,
+  });
+}
+
+/**
+ * Get a specific Nazm record by ID.
+ */
+export async function getNazmenRecord(recordId: string) {
+  return fetchRecord('Nazmen', recordId);
+}
+
+/**
+ * List Rubai records with typed response.
+ */
+export async function listRubaiRecords(params: {
+  pageSize?: number;
+  offset?: string;
+  filterByFormula?: string;
+  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  view?: string;
+} = {}) {
+  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
+  return fetchRecords('Rubai', {
+    ...params,
+    sort: sortParam,
+  });
+}
+
+/**
+ * Get a specific Rubai record by ID.
+ */
+export async function getRubaiRecord(recordId: string) {
+  return fetchRecord('Rubai', recordId);
+}
+
+/**
+ * List E-Books records with typed response.
+ */
+export async function listEbooksRecords(params: {
+  pageSize?: number;
+  offset?: string;
+  filterByFormula?: string;
+  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  view?: string;
+} = {}) {
+  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
+  return fetchRecords('E-Books', {
+    ...params,
+    sort: sortParam,
+  });
+}
+
+/**
+ * Get a specific E-Book record by ID.
+ */
+export async function getEbooksRecord(recordId: string) {
+  return fetchRecord('E-Books', recordId);
+}
+
+/**
+ * List Comments records with typed response.
+ */
+export async function listCommentsRecords(params: {
+  pageSize?: number;
+  offset?: string;
+  filterByFormula?: string;
+  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  view?: string;
+} = {}) {
+  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
+  return fetchRecords('Comments', {
+    ...params,
+    sort: sortParam,
+  });
+}
+
+/**
+ * Get a specific Comment record by ID.
+ */
+export async function getCommentsRecord(recordId: string) {
+  return fetchRecord('Comments', recordId);
+}

@@ -224,3 +224,71 @@ export function isRecordLiked(
   const current = ensureArray(metadata[table]);
   return current.includes(recordId);
 }
+
+/**
+ * Get user like status for a specific content item (server-side).
+ * This function interfaces with Clerk to get the user's like status.
+ */
+export async function getUserLikeStatus(
+  userId: string,
+  contentType: string,
+  contentId: string
+): Promise<boolean> {
+  try {
+    const { clerkClient } = await import('@clerk/nextjs/server');
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    
+    const likes = user.publicMetadata.likes as LikesMetadata || {};
+    const tableKey = mapTableToLikesKey(contentType);
+    
+    return isRecordLiked(likes, tableKey, contentId);
+  } catch (error) {
+    console.error('Error getting user like status:', error);
+    return false;
+  }
+}
+
+/**
+ * Toggle user like for a content item (server-side).
+ * Returns the new like status and updated count.
+ */
+export async function toggleUserLike(
+  userId: string,
+  contentType: string,
+  contentId: string
+): Promise<{ isLiked: boolean; newCount: number }> {
+  try {
+    const { clerkClient } = await import('@clerk/nextjs/server');
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    
+    const currentLikes = user.publicMetadata.likes as LikesMetadata || {};
+    const tableKey = mapTableToLikesKey(contentType);
+    
+    const { metadata: updatedLikes, liked } = toggleLikeInMetadata(
+      currentLikes,
+      tableKey,
+      contentId
+    );
+    
+    // Update user metadata in Clerk
+    await client.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        ...user.publicMetadata,
+        likes: updatedLikes,
+      },
+    });
+    
+    // Calculate new count (this is approximate - in a real app you'd query the database)
+    const newCount = ensureArray(updatedLikes[tableKey]).length;
+    
+    return {
+      isLiked: liked,
+      newCount,
+    };
+  } catch (error) {
+    console.error('Error toggling user like:', error);
+    throw new Error('Failed to toggle like');
+  }
+}

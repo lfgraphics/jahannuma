@@ -3,10 +3,10 @@
  * Fetch list of Ghazals with pagination and filtering.
  */
 
-import { listGhazlenRecords } from "@/src/lib/airtable/airtable-client";
-import type { GhazalListResponse } from "@/src/types/api";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { listGhazlenRecords } from "../../../../src/lib/airtable/airtable-client";
+import { GhazalListResponse } from "../../../../src/types/api/responses";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Get user info for likes/favorites if authenticated
     const { userId } = await auth();
-    const userMetadata = userId ? { userId } : null;
+    const userMetadata = userId ? { userId } : undefined;
 
     const response: GhazalListResponse = {
       success: true,

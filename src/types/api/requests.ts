@@ -83,3 +83,17 @@ export interface DeleteRecordParams {
   /** Optional confirmation flag for destructive operations */
   confirm?: boolean;
 }
+
+// ============================================================================
+// Feature-specific request types
+// ============================================================================
+
+/**
+ * Request body for toggling likes.
+ */
+export interface LikeToggleRequest {
+  /** Type of content being liked */
+  contentType: 'ashaar' | 'ghazlen' | 'nazmen' | 'rubai';
+  /** ID of the content being liked */
+  contentId: string;
+}

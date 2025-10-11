@@ -3,19 +3,18 @@
  * Fetch a specific Ashar by ID.
  */
 
-import { getAshaarRecord } from "@/src/lib/airtable/airtable-client";
-import { getUserLikeStatus } from "@/src/lib/user/user-metadata-utils";
-import type { AsharDetailResponse } from "@/src/types/api";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { getAshaarRecord } from "../../../../../src/lib/airtable/airtable-client";
+import { getUserLikeStatus } from "../../../../../src/lib/user/user-metadata-utils";
+import { AsharDetailResponse } from "../../../../../src/types/api/responses";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-
+    const { id } = await params;
     if (!id) {
       return NextResponse.json(
         {
@@ -46,7 +45,8 @@ export async function GET(
 
     // Get user-specific data if authenticated
     const { userId } = await auth();
-    let userMetadata = null;
+    let userMetadata: { userId: string; isLiked: boolean } | undefined =
+      undefined;
 
     if (userId) {
       const isLiked = await getUserLikeStatus(userId, "ashaar", id);

@@ -109,3 +109,59 @@ export interface MutationResponse {
   /** The updated record data (for create/update operations) */
   record?: any;
 }
+
+// ============================================================================
+// Feature-specific response types
+// ============================================================================
+
+/**
+ * Response type for Ashaar list API.
+ */
+export interface AsharListResponse extends ApiResponse<{
+  records: any[];
+  offset?: string;
+  hasMore: boolean;
+  total: number;
+  userMetadata?: { userId: string };
+}> {}
+
+/**
+ * Response type for single Ashaar API.
+ */
+export interface AsharDetailResponse extends ApiResponse<{
+  record: any;
+  userMetadata?: {
+    userId: string;
+    isLiked: boolean;
+  };
+}> {}
+
+/**
+ * Response type for Ghazal list API.
+ */
+export interface GhazalListResponse extends ApiResponse<{
+  records: any[];
+  offset?: string;
+  hasMore: boolean;
+  total: number;
+  userMetadata?: { userId: string };
+}> {}
+
+/**
+ * Response type for single Ghazal API.
+ */
+export interface GhazalDetailResponse extends ApiResponse<{
+  record: any;
+  userMetadata?: {
+    userId: string;
+    isLiked: boolean;
+  };
+}> {}
+
+/**
+ * Response type for like toggle API.
+ */
+export interface LikeToggleResponse extends ApiResponse<{
+  isLiked: boolean;
+  likeCount: number;
+}> {}

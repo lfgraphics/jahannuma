@@ -3,10 +3,11 @@
  * Toggle user like for a specific content item.
  */
 
-import { toggleUserLike } from "@/src/lib/user/user-metadata-utils";
-import type { LikeToggleRequest, LikeToggleResponse } from "@/src/types/api";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { toggleUserLike } from "../../../src/lib/user/user-metadata-utils";
+import type { LikeToggleRequest } from "../../../src/types/api/requests";
+import type { LikeToggleResponse } from "../../../src/types/api/responses";
 
 export async function POST(request: NextRequest) {
   try {

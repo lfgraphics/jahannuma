@@ -30,46 +30,6 @@ const nextConfig: NextConfig = {
 
     // Enable partial prerendering for better performance
     ppr: false, // Enable when stable
-
-    // Turbo mode (when using --turbo)
-    turbo: {
-      rules: {
-        "*.tsx": ["swc-loader"],
-        "*.ts": ["swc-loader"],
-      },
-    },
-  },
-
-  // Webpack configuration for path aliases and optimization
-  webpack: (config, { dev, isServer }) => {
-    // Optimize bundle size in production
-    if (!dev) {
-      config.optimization.splitChunks = {
-        chunks: "all",
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: "vendors",
-            chunks: "all",
-          },
-          common: {
-            name: "common",
-            minChunks: 2,
-            chunks: "all",
-            enforce: true,
-          },
-        },
-      };
-    }
-
-    return config;
-  },
-
-  // Internationalization configuration for multi-language support
-  i18n: {
-    locales: ["en", "ur", "hi"],
-    defaultLocale: "ur",
-    localeDetection: false,
   },
 
   // Headers for better SEO and security
@@ -99,23 +59,13 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Redirects for SEO and URL management
+  // Redirects for SEO and URL management (empty for now)
   async redirects() {
-    return [
-      // Redirect old URLs to new structure if needed
-      {
-        source: "/old-path/:path*",
-        destination: "/new-path/:path*",
-        permanent: true,
-      },
-    ];
+    return [];
   },
 
   // Enable strict mode for better development experience
   reactStrictMode: true,
-
-  // Enable SWC minifier for better performance
-  swcMinify: true,
 
   // Compress responses
   compress: true,

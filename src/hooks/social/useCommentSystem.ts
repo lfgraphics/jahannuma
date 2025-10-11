@@ -1,5 +1,5 @@
 "use client";
-import type { CommentFormData, CommentRecord } from "@/types";
+import type { CommentFormData, CommentRecord } from "@/src/types";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -134,7 +134,7 @@ export function useCommentSystem(
     isSubmitting,
     submitComment,
     commentorName,
-    isAuthenticated: isSignedIn,
+    isAuthenticated: !!isSignedIn,
     setRecordId,
   };
 }
