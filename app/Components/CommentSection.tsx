@@ -1,17 +1,17 @@
 "use client";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { XCircle } from "lucide-react";
 import React from "react";
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
   DrawerDescription,
   DrawerFooter,
-  DrawerClose,
+  DrawerHeader,
+  DrawerTitle,
 } from "../../components/ui/drawer";
-import { XCircle } from "lucide-react";
-import useAuthGuard from "@/hooks/useAuthGuard";
-import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 
 interface Comment {
   dataId: string | null;
@@ -49,7 +49,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     const onResize = () => {
       const vv = window.visualViewport!;
       const keyboardOpen = window.innerHeight - vv.height > 100; // heuristic
-      setIsInputFocused((prev) => (prev !== keyboardOpen ? keyboardOpen : prev));
+      setIsInputFocused((prev) =>
+        prev !== keyboardOpen ? keyboardOpen : prev
+      );
     };
     window.visualViewport.addEventListener("resize", onResize);
     window.visualViewport.addEventListener("scroll", onResize);
@@ -72,11 +74,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       }}
     >
       {/* Login dialog for unauthenticated users attempting to comment */}
-      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType="comment" />
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        actionType="comment"
+      />
       <DrawerContent
         dir="rtl"
-        className={`z-50 sm:max-w-[800px] mx-auto ${isInputFocused ? "max-h-[92dvh]" : "max-h-[65dvh]"
-          }`}
+        className={`z-50 sm:max-w-[800px] mx-auto ${
+          isInputFocused ? "max-h-[92dvh]" : "max-h-[65dvh]"
+        }`}
       >
         {/* Top-right close button */}
         <DrawerClose
@@ -88,15 +95,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         </DrawerClose>
         {/* </div> */}
         <DrawerHeader className="pt-6 pb-2">
-          <DrawerTitle className="text-foreground text-center">تبصرے</DrawerTitle>
+          <DrawerTitle className="text-foreground text-center">
+            تبصرے
+          </DrawerTitle>
           <DrawerDescription className="text-muted-foreground text-center w-fit mx-auto">
             اپنی رائے کا اظہار کریں
           </DrawerDescription>
         </DrawerHeader>
         {/* Use dvh so height reacts to mobile browser UI, and expand while typing so the composer stays visible */}
         <div
-          className={`flex flex-col min-h-0 overflow-y-auto overscroll-contain ${isInputFocused ? "h-[92dvh]" : "h-[65dvh]"
-            }`}
+          className={`flex flex-col min-h-0 overflow-y-auto overscroll-contain ${
+            isInputFocused ? "h-[92dvh]" : "h-[65dvh]"
+          }`}
         >
           {/* Comments list */}
           <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-4">
@@ -113,21 +123,27 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                   <br /> اس پر تبصرہ کر کے آپ تبصرہ کرنے والے پہلے شخص بنیں
                 </div>
               )}
-              {comments?.sort((a, b) => Number(new Date(b.timestamp)) - Number(new Date(a.timestamp))).map((comment, index) => (
-                <div key={index} className="mb-4">
-                  <div className="flex items-center justify-start gap-3 m-3">
-                    <span className="font-semibold text-md">
-                      {comment.commentorName}
-                    </span>
-                    <span className="bg-muted-foreground/50 h-1 w-1 rounded-full"></span>
-                    <span className="text-muted-foreground text-md">
-                      {comment.timestamp}
-                    </span>
+              {comments
+                ?.sort(
+                  (a, b) =>
+                    Number(new Date(b.timestamp)) -
+                    Number(new Date(a.timestamp))
+                )
+                .map((comment, index) => (
+                  <div key={index} className="mb-4">
+                    <div className="flex items-center justify-start gap-3 m-3">
+                      <span className="font-semibold text-md">
+                        {comment.commentorName}
+                      </span>
+                      <span className="bg-muted-foreground/50 h-1 w-1 rounded-full"></span>
+                      <span className="text-muted-foreground text-xs mt-0.5">
+                        {new Date(comment.timestamp).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-foreground">{comment.comment}</p>
+                    <div className="border-b border-border my-2"></div>
                   </div>
-                  <p className="text-foreground">{comment.comment}</p>
-                  <div className="border-b border-border my-2"></div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
           {/* Composer in DrawerFooter */}
@@ -137,8 +153,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 placeholder="آپ کا تبصرہ۔۔۔"
                 value={newComment}
                 onKeyUp={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 490) {
-                    if (document.activeElement === e.target && newComment.length >= 4) {
+                  if (
+                    e.key === "Enter" &&
+                    !e.shiftKey &&
+                    window.innerWidth > 490
+                  ) {
+                    if (
+                      document.activeElement === e.target &&
+                      newComment.length >= 4
+                    ) {
                       e.preventDefault();
                       handleCommentSubmit();
                     }

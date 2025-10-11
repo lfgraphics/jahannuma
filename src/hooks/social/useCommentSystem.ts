@@ -1,5 +1,5 @@
 "use client";
-import type { CommentFormData, CommentRecord } from "@/src/types";
+import type { CommentFormData, CommentRecord } from "@/types";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -51,7 +51,7 @@ export function useCommentSystem(
     revalidateOnReconnect: true,
   });
 
-  const comments: CommentRecord[] = commentsData?.records || [];
+  const comments: CommentRecord[] = commentsData?.data?.records || [];
   const isLoading = !error && !commentsData && !!currentRecordId;
 
   // Get commenter name from user metadata

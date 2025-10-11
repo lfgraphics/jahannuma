@@ -3,7 +3,7 @@
  * Defines the structure for Ashaar records and related data.
  */
 
-import type { WithCounts } from "../../types/airtable/base";
+import type { WithCounts } from "../airtable/base";
 
 /**
  * Main Ashaar record type representing a complete ghazal/poem.
@@ -66,11 +66,6 @@ export interface AshaarMozuRecord extends WithCounts {
 
 /**
  * Route parameters for Ashaar pages.
- * Used by dynamic routes like /ashaar/[id] and /ashaar/[slug].
+ * Re-exported from routes for convenience.
  */
-export interface AshaarPageParams {
-  /** The record ID or slug */
-  id: string;
-  /** Optional URL slug for SEO-friendly URLs */
-  slug?: string;
-}
+export type { AshaarPageParams } from "../routes";

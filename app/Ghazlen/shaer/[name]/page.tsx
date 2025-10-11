@@ -1,24 +1,29 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
-import { XCircle } from "lucide-react";
-import { format } from "date-fns";
-import { toast } from "sonner";
-import CommentSection from "../../../Components/CommentSection";
-import SkeletonLoader from "../../../Components/SkeletonLoader";
-import DataCard from "../../../Components/DataCard";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableCreate } from "@/hooks/useAirtableCreate";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useCommentSystem } from "@/hooks/useCommentSystem";
+import {
+  COMMENTS_TABLE,
+  GHAZLEN_COMMENTS_BASE,
+} from "@/lib/airtable-constants";
+import { shareRecordWithCount } from "@/lib/social-utils";
+import { updatePagedListField } from "@/lib/swr-updater";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { useAirtableList } from "../../../../hooks/useAirtableList";
-import { useAirtableMutation } from "../../../../hooks/useAirtableMutation";
-import { useAirtableCreate } from "../../../../hooks/useAirtableCreate";
-import type { AirtableRecord, CommentRecord, GhazlenRecord } from "../../../../app/types";
-import { buildDataIdFilter, buildShaerFilter, formatGhazlenRecord, prepareShareUpdate } from "../../../../lib/airtable-utils";
-import { updatePagedListField } from "@/lib/swr-updater";
-import { shareRecordWithCount } from "@/lib/social-utils";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useCommentSystem } from "@/hooks/useCommentSystem";
-import { GHAZLEN_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
-import useAuthGuard from "@/hooks/useAuthGuard";
+import { XCircle } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import type { AirtableRecord, GhazlenRecord } from "../../../../app/types";
+import {
+  buildShaerFilter,
+  formatGhazlenRecord,
+  prepareShareUpdate,
+} from "../../../../lib/airtable-utils";
+import CommentSection from "../../../Components/CommentSection";
+import DataCard from "../../../Components/DataCard";
+import SkeletonLoader from "../../../Components/SkeletonLoader";
 
 const GH_BASE = "appvzkf6nX376pZy6";
 const GH_TABLE = "Ghazlen";

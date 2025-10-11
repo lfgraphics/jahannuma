@@ -153,6 +153,5 @@ export interface MutationParams {
 }
 
 // Route parameter types
-export interface AshaarPageParams { id: string; slug?: string }
 export interface MozuPageParams { unwan: string }
 export interface ShaerPageParams { name: string }

@@ -1,31 +1,145 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jahannuma - جہان نما
 
-## Getting Started
+A modern, multilingual poetry platform showcasing Urdu, Hindi, and English literature with comprehensive social features and user interaction capabilities.
 
-First, install dependencies and run the development server with pnpm:
+## 🌟 Features
+
+- **Multilingual Support**: Urdu (RTL), Hindi, and English content
+- **Poetry Categories**: Ashaar, Ghazal, Nazm, Rubai collections
+- **Social Features**: Like, comment, and share functionality
+- **User Authentication**: Secure user management with Clerk
+- **Responsive Design**: Mobile-first, accessible interface
+- **Modern Architecture**: Next.js 15 with TypeScript and modular organization
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- pnpm (recommended)
+- Git
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/lfgraphics/jahannuma.git
+cd jahannuma
+
+# Install dependencies
 pnpm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Add your Clerk and Airtable credentials
+
+# Start development server
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project follows a modern, modular architecture with feature-based organization:
 
-## Learn More
+```
+src/
+├── types/              # Type definitions by feature
+├── hooks/              # Custom React hooks
+├── lib/                # Server-side utilities
+├── components/         # UI components by domain
+└── utils/              # Client-side utilities
 
-To learn more about Next.js, take a look at the following resources:
+app/
+├── api/                # Next.js API routes
+├── (pages)/            # Page components
+└── globals.css         # Global styles
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Key Technologies
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Authentication**: Clerk
+- **Database**: Airtable
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State Management**: SWR for server state
+- **Deployment**: Vercel
 
-## Deploy on Vercel
+## 📚 Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [Architecture Guide](./docs/ARCHITECTURE.md) - Detailed architecture overview
+- [Development Guide](./docs/development.md) - Development workflow and guidelines
+- [SEO Guide](./docs/SEO_GUIDE.md) - SEO optimization strategies
+- [Migration Guide](./docs/MIGRATION_GUIDE.md) - Upgrade and migration procedures
+- [Component Guidelines](./docs/COMPONENT_GUIDELINES.md) - Component development standards
+
+## 🛠️ Development
+
+### Available Scripts
+
+```bash
+# Development
+pnpm dev              # Start development server
+pnpm build            # Build for production
+pnpm start            # Start production server
+
+# Code Quality
+pnpm lint             # Run ESLint
+pnpm type-check       # TypeScript type checking
+pnpm test             # Run tests
+
+# Utilities
+pnpm clean            # Clean build artifacts
+```
+
+### Environment Variables
+
+```bash
+# Required
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+AIRTABLE_API_KEY=
+AIRTABLE_BASE_ID=
+
+# Optional
+NEXT_PUBLIC_ANALYTICS_ID=
+```
+
+Note: `AIRTABLE_API_KEY` and `AIRTABLE_BASE_ID` are server-only environment variables required by API routes using `getAirtableConfig()`.
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTING.md) for details.
+
+### Development Process
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes following our [Development Guide](./docs/development.md)
+4. Add tests for new functionality
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Poetry content contributors and curators
+- Open source community for tools and libraries
+- Design inspiration from classical poetry platforms
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/lfgraphics/jahannuma/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/lfgraphics/jahannuma/discussions)
+- **Email**: support@jahannuma.com
+
+---
+
+Made with ❤️ for poetry lovers worldwide
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

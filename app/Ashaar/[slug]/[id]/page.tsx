@@ -1,14 +1,15 @@
 "use client";
-import Link from "next/link";
-import React, { useEffect, useMemo, useState } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
 import Loader from "@/app/Components/Loader";
-import { useParams } from "next/navigation";
+import type { AirtableRecord, AshaarRecord } from "@/app/types";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableRecord } from "@/hooks/useAirtableRecord";
-import type { AirtableRecord, AshaarRecord, AshaarPageParams } from "@/app/types";
-import { buildIdFilter, formatAshaarRecord, extractIdFromSlug } from "@/lib/airtable-utils";
+import { buildIdFilter, formatAshaarRecord } from "@/lib/airtable-utils";
+import type { AshaarPageParams } from "@/types/routes";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 const BASE_ID = "appeI2xzzyvUN5bR7";
 const TABLE = "Ashaar";

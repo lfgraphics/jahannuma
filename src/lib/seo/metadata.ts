@@ -30,6 +30,12 @@ export interface SiteConfig {
   fbAppId?: string;
 }
 
+// SEO image paths constants
+export const SEO_PATHS = {
+  DEFAULT_OG_IMAGE: "/metaImages/default-og.jpg",
+  META_IMAGES_DIR: "/metaImages/",
+} as const;
+
 // Default site configuration
 export const defaultSiteConfig: SiteConfig = {
   name: "Jahannuma",
@@ -38,7 +44,7 @@ export const defaultSiteConfig: SiteConfig = {
   url: "https://jahan-numa.org",
   defaultLanguage: "ur",
   supportedLanguages: ["en", "ur", "hi"],
-  defaultImage: "/metaImages/default-og.jpg",
+  defaultImage: SEO_PATHS.DEFAULT_OG_IMAGE,
   twitterHandle: "@jahannuma",
 };
 

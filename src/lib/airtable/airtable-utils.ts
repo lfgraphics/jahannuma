@@ -9,7 +9,12 @@ import type {
   AshaarRecord,
   GhazlenRecord,
   NazmenRecord,
-} from "@/src/types";
+} from "@/types";
+
+import {
+  normalizeText as baseNormalizeText,
+  truncateText as baseTruncateText,
+} from "@/utils/formatters";
 
 // === Data Transformation Utilities ===
 
@@ -173,6 +178,32 @@ export function formatBookRecord(
   return { ...rec, fields: formatted };
 }
 
+/**
+ * Format Rubai record with derived fields.
+ */
+export function formatRubaiRecord(
+  rec: AirtableRecord<any>
+): AirtableRecord<any> {
+  const f = rec.fields as Record<string, any>;
+
+  // Generate slug from title and poet name
+  const baseId = f.id || rec.id;
+  const slug = createSlug(f.unwan || f.shaer || "");
+
+  const formatted = {
+    ...f,
+    id: baseId,
+    slugId: slug,
+    airtableId: rec.id,
+    // Ensure numeric fields are properly typed
+    likes: Number(f.likes || 0),
+    comments: Number(f.comments || 0),
+    shares: Number(f.shares || 0),
+  };
+
+  return { ...rec, fields: formatted };
+}
+
 // === Filter Formula Builders ===
 
 /**
@@ -255,14 +286,18 @@ export function generateRecordCacheKey(table: string, id: string) {
 
 /**
  * Normalize line breaks and trim whitespace from text.
+ * Enhanced version that handles line breaks before applying base normalization.
  */
 export function normalizeText(text: string): string {
   if (!text || typeof text !== "string") return "";
 
-  return text
+  // First handle line breaks specific to Airtable content
+  const lineBreakNormalized = text
     .replace(/\r\n/g, "\n") // Normalize line breaks
-    .replace(/\r/g, "\n") // Handle old Mac line breaks
-    .trim();
+    .replace(/\r/g, "\n"); // Handle old Mac line breaks
+
+  // Then apply base normalization from formatters
+  return baseNormalizeText(lineBreakNormalized);
 }
 
 /**
@@ -279,11 +314,8 @@ export function splitIntoLines(text: string): string[] {
 
 /**
  * Truncate text to a specific length with ellipsis.
+ * Uses the base implementation from formatters.
  */
 export function truncateText(text: string, maxLength: number): string {
-  if (!text || typeof text !== "string") return "";
-
-  if (text.length <= maxLength) return text;
-
-  return text.substring(0, maxLength - 3) + "...";
+  return baseTruncateText(text, maxLength);
 }

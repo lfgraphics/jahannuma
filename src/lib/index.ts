@@ -20,3 +20,9 @@ export * as i18n from "./i18n";
 
 // SEO utilities
 export * from "./seo";
+
+// General utilities
+export * from "./utils";
+
+// Icon utilities
+export * from "./icons";

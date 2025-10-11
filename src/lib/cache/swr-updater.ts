@@ -6,6 +6,7 @@
 /**
  * Update a specific field in a paged list (for SWR infinite data).
  * Used for optimistic updates of likes, comments, shares in list views.
+ * Supports both legacy { records } and new { success, data: { records } } response shapes.
  */
 export function updatePagedListField(
   current: any,
@@ -14,23 +15,19 @@ export function updatePagedListField(
   increment: number
 ) {
   const apply = (page: any) => {
-    if (!page?.records) return page;
-
-    return {
-      ...page,
-      records: page.records.map((record: any) => {
-        if (record.id === targetId) {
-          return {
-            ...record,
-            fields: {
-              ...record.fields,
-              [field]: (record.fields[field] ?? 0) + increment,
-            },
-          };
-        }
-        return record;
-      }),
-    };
+    const container = page?.data ?? page; // support both
+    const records = container?.records;
+    if (!records) return page;
+    
+    const newRecords = records.map((r: any) => 
+      r.id === targetId 
+        ? { ...r, fields: { ...r.fields, [field]: (r.fields[field] ?? 0) + increment } } 
+        : r
+    );
+    
+    return container === page.data 
+      ? { ...page, data: { ...page.data, records: newRecords } } 
+      : { ...page, records: newRecords };
   };
 
   return Array.isArray(current) ? current.map(apply) : apply(current);
@@ -59,14 +56,18 @@ export function updateRecordField(
 /**
  * Add a new comment to a cached comments list.
  * Used for optimistic updates when adding comments.
+ * Supports both legacy { records } and new { success, data: { records } } response shapes.
  */
 export function addCommentToList(current: any, newComment: any) {
-  if (!current?.records) return current;
+  const container = current?.data ?? current; // support both
+  const records = container?.records;
+  if (!records) return current;
 
-  return {
-    ...current,
-    records: [newComment, ...current.records],
-  };
+  const newRecords = [newComment, ...records];
+  
+  return container === current?.data
+    ? { ...current, data: { ...current.data, records: newRecords } }
+    : { ...current, records: newRecords };
 }
 
 /**
@@ -88,6 +89,7 @@ export function updateRecordFields(current: any, updates: Record<string, any>) {
 /**
  * Update multiple records in a paged list.
  * Used when multiple records need to be updated simultaneously.
+ * Supports both legacy { records } and new { success, data: { records } } response shapes.
  */
 export function updateMultipleRecords(
   current: any,
@@ -96,24 +98,27 @@ export function updateMultipleRecords(
   const updateMap = new Map(updates.map((u) => [u.id, u.fields]));
 
   const apply = (page: any) => {
-    if (!page?.records) return page;
+    const container = page?.data ?? page; // support both
+    const records = container?.records;
+    if (!records) return page;
 
-    return {
-      ...page,
-      records: page.records.map((record: any) => {
-        const update = updateMap.get(record.id);
-        if (update) {
-          return {
-            ...record,
-            fields: {
-              ...record.fields,
-              ...update,
-            },
-          };
-        }
-        return record;
-      }),
-    };
+    const newRecords = records.map((record: any) => {
+      const update = updateMap.get(record.id);
+      if (update) {
+        return {
+          ...record,
+          fields: {
+            ...record.fields,
+            ...update,
+          },
+        };
+      }
+      return record;
+    });
+
+    return container === page.data
+      ? { ...page, data: { ...page.data, records: newRecords } }
+      : { ...page, records: newRecords };
   };
 
   return Array.isArray(current) ? current.map(apply) : apply(current);

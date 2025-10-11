@@ -4,7 +4,8 @@
  */
 
 // === Main Content Bases ===
-export const MAIN_BASE_ID = process.env.AIRTABLE_BASE_ID || "app1eVOGD6PdjD3vS";
+export const MAIN_BASE_ID = process.env.AIRTABLE_BASE_ID;
+// Validation occurs in getAirtableConfig(); avoid top-level throws here.
 
 // === Content Tables ===
 export const TABLES = {
@@ -17,6 +18,50 @@ export const TABLES = {
   BLOGS: "Blogs links and data",
   ADS: "Ads",
 } as const;
+
+// === Route to Table Mapping ===
+export const ROUTE_TABLES = {
+  ashaar: "Ashaar",
+  ghazlen: "Ghazlen",
+  nazmen: "Nazmen",
+  rubai: "Rubai",
+  ebooks: "E-Books",
+  comments: "Comments",
+} as const;
+
+export type RouteSlug = keyof typeof ROUTE_TABLES;
+
+export function ensureRouteSlug(input: string): RouteSlug {
+  // Map tolerant - try to convert table names to route slugs
+  const lowerInput = input.toLowerCase();
+
+  if (lowerInput === "ashaar") return "ashaar";
+  if (lowerInput === "ghazlen") return "ghazlen";
+  if (lowerInput === "nazmen") return "nazmen";
+  if (lowerInput === "rubai") return "rubai";
+  if (lowerInput === "e-books" || lowerInput === "ebooks") return "ebooks";
+  if (lowerInput === "comments") return "comments";
+
+  // If it's already a valid route slug, return it
+  if (input in ROUTE_TABLES) {
+    return input as RouteSlug;
+  }
+
+  // Default fallback
+  throw new Error(
+    `Unknown table/route: ${input}. Valid routes: ${Object.keys(
+      ROUTE_TABLES
+    ).join(", ")}`
+  );
+}
+
+/**
+ * Helper to migrate callers that still pass Airtable table names
+ * @deprecated Use RouteSlug directly instead
+ */
+export function migrateTableNameToSlug(tableName: string): RouteSlug {
+  return ensureRouteSlug(tableName);
+}
 
 // === Comment Bases (separate bases for each content type) ===
 export const COMMENT_BASES = {

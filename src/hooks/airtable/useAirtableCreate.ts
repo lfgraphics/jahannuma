@@ -1,8 +1,9 @@
 "use client";
+import { RouteSlug } from "@/lib/airtable/airtable-constants";
 import { useState } from "react";
 import { mutate } from "swr";
 
-export function useAirtableCreate(table: string) {
+export function useAirtableCreate(table: RouteSlug) {
   const [isCreating, setCreating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

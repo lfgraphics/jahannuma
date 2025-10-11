@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "jahannuma.vercel.app",
-        pathname: "/metaimages/**",
+        pathname: "/metaImages/**",
       },
     ],
   },
@@ -30,33 +30,6 @@ const nextConfig: NextConfig = {
 
     // Enable partial prerendering for better performance
     ppr: false, // Enable when stable
-  },
-
-  // Headers for better SEO and security
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "origin-when-cross-origin",
-          },
-        ],
-      },
-    ];
   },
 
   // Redirects for SEO and URL management (empty for now)
@@ -71,7 +44,7 @@ const nextConfig: NextConfig = {
   compress: true,
 
   // Enable powered by header removal for security
-  poweredByHeader: false,
+  // poweredByHeader: false,
 
   // Trailing slash handling
   trailingSlash: false,

@@ -30,6 +30,18 @@ export function getAirtableConfig(): AirtableConfig {
 }
 
 /**
+ * Table-specific searchable fields mapping to prevent API errors
+ */
+const TABLE_SEARCH_FIELDS: Record<string, string[]> = {
+  Ashaar: ["shaer", "unwan", "sher", "body"],
+  Ghazlen: ["shaer", "unwan", "mazmoon", "body"],
+  Nazmen: ["shaer", "unwan", "mazmoon", "body"],
+  Rubai: ["shaer", "unwan", "body"],
+  "E-Books": ["bookName", "writer", "description"],
+  Comments: ["comment", "commentorName"],
+};
+
+/**
  * Fetch records from an Airtable table with filtering, sorting, and pagination.
  */
 export async function fetchRecords<T = any>(
@@ -41,6 +53,7 @@ export async function fetchRecords<T = any>(
     sort?: string;
     fields?: string;
     search?: string;
+    view?: string;
   } = {}
 ): Promise<{ records: T[]; offset?: string }> {
   const { apiKey, baseId } = getAirtableConfig();
@@ -58,6 +71,11 @@ export async function fetchRecords<T = any>(
   // Add filtering
   if (params.filterByFormula) {
     searchParams.set("filterByFormula", params.filterByFormula);
+  }
+
+  // Add view
+  if (params.view) {
+    searchParams.set("view", params.view);
   }
 
   // Add sorting
@@ -79,17 +97,24 @@ export async function fetchRecords<T = any>(
     });
   }
 
-  // Handle search (convert to filter formula)
+  // Handle search (convert to filter formula with table-specific fields)
   if (params.search) {
-    const searchFilter = `SEARCH("${params.search.replace(
-      /"/g,
-      '""'
-    )}", CONCATENATE({shaer}, " ", {unwan}, " ", {sher}, " ", {body}))`;
-    if (params.filterByFormula) {
-      const combinedFilter = `AND(${params.filterByFormula}, ${searchFilter})`;
-      searchParams.set("filterByFormula", combinedFilter);
+    const searchFields = TABLE_SEARCH_FIELDS[tableName];
+    if (searchFields && searchFields.length > 0) {
+      const fieldsConcat = searchFields.map(field => `{${field}}`).join(', " ", ');
+      const searchFilter = `SEARCH("${params.search.replace(
+        /"/g,
+        '""'
+      )}", CONCATENATE(${fieldsConcat}))`;
+      if (params.filterByFormula) {
+        const combinedFilter = `AND(${params.filterByFormula}, ${searchFilter})`;
+        searchParams.set("filterByFormula", combinedFilter);
+      } else {
+        searchParams.set("filterByFormula", searchFilter);
+      }
     } else {
-      searchParams.set("filterByFormula", searchFilter);
+      // Fallback: if table not in mapping, ignore search to prevent errors
+      console.warn(`Search not supported for table: ${tableName}. Please add field mapping.`);
     }
   }
 
@@ -253,15 +278,21 @@ export async function deleteRecord(
 /**
  * List Ashaar records with typed response.
  */
-export async function listAshaarRecords(params: {
-  pageSize?: number;
-  offset?: string;
-  filterByFormula?: string;
-  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
-  view?: string;
-} = {}) {
-  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
-  return fetchRecords('Ashaar', {
+export async function listAshaarRecords(
+  params: {
+    pageSize?: number;
+    offset?: string;
+    filterByFormula?: string;
+    sort?: Array<{ field: string; direction: "asc" | "desc" }>;
+    view?: string;
+    fields?: string;
+    search?: string;
+  } = {}
+) {
+  const sortParam = params.sort
+    ? params.sort.map((s) => `${s.field}:${s.direction}`).join(",")
+    : undefined;
+  return fetchRecords("Ashaar", {
     ...params,
     sort: sortParam,
   });
@@ -271,21 +302,27 @@ export async function listAshaarRecords(params: {
  * Get a specific Ashaar record by ID.
  */
 export async function getAshaarRecord(recordId: string) {
-  return fetchRecord('Ashaar', recordId);
+  return fetchRecord("Ashaar", recordId);
 }
 
 /**
  * List Ghazlen records with typed response.
  */
-export async function listGhazlenRecords(params: {
-  pageSize?: number;
-  offset?: string;
-  filterByFormula?: string;
-  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
-  view?: string;
-} = {}) {
-  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
-  return fetchRecords('Ghazlen', {
+export async function listGhazlenRecords(
+  params: {
+    pageSize?: number;
+    offset?: string;
+    filterByFormula?: string;
+    sort?: Array<{ field: string; direction: "asc" | "desc" }>;
+    view?: string;
+    fields?: string;
+    search?: string;
+  } = {}
+) {
+  const sortParam = params.sort
+    ? params.sort.map((s) => `${s.field}:${s.direction}`).join(",")
+    : undefined;
+  return fetchRecords("Ghazlen", {
     ...params,
     sort: sortParam,
   });
@@ -295,21 +332,27 @@ export async function listGhazlenRecords(params: {
  * Get a specific Ghazal record by ID.
  */
 export async function getGhazlenRecord(recordId: string) {
-  return fetchRecord('Ghazlen', recordId);
+  return fetchRecord("Ghazlen", recordId);
 }
 
 /**
  * List Nazmen records with typed response.
  */
-export async function listNazmenRecords(params: {
-  pageSize?: number;
-  offset?: string;
-  filterByFormula?: string;
-  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
-  view?: string;
-} = {}) {
-  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
-  return fetchRecords('Nazmen', {
+export async function listNazmenRecords(
+  params: {
+    pageSize?: number;
+    offset?: string;
+    filterByFormula?: string;
+    sort?: Array<{ field: string; direction: "asc" | "desc" }>;
+    view?: string;
+    fields?: string;
+    search?: string;
+  } = {}
+) {
+  const sortParam = params.sort
+    ? params.sort.map((s) => `${s.field}:${s.direction}`).join(",")
+    : undefined;
+  return fetchRecords("Nazmen", {
     ...params,
     sort: sortParam,
   });
@@ -319,21 +362,27 @@ export async function listNazmenRecords(params: {
  * Get a specific Nazm record by ID.
  */
 export async function getNazmenRecord(recordId: string) {
-  return fetchRecord('Nazmen', recordId);
+  return fetchRecord("Nazmen", recordId);
 }
 
 /**
  * List Rubai records with typed response.
  */
-export async function listRubaiRecords(params: {
-  pageSize?: number;
-  offset?: string;
-  filterByFormula?: string;
-  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
-  view?: string;
-} = {}) {
-  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
-  return fetchRecords('Rubai', {
+export async function listRubaiRecords(
+  params: {
+    pageSize?: number;
+    offset?: string;
+    filterByFormula?: string;
+    sort?: Array<{ field: string; direction: "asc" | "desc" }>;
+    view?: string;
+    fields?: string;
+    search?: string;
+  } = {}
+) {
+  const sortParam = params.sort
+    ? params.sort.map((s) => `${s.field}:${s.direction}`).join(",")
+    : undefined;
+  return fetchRecords("Rubai", {
     ...params,
     sort: sortParam,
   });
@@ -343,21 +392,27 @@ export async function listRubaiRecords(params: {
  * Get a specific Rubai record by ID.
  */
 export async function getRubaiRecord(recordId: string) {
-  return fetchRecord('Rubai', recordId);
+  return fetchRecord("Rubai", recordId);
 }
 
 /**
  * List E-Books records with typed response.
  */
-export async function listEbooksRecords(params: {
-  pageSize?: number;
-  offset?: string;
-  filterByFormula?: string;
-  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
-  view?: string;
-} = {}) {
-  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
-  return fetchRecords('E-Books', {
+export async function listEbooksRecords(
+  params: {
+    pageSize?: number;
+    offset?: string;
+    filterByFormula?: string;
+    sort?: Array<{ field: string; direction: "asc" | "desc" }>;
+    view?: string;
+    fields?: string;
+    search?: string;
+  } = {}
+) {
+  const sortParam = params.sort
+    ? params.sort.map((s) => `${s.field}:${s.direction}`).join(",")
+    : undefined;
+  return fetchRecords("E-Books", {
     ...params,
     sort: sortParam,
   });
@@ -367,21 +422,27 @@ export async function listEbooksRecords(params: {
  * Get a specific E-Book record by ID.
  */
 export async function getEbooksRecord(recordId: string) {
-  return fetchRecord('E-Books', recordId);
+  return fetchRecord("E-Books", recordId);
 }
 
 /**
  * List Comments records with typed response.
  */
-export async function listCommentsRecords(params: {
-  pageSize?: number;
-  offset?: string;
-  filterByFormula?: string;
-  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
-  view?: string;
-} = {}) {
-  const sortParam = params.sort ? params.sort.map(s => `${s.field}%20${s.direction}`).join(',') : undefined;
-  return fetchRecords('Comments', {
+export async function listCommentsRecords(
+  params: {
+    pageSize?: number;
+    offset?: string;
+    filterByFormula?: string;
+    sort?: Array<{ field: string; direction: "asc" | "desc" }>;
+    view?: string;
+    fields?: string;
+    search?: string;
+  } = {}
+) {
+  const sortParam = params.sort
+    ? params.sort.map((s) => `${s.field}:${s.direction}`).join(",")
+    : undefined;
+  return fetchRecords("Comments", {
     ...params,
     sort: sortParam,
   });

@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useMemo } from "react";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { BLOGS_BASE, BLOGS_TABLE } from "@/lib/airtable-constants";
 import type { AirtableRecord } from "@/app/types";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { BLOGS_BASE, BLOGS_TABLE } from "@/lib/airtable-constants";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import React, { useMemo, useState } from "react";
 
 interface BlogRecord {
   url?: string;
@@ -34,6 +34,7 @@ const fallbackGradients = [
 // Fallback static data when Airtable is not available
 const fallbackCardsData = [
   {
+    unwan: "About Ustaad",
     content: `The word 'Ustaad' entered the Urdu language from Persian. Its journey began with the religious Zoroastrian book Awista, which was in the ancient Iranian language and had very few people who understood it. The person who understood Awista was known as 'Awista-wed'. The word 'wed' is still used for 'Hakim (wise)', or 'Daanaa (learned)'. Gradually, the word first became 'Awista-wid', and then morphed into 'Ustaad'. Originally, the word was used only for those who understood religious texts, but later became an appellation for everyone who taught and tutored. Nowadays, a master of an art or a skill is referred to as Ustaad, too. The word has become an inseparable part of the names of the virtuosos of Indian classical music. Today, in everyday speech, the word has taken a new meaning; being artful has come to be known as Ustaadi dikhaana. Endearingly, friends too address each other as Ustaad these days. In Indian films, characters of all sorts are depicted as Ustads, and films named 'Ustadon ke Ustad', 'Do Ustad', and 'Ustadi, Ustad Ki' are also found.`,
     img: "/logo.png",
     link: "/About_site",
@@ -41,6 +42,7 @@ const fallbackCardsData = [
     id: "fallback-1",
   },
   {
+    unwan: "غزل کی تاریخ",
     content: `اردو ادب میں غزل کی تاریخ بہت پرانی ہے۔ غزل فارسی سے اردو میں آئی اور یہاں اپنا مقام بنایا۔ اردو کے عظیم شعراء نے غزل کو نئی بلندیوں تک پہنچایا۔`,
     img: "/logo.png",
     link: "/Ghazlen",
@@ -48,6 +50,7 @@ const fallbackCardsData = [
     id: "fallback-2",
   },
   {
+    unwan: "Nazm Kya Hai?",
     content: `نظم اردو شاعری کی ایک اہم صنف ہے۔ یہ کسی خاص موضوع پر مبنی ہوتی ہے اور اس میں شاعر اپنے خیالات کو منظم انداز میں بیان کرتا ہے۔`,
     img: "",
     link: "/Nazmen",
@@ -57,14 +60,18 @@ const fallbackCardsData = [
 ];
 
 const getRandomGradient = () => {
-  return fallbackGradients[Math.floor(Math.random() * fallbackGradients.length)];
+  return fallbackGradients[
+    Math.floor(Math.random() * fallbackGradients.length)
+  ];
 };
 
 const DoYouKnow: React.FC = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const { language } = useLanguage();
 
-  const { records, isLoading, error } = useAirtableList<AirtableRecord<BlogRecord>>(BLOGS_BASE, BLOGS_TABLE, { pageSize: 30 });
+  const { records, isLoading, error } = useAirtableList<
+    AirtableRecord<BlogRecord>
+  >(BLOGS_BASE, BLOGS_TABLE, { pageSize: 30 });
 
   const cards = useMemo(() => {
     // If there's an error or no records, use fallback data
@@ -72,7 +79,7 @@ const DoYouKnow: React.FC = () => {
       return fallbackCardsData;
     }
 
-    return records.map(record => {
+    return records.map((record) => {
       const fields = record.fields;
 
       // Get text based on language preference
@@ -86,12 +93,26 @@ const DoYouKnow: React.FC = () => {
       } else {
         content = fields.text || fields.enText || fields.hiText || "";
       }
+      // Get text based on language preference
+      let unwan = "";
+      if (language === "UR") {
+        unwan = fields.unwan || fields.enUnwan || fields.hiUnwan || "";
+      } else if (language === "EN") {
+        unwan = fields.enUnwan || fields.unwan || fields.hiUnwan || "";
+      } else if (language === "HI") {
+        unwan = fields.hiUnwan || fields.unwan || fields.enUnwan || "";
+      } else {
+        unwan = fields.unwan || fields.enUnwan || fields.hiUnwan || "";
+      }
 
       return {
         content,
+        unwan,
         img: fields.photo?.[0]?.url || "",
         link: fields.url || "",
-        bgGradient: fields.background?.replace(/^background:\s*/, '') || getRandomGradient(),
+        bgGradient:
+          fields.background?.replace(/^background:\s*/, "") ||
+          getRandomGradient(),
         id: record.id,
       };
     });
@@ -130,8 +151,9 @@ const DoYouKnow: React.FC = () => {
     <div className="flex justify-center mt-3 mb-5 px-4">
       <div className="flex items-center justify-center gap-3 lg:w-[60vw] xl:w-[50vw] md:w-[70vw] sm:w-[80vw] w-[95vw] max-w-4xl">
         <div
-          className={`transition-all duration-500 ease-in-out rounded-full border-2 border-solid border-grey-300 text-[#984A02] bg-grey-300 hover:text-white hover:bg-[#984A02] p-2 flex cursor-pointer${scrollPosition == 0 ? " opacity-0" : ""
-            }`}
+          className={`transition-all duration-500 ease-in-out rounded-full border-2 border-solid border-grey-300 text-[#984A02] bg-grey-300 hover:text-white hover:bg-[#984A02] p-2 flex cursor-pointer ${
+            scrollPosition == 0 ? " opacity-0" : ""
+          }`}
           onClick={scrollLeft}
         >
           <ChevronLeft size={20} />
@@ -142,8 +164,8 @@ const DoYouKnow: React.FC = () => {
         >
           <div className="card w-full min-h-[100%] h-max">
             <div className="py-4 px-6 lg:py-6 lg:px-8 text-white text-center">
-              <h2 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold mb-3">
-                کیا آپ جانتے ہیں؟
+              <h2 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl mb-3">
+                {card?.unwan}
               </h2>
               {card && card.img && (
                 <div className="flex justify-center">
@@ -158,9 +180,24 @@ const DoYouKnow: React.FC = () => {
                   </div>
                 </div>
               )}
-              <p className="text-sm md:text-base lg:text-lg text-black leading-relaxed max-w-3xl mx-auto">{card?.content}</p>
+              <p
+                dir={language === "UR" ? "rtl" : "ltr"}
+                className={`text-sm md:text-base lg:text-lg text-black leading-relaxed max-w-3xl mx-auto ${
+                  language === "UR" ? "text-right" : "text-left"
+                }`}
+              >
+                {card?.content.split("\n").map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </p>
               {card && card.link && (
-                <Link href={card.link} className="text-blue-500 hover:text-blue-400 mt-4 block text-sm md:text-base">
+                <Link
+                  href={card.link}
+                  className="text-blue-500 hover:text-blue-400 mt-4 block text-sm md:text-base"
+                >
                   مزید دیکھیں
                 </Link>
               )}
@@ -168,8 +205,9 @@ const DoYouKnow: React.FC = () => {
           </div>
         </div>
         <div
-          className={`transition-all duration-500 ease-in-out rounded-full border-2 border-solid border-grey-300 text-[#984A02] bg-grey-300 hover:text-white hover:bg-[#984A02] p-2 flex cursor-pointer${scrollPosition == cards.length - 1 ? " opacity-0" : ""
-            }`}
+          className={`transition-all duration-500 ease-in-out rounded-full border-2 border-solid border-grey-300 text-[#984A02] bg-grey-300 hover:text-white hover:bg-[#984A02] p-2 flex cursor-pointer${
+            scrollPosition == cards.length - 1 ? " opacity-0" : ""
+          }`}
           onClick={scrollRight}
         >
           <ChevronRight size={20} />

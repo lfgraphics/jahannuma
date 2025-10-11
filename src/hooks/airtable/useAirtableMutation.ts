@@ -1,4 +1,5 @@
 "use client";
+import { RouteSlug } from "@/lib/airtable/airtable-constants";
 import { useState } from "react";
 import { mutate } from "swr";
 
@@ -8,7 +9,7 @@ type MutationOptions = {
   updater?: (current: any) => any;
 };
 
-export function useAirtableMutation(table: string) {
+export function useAirtableMutation(table: RouteSlug) {
   const [isUpdating, setUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

@@ -1,22 +1,24 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
-import { XCircle } from "lucide-react";
-import { toast } from "sonner";
-import CommentSection from "../../../Components/CommentSection";
-import SkeletonLoader from "../../../Components/SkeletonLoader";
-import DataCard from "../../../Components/DataCard";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useCommentSystem } from "@/hooks/useCommentSystem";
+import { COMMENTS_TABLE, NAZMEN_COMMENTS_BASE } from "@/lib/airtable-constants";
+import { shareRecordWithCount } from "@/lib/social-utils";
+import { updatePagedListField } from "@/lib/swr-updater";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { useAirtableList } from "../../../../hooks/useAirtableList";
-import { useAirtableMutation } from "../../../../hooks/useAirtableMutation";
+import React, { useEffect, useMemo, useState } from "react";
 import type { AirtableRecord, NazmenRecord } from "../../../../app/types";
-import { buildShaerFilter, formatNazmenRecord, prepareShareUpdate } from "../../../../lib/airtable-utils";
-import { updatePagedListField } from "@/lib/swr-updater";
-import { shareRecordWithCount } from "@/lib/social-utils";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useCommentSystem } from "@/hooks/useCommentSystem";
-import { NAZMEN_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
-import useAuthGuard from "@/hooks/useAuthGuard";
+import {
+  buildShaerFilter,
+  formatNazmenRecord,
+  prepareShareUpdate,
+} from "../../../../lib/airtable-utils";
+import CommentSection from "../../../Components/CommentSection";
+import DataCard from "../../../Components/DataCard";
+import SkeletonLoader from "../../../Components/SkeletonLoader";
 
 const BASE_ID = "app5Y2OsuDgpXeQdz";
 const TABLE = "nazmen";

@@ -1,7 +1,7 @@
 "use client";
+import { RouteSlug } from "@/lib/airtable/airtable-constants";
 import { useMemo } from "react";
 import useSWRInfinite from "swr/infinite";
-import { useLanguage } from "../../../contexts/LanguageContext";
 import { useDebouncedValue } from "../utils/useDebouncedValue";
 
 export interface ListParams {
@@ -31,12 +31,10 @@ const fetcher = async (url: string) => {
 };
 
 export function useAirtableList<T = any>(
-  table: string,
+  table: RouteSlug,
   params: ListParams = {},
   options: UseAirtableListOptions = {}
 ) {
-  const { language } = useLanguage();
-
   // Debounce search/filter to avoid per-keystroke requests
   const debounceMs = options.debounceMs ?? 300;
   const debouncedSearch = useDebouncedValue(params.search, debounceMs);
@@ -71,9 +69,6 @@ export function useAirtableList<T = any>(
       searchParams.set("search", debouncedSearch);
     }
 
-    // Add language
-    searchParams.set("lang", language);
-
     // Add extra params
     if (params.extra) {
       Object.entries(params.extra).forEach(([key, value]) => {
@@ -89,18 +84,17 @@ export function useAirtableList<T = any>(
     JSON.stringify(params.sort),
     debouncedSearch,
     JSON.stringify(params.extra),
-    language,
   ]);
 
   const getKey = (pageIndex: number, previousPageData: any) => {
     if (options.enabled === false) return null;
-    if (previousPageData && !previousPageData.offset) return null; // reached end
+    if (previousPageData && !previousPageData.data?.offset) return null; // reached end
 
     const baseUrl = `/api/airtable/${table}`;
     const searchParams = new URLSearchParams(queryParams);
 
-    if (pageIndex > 0 && previousPageData?.offset) {
-      searchParams.set("offset", previousPageData.offset);
+    if (pageIndex > 0 && previousPageData?.data?.offset) {
+      searchParams.set("offset", previousPageData.data.offset);
     }
 
     return `${baseUrl}?${searchParams.toString()}`;
@@ -114,11 +108,11 @@ export function useAirtableList<T = any>(
 
   // Memoize derived arrays/values so consumers don't get a new reference each render
   const records = useMemo(() => {
-    return (swr.data ?? []).flatMap((page: any) => page?.records ?? []);
+    return (swr.data ?? []).flatMap((page: any) => page?.data?.records ?? []);
   }, [swr.data]);
 
   const hasMore = useMemo(() => {
-    return !!(swr.data && swr.data[swr.data.length - 1]?.offset);
+    return !!(swr.data && swr.data[swr.data.length - 1]?.data?.offset);
   }, [swr.data]);
 
   const loadMore = () => swr.setSize((size) => size + 1);

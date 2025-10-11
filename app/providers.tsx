@@ -1,8 +1,8 @@
 "use client";
-import React from "react";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { ThemeProvider } from "next-themes";
+import React from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (

@@ -117,51 +117,146 @@ export interface MutationResponse {
 /**
  * Response type for Ashaar list API.
  */
-export interface AsharListResponse extends ApiResponse<{
-  records: any[];
-  offset?: string;
-  hasMore: boolean;
-  total: number;
-  userMetadata?: { userId: string };
-}> {}
+export interface AshaarListResponse
+  extends ApiResponse<{
+    records: any[];
+    offset?: string;
+    hasMore: boolean;
+    userMetadata?: { userId: string };
+  }> {}
 
 /**
  * Response type for single Ashaar API.
  */
-export interface AsharDetailResponse extends ApiResponse<{
-  record: any;
-  userMetadata?: {
-    userId: string;
-    isLiked: boolean;
-  };
-}> {}
+export interface AshaarDetailResponse
+  extends ApiResponse<{
+    record: any;
+    userMetadata?: {
+      userId: string;
+      isLiked: boolean;
+    };
+  }> {}
 
 /**
  * Response type for Ghazal list API.
  */
-export interface GhazalListResponse extends ApiResponse<{
-  records: any[];
-  offset?: string;
-  hasMore: boolean;
-  total: number;
-  userMetadata?: { userId: string };
-}> {}
+export interface GhazalListResponse
+  extends ApiResponse<{
+    records: any[];
+    offset?: string;
+    hasMore: boolean;
+    userMetadata?: { userId: string };
+  }> {}
 
 /**
  * Response type for single Ghazal API.
  */
-export interface GhazalDetailResponse extends ApiResponse<{
-  record: any;
-  userMetadata?: {
-    userId: string;
-    isLiked: boolean;
-  };
-}> {}
+export interface GhazalDetailResponse
+  extends ApiResponse<{
+    record: any;
+    userMetadata?: {
+      userId: string;
+      isLiked: boolean;
+    };
+  }> {}
 
 /**
  * Response type for like toggle API.
  */
-export interface LikeToggleResponse extends ApiResponse<{
-  isLiked: boolean;
-  likeCount: number;
-}> {}
+export interface LikeToggleResponse
+  extends ApiResponse<{
+    isLiked: boolean;
+    likeCount: number;
+  }> {}
+
+/**
+ * Response type for Comments list API.
+ */
+export interface CommentListResponse
+  extends ApiResponse<{
+    records: any[];
+    offset?: string;
+    hasMore: boolean;
+    userMetadata?: { userId: string };
+  }> {}
+
+/**
+ * Response type for single Comment API.
+ */
+export interface CommentDetailResponse
+  extends ApiResponse<{
+    record: any;
+    userMetadata?: {
+      userId: string;
+      isLiked: boolean;
+    };
+  }> {}
+
+/**
+ * Response type for Nazmen list API.
+ */
+export interface NazmenListResponse
+  extends ApiResponse<{
+    records: any[];
+    offset?: string;
+    hasMore: boolean;
+    userMetadata?: { userId: string };
+  }> {}
+
+/**
+ * Response type for single Nazmen API.
+ */
+export interface NazmenDetailResponse
+  extends ApiResponse<{
+    record: any;
+    userMetadata?: {
+      userId: string;
+      isLiked: boolean;
+    };
+  }> {}
+
+/**
+ * Response type for Rubai list API.
+ */
+export interface RubaiListResponse
+  extends ApiResponse<{
+    records: any[];
+    offset?: string;
+    hasMore: boolean;
+    userMetadata?: { userId: string };
+  }> {}
+
+/**
+ * Response type for single Rubai API.
+ */
+export interface RubaiDetailResponse
+  extends ApiResponse<{
+    record: any;
+    userMetadata?: {
+      userId: string;
+      isLiked: boolean;
+    };
+  }> {}
+
+/**
+ * Response type for EBooks list API.
+ */
+export interface EbooksListResponse
+  extends ApiResponse<{
+    records: any[];
+    offset?: string;
+    hasMore: boolean;
+    userMetadata?: { userId: string };
+  }> {}
+
+/**
+ * Response type for single EBook API.
+ */
+export interface EbooksDetailResponse
+  extends ApiResponse<{
+    record: any;
+    userMetadata?: {
+      userId: string;
+      isLiked: boolean;
+    };
+  }> {}
