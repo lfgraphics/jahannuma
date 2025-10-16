@@ -183,7 +183,7 @@ export default function Page() {
                   </p>
                   <p className="my-2">تفصیل: {record.fields.desc}</p>
                   {record.fields.maloomat && (
-                    <div className="bg-gray-100 py-2 mt-4 rounded-sm border">
+                    <div className="bg-muted py-2 mt-4 rounded-sm border">
                       <p className="text-xs mr-4 text-foreground">
                         دلچسپ معلومات:
                       </p>

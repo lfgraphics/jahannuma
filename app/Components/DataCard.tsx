@@ -1,14 +1,13 @@
 "use client";
 // ShaerCard.tsx
-import React, { useEffect, useMemo, useState } from "react";
-import { Heart, MessageCircle, Share2, Tag, Download } from "lucide-react";
-import Link from "next/link";
-import DynamicDownloadHandler from "./Download";
-import { useLikeButton } from "@/hooks/useLikeButton";
-import useAuthGuard from "@/hooks/useAuthGuard";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
-import { AuthRequiredError } from "@/hooks/useLikeButton";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useLikeButton } from "@/hooks/useLikeButton";
 import { createSlug } from "@/lib/airtable-utils";
+import { Download, Heart, MessageCircle, Share2, Tag } from "lucide-react";
+import Link from "next/link";
+import React, { useEffect, useMemo, useState } from "react";
+import DynamicDownloadHandler from "./Download";
 // Use a minimal local shape for safety without forcing all callers to match a strict type
 export type MinimalShaer = {
   id: string;
@@ -82,7 +81,8 @@ const DataCard = <T extends MinimalShaer>({
   onLikeChange,
 }: ShaerCardProps<T>) => {
   const [selectedShaer, setSelectedShaer] = useState<MinimalShaer | null>(null);
-  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } =
+    useAuthGuard();
 
   const cancelDownload = () => {
     // Reset the selectedShaer state to null
@@ -114,17 +114,25 @@ const DataCard = <T extends MinimalShaer>({
   const likeEnabled = !!(baseId && table && storageKey && recordId);
   const like = likeEnabled
     ? useLikeButton({
-      baseId,
-      table,
-      storageKey,
-      recordId,
-      currentLikes: (sd?.fields?.likes as number | undefined) ?? 0,
-      swrKey,
-      onChange: onLikeChange,
-    })
+        baseId,
+        table,
+        storageKey,
+        recordId,
+        currentLikes: (sd?.fields?.likes as number | undefined) ?? 0,
+        swrKey,
+        onChange: onLikeChange,
+      })
     : null;
-  const resolvedHeartLiked = like ? (like.isHydratingLikes ? false : like.isLiked) : !!heartLiked;
-  const resolvedHeartDisabled = like ? (like.isHydratingLikes ? true : like.isDisabled) : !!heartDisabled;
+  const resolvedHeartLiked = like
+    ? like.isHydratingLikes
+      ? false
+      : like.isLiked
+    : !!heartLiked;
+  const resolvedHeartDisabled = like
+    ? like.isHydratingLikes
+      ? true
+      : like.isDisabled
+    : !!heartDisabled;
   const noHandlers = !like && !handleHeartClick && !onHeartToggle;
 
   // Warn once if the card has no like ability due to missing prerequisites/handlers
@@ -162,8 +170,9 @@ const DataCard = <T extends MinimalShaer>({
         <div
           key={index}
           id={`card${index}`}
-          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-[#2d2d2f]" : ""
-            } p-4 rounded-sm relative flex flex-col justify-between min-h-[180px] max-h-[200px]`}
+          className={`${
+            index % 2 === 1 ? "bg-gray-50 dark:bg-[#2d2d2f]" : ""
+          } p-4 rounded-sm relative flex flex-col justify-between min-h-[180px] max-h-[200px]`}
         >
           <>
             <div className="flex justify-between items-end">
@@ -172,7 +181,10 @@ const DataCard = <T extends MinimalShaer>({
               </p>
               <Link
                 href={{
-                  pathname: `/Shaer/${(sd?.fields?.shaer || "").replace(" ", "-")}`,
+                  pathname: `/Shaer/${(sd?.fields?.shaer || "").replace(
+                    " ",
+                    "-"
+                  )}`,
                   query: {
                     tab: "تعارف",
                   },
@@ -183,51 +195,67 @@ const DataCard = <T extends MinimalShaer>({
                 </h2>
               </Link>
             </div>
-            <div className="flex items-center justify-center text-center icons">
-              {ghazalHeadLines.map((lin, index) => (
-                <p
-                  key={index}
-                  className="text-foreground text-lg cursor-default"
-                  onClick={() => handleCardClick(shaerData)}
+            <div className="flex items-center justify-baseline text-center icons">
+              <div className="sec1 basis-1/2">
+                {ghazalHeadLines.map((lin, index) => (
+                  <p
+                    key={index}
+                    className="text-foreground text-lg cursor-default"
+                    onClick={() => handleCardClick(shaerData)}
+                  >
+                    {lin} <span>۔۔۔</span>
+                  </p>
+                ))}
+              </div>
+              <div className="sec2 basis-[70%] flex justify-between items-center">
+                <button className="text-[#984A02] font-semibold m-3">
+                  <Link
+                    href={{
+                      pathname: `/Nazmen/${encodeURIComponent(
+                        createSlug(
+                          shaerData?.fields?.ghazalHead?.[0] || ""
+                        ) as string
+                      )}/${encodeURIComponent(shaerData?.id)}`,
+                    }}
+                  >
+                    پڑھیں۔۔۔
+                  </Link>
+                </button>
+                <button
+                  id={heartElementId}
+                  className={`m-2 flex items-center gap-1 transition-all duration-500 ${
+                    resolvedHeartLiked ? "text-red-600" : "text-gray-500"
+                  } ${noHandlers ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={onHeart}
+                  disabled={resolvedHeartDisabled || noHandlers}
+                  aria-disabled={resolvedHeartDisabled || noHandlers}
                 >
-                  {lin} <span>۔۔۔</span>
-                </p>
-              ))}
-              <button className="text-[#984A02] font-semibold m-3">
-                <Link href={{ pathname: `/Nazmen/${encodeURIComponent((createSlug(shaerData?.fields?.ghazalHead?.[0] || '')) as string)}/${encodeURIComponent(shaerData?.id)}` }}>
-                  پڑھیں۔۔۔
-                </Link>
-              </button>
-              <button
-                id={heartElementId}
-                className={`m-3 transition-all duration-500 ${resolvedHeartLiked ? "text-red-600" : "text-gray-500"} ${noHandlers ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={onHeart}
-                disabled={resolvedHeartDisabled || noHandlers}
-                aria-disabled={resolvedHeartDisabled || noHandlers}
-              >
-                <Heart className="inline" fill="currentColor" size={16} />{" "}
-                <span id="likescount" className="text-gray-500 text-sm">
-                  {like ? like.likesCount : (shaerData?.fields?.likes ?? 0)}
-                </span>
-              </button>
-              <button
-                className="m-3 flex items-center gap-1"
-                onClick={() => { if (requireAuth("comment")) openComments(shaerData?.id); }}
-              >
-                <MessageCircle color="#984A02" className="ml-2" size={16} />{" "}
-                <span className="text-gray-500 text-sm">
-                  {shaerData?.fields?.comments ?? 0}
-                </span>
-              </button>
-              <button
-                className="m-3 flex items-center gap-1"
-                onClick={() => handleShareClick(shaerData, index)}
-              >
-                <Share2 color="#984A02" size={16} />{" "}
-                <span className="text-gray-500 text-sm">
-                  {shaerData?.fields?.shares ?? 0}
-                </span>
-              </button>
+                  <Heart className="inline" fill="currentColor" size={16} />{" "}
+                  <span id="likescount" className="text-gray-500 text-sm">
+                    {like ? like.likesCount : shaerData?.fields?.likes ?? 0}
+                  </span>
+                </button>
+                <button
+                  className="m-3 flex items-center gap-1"
+                  onClick={() => {
+                    if (requireAuth("comment")) openComments(shaerData?.id);
+                  }}
+                >
+                  <MessageCircle color="#984A02" className="ml-2" size={16} />{" "}
+                  <span className="text-gray-500 text-sm">
+                    {shaerData?.fields?.comments ?? 0}
+                  </span>
+                </button>
+                <button
+                  className="m-3 flex items-center gap-1"
+                  onClick={() => handleShareClick(shaerData, index)}
+                >
+                  <Share2 color="#984A02" size={16} />{" "}
+                  <span className="text-gray-500 text-sm">
+                    {shaerData?.fields?.shares ?? 0}
+                  </span>
+                </button>
+              </div>
             </div>
           </>
         </div>
@@ -237,7 +265,9 @@ const DataCard = <T extends MinimalShaer>({
           dir="rtl"
           key={index}
           id={`card${index}`}
-          className={`${index % 2 === 1 ? "bg-gray-50 dark:bg-[#2d2d2f]" : ""} p-4 rounded-sm relative flex flex-col h-[250px]`}
+          className={`${
+            index % 2 === 1 ? "bg-gray-50 dark:bg-[#2d2d2f]" : ""
+          } p-4 rounded-sm relative flex flex-col h-[250px]`}
         >
           <Link
             href={{
@@ -245,11 +275,17 @@ const DataCard = <T extends MinimalShaer>({
               query: { tab: "تعارف" },
             }}
           >
-            <h2 className="text-foreground text-lg mb-4">{shaerData?.fields?.shaer}</h2>
+            <h2 className="text-foreground text-lg mb-4">
+              {shaerData?.fields?.shaer}
+            </h2>
           </Link>
           <div className="unwan flex flex-col w-full items-center mb-2">
             {ghazalHeadLines.map((lin: string, index: number) => (
-              <p key={index} className="text-lg w-full text-center px-6" onClick={() => handleCardClick(shaerData)}>
+              <p
+                key={index}
+                className="text-lg w-full text-center px-6"
+                onClick={() => handleCardClick(shaerData)}
+              >
                 {lin}
               </p>
             ))}
@@ -265,7 +301,13 @@ const DataCard = <T extends MinimalShaer>({
                     key={index}
                     className="text-md text-blue-500 underline p-2"
                   >
-                    <Link href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwaan)}` }}>{unwaan}</Link>
+                    <Link
+                      href={{
+                        pathname: `/Ghazlen/mozu/${encodeURIComponent(unwaan)}`,
+                      }}
+                    >
+                      {unwaan}
+                    </Link>
                   </span>
                 ))}
               {page == "rand" &&
@@ -274,7 +316,13 @@ const DataCard = <T extends MinimalShaer>({
                     key={index}
                     className="text-md text-blue-500 underline p-2"
                   >
-                    <Link href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwaan)}` }}>{unwaan}</Link>
+                    <Link
+                      href={{
+                        pathname: `/Ashaar/mozu/${encodeURIComponent(unwaan)}`,
+                      }}
+                    >
+                      {unwaan}
+                    </Link>
                   </span>
                 ))}
             </div>
@@ -285,30 +333,59 @@ const DataCard = <T extends MinimalShaer>({
             >
               <span className="flex items-center">
                 :موضوعات{" "}
-                <Tag className="ml-2 text-yellow-400 cursor-pointer" size={16} />
+                <Tag
+                  className="ml-2 text-yellow-400 cursor-pointer"
+                  size={16}
+                />
               </span>
-              {page !== "rand" && (
-                download ? (
-                  <Link className="text-blue-500 underline" href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwanList[0] || "")}` }}>
+              {page !== "rand" &&
+                (download ? (
+                  <Link
+                    className="text-blue-500 underline"
+                    href={{
+                      pathname: `/Ashaar/mozu/${encodeURIComponent(
+                        unwanList[0] || ""
+                      )}`,
+                    }}
+                  >
                     {unwanList[0] ?? ""}
                   </Link>
                 ) : (
-                  <Link className="text-blue-500 underline" href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] || "")}` }}>
+                  <Link
+                    className="text-blue-500 underline"
+                    href={{
+                      pathname: `/Ghazlen/mozu/${encodeURIComponent(
+                        unwanList[0] || ""
+                      )}`,
+                    }}
+                  >
                     {unwanList[0] ?? ""}
                   </Link>
-                )
-              )}
-              {page == "rand" && (
-                download ? (
-                  <Link className="text-blue-500 underline" href={{ pathname: `/Ashaar/mozu/${encodeURIComponent(unwanList[0] || "nothing")}` }}>
+                ))}
+              {page == "rand" &&
+                (download ? (
+                  <Link
+                    className="text-blue-500 underline"
+                    href={{
+                      pathname: `/Ashaar/mozu/${encodeURIComponent(
+                        unwanList[0] || "nothing"
+                      )}`,
+                    }}
+                  >
                     {unwanList[0] ?? "nothing"}
                   </Link>
                 ) : (
-                  <Link className="text-blue-500 underline" href={{ pathname: `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] || "nothing")}` }}>
+                  <Link
+                    className="text-blue-500 underline"
+                    href={{
+                      pathname: `/Ghazlen/mozu/${encodeURIComponent(
+                        unwanList[0] || "nothing"
+                      )}`,
+                    }}
+                  >
                     {unwanList[0] ?? "nothing"}
                   </Link>
-                )
-              )}
+                ))}
               <span dir="rtl" className="cursor-auto">
                 {unwanList.length > 1 ? ` ، ${unwanList.length - 1} اور ` : ""}
               </span>
@@ -317,17 +394,24 @@ const DataCard = <T extends MinimalShaer>({
           <div className="flex items-end text-center w-full">
             <button
               id={heartElementId}
-              className={`m-3 flex gap-1 items-center transition-all duration-500 ${resolvedHeartLiked ? "text-red-600" : "text-gray-500"} ${noHandlers ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`m-3 flex gap-1 items-center transition-all duration-500 ${
+                resolvedHeartLiked ? "text-red-600" : "text-gray-500"
+              } ${noHandlers ? "opacity-50 cursor-not-allowed" : ""}`}
               onClick={onHeart}
               disabled={resolvedHeartDisabled || noHandlers}
               aria-disabled={resolvedHeartDisabled || noHandlers}
             >
               <Heart className="inline" fill="currentColor" size={16} />{" "}
               <span id="likescount" className="text-gray-500 text-sm">
-                {like ? like.likesCount : (shaerData?.fields?.likes ?? 0)}
+                {like ? like.likesCount : shaerData?.fields?.likes ?? 0}
               </span>
             </button>
-            <button className="m-3 flex items-center gap-1" onClick={() => { if (requireAuth("comment")) openComments(shaerData?.id); }}>
+            <button
+              className="m-3 flex items-center gap-1"
+              onClick={() => {
+                if (requireAuth("comment")) openComments(shaerData?.id);
+              }}
+            >
               <MessageCircle color="#984A02" className="ml-2" size={16} />{" "}
               <span className="text-gray-500 text-sm">
                 {shaerData?.fields?.comments ?? 0}
@@ -338,39 +422,65 @@ const DataCard = <T extends MinimalShaer>({
               onClick={() => handleShareClick(shaerData, index)}
             >
               <Share2 color="#984A02" size={16} />{" "}
-              <span className="text-gray-500 text-sm">{shaerData?.fields?.shares ?? 0}</span>
+              <span className="text-gray-500 text-sm">
+                {shaerData?.fields?.shares ?? 0}
+              </span>
             </button>
             <button
               className="text-[#984A02] font-semibold m-3"
               onClick={() => handleCardClick(shaerData)}
             >
               {download ? (
-                <Link href={{ pathname: `/Ashaar/${encodeURIComponent(createSlug(shaerData?.fields?.ghazalHead?.[0] || ''))}/${encodeURIComponent(shaerData?.id)}` }}>
+                <Link
+                  href={{
+                    pathname: `/Ashaar/${encodeURIComponent(
+                      createSlug(shaerData?.fields?.ghazalHead?.[0] || "")
+                    )}/${encodeURIComponent(shaerData?.id)}`,
+                  }}
+                >
                   غزل پڑھیں
                 </Link>
               ) : (
-                <Link href={{ pathname: `/Ghazlen/${encodeURIComponent(createSlug(shaerData?.fields?.ghazalHead?.[0] || ''))}/${encodeURIComponent(shaerData?.id)}` }}>
+                <Link
+                  href={{
+                    pathname: `/Ghazlen/${encodeURIComponent(
+                      createSlug(shaerData?.fields?.ghazalHead?.[0] || "")
+                    )}/${encodeURIComponent(shaerData?.id)}`,
+                  }}
+                >
                   غزل پڑھیں
                 </Link>
               )}
             </button>
             {download && (
-              <button className="m-3 flex items-center gap-1" onClick={() => { if (requireAuth("download")) setSelectedShaer(shaerData); }}>
+              <button
+                className="m-3 flex items-center gap-1"
+                onClick={() => {
+                  if (requireAuth("download")) setSelectedShaer(shaerData);
+                }}
+              >
                 <Download color="#984A02" />
               </button>
             )}
           </div>
           {download && selectedShaer && (
             <div className="fixed z-50 ">
-              <DynamicDownloadHandler data={shaerData} onCancel={cancelDownload} />
+              <DynamicDownloadHandler
+                data={shaerData}
+                onCancel={cancelDownload}
+              />
             </div>
           )}
         </div>
       )}
       {/* Ensure login dialog renders for all variants (nazm and others) */}
-      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "like"} />
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        actionType={pendingAction || "like"}
+      />
     </>
   );
 };
 
-export default DataCard; 
+export default DataCard;

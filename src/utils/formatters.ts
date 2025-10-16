@@ -4,6 +4,34 @@
  */
 
 /**
+ * Create URL-friendly slug from text while preserving Unicode characters.
+ * Unified implementation that handles both ASCII and Unicode text properly.
+ */
+export function createSlug(text: string): string {
+  if (!text || typeof text !== "string") return "";
+
+  // Handle Urdu/Arabic text by preserving Unicode characters
+  // Don't convert to lowercase for Unicode preservation
+  const slug = text
+    .trim()
+    .replace(/[\s_]+/g, "-") // Replace spaces and underscores with hyphens
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+
+  return slug;
+}
+
+/**
+ * Format numbers with appropriate locale formatting.
+ * Unified implementation with flexible locale support.
+ */
+export function formatNumber(num: number, locale: string = "en-US"): string {
+  if (typeof num !== "number" || isNaN(num)) {
+    return "0";
+  }
+  return new Intl.NumberFormat(locale).format(num);
+}
+
+/**
  * Format a date string for display in the UI
  */
 export function formatDate(
@@ -57,13 +85,6 @@ export function formatRelativeDate(
 export function truncateText(text: string, maxLength: number = 100): string {
   if (!text || text.length <= maxLength) return text;
   return text.slice(0, maxLength).trim() + "...";
-}
-
-/**
- * Format numbers with appropriate locale formatting
- */
-export function formatNumber(num: number, locale: string = "en-US"): string {
-  return new Intl.NumberFormat(locale).format(num);
 }
 
 /**

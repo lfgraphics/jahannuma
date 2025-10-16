@@ -7,6 +7,7 @@ import useSWR, { mutate } from "swr";
 
 export interface UseCommentSystemOptions {
   recordId?: string | null;
+  contentType?: string; // Add contentType option
 }
 
 export interface UseCommentSystemReturn {
@@ -39,7 +40,11 @@ export function useCommentSystem(
 
   // Fetch comments for the current record
   const commentsKey = currentRecordId
-    ? `/api/airtable/comments?dataId=${encodeURIComponent(currentRecordId)}`
+    ? `/api/airtable/comments?dataId=${encodeURIComponent(currentRecordId)}${
+        options.contentType
+          ? `&contentType=${encodeURIComponent(options.contentType)}`
+          : ""
+      }`
     : null;
 
   const {
@@ -89,6 +94,7 @@ export function useCommentSystem(
           dataId: currentRecordId,
           comment: content.trim(),
           commentorName,
+          contentType: options.contentType, // Add contentType to the request
         };
 
         const response = await fetch("/api/airtable/comments", {

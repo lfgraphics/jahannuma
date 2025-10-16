@@ -1,11 +1,10 @@
 "use client";
+import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { ChevronRightCircle } from "lucide-react";
+import Link from "next/link";
 import { useMemo } from "react";
 import Card from "./BookCard";
-import Link from "next/link";
 import Loader from "./Loader";
-import { ChevronRightCircle } from "lucide-react";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { TTL } from "@/lib/airtable-fetcher";
 
 interface Book {
   filename: string;
@@ -54,13 +53,11 @@ interface EBooksType {
 }
 
 const HorizontalBooks = () => {
-  const { records, isLoading, swrKey } = useAirtableList<EBooksType>(
-    "appXcBoNMGdIaSUyA",
-    "E-Books",
-    { pageSize: 10 },
-    { ttl: TTL.static }
-  );
-  const data = useMemo(() => records || [], [records]);  const loading = isLoading;
+  const { records, isLoading } = useAirtableList<EBooksType>("ebooks", {
+    pageSize: 10,
+  });
+  const data = useMemo(() => records || [], [records]);
+  const loading = isLoading;
   return (
     <div dir="ltr">
       <h2 className="pt-6 text-center text-4xl">کتابیں</h2>
@@ -74,7 +71,13 @@ const HorizontalBooks = () => {
           >
             {data.map((item, index) => (
               <div className="relative" key={index}>
-                <Card data={item} showLikeButton baseId="appXcBoNMGdIaSUyA" table="E-Books" storageKey="Books" swrKey={swrKey} />
+                <Card
+                  data={item}
+                  showLikeButton
+                  baseId="appXcBoNMGdIaSUyA"
+                  table="E-Books"
+                  storageKey="Books"
+                />
               </div>
             ))}
             <Link className=" text-white text-4xl font-bold" href={"/E-Books"}>

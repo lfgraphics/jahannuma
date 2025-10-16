@@ -41,4 +41,6 @@ export interface CommentFormData {
   commentorName: string;
   /** The comment text */
   comment: string;
+  /** The content type to determine which comment base to use */
+  contentType?: string;
 }

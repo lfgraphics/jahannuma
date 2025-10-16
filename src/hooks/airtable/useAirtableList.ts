@@ -1,17 +1,11 @@
 "use client";
 import { RouteSlug } from "@/lib/airtable/airtable-constants";
+import type { AirtableListParams } from "@/types";
 import { useMemo } from "react";
 import useSWRInfinite from "swr/infinite";
 import { useDebouncedValue } from "../utils/useDebouncedValue";
 
-export interface ListParams {
-  pageSize?: number;
-  filterByFormula?: string;
-  fields?: string[];
-  sort?: { field: string; direction?: "asc" | "desc" }[];
-  search?: string;
-  extra?: Record<string, any>;
-}
+export type ListParams = AirtableListParams;
 
 export interface UseAirtableListOptions {
   revalidateOnFocus?: boolean;
@@ -19,6 +13,7 @@ export interface UseAirtableListOptions {
   debounceMs?: number;
   enabled?: boolean;
 }
+// }
 
 const fetcher = async (url: string) => {
   const response = await fetch(url);
@@ -40,6 +35,31 @@ export function useAirtableList<T = any>(
   const debouncedSearch = useDebouncedValue(params.search, debounceMs);
   const debouncedFilter = useDebouncedValue(params.filterByFormula, debounceMs);
 
+  // Pre-normalize fields and sort into stable strings for better memoization
+  const fieldsKey = useMemo(() => {
+    return params.fields && params.fields.length
+      ? params.fields.slice().sort().join(",")
+      : "";
+  }, [params.fields]);
+
+  const sortKey = useMemo(() => {
+    return params.sort && params.sort.length
+      ? params.sort
+          .map((s) => `${s.field}:${s.direction || "asc"}`)
+          .sort()
+          .join(",")
+      : "";
+  }, [params.sort]);
+
+  const extraKey = useMemo(() => {
+    return params.extra && Object.keys(params.extra).length > 0
+      ? Object.keys(params.extra)
+          .sort()
+          .map((key) => `${key}=${params.extra![key]}`)
+          .join("&")
+      : "";
+  }, [params.extra]);
+
   const queryParams = useMemo(() => {
     const searchParams = new URLSearchParams();
 
@@ -52,16 +72,13 @@ export function useAirtableList<T = any>(
     }
 
     // Add fields
-    if (params.fields && params.fields.length) {
-      searchParams.set("fields", params.fields.join(","));
+    if (fieldsKey) {
+      searchParams.set("fields", fieldsKey);
     }
 
     // Add sort
-    if (params.sort && params.sort.length) {
-      const sortStr = params.sort
-        .map((s) => `${s.field}:${s.direction || "asc"}`)
-        .join(",");
-      searchParams.set("sort", sortStr);
+    if (sortKey) {
+      searchParams.set("sort", sortKey);
     }
 
     // Add search
@@ -80,10 +97,10 @@ export function useAirtableList<T = any>(
   }, [
     params.pageSize,
     debouncedFilter,
-    JSON.stringify(params.fields),
-    JSON.stringify(params.sort),
+    fieldsKey,
+    sortKey,
     debouncedSearch,
-    JSON.stringify(params.extra),
+    extraKey,
   ]);
 
   const getKey = (pageIndex: number, previousPageData: any) => {

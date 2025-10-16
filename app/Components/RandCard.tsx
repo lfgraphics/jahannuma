@@ -1,17 +1,15 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import Loader from "./Loader";
-import DataCard from "./DataCard";
-import { toast } from "sonner";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
-import { airtableFetchJson, TTL } from "@/lib/airtable-fetcher";
-import CommentSection from "./CommentSection";
-import { useCommentSystem } from "@/hooks/useCommentSystem";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
+import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { shareRecordWithCount } from "@/lib/social-utils";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { updatePagedListField } from "@/lib/swr-updater";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import CommentSection from "./CommentSection";
+import DataCard from "./DataCard";
+import Loader from "./Loader";
 
 interface Shaer {
   fields: {
@@ -39,17 +37,21 @@ interface Comment {
 
 const RandCard: React.FC<{}> = () => {
   // Fetch Ashaar list via SWR and randomly pick one; caching ensures instant loads on revisit
-  const { records, isLoading, swrKey, mutate } = useAirtableList<Shaer>(
-    "appeI2xzzyvUN5bR7",
-    "Ashaar",
-    { pageSize: 50 },
-    { ttl: TTL.static }
-  );
+  const { records, isLoading } = useAirtableList<Shaer>("ashaar", {
+    pageSize: 50,
+  });
   const loading = isLoading;
   const randomIndexRef = useRef<number | null>(null);
   // Comment drawer state
-  const [selectedCommentId, setSelectedCommentId] = React.useState<string | null>(null);
-  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem("appzB656cMxO0QotZ", "Comments", null);
+  const [selectedCommentId, setSelectedCommentId] = React.useState<
+    string | null
+  >(null);
+  const {
+    comments,
+    isLoading: commentLoading,
+    submitComment,
+    setRecordId,
+  } = useCommentSystem({ contentType: "ashaar" });
   const [newComment, setNewComment] = useState("");
   const { requireAuth } = useAuthGuard();
   const { language } = useLanguage();
@@ -82,24 +84,29 @@ const RandCard: React.FC<{}> = () => {
   }, [records]);
 
   const randomItem = useMemo(() => {
-    if (!records || records.length === 0) return undefined as unknown as Shaer | undefined;
+    if (!records || records.length === 0)
+      return undefined as unknown as Shaer | undefined;
     const idx = randomIndexRef.current ?? 0;
     const rec = records[idx];
     // normalize to match component expectations
     const ghazal = (rec as any)?.fields?.body
-      ? String((rec as any).fields.body).replace(/\r\n?/g, "\n").split("\n")
+      ? String((rec as any).fields.body)
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
       : (rec as any)?.fields?.ghazal ?? [];
     const ghazalHead = (rec as any)?.fields?.sher
-      ? String((rec as any).fields.sher).replace(/\r\n?/g, "\n").split("\n")
+      ? String((rec as any).fields.sher)
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
       : (rec as any)?.fields?.ghazalHead ?? [];
-    return { ...rec, fields: { ...(rec as any).fields, ghazal, ghazalHead } } as Shaer;
+    return {
+      ...rec,
+      fields: { ...(rec as any).fields, ghazal, ghazalHead },
+    } as Shaer;
   }, [records]);
 
   // Mutations aligned to Ashaar table for likes/shares
-  const { updateRecord: updateAshaar } = useAirtableMutation(
-    "appeI2xzzyvUN5bR7",
-    "Ashaar"
-  );
+  const { updateRecord: updateAshaar } = useAirtableMutation("ashaar");
   const [openanaween, setOpenanaween] = useState<string | null>(null);
 
   const toggleanaween = (cardId: string | null) => {
@@ -119,7 +126,10 @@ const RandCard: React.FC<{}> = () => {
     fetchComments(dataId);
   };
 
-  const handleShareClick = async (shaerData: Shaer, index: number): Promise<void> => {
+  const handleShareClick = async (
+    shaerData: Shaer,
+    index: number
+  ): Promise<void> => {
     toggleanaween(null);
     await shareRecordWithCount(
       {
@@ -127,14 +137,17 @@ const RandCard: React.FC<{}> = () => {
         id: shaerData.id,
         title: shaerData.fields.shaer,
         textLines: shaerData.fields.ghazalHead ?? [],
-        fallbackSlugText: (shaerData.fields.ghazalHead || [])[0] || (shaerData.fields.unwan || [])[0] || "",
+        fallbackSlugText:
+          (shaerData.fields.ghazalHead || [])[0] ||
+          (shaerData.fields.unwan || [])[0] ||
+          "",
         language,
       },
       {
         onShared: async () => {
           try {
             const updatedShares = (shaerData.fields.shares ?? 0) + 1;
-            await updateAshaar([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+            await updateAshaar(shaerData.id, { shares: updatedShares });
           } catch (error) {
             console.error("Error updating shares:", error);
           }
@@ -180,7 +193,6 @@ const RandCard: React.FC<{}> = () => {
             openanaween={openanaween}
             handleShareClick={handleShareClick}
             openComments={openComments}
-            swrKey={swrKey}
             onLikeChange={() => {
               // placeholder analytics
             }}
@@ -195,21 +207,19 @@ const RandCard: React.FC<{}> = () => {
             if (!requireAuth("comment")) return;
             if (!newComment) return;
             try {
-              await submitComment({ recordId: dataId, content: newComment });
+              // submitComment expects the comment string; recordId is already set via setRecordId when opening comments
+              await submitComment(newComment);
               setNewComment("");
-              // Persist comments count on Ashaar with optimistic updater and rollback
+              // Update comments count on Ashaar
               try {
-                await updateAshaar([
-                  { id: dataId, fields: { comments: (randomItem?.fields?.comments ?? 0) + 1 } }
-                ], {
-                  optimistic: true,
-                  affectedKeys: swrKey ? [swrKey] : undefined,
-                  updater: (current: any) => updatePagedListField(current, dataId, "comments", 1),
-                });
+                const currentComments = randomItem?.fields?.comments ?? 0;
+                await updateAshaar(dataId, { comments: currentComments + 1 });
               } catch (err) {
-                try { await mutate((current: any) => updatePagedListField(current, dataId, "comments", -1), { revalidate: false }); } catch {}
+                console.error("Error updating comment count:", err);
               }
-            } catch {}
+            } catch (error) {
+              console.error("Error submitting comment:", error);
+            }
           }}
           commentLoading={commentLoading}
           newComment={newComment}

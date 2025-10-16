@@ -23,17 +23,8 @@ export function cleanText(text: string): string {
     ); // Keep only letters, numbers, spaces, Arabic, Urdu, Hindi chars
 }
 
-/**
- * Create a slug from text (URL-friendly)
- */
-export function createSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "") // Remove special characters
-    .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
-    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
-}
+// Re-export the centralized createSlug function
+export { createSlug } from "@/utils/formatters";
 
 /**
  * Capitalize first letter of each word

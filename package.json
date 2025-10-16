@@ -7,7 +7,8 @@
     "preinstall": "node -e \"if(!String(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('This repository uses pnpm. Please run: pnpm install'); process.exit(1)}\"",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "test:api": "node scripts/test-api-endpoints.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.0.0",

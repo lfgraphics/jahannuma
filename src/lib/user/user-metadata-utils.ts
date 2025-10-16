@@ -225,6 +225,28 @@ export function isRecordLiked(
   return current.includes(recordId);
 }
 
+// Provide a minimal typed view of the Clerk client for defensive usage
+type MinimalClerkUsers = {
+  getUser: (
+    userId: string
+  ) => Promise<{ publicMetadata?: Record<string, unknown> } | null>;
+  updateUserMetadata: (
+    userId: string,
+    data: { publicMetadata?: Record<string, unknown> }
+  ) => Promise<unknown>;
+};
+
+async function getClerkUsers(): Promise<MinimalClerkUsers> {
+  const { clerkClient } = await import('@clerk/nextjs/server');
+  const anyClient = clerkClient as unknown as any;
+  if (typeof anyClient === "function") {
+    // Some Clerk SDK versions export a function returning a client
+    const c = await anyClient();
+    return (c as any).users as MinimalClerkUsers;
+  }
+  return (anyClient as any).users as MinimalClerkUsers;
+}
+
 /**
  * Get user like status for a specific content item (server-side).
  * This function interfaces with Clerk to get the user's like status.
@@ -235,11 +257,14 @@ export async function getUserLikeStatus(
   contentId: string
 ): Promise<boolean> {
   try {
-    const { clerkClient } = await import('@clerk/nextjs/server');
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
+    const users = await getClerkUsers();
+    const user = await users.getUser(userId);
     
-    const likes = user.publicMetadata.likes as LikesMetadata || {};
+    if (!user) {
+      return false;
+    }
+    
+    const likes = user.publicMetadata?.likes as LikesMetadata || {};
     const tableKey = mapTableToLikesKey(contentType);
     
     return isRecordLiked(likes, tableKey, contentId);
@@ -259,11 +284,14 @@ export async function toggleUserLike(
   contentId: string
 ): Promise<{ isLiked: boolean; newCount: number }> {
   try {
-    const { clerkClient } = await import('@clerk/nextjs/server');
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
+    const users = await getClerkUsers();
+    const user = await users.getUser(userId);
     
-    const currentLikes = user.publicMetadata.likes as LikesMetadata || {};
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    const currentLikes = user.publicMetadata?.likes as LikesMetadata || {};
     const tableKey = mapTableToLikesKey(contentType);
     
     const { metadata: updatedLikes, liked } = toggleLikeInMetadata(
@@ -273,7 +301,7 @@ export async function toggleUserLike(
     );
     
     // Update user metadata in Clerk
-    await client.users.updateUserMetadata(userId, {
+    await users.updateUserMetadata(userId, {
       publicMetadata: {
         ...user.publicMetadata,
         likes: updatedLikes,

@@ -3,12 +3,15 @@
  * Fetch a specific Nazm by ID.
  */
 
-import { getNazmenRecord, updateRecord } from "@/lib/airtable/airtable-client";
-import { formatNazmenRecord } from "@/lib/airtable/airtable-utils";
+import {
+  formatNazmenRecord,
+  getNazmenRecord,
+  updateRecord,
+} from "@/lib/airtable";
+import { errors, ok } from "@/lib/api-response";
 import { getUserLikeStatus } from "@/lib/user/user-metadata-utils";
-import { NazmenDetailResponse } from "@/types/api/responses";
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 export async function GET(
   request: NextRequest,
@@ -17,31 +20,13 @@ export async function GET(
   try {
     const { id } = await params;
     if (!id) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "INVALID_ID",
-            message: "Nazm ID is required",
-          },
-        },
-        { status: 400 }
-      );
+      return errors.badRequest("Nazm ID is required");
     }
 
     const record = await getNazmenRecord(id);
 
     if (!record) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Nazm not found",
-          },
-        },
-        { status: 404 }
-      );
+      return errors.notFound("Nazm not found");
     }
 
     // Get user-specific data if authenticated
@@ -60,28 +45,15 @@ export async function GET(
     // Format record for consistent API output
     const formattedRecord = formatNazmenRecord(record);
 
-    const response: NazmenDetailResponse = {
-      success: true,
-      data: {
-        record: formattedRecord,
-        userMetadata,
-      },
-    };
-
-    return NextResponse.json(response);
+    return ok({
+      record: formattedRecord,
+      userMetadata,
+    });
   } catch (error) {
     console.error("Error fetching nazm:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "FETCH_FAILED",
-          message: "Failed to fetch nazm",
-          details: error instanceof Error ? error.message : "Unknown error",
-        },
-      },
-      { status: 500 }
+    return errors.internal(
+      "Failed to fetch nazm",
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
@@ -95,31 +67,15 @@ export async function PATCH(
     const { fields } = await req.json();
 
     if (!id || !fields || typeof fields !== "object") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "INVALID_INPUT",
-            message: "id and fields required",
-          },
-        },
-        { status: 400 }
-      );
+      return errors.badRequest("ID and fields are required");
     }
 
     const record = await updateRecord("Nazmen", id, fields);
-    return NextResponse.json({ success: true, data: { record } });
+    return ok({ record });
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "UPDATE_FAILED",
-          message: "Failed to update nazm",
-          details: error instanceof Error ? error.message : "Unknown error",
-        },
-      },
-      { status: 500 }
+    return errors.internal(
+      "Failed to update nazm",
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

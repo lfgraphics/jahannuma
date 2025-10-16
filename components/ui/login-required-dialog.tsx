@@ -1,8 +1,6 @@
 "use client";
-import * as React from "react";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -10,8 +8,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { uiTexts, getMessageText, getButtonText } from "@/lib/multilingual-texts";
+import {
+  getButtonText,
+  getMessageText,
+  uiTexts,
+} from "@/lib/multilingual-texts";
 import Link from "next/link";
 // Note: We intentionally avoid Clerk's styled buttons here per request.
 
@@ -23,14 +26,21 @@ export interface LoginRequiredDialogProps {
   actionType: AuthActionType;
 }
 
-const messageKeyByAction: Record<AuthActionType, keyof typeof uiTexts.messages> = {
+const messageKeyByAction: Record<
+  AuthActionType,
+  keyof typeof uiTexts.messages
+> = {
   download: "loginToDownload",
   like: "loginToLike",
   comment: "loginToComment",
   share: "shareRequired",
 };
 
-export function LoginRequiredDialog({ open, onOpenChange, actionType }: LoginRequiredDialogProps) {
+export function LoginRequiredDialog({
+  open,
+  onOpenChange,
+  actionType,
+}: LoginRequiredDialogProps) {
   const { language } = useLanguage();
   const dir = language === "UR" ? "rtl" : "ltr";
   const currentUrl =
@@ -39,25 +49,36 @@ export function LoginRequiredDialog({ open, onOpenChange, actionType }: LoginReq
       : "/";
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent dir={dir} className="bg-background text-foreground border border-border">
+      <AlertDialogContent
+        dir={dir}
+        className="bg-background text-foreground border border-border"
+      >
         <AlertDialogHeader>
-          <AlertDialogTitle>{getMessageText("loginRequired", language)}</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle className="text-center">
+            {getMessageText("loginRequired", language)}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-center mx-auto">
             {getMessageText(messageKeyByAction[actionType], language)}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex gap-2 flex-col-reverse sm:flex-row">
-          <AlertDialogCancel>{getButtonText("cancel", language)}</AlertDialogCancel>
-          <AlertDialogAction className="p-0">
-            <Link href={{ pathname: "/sign-up", query: { returnUrl: currentUrl } }}>
+        <AlertDialogFooter className="flex gap-2 flex-col-reverse sm:flex-row sm:justify-between">
+          <AlertDialogCancel>
+            {getButtonText("cancel", language)}
+          </AlertDialogCancel>
+          <Button>
+            <Link
+              href={{ pathname: "/sign-up", query: { returnUrl: currentUrl } }}
+            >
               {getButtonText("signUp", language)}
             </Link>
-          </AlertDialogAction>
-          <AlertDialogAction className="p-0">
-            <Link href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }}>
+          </Button>
+          <Button>
+            <Link
+              href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }}
+            >
               {getButtonText("signIn", language)}
             </Link>
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

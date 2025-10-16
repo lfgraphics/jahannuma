@@ -17,12 +17,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/**
- * Format a number with commas for better readability.
- */
-export function formatNumber(num: number): string {
-  return new Intl.NumberFormat().format(num);
-}
+// Re-export the centralized formatNumber function
+export { formatNumber } from "@/utils/formatters";
 
 /**
  * Sleep utility for async operations.

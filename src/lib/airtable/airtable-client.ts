@@ -12,20 +12,52 @@ interface AirtableConfig {
 }
 
 /**
- * Get configured Airtable client with API key from environment.
+ * Get configured Airtable API key from environment.
  * Throws if AIRTABLE_API_KEY environment variable is not set.
  */
-export function getAirtableConfig(): AirtableConfig {
+export function getAirtableApiKey(): string {
   const apiKey = process.env.AIRTABLE_API_KEY;
   if (!apiKey) {
     throw new Error("AIRTABLE_API_KEY environment variable is required");
   }
+  return apiKey;
+}
 
-  const baseId = process.env.AIRTABLE_BASE_ID;
-  if (!baseId) {
-    throw new Error("AIRTABLE_BASE_ID environment variable is required");
+/**
+ * Get the base ID for a specific table.
+ * Uses the TABLE_BASE_MAPPING to find the correct base for each table.
+ * For comments, requires a contentType parameter.
+ */
+export function getBaseIdForTable(tableName: string, contentType?: string): string {
+  const { TABLE_BASE_MAPPING, COMMENT_BASE_MAPPING } = require("./airtable-constants");
+  
+  // Handle comments specially since they have different bases per content type
+  if (tableName === "Comments") {
+    if (!contentType) {
+      throw new Error("Comments table requires contentType parameter (ashaar, ghazlen, nazmen, rubai)");
+    }
+    const baseId = COMMENT_BASE_MAPPING[contentType as keyof typeof COMMENT_BASE_MAPPING];
+    if (!baseId) {
+      throw new Error(`No comment base ID configured for content type: ${contentType}`);
+    }
+    return baseId;
   }
+  
+  const baseId = TABLE_BASE_MAPPING[tableName as keyof typeof TABLE_BASE_MAPPING];
+  
+  if (!baseId) {
+    throw new Error(`No base ID configured for table: ${tableName}`);
+  }
+  
+  return baseId;
+}
 
+/**
+ * Get configured Airtable client with API key and base ID for a specific table.
+ */
+export function getAirtableConfig(tableName: string, contentType?: string): AirtableConfig {
+  const apiKey = getAirtableApiKey();
+  const baseId = getBaseIdForTable(tableName, contentType);
   return { apiKey, baseId };
 }
 
@@ -34,8 +66,8 @@ export function getAirtableConfig(): AirtableConfig {
  */
 const TABLE_SEARCH_FIELDS: Record<string, string[]> = {
   Ashaar: ["shaer", "unwan", "sher", "body"],
-  Ghazlen: ["shaer", "unwan", "mazmoon", "body"],
-  Nazmen: ["shaer", "unwan", "mazmoon", "body"],
+  Ghazlen: ["shaer", "unwan", "ghazal", "ghazalHead"],
+  Nazmen: ["shaer", "unwan", "nazm"],
   Rubai: ["shaer", "unwan", "body"],
   "E-Books": ["bookName", "writer", "description"],
   Comments: ["comment", "commentorName"],
@@ -54,9 +86,10 @@ export async function fetchRecords<T = any>(
     fields?: string;
     search?: string;
     view?: string;
-  } = {}
+  } = {},
+  contentType?: string // Add contentType parameter
 ): Promise<{ records: T[]; offset?: string }> {
-  const { apiKey, baseId } = getAirtableConfig();
+  const { apiKey, baseId } = getAirtableConfig(tableName, contentType); // Pass contentType
 
   const searchParams = new URLSearchParams();
 
@@ -149,7 +182,7 @@ export async function fetchRecord<T = any>(
   recordId: string,
   fields?: string[]
 ): Promise<T | null> {
-  const { apiKey, baseId } = getAirtableConfig();
+  const { apiKey, baseId } = getAirtableConfig(tableName);
 
   const searchParams = new URLSearchParams();
   if (fields && fields.length > 0) {
@@ -186,9 +219,10 @@ export async function fetchRecord<T = any>(
  */
 export async function createRecord<T = any>(
   tableName: string,
-  fields: Record<string, any>
+  fields: Record<string, any>,
+  contentType?: string // Add contentType parameter
 ): Promise<T> {
-  const { apiKey, baseId } = getAirtableConfig();
+  const { apiKey, baseId } = getAirtableConfig(tableName, contentType); // Pass contentType
 
   const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(
     tableName
@@ -219,7 +253,7 @@ export async function updateRecord<T = any>(
   recordId: string,
   fields: Record<string, any>
 ): Promise<T> {
-  const { apiKey, baseId } = getAirtableConfig();
+  const { apiKey, baseId } = getAirtableConfig(tableName);
 
   const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(
     tableName
@@ -249,7 +283,7 @@ export async function deleteRecord(
   tableName: string,
   recordId: string
 ): Promise<{ deleted: boolean; id: string }> {
-  const { apiKey, baseId } = getAirtableConfig();
+  const { apiKey, baseId } = getAirtableConfig(tableName);
 
   const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(
     tableName
@@ -437,15 +471,19 @@ export async function listCommentsRecords(
     view?: string;
     fields?: string;
     search?: string;
+    contentType?: string; // Add contentType parameter
   } = {}
 ) {
   const sortParam = params.sort
     ? params.sort.map((s) => `${s.field}:${s.direction}`).join(",")
     : undefined;
+  
+  const { contentType, ...restParams } = params;
+  
   return fetchRecords("Comments", {
-    ...params,
+    ...restParams,
     sort: sortParam,
-  });
+  }, contentType); // Pass contentType to fetchRecords
 }
 
 /**

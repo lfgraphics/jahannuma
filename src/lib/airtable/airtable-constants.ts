@@ -3,9 +3,23 @@
  * This file should be the single source of truth for all Airtable-related constants.
  */
 
-// === Main Content Bases ===
-export const MAIN_BASE_ID = process.env.AIRTABLE_BASE_ID;
-// Validation occurs in getAirtableConfig(); avoid top-level throws here.
+// === Content Base IDs ===
+export const BASE_IDS = {
+  ASHAAR: "appeI2xzzyvUN5bR7",
+  GHAZLEN: "appvzkf6nX376pZy6", 
+  NAZMEN: "app5Y2OsuDgpXeQdz",
+  RUBAI: "appIewyeCIcAD4Y11",
+  EBOOKS: "appXcBoNMGdIaSUyA",
+  SHAER: "appgWv81tu4RT3uRB",
+  // Comment bases for each content type
+  ASHAAR_COMMENTS: "appkb5lm483FiRD54",
+  GHAZLEN_COMMENTS: "appzB656cMxO0QotZ", 
+  NAZMEN_COMMENTS: "appjF9QvJeKAM9c9F",
+  RUBAI_COMMENTS: "appseIUI98pdLBT1K",
+} as const;
+
+// === Fallback for legacy code ===
+export const MAIN_BASE_ID = process.env.AIRTABLE_BASE_ID || BASE_IDS.ASHAAR;
 
 // === Content Tables ===
 export const TABLES = {
@@ -17,6 +31,27 @@ export const TABLES = {
   EBOOKS: "E-Books",
   BLOGS: "Blogs links and data",
   ADS: "Ads",
+  COMMENTS: "Comments",
+} as const;
+
+// === Table to Base ID Mapping ===
+export const TABLE_BASE_MAPPING = {
+  "Ashaar": BASE_IDS.ASHAAR,
+  "Ghazlen": BASE_IDS.GHAZLEN,
+  "Nazmen": BASE_IDS.NAZMEN,
+  "Rubai": BASE_IDS.RUBAI,
+  "E-Books": BASE_IDS.EBOOKS,
+  "Shaer": BASE_IDS.SHAER,
+  "Intro": BASE_IDS.SHAER, // Intro table is in the Shaer base
+  // Comments are handled separately since they depend on content type
+} as const;
+
+// === Comment Base Mapping by Content Type ===
+export const COMMENT_BASE_MAPPING = {
+  "ashaar": BASE_IDS.ASHAAR_COMMENTS,
+  "ghazlen": BASE_IDS.GHAZLEN_COMMENTS,
+  "nazmen": BASE_IDS.NAZMEN_COMMENTS,
+  "rubai": BASE_IDS.RUBAI_COMMENTS,
 } as const;
 
 // === Route to Table Mapping ===
@@ -26,6 +61,7 @@ export const ROUTE_TABLES = {
   nazmen: "Nazmen",
   rubai: "Rubai",
   ebooks: "E-Books",
+  shaer: "Intro", // Shaer route maps to Intro table
   comments: "Comments",
 } as const;
 
@@ -62,14 +98,6 @@ export function ensureRouteSlug(input: string): RouteSlug {
 export function migrateTableNameToSlug(tableName: string): RouteSlug {
   return ensureRouteSlug(tableName);
 }
-
-// === Comment Bases (separate bases for each content type) ===
-export const COMMENT_BASES = {
-  ASHAAR: "appkb5lm483FiRD54",
-  GHAZLEN: "appzB656cMxO0QotZ",
-  NAZMEN: "appjF9QvJeKAM9c9F",
-  RUBAI: "appseIUI98pdLBT1K",
-} as const;
 
 // === Comment Tables ===
 export const COMMENTS_TABLE = "Comments";
@@ -124,13 +152,12 @@ export const FILTERS = {
 } as const;
 
 // === Sort Options ===
+// Note: Only include sorts for fields that actually exist in Airtable
 export const SORTS = {
-  CREATED_DESC: `${FIELDS.CREATED_TIME}:desc`,
-  CREATED_ASC: `${FIELDS.CREATED_TIME}:asc`,
-  LIKES_DESC: `${FIELDS.LIKES}:desc`,
   AUTHOR_ASC: `${FIELDS.AUTHOR}:asc`,
+  AUTHOR_DESC: `${FIELDS.AUTHOR}:desc`,
+  // Add other sorts only for fields that exist in your Airtable base
 } as const;
 
 // === Table Type Mapping ===
 export type TableName = (typeof TABLES)[keyof typeof TABLES];
-export type CommentBaseKey = keyof typeof COMMENT_BASES;

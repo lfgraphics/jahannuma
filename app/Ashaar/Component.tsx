@@ -1,26 +1,23 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 // FontAwesome removed; using Lucide icons instead
-import { format } from "date-fns";
 import { toast } from "sonner";
 import CommentSection from "../Components/CommentSection";
-import SkeletonLoader from "../Components/SkeletonLoader";
 import DataCard from "../Components/DataCard";
+import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { House, Search, X } from "lucide-react";
 // Removed deprecated Dialog UI imports
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
-import { airtableFetchJson, TTL, invalidateAirtable } from "@/lib/airtable-fetcher";
+import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 // createSlug no longer needed here; using centralized share helper
-import { useCommentSystem } from "@/hooks/useCommentSystem";
-import { ASHAAR_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { shareRecordWithCount } from "@/lib/social-utils";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Shaer {
   fields: {
@@ -48,7 +45,11 @@ interface Comment {
   comment: string;
 }
 
-const Ashaar: React.FC<{}> = () => {
+interface AshaarProps {
+  initialData?: any[];
+}
+
+const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
@@ -58,7 +59,7 @@ const Ashaar: React.FC<{}> = () => {
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   // Comment system
   const [newComment, setNewComment] = useState("");
-  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem(ASHAAR_COMMENTS_BASE, COMMENTS_TABLE, null);
+  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem({ contentType: "ashaar" });
   const { requireAuth } = useAuthGuard();
   const { language } = useLanguage();
   // toast via sonner (global Toaster is mounted in providers.tsx)
@@ -89,17 +90,13 @@ const Ashaar: React.FC<{}> = () => {
     return `OR( FIND('${safe}', LOWER({shaer})), FIND('${safe}', LOWER({sher})), FIND('${safe}', LOWER({body})), FIND('${safe}', LOWER({unwan})) )`;
   }, [searchText]);
 
-  const { records, isLoading, hasMore, loadMore, mutate, swrKey } = useAirtableList<Shaer>(
-    "appeI2xzzyvUN5bR7",
-    "Ashaar",
+  const { records, isLoading, hasMore, loadMore, mutate } = useAirtableList<Shaer>(
+    "ashaar",
     { pageSize: 30, filterByFormula: filterFormula },
     { debounceMs: 300 }
   );
 
-  const { updateRecord: updateAshaar } = useAirtableMutation(
-    "appeI2xzzyvUN5bR7",
-    "Ashaar"
-  );
+  const { updateRecord: updateAshaar } = useAirtableMutation("ashaar");
   // Removed deprecated createAshaarComment; comment creation uses useCommentSystem
 
   // Format records and sort by search relevance
@@ -211,7 +208,7 @@ const Ashaar: React.FC<{}> = () => {
         onShared: async () => {
           try {
             const updatedShares = (shaerData.fields.shares ?? 0) + 1;
-            await updateAshaar([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+            await updateAshaar(shaerData.id, { shares: updatedShares });
             // Optimistically update SWR cache pages
             await mutate(
               (pages: any[] | undefined) => {
@@ -244,9 +241,6 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-  const fetchComments = async (dataId: string) => {
-    setRecordId(dataId);
-  };
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
@@ -254,7 +248,8 @@ const Ashaar: React.FC<{}> = () => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
     try {
-      await submitComment({ recordId: dataId, content: newComment });
+      setRecordId(dataId); // Set the record ID first
+      await submitComment(newComment);
       // Optimistically bump the comments count in current SWR cache
       const current = dataItems.find((i) => i.id === dataId);
       const nextCount = ((current?.fields.comments) || 0) + 1;
@@ -275,7 +270,7 @@ const Ashaar: React.FC<{}> = () => {
       setNewComment("");
       // Persist comments count; rollback the optimistic bump if it fails
       try {
-        await updateAshaar([{ id: dataId, fields: { comments: nextCount } }]);
+        await updateAshaar(dataId, { comments: nextCount });
       } catch (err) {
         await mutate(
           (pages: any[] | undefined) => {
@@ -299,7 +294,7 @@ const Ashaar: React.FC<{}> = () => {
   const openComments = (dataId: string) => {
     toggleanaween(null);
     setSelectedCommentId(dataId);
-    fetchComments(dataId);
+    setRecordId(dataId); // This will trigger comment fetching
     // setIsModleOpen(true);
   };
   const closeComments = () => {
@@ -313,7 +308,7 @@ const Ashaar: React.FC<{}> = () => {
       {/* Sonner Toaster is global; no per-page toast container needed */}
       {/* Removed legacy name dialog; comments rely on authenticated user */}
       {/* top-[118px] */}
-      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[95px] lg:top-[56px] border-foreground">
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
           <div
             dir="rtl"
@@ -387,7 +382,6 @@ const Ashaar: React.FC<{}> = () => {
                   openanaween={openanaween}
                   handleShareClick={handleShareClick}
                   openComments={openComments}
-                  swrKey={swrKey}
                   onLikeChange={({ id, liked, likes }) => {
                     // placeholder analytics hook
                     // console.info("Ashaar like changed", { id, liked, likes });

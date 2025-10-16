@@ -1,11 +1,10 @@
 "use client";
-import { useMemo } from "react";
-import Card from "./shaer/Profilecard";
-import Link from "next/link";
-import Loader from "./Loader";
+import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import { ChevronRightCircle } from "lucide-react";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { TTL } from "@/lib/airtable-fetcher";
+import Link from "next/link";
+import { useMemo } from "react";
+import Loader from "./Loader";
+import Card from "./shaer/Profilecard";
 
 interface Photo {
   filename: string;
@@ -58,28 +57,39 @@ interface FormattedRecord {
 }
 
 const HorizontalShura = () => {
-  const { records, isLoading } = useAirtableList<FormattedRecord>(
-    "appgWv81tu4RT3uRB",
-    "Intro",
-    { pageSize: 10 },
-    { ttl: TTL.static }
-  );
+  const { records, isLoading } = useAirtableList<FormattedRecord>("shaer", {
+    pageSize: 10,
+  });
   // Normalize/format without state to avoid re-render loops
   const data = useMemo(() => {
     // Return only string items; split strings by newline safely
     const toArray = (v: unknown): string[] => {
-      if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string").map(s => s.trim()).filter(Boolean);
-      if (typeof v === "string") return v.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      if (Array.isArray(v))
+        return v
+          .filter((x): x is string => typeof x === "string")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      if (typeof v === "string")
+        return v
+          .split(/\r?\n/)
+          .map((s) => s.trim())
+          .filter(Boolean);
       return [];
     };
 
-    type BaseRecord = { id: string; createdTime: string; fields: Record<string, unknown> };
+    type BaseRecord = {
+      id: string;
+      createdTime: string;
+      fields: Record<string, unknown>;
+    };
     const isRecord = (x: unknown): x is BaseRecord => {
       return (
-        typeof x === "object" && x !== null &&
+        typeof x === "object" &&
+        x !== null &&
         typeof (x as any).id === "string" &&
         typeof (x as any).createdTime === "string" &&
-        typeof (x as any).fields === "object" && (x as any).fields !== null
+        typeof (x as any).fields === "object" &&
+        (x as any).fields !== null
       );
     };
 
@@ -97,9 +107,11 @@ const HorizontalShura = () => {
         id: record.id,
         createdTime: record.createdTime,
         fields: {
-          takhallus: typeof f.takhallus === "string" ? (f.takhallus as string) : "",
+          takhallus:
+            typeof f.takhallus === "string" ? (f.takhallus as string) : "",
           dob: typeof f.dob === "string" ? (f.dob as string) : "",
-          location: typeof f.location === "string" ? (f.location as string) : "",
+          location:
+            typeof f.location === "string" ? (f.location as string) : "",
           tafseel: toArray(f["tafseel"]),
           searchKeys: toArray(f["searchKeys"]),
           enTakhallus: toArray(f["enTakhallus"]),

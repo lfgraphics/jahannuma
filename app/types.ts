@@ -119,6 +119,7 @@ export interface CommentFormData {
   dataId: string;
   commentorName: string;
   comment: string;
+  contentType?: string;
 }
 
 // UI State helpers

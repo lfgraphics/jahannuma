@@ -3,6 +3,7 @@
  * Updated to work with the new API routes architecture.
  */
 
+import { createSlug } from "@/utils/formatters";
 import { toast } from "sonner";
 
 /**
@@ -42,18 +43,6 @@ function getLocalizedMessage(key: string, language: Language): string {
     messages[key as keyof typeof messages]?.EN ||
     key
   );
-}
-
-/**
- * Create URL-friendly slug from text.
- */
-function createSlug(text: string): string {
-  if (!text || typeof text !== "string") return "";
-
-  return text
-    .trim()
-    .replace(/[\s_]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 /**

@@ -1,11 +1,13 @@
 "use client";
+import type { AirtableRecord } from "@/app/types";
+import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import React, { useMemo } from "react";
 import Card from "../../Components/BookCard";
 import ComponentsLoader from "./ComponentsLoader";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import type { AirtableRecord } from "@/app/types";
 
-interface Props { takhallus: string }
+interface Props {
+  takhallus: string;
+}
 
 const BASE_ID = "appXcBoNMGdIaSUyA";
 const TABLE = "E-Books";
@@ -16,7 +18,9 @@ const EBooks: React.FC<Props> = ({ takhallus }) => {
   const filterByFormula = useMemo(() => {
     // Normalize takhallus: decode URI, convert hyphens to spaces, strip ZWNJ/tatweel, collapse spaces
     let raw = takhallus || "";
-    try { raw = decodeURIComponent(raw); } catch {}
+    try {
+      raw = decodeURIComponent(raw);
+    } catch {}
     const normalized = raw
       .replace(/[\-–—]/g, " ")
       .replace(/[\u200C\u0640]/g, "") // strip ZWNJ and Tatweel
@@ -29,23 +33,32 @@ const EBooks: React.FC<Props> = ({ takhallus }) => {
     return `OR( FIND('${safe}', LOWER({writer})), FIND('${safe}', LOWER({enWriter})), FIND('${safe}', LOWER({hiWriter})) )`;
   }, [takhallus]);
 
-  const { records, isLoading, swrKey } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
-    filterByFormula,
-    pageSize: 30,
-  });
+  const { records, isLoading } = useAirtableList<AirtableRecord<any>>(
+    "ebooks",
+    {
+      filterByFormula,
+      pageSize: 30,
+    }
+  );
   const dataItems = records;
 
   return (
     <>
       {isLoading && <ComponentsLoader />}
       {!isLoading && (
-        <div id="section" dir="rtl" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3">
+        <div
+          id="section"
+          dir="rtl"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
+        >
           {dataItems.length === 0 && (
-            <div className="col-span-full h-[30vh] grid place-items-center text-muted-foreground">کوئی مواد نہیں ملا</div>
+            <div className="col-span-full h-[30vh] grid place-items-center text-muted-foreground">
+              کوئی مواد نہیں ملا
+            </div>
           )}
           {dataItems.map((item) => (
             <div className="relative" key={item.id}>
-              <Card data={item} showLikeButton baseId={BASE_ID} table={TABLE} storageKey="Books" swrKey={swrKey} />
+              <Card data={item} showLikeButton storageKey="Books" />
             </div>
           ))}
         </div>

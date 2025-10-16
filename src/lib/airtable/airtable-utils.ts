@@ -14,24 +14,13 @@ import type {
 import {
   normalizeText as baseNormalizeText,
   truncateText as baseTruncateText,
+  createSlug,
 } from "@/utils/formatters";
 
 // === Data Transformation Utilities ===
 
-/**
- * Create URL-friendly slug from text while preserving Unicode characters.
- */
-export function createSlug(text: string): string {
-  if (!text || typeof text !== "string") return "";
-
-  // Handle Urdu/Arabic text by preserving Unicode characters
-  const slug = text
-    .trim()
-    .replace(/[\s_]+/g, "-") // Replace spaces and underscores with hyphens
-    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
-
-  return slug;
-}
+// Re-export the centralized createSlug function
+export { createSlug } from "@/utils/formatters";
 
 /**
  * Extract ID from the end of a slug.

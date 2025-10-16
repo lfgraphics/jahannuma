@@ -3,6 +3,16 @@
  * Provides helpers for updating cached data after mutations.
  */
 
+// Options for record identification
+export interface UpdateOptions {
+  idSelector?: (record: any) => string;
+}
+
+// Default ID selector that works with both raw and formatted records
+const defaultIdSelector = (record: any): string => {
+  return record.fields?.id ?? record.id;
+};
+
 /**
  * Update a specific field in a paged list (for SWR infinite data).
  * Used for optimistic updates of likes, comments, shares in list views.
@@ -12,15 +22,18 @@ export function updatePagedListField(
   current: any,
   targetId: string,
   field: "likes" | "comments" | "shares",
-  increment: number
+  increment: number,
+  options: UpdateOptions = {}
 ) {
+  const idSelector = options.idSelector ?? defaultIdSelector;
+  
   const apply = (page: any) => {
     const container = page?.data ?? page; // support both
     const records = container?.records;
     if (!records) return page;
     
     const newRecords = records.map((r: any) => 
-      r.id === targetId 
+      idSelector(r) === targetId 
         ? { ...r, fields: { ...r.fields, [field]: (r.fields[field] ?? 0) + increment } } 
         : r
     );
@@ -93,8 +106,10 @@ export function updateRecordFields(current: any, updates: Record<string, any>) {
  */
 export function updateMultipleRecords(
   current: any,
-  updates: Array<{ id: string; fields: Record<string, any> }>
+  updates: Array<{ id: string; fields: Record<string, any> }>,
+  options: UpdateOptions = {}
 ) {
+  const idSelector = options.idSelector ?? defaultIdSelector;
   const updateMap = new Map(updates.map((u) => [u.id, u.fields]));
 
   const apply = (page: any) => {
@@ -103,7 +118,8 @@ export function updateMultipleRecords(
     if (!records) return page;
 
     const newRecords = records.map((record: any) => {
-      const update = updateMap.get(record.id);
+      const recordId = idSelector(record);
+      const update = updateMap.get(recordId);
       if (update) {
         return {
           ...record,

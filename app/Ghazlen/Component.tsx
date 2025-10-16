@@ -1,21 +1,18 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Home, Search, XCircle, X, House } from "lucide-react";
-import { format } from "date-fns";
-import { toast } from "sonner";
-import CommentSection from "../Components/CommentSection";
-import SkeletonLoader from "../Components/SkeletonLoader";
-import DataCard from "../Components/DataCard";
-import AOS from "aos";
-import "aos/dist/aos.css";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
-import { airtableFetchJson, TTL, invalidateAirtable } from "@/lib/airtable-fetcher";
-import { useCommentSystem } from "@/hooks/useCommentSystem";
-import { GHAZLEN_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
+import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { shareRecordWithCount } from "@/lib/social-utils";
-import { useLanguage } from "@/contexts/LanguageContext";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { House, Search, X } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import CommentSection from "../Components/CommentSection";
+import DataCard from "../Components/DataCard";
+import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
@@ -47,7 +44,11 @@ interface Comment {
   comment: string;
 }
 
-const Ashaar: React.FC<{}> = () => {
+interface AshaarProps {
+  initialData?: any[];
+}
+
+const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
@@ -68,7 +69,12 @@ const Ashaar: React.FC<{}> = () => {
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   // Comment system
   const [newComment, setNewComment] = useState("");
-  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem(GHAZLEN_COMMENTS_BASE, COMMENTS_TABLE, null);
+  const {
+    comments,
+    isLoading: commentLoading,
+    submitComment,
+    setRecordId,
+  } = useCommentSystem({ contentType: "ghazlen" });
   const { requireAuth } = useAuthGuard();
   const { language } = useLanguage();
   // toast via sonner
@@ -104,30 +110,29 @@ const Ashaar: React.FC<{}> = () => {
     // sanitize to avoid Airtable formula injection: escape backslashes and single quotes
     const safeQ = q.replace(/\\/g, "\\\\").replace(/'/g, "''");
     // Priority order: shaer (poet name), then ghazalHead, ghazal, unwan
-    return `OR( FIND('${safeQ}', LOWER({shaer})), FIND('${safeQ}', LOWER({ghazalHead})), FIND('${safeQ}', LOWER({ghazal})), FIND('${safeQ}', LOWER({unwan})) )`;  }, [searchText]);
+    return `OR( FIND('${safeQ}', LOWER({shaer})), FIND('${safeQ}', LOWER({ghazalHead})), FIND('${safeQ}', LOWER({ghazal})), FIND('${safeQ}', LOWER({unwan})) )`;
+  }, [searchText]);
 
-  const { records, isLoading, hasMore, loadMore, swrKey } = useAirtableList<Shaer>(
-    "appvzkf6nX376pZy6",
-    "Ghazlen",
+  const { records, isLoading, hasMore, loadMore } = useAirtableList<Shaer>(
+    "ghazlen",
     { pageSize: 30, filterByFormula: filterFormula },
     { debounceMs: 300 }
   );
 
-  const { updateRecord: updateGhazlen } = useAirtableMutation(
-    "appvzkf6nX376pZy6",
-    "Ghazlen"
-  );
+  const { updateRecord: updateGhazlen } = useAirtableMutation("ghazlen");
   // Removed deprecated createGhazlenComment; handled by useCommentSystem
 
   // Format records and sort by search relevance
   const formattedRecords: Shaer[] = useMemo(() => {
+    console.log("Records fetched:", records);
     const formatted = (records || []).map((record: any) => ({
       ...record,
       fields: {
         ...record.fields,
-        ghazal: String(record.fields?.ghazal || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
-        ghazalHead: String(record.fields?.ghazalHead || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
-        unwan: String(record.fields?.unwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazal: String(record.fields?.ghazal || "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter(Boolean),
       },
     }));
 
@@ -135,18 +140,27 @@ const Ashaar: React.FC<{}> = () => {
     if (searchText.trim()) {
       const query = searchText.trim().toLowerCase();
       return formatted.sort((a, b) => {
-        const aShaer = (a.fields.shaer || '').toLowerCase();
-        const aGhazalHead = (a.fields.ghazalHead?.join(' ') || '').toLowerCase();
-        const aGhazal = (a.fields.ghazal?.join(' ') || '').toLowerCase();
-        const aUnwan = (a.fields.unwan?.join(' ') || '').toLowerCase();
-        
-        const bShaer = (b.fields.shaer || '').toLowerCase();
-        const bGhazalHead = (b.fields.ghazalHead?.join(' ') || '').toLowerCase();
-        const bGhazal = (b.fields.ghazal?.join(' ') || '').toLowerCase();
-        const bUnwan = (b.fields.unwan?.join(' ') || '').toLowerCase();
+        const aShaer = (a.fields.shaer || "").toLowerCase();
+        const aGhazalHead = (
+          a.fields.ghazalHead?.join(" ") || ""
+        ).toLowerCase();
+        const aGhazal = (a.fields.ghazal?.join(" ") || "").toLowerCase();
+        const aUnwan = (a.fields.unwan?.join(" ") || "").toLowerCase();
+
+        const bShaer = (b.fields.shaer || "").toLowerCase();
+        const bGhazalHead = (
+          b.fields.ghazalHead?.join(" ") || ""
+        ).toLowerCase();
+        const bGhazal = (b.fields.ghazal?.join(" ") || "").toLowerCase();
+        const bUnwan = (b.fields.unwan?.join(" ") || "").toLowerCase();
 
         // Priority scoring: shaer=4, ghazalHead=3, ghazal=2, unwan=1
-        const getScore = (shaer: string, ghazalHead: string, ghazal: string, unwan: string) => {
+        const getScore = (
+          shaer: string,
+          ghazalHead: string,
+          ghazal: string,
+          unwan: string
+        ) => {
           if (shaer.includes(query)) return 4;
           if (ghazalHead.includes(query)) return 3;
           if (ghazal.includes(query)) return 2;
@@ -156,7 +170,7 @@ const Ashaar: React.FC<{}> = () => {
 
         const scoreA = getScore(aShaer, aGhazalHead, aGhazal, aUnwan);
         const scoreB = getScore(bShaer, bGhazalHead, bGhazal, bUnwan);
-        
+
         // Higher score first, then alphabetical by shaer name
         if (scoreA !== scoreB) {
           return scoreB - scoreA;
@@ -211,14 +225,17 @@ const Ashaar: React.FC<{}> = () => {
         id: shaerData.id,
         title: shaerData.fields.shaer,
         textLines: shaerData.fields.ghazalHead ?? [],
-        fallbackSlugText: (shaerData.fields.ghazalHead || [])[0] || (shaerData.fields.unwan || [])[0] || "",
+        fallbackSlugText:
+          (shaerData.fields.ghazalHead || [])[0] ||
+          (shaerData.fields.unwan || [])[0] ||
+          "",
         language,
       },
       {
         onShared: async () => {
           try {
             const updatedShares = (shaerData.fields.shares ?? 0) + 1;
-            await updateGhazlen([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+            await updateGhazlen(shaerData.id, { shares: updatedShares });
             setDataItems((prev) => {
               const copy = [...prev];
               const item = copy[index];
@@ -259,9 +276,6 @@ const Ashaar: React.FC<{}> = () => {
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-  const fetchComments = async (dataId: string) => {
-    setRecordId(dataId);
-  };
   // showing the current made comment in comment box
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
@@ -278,18 +292,33 @@ const Ashaar: React.FC<{}> = () => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
     try {
-      await submitComment({ recordId: dataId, content: newComment });
+      setRecordId(dataId); // Set the record ID first
+      await submitComment(newComment);
       // Clear input and optimistically increment comments count in local state
       setNewComment("");
       const currentItem = dataItems.find((i) => i.id === dataId);
-      const newCommentsCount = ((currentItem?.fields?.comments) || 0) + 1;
+      const newCommentsCount = (currentItem?.fields?.comments || 0) + 1;
       // Optimistically increment
-      setDataItems((prev) => prev.map((i) => (i.id === dataId ? incrementComments(i) : i)));
+      setDataItems((prev) =>
+        prev.map((i) => (i.id === dataId ? incrementComments(i) : i))
+      );
       try {
-        await updateGhazlen([{ id: dataId, fields: { comments: newCommentsCount } }]);
+        await updateGhazlen(dataId, { comments: newCommentsCount });
       } catch (error) {
         // Rollback optimistic count on failure
-        setDataItems((prev) => prev.map((i) => (i.id === dataId ? ({ ...i, fields: { ...i.fields, comments: Math.max(0, (i.fields?.comments || 1) - 1) } }) : i)));
+        setDataItems((prev) =>
+          prev.map((i) =>
+            i.id === dataId
+              ? {
+                  ...i,
+                  fields: {
+                    ...i.fields,
+                    comments: Math.max(0, (i.fields?.comments || 1) - 1),
+                  },
+                }
+              : i
+          )
+        );
         console.error("Error updating comments on the server:", error);
       }
     } catch (error) {
@@ -299,7 +328,7 @@ const Ashaar: React.FC<{}> = () => {
   const openComments = (dataId: string) => {
     toggleanaween(null);
     setSelectedCommentId(dataId);
-    fetchComments(dataId);
+    setRecordId(dataId); // This will trigger comment fetching
     // setIsModleOpen(true);
   };
   const closeComments = () => {
@@ -325,10 +354,20 @@ const Ashaar: React.FC<{}> = () => {
     <div>
       {/* Sonner Toaster is global; no local toast container */}
       {/* Removed legacy name dialog; comments rely on authenticated user */}
-      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[95px] lg:top-[56px] border-foreground">
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
-          <div dir="rtl" className="flex justify-center items-center basis-[100%] h-auto pt-1">
-            <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { window.location.href = "/"; }} />
+          <div
+            dir="rtl"
+            className="flex justify-center items-center basis-[100%] h-auto pt-1"
+          >
+            <House
+              color="#984A02"
+              className="ml-3 cursor-pointer"
+              size={30}
+              onClick={() => {
+                window.location.href = "/";
+              }}
+            />
             <input
               type="text"
               placeholder="لکھ کر تلاش کریں"
@@ -345,10 +384,22 @@ const Ashaar: React.FC<{}> = () => {
               }}
             />
             <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
-              <X color="#984A02" size={24} onClick={clearSearch} id="searchClear" className="hidden text-[#984A02] cursor-pointer" />
+              <X
+                color="#984A02"
+                size={24}
+                onClick={clearSearch}
+                id="searchClear"
+                className="hidden text-[#984A02] cursor-pointer"
+              />
             </div>
             <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
-              <Search color="#984A02" size={24} onClick={searchQuery} id="searchIcon" className="hidden text-[#984A02] text-xl cursor-pointer" />
+              <Search
+                color="#984A02"
+                size={24}
+                onClick={searchQuery}
+                id="searchIcon"
+                className="hidden text-[#984A02] text-xl cursor-pointer"
+              />
             </div>
           </div>
         </div>
@@ -363,14 +414,18 @@ const Ashaar: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-        // disabled={!searchText}
+          // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
       )}
       {!loading && (
         <section>
-          <div id="section" dir="rtl" className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky m-3`}>
+          <div
+            id="section"
+            dir="rtl"
+            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky m-3`}
+          >
             {dataItems.map((shaerData, index) => (
               <div data-aos="fade-up" key={index + "aosdiv"}>
                 <DataCard
@@ -387,7 +442,6 @@ const Ashaar: React.FC<{}> = () => {
                   openanaween={openanaween}
                   handleShareClick={handleShareClick}
                   openComments={openComments}
-                  swrKey={swrKey}
                   onLikeChange={({ id, liked, likes }) => {
                     // placeholder analytics
                   }}
@@ -404,8 +458,8 @@ const Ashaar: React.FC<{}> = () => {
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                      ? "مزید غزلیں نہیں ہیں"
-                      : "مزید غزلیں لوڈ کریں"}
+                    ? "مزید غزلیں نہیں ہیں"
+                    : "مزید غزلیں لوڈ کریں"}
                 </button>
               </div>
             )}

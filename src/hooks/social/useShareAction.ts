@@ -43,6 +43,7 @@ export function useShareAction(args: UseShareActionArgs): UseShareActionReturn {
         section: finalSection,
         title: finalTitle,
         textLines: finalTextLines = [],
+        slugId: finalSlugId,
         url: finalUrl,
       } = finalArgs;
 
@@ -60,10 +61,11 @@ export function useShareAction(args: UseShareActionArgs): UseShareActionReturn {
         // Build share URL
         let shareUrl = finalUrl;
         if (!shareUrl && finalTable && finalRecordId) {
-          shareUrl = `${window.location.origin}/${finalTable}/${finalRecordId}`;
-          if (slugId) {
-            shareUrl += `/${slugId}`;
-          }
+          // Create a derived slug if needed
+          const derivedSlug = slugId; // fallback to closure slugId for backward compatibility
+          shareUrl = `${window.location.origin}/${finalTable}/${
+            finalSlugId ?? derivedSlug
+          }/${finalRecordId}`;
         }
         if (!shareUrl) {
           shareUrl = window.location.href;

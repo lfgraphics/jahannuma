@@ -3,6 +3,9 @@
  * Provides centralized access to all utility functions and services.
  */
 
+// API response utilities (from root lib folder)
+export * from "../../lib/api-response";
+
 // Airtable utilities
 export * from "./airtable";
 
@@ -26,3 +29,4 @@ export * from "./utils";
 
 // Icon utilities
 export * from "./icons";
+

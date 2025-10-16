@@ -3,15 +3,15 @@
  * Fetch list of Ashaar with pagination and filtering.
  */
 
-import { SORTS } from "@/lib/airtable";
 import {
   createRecord,
+  formatAshaarRecord,
   listAshaarRecords,
-} from "@/lib/airtable/airtable-client";
-import { formatAshaarRecord } from "@/lib/airtable/airtable-utils";
-import { AshaarListResponse } from "@/types/api/responses";
+} from "@/lib/airtable";
+import { errors, ok } from "@/lib/api-response";
+import { isValidFilterFormula, isValidPageSize } from "@/utils/validators";
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,14 +21,25 @@ export async function GET(request: NextRequest) {
     const filterByFormula = searchParams.get("filterByFormula") || undefined;
     const search = searchParams.get("search") || undefined;
     const fields = searchParams.get("fields") || undefined;
-    const sort = searchParams.get("sort") || SORTS.CREATED_DESC;
-    const view = searchParams.get("view") || "Main View";
+    const sort = searchParams.get("sort") || undefined;
+    const view = searchParams.get("view") || undefined;
 
-    // Parse sort parameter
-    const sortArray = sort.split(",").map((s) => {
-      const [field, direction] = s.split(":");
-      return { field, direction: (direction as "asc" | "desc") || "desc" };
-    });
+    // Validate query parameters
+    if (!isValidPageSize(pageSize)) {
+      return errors.badRequest("Invalid pageSize. Must be between 1 and 100.");
+    }
+
+    if (filterByFormula && !isValidFilterFormula(filterByFormula)) {
+      return errors.badRequest("Invalid filterByFormula syntax.");
+    }
+
+    // Parse sort parameter - only if provided
+    const sortArray = sort
+      ? sort.split(",").map((s: string) => {
+          const [field, direction] = s.split(":");
+          return { field, direction: (direction as "asc" | "desc") || "desc" };
+        })
+      : undefined;
 
     const result = await listAshaarRecords({
       pageSize,
@@ -49,30 +60,19 @@ export async function GET(request: NextRequest) {
     const { userId } = await auth();
     const userMetadata = userId ? { userId } : undefined;
 
-    const response: AshaarListResponse = {
-      success: true,
-      data: {
-        records: formattedRecords,
-        offset: result.offset,
-        hasMore: !!result.offset,
-        userMetadata,
-      },
+    const responseData = {
+      records: formattedRecords,
+      offset: result.offset,
+      hasMore: !!result.offset,
+      userMetadata,
     };
 
-    return NextResponse.json(response);
+    return ok(responseData);
   } catch (error) {
     console.error("Error fetching ashaar:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "FETCH_FAILED",
-          message: "Failed to fetch ashaar",
-          details: error instanceof Error ? error.message : "Unknown error",
-        },
-      },
-      { status: 500 }
+    return errors.internal(
+      "Failed to fetch ashaar",
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
@@ -81,46 +81,21 @@ export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required",
-          },
-        },
-        { status: 401 }
-      );
+      return errors.unauthorized();
     }
 
     const { fields } = await req.json();
 
     if (!fields || typeof fields !== "object") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "INVALID_INPUT",
-            message: "fields required",
-          },
-        },
-        { status: 400 }
-      );
+      return errors.badRequest("fields required");
     }
 
     const record = await createRecord("Ashaar", fields);
-    return NextResponse.json({ success: true, data: { record } });
+    return ok({ record });
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "CREATE_FAILED",
-          message: "Failed to create ashar",
-          details: error instanceof Error ? error.message : "Unknown error",
-        },
-      },
-      { status: 500 }
+    return errors.internal(
+      "Failed to create ashar",
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

@@ -10,13 +10,24 @@ export {
   fetchRecord,
   fetchRecords,
   getAirtableConfig,
+  getAshaarRecord,
+  getCommentsRecord,
+  getEbooksRecord,
+  getGhazlenRecord,
+  getNazmenRecord,
+  getRubaiRecord,
+  listAshaarRecords,
+  listCommentsRecords,
+  listEbooksRecords,
+  listGhazlenRecords,
+  listNazmenRecords,
+  listRubaiRecords,
   updateRecord,
 } from "./airtable-client";
 
 // Constants
 export {
   COMMENTS_TABLE,
-  COMMENT_BASES,
   DEFAULT_PAGE_SIZE,
   FIELDS,
   FILTERS,
@@ -26,7 +37,7 @@ export {
   TABLES,
 } from "./airtable-constants";
 
-export type { CommentBaseKey, TableName } from "./airtable-constants";
+export type { TableName } from "./airtable-constants";
 
 // Utility functions
 export {
@@ -41,6 +52,7 @@ export {
   formatBookRecord,
   formatGhazlenRecord,
   formatNazmenRecord,
+  formatRubaiRecord,
   generateListCacheKey,
   generateRecordCacheKey,
   normalizeText,
@@ -50,3 +62,4 @@ export {
   splitIntoLines,
   truncateText,
 } from "./airtable-utils";
+

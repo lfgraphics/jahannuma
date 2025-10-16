@@ -60,7 +60,9 @@ const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
 
         navigator
           .share({
-            text: `${title}\n\n${text !== "" ? `${text}\n` : ""}Found this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
+            text: `${title}\n\n${
+              text !== "" ? `${text}\n` : ""
+            }Found this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
             url: shareUrl,
           })
           .then(() => console.log("Successful share"))
@@ -86,11 +88,12 @@ const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
 
   return (
     <>
-      {!data && (
-        <Loader />
-      )}
+      {!data && <Loader />}
       {data && (
-        <div dir="rtl" className="container flex flex-col justify-center ">
+        <div
+          dir="rtl"
+          className="container mx-auto flex flex-col justify-center "
+        >
           <div
             style={{ backgroundImage: `url(/poets/bg.jpg)` }}
             className="bg-cover bg-center h-32 lg:h-52 w-full"
@@ -101,10 +104,16 @@ const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
               className="h-full w-full bg-black/70 backdrop-blur-[1px] flex items-center justify-center gap-2"
             >
               <div className="photo lg:h-32 h-24 md:h-28 lg:w-32 w-24 md:w-28 rounded-full overflow-clip border-[#984a0291] border-4 ">
-                {data && insideBrowser && data.photo && data.photo.length > 0 && data.photo[0]?.thumbnails?.large ? (
+                {data &&
+                insideBrowser &&
+                data.photo &&
+                data.photo.length > 0 &&
+                data.photo[0]?.thumbnails?.large ? (
                   <img
                     alt={`${data.photo[0]?.filename ?? "poet"}`}
-                    src={`${data.photo[0]?.thumbnails?.large?.url ?? "/poets/nodp.jpg"}`}
+                    src={`${
+                      data.photo[0]?.thumbnails?.large?.url ?? "/poets/nodp.jpg"
+                    }`}
                     height={data.photo[0]?.thumbnails?.large?.height ?? 150}
                     width={data.photo[0]?.thumbnails?.large?.width ?? 150}
                   ></img>
@@ -118,7 +127,6 @@ const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
                   ></img>
                 )}
               </div>
-
               <div className="mini_intro mr-5 text-white ">
                 <p className="text-4xl">{data?.takhallus}</p>
                 <p className="mt-3 flex gap-2 items-baseline">
@@ -134,9 +142,7 @@ const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
                   {data?.location}
                 </p>
               </div>
-
               <span className="mx-3 text-white font-bold">|</span>{" "}
-
               <div className="navs" onClick={() => handleShareClick()}>
                 <Share2 color="white" className="text-3xl ml-6" />
               </div>
