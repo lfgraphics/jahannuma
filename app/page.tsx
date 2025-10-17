@@ -25,7 +25,6 @@ async function fetchFromAPI(
     }`;
 
     const response = await fetch(url, {
-      cache: "no-store",
       next: { revalidate: 300 }, // 5 minutes
     });
 

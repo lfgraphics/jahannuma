@@ -78,7 +78,6 @@ export async function GET(request: NextRequest) {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      cache: "no-store",
     });
 
     if (!response.ok) {
