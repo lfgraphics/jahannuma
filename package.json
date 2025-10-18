@@ -2,7 +2,7 @@
   "name": "jahan-numa",
   "version": "3.2.2",
   "private": true,
-  "packageManager": "pnpm@10.18.0",
+  "packageManager": "pnpm@10.18.3",
   "scripts": {
     "preinstall": "node -e \"if(!String(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('This repository uses pnpm. Please run: pnpm install'); process.exit(1)}\"",
     "dev": "next dev --turbopack",
@@ -49,13 +49,13 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "webpack-bundle-analyzer": "^4.10.1",
     "@types/aos": "^3.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.8",
-    "typescript": "^5"
+    "typescript": "^5",
+    "webpack-bundle-analyzer": "^4.10.1"
   }
 }
