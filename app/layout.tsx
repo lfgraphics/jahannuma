@@ -1,10 +1,12 @@
-import "./globals.css";
-import Navbar from "@/app/Components/Navbar";
+import CoreWebVitalsOptimizer, { ResourceHints } from "@/app/Components/CoreWebVitalsOptimizer";
 import Footer from "@/app/Components/Footer";
+import InitLikesMigration from "@/app/Components/InitLikesMigration";
+import Navbar from "@/app/Components/Navbar";
+import { PerformanceMonitor } from "@/app/Components/SEOEnhanced";
+import { ClerkProvider } from "@clerk/nextjs";
+import "./globals.css";
 import Providers from "./providers";
 import SWRProvider from "./swr-provider";
-import { ClerkProvider } from "@clerk/nextjs";
-import InitLikesMigration from "@/app/Components/InitLikesMigration";
 
 export default function RootLayout({
   children,
@@ -14,7 +16,27 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+        {/* DNS prefetch for external domains */}
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="dns-prefetch" href="https://api.airtable.com" />
+
+        {/* Preconnect to critical domains */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Preload critical font */}
+        <link
+          rel="preload"
+          href="/Mehr_Nastaliq.ttf"
+          as="font"
+          type="font/truetype"
+          crossOrigin="anonymous"
+        />
+
+        {/* Apple touch icons */}
         <link
           rel="apple-touch-icon"
           sizes="57x57"
@@ -60,6 +82,8 @@ export default function RootLayout({
           sizes="180x180"
           href="/favicon/apple-icon-180x180.png"
         />
+
+        {/* Standard favicons */}
         <link
           rel="icon"
           type="image/png"
@@ -84,13 +108,40 @@ export default function RootLayout({
           sizes="16x16"
           href="/favicon/favicon-16x16.png"
         />
+
+        {/* Web app manifest */}
         <link rel="manifest" href="/manifest.json" />
+
+        {/* Microsoft tiles */}
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta
           name="msapplication-TileImage"
           content="/favicon/ms-icon-144x144.png"
         />
+
+        {/* Theme colors */}
         <meta name="theme-color" content="#F0D586" />
+        <meta name="color-scheme" content="light dark" />
+
+        {/* Critical CSS for font loading */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              @font-face {
+                font-family: 'Noto Nastaliq Urdu';
+                font-style: normal;
+                font-weight: 400;
+                font-display: swap;
+                src: url('/Mehr_Nastaliq.ttf') format('truetype');
+              }
+              
+              /* Prevent layout shift during font loading */
+              .font-noto-nastaliq {
+                font-family: 'Noto Nastaliq Urdu', serif, system-ui;
+              }
+            `,
+          }}
+        />
       </head>
       <body className="bg-background text-foreground font-noto-nastaliq">
         <ClerkProvider>
@@ -112,6 +163,10 @@ export default function RootLayout({
               </div>
             </SWRProvider>
           </Providers>
+          <CoreWebVitalsOptimizer />
+          <ResourceHints />
+          <PerformanceMonitor />
+          {/* <DynamicPerformanceDashboard /> */}
         </ClerkProvider>
       </body>
     </html>

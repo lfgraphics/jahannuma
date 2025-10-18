@@ -1,15 +1,14 @@
 "use client";
-import type { AirtableRecord, Rubai } from "@/app/types";
+import type { Rubai } from "@/app/types";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useCommentSystem } from "@/hooks/useCommentSystem";
 import { useLikeButton } from "@/hooks/useLikeButton";
+import { useRubaiData } from "@/hooks/useRubaiData";
 import { COMMENTS_TABLE, RUBAI_COMMENTS_BASE } from "@/lib/airtable-constants";
 import { buildShaerFilter, prepareShareUpdate } from "@/lib/airtable-utils";
 import { shareRecordWithCount } from "@/lib/social-utils";
-import { updatePagedListField } from "@/lib/swr-updater";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { XCircle } from "lucide-react";
@@ -30,34 +29,38 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
 
   const [selectedCommentId, setSelectedCommentId] = useState<string | null>(null);
   const [newComment, setNewComment] = useState("");
-  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem(COMMENTS_BASE, COMMENTS_TABLE_NAME, null);
+  const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem(
+    RUBAI_COMMENTS_BASE,
+    COMMENTS_TABLE
+  );
   const { requireAuth } = useAuthGuard();
 
   useEffect(() => { AOS.init({ offset: 50, delay: 0, duration: 300 }); }, []);
 
-  const { records, isLoading, swrKey, mutate } = useAirtableList<AirtableRecord<any>>(RUBAI_BASE, RUBAI_TABLE, {
+  const {
+    records: dataItems,
+    isLoading,
+    cacheKey,
+    optimisticUpdate
+  } = useRubaiData({
     filterByFormula: buildShaerFilter(displayName),
     pageSize: 30,
   });
-  const dataItems = records as unknown as Rubai[];
 
-  const { updateRecord } = useAirtableMutation(RUBAI_BASE, RUBAI_TABLE);
+  const { updateRecord } = useAirtableMutation("appIewyeCIcAD4Y11", "Rubai");
   const { language } = useLanguage();
 
   const handleLikeChange = (args: { id: string; liked: boolean; likes: number }) => {
-    try {
-      mutate((curr: any) => updatePagedListField(curr, args.id, "likes", args.liked ? 1 : -1), { revalidate: false });
-    } catch {}
+    optimisticUpdate.updateRecord(args.id, { likes: args.likes });
   };
 
   const CardItem: React.FC<{ item: Rubai; index: number }> = ({ item, index }) => {
     const like = useLikeButton({
-      baseId: RUBAI_BASE,
-      table: RUBAI_TABLE,
+      baseId: "appIewyeCIcAD4Y11",
+      table: "rubai",
       storageKey: "Rubai",
       recordId: item.id,
       currentLikes: item.fields?.likes ?? 0,
-      swrKey,
       onChange: handleLikeChange,
     });
     const onHeart = async (_e: React.MouseEvent<HTMLButtonElement>) => {
@@ -105,30 +108,29 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
     try {
-      await submitComment({ recordId: dataId, content: newComment });
+      await submitComment({
+        recordId: dataId,
+        content: newComment
+      });
       setNewComment("");
-      // If the rubai table tracks comment counts, optimistically increment and rollback on failure
+
+      // Optimistically update comment count
       const current = (dataItems || []).find((i: any) => i.id === dataId);
-      const hasCommentsField = current && typeof current.fields?.comments !== 'undefined';
-      if (hasCommentsField) {
-        // Optimistic local bump via SWR updater; rollback in catch
-        const next = (current.fields?.comments || 0) + 1;
-        try {
-          await updateRecord([
-            { id: dataId, fields: { comments: next } }
-          ], {
-            optimistic: true,
-            affectedKeys: swrKey ? [swrKey] : undefined,
-            updater: (curr: any) => updatePagedListField(curr, dataId, "comments", 1),
-          });
-        } catch (err) {
-          // Rollback optimistic increment
-          try {
-            await mutate((curr: any) => updatePagedListField(curr, dataId, "comments", -1), { revalidate: false });
-          } catch {}
-        }
+      const newCommentCount = (current?.fields?.comments || 0) + 1;
+      optimisticUpdate.updateRecord(dataId, { comments: newCommentCount });
+
+      try {
+        await updateRecord([{ id: dataId, fields: { comments: newCommentCount } }]);
+      } catch (error) {
+        // Rollback optimistic comment increment
+        const rollbackCount = Math.max(0, newCommentCount - 1);
+        optimisticUpdate.updateRecord(dataId, { comments: rollbackCount });
+        console.error("Error updating comments on the server:", error);
       }
-    } catch {}
+    } catch (error) {
+      // Comment submission failed, no need to rollback
+      console.error("Error submitting comment:", error);
+    }
   };
   const openComments = (dataId: string) => { setSelectedCommentId(dataId); setRecordId(dataId); };
   const closeComments = () => { setSelectedCommentId(null); setRecordId(null); };

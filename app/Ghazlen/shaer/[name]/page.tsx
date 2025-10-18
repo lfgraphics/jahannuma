@@ -1,10 +1,10 @@
 "use client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAirtableCreate } from "@/hooks/useAirtableCreate";
-import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useCommentSystem } from "@/hooks/useCommentSystem";
+import { useGhazlenData } from "@/hooks/useGhazlenData";
 import {
   COMMENTS_TABLE,
   GHAZLEN_COMMENTS_BASE,
@@ -47,7 +47,7 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
 
   useEffect(() => { AOS.init({ offset: 50, delay: 0, duration: 300 }); }, []);
 
-  const { records, isLoading, isValidating, swrKey, mutate } = useAirtableList<AirtableRecord<any>>(GH_BASE, GH_TABLE, {
+  const { records, isLoading, isValidating, cacheKey: swrKey, mutate } = useGhazlenData({
     filterByFormula: buildShaerFilter(displayName),
     pageSize: 30,
   });

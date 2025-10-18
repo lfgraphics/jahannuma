@@ -1,7 +1,7 @@
 "use client";
 import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, GhazlenRecord } from "@/app/types";
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { buildShaerFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
 import React, { useEffect, useMemo, useState } from "react";
@@ -17,13 +17,10 @@ const TABLE = "Ghazlen";
 const Ghazlen: React.FC<Props> = ({ takhallus }) => {
   const [loading, setLoading] = useState(true);
 
-  const { records, isLoading } = useAirtableList<AirtableRecord<any>>(
-    "ghazlen",
-    {
-      filterByFormula: buildShaerFilter(takhallus),
-      pageSize: 30,
-    }
-  );
+  const { records, isLoading } = useGhazlenData({
+    filterByFormula: buildShaerFilter(takhallus),
+    pageSize: 30,
+  });
   const dataItems = useMemo(
     () => records.map(formatGhazlenRecord) as AirtableRecord<GhazlenRecord>[],
     [records]

@@ -3,6 +3,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { formatAshaarRecord, formatGhazlenRecord } from "@/lib/airtable-utils";
 import { shareRecordWithCount } from "@/lib/social-utils";
@@ -125,11 +126,9 @@ export default function FavoritesPage() {
     records: ghazlenRecords,
     isLoading: ghazlenLoading,
     error: ghazlenError,
-    swrKey: ghazlenSWR,
+    cacheKey: ghazlenSWR,
     mutate: mutateGhazlen,
-  } = useAirtableList<AirtableRecord<GhazlenRecord>>(
-    GHAZLEN_BASE,
-    GHAZLEN_TABLE,
+  } = useGhazlenData(
     {
       pageSize: Math.min(Math.max(ghazlenIds.length, 1), 100),
       filterByFormula: ghazlenFilter,

@@ -1,13 +1,12 @@
 import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, GhazlenRecord } from "@/app/types";
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { formatGhazlenRecord } from "@/lib/airtable-utils";
 import { useMemo } from "react";
 
 export default function Ghazlen() {
-  const { records, isLoading } = useAirtableList<AirtableRecord<GhazlenRecord>>(
-    "ghazlen",
+  const { records, isLoading } = useGhazlenData(
     { pageSize: 30 }
   );
   const items = useMemo(

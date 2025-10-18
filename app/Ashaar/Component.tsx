@@ -10,8 +10,8 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { House, Search, X } from "lucide-react";
 // Removed deprecated Dialog UI imports
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
+import { useAshaarData } from "@/hooks/useAshaarData";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 // createSlug no longer needed here; using centralized share helper
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -46,10 +46,10 @@ interface Comment {
 }
 
 interface AshaarProps {
-  initialData?: any[];
+  initialData?: any;
 }
 
-const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
+const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
@@ -90,11 +90,14 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
     return `OR( FIND('${safe}', LOWER({shaer})), FIND('${safe}', LOWER({sher})), FIND('${safe}', LOWER({body})), FIND('${safe}', LOWER({unwan})) )`;
   }, [searchText]);
 
-  const { records, isLoading, hasMore, loadMore, mutate } = useAirtableList<Shaer>(
-    "ashaar",
+  const { records, isLoading, isValidating, hasMore, loadMore, mutate, optimisticUpdate } = useAshaarData(
     { pageSize: 30, filterByFormula: filterFormula },
-    { debounceMs: 300 }
+    { debounceMs: 300, initialData }
   );
+
+  // Differentiate between initial loading and loading more data
+  const isInitialLoading = isLoading && (!records || records.length === 0);
+  const isLoadingMore = isValidating && !isLoading && records && records.length > 0;
 
   const { updateRecord: updateAshaar } = useAirtableMutation("ashaar");
   // Removed deprecated createAshaarComment; comment creation uses useCommentSystem
@@ -149,7 +152,7 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
   }, [records, searchText]);
 
   const dataItems = formattedRecords;
-  const loading = isLoading;
+  const loading = isInitialLoading;
   const noMoreData = !hasMore;
 
   // fetching more data by load more data button
@@ -208,22 +211,18 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
         onShared: async () => {
           try {
             const updatedShares = (shaerData.fields.shares ?? 0) + 1;
-            await updateAshaar(shaerData.id, { shares: updatedShares });
-            // Optimistically update SWR cache pages
-            await mutate(
-              (pages: any[] | undefined) => {
-                if (!pages) return pages;
-                return pages.map((p: any) => ({
-                  ...p,
-                  records: (p.records || []).map((r: any) =>
-                    r.id === shaerData.id
-                      ? { ...r, fields: { ...r.fields, shares: updatedShares } }
-                      : r
-                  ),
-                }));
-              },
-              { revalidate: false }
-            );
+
+            // Optimistically update the UI first
+            optimisticUpdate.updateRecord(shaerData.id, { shares: updatedShares });
+
+            // Then persist to server
+            try {
+              await updateAshaar(shaerData.id, { shares: updatedShares });
+            } catch (error) {
+              console.error("Error updating shares:", error);
+              // Revert optimistic update on failure
+              optimisticUpdate.revert();
+            }
           } catch (error) {
             console.error("Error updating shares:", error);
           }
@@ -250,42 +249,21 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
     try {
       setRecordId(dataId); // Set the record ID first
       await submitComment(newComment);
-      // Optimistically bump the comments count in current SWR cache
+      // Optimistically bump the comments count
       const current = dataItems.find((i) => i.id === dataId);
       const nextCount = ((current?.fields.comments) || 0) + 1;
-      await mutate(
-        (pages: any[] | undefined) => {
-          if (!pages) return pages;
-          return pages.map((p: any) => ({
-            ...p,
-            records: (p.records || []).map((r: any) =>
-              r.id === dataId
-                ? { ...r, fields: { ...r.fields, comments: nextCount } }
-                : r
-            ),
-          }));
-        },
-        { revalidate: false }
-      );
+
+      // Update UI optimistically
+      optimisticUpdate.updateRecord(dataId, { comments: nextCount });
       setNewComment("");
-      // Persist comments count; rollback the optimistic bump if it fails
+
+      // Persist comments count; rollback the optimistic update if it fails
       try {
         await updateAshaar(dataId, { comments: nextCount });
       } catch (err) {
-        await mutate(
-          (pages: any[] | undefined) => {
-            if (!pages) return pages;
-            return pages.map((p: any) => ({
-              ...p,
-              records: (p.records || []).map((r: any) =>
-                r.id === dataId
-                  ? { ...r, fields: { ...r.fields, comments: Math.max(0, (nextCount || 1) - 1) } }
-                  : r
-              ),
-            }));
-          },
-          { revalidate: false }
-        );
+        console.error("Error updating comment count:", err);
+        // Revert the optimistic update
+        optimisticUpdate.updateRecord(dataId, { comments: Math.max(0, nextCount - 1) });
       }
     } catch (e) {
       // errors are toasted inside hook

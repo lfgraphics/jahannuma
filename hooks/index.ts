@@ -3,10 +3,18 @@
  * Provides convenient single-import access to all hooks.
  */
 
-// Airtable hooks
+// Enhanced Airtable hooks (new infrastructure)
+export {
+  useAirtableList // Backward compatibility wrapper
+  , useEnhancedAirtableList
+} from "./useEnhancedAirtableList";
+export {
+  useAirtableMutation // Backward compatibility wrapper
+  , useEnhancedAirtableMutation
+} from "./useEnhancedAirtableMutation";
+
+// Legacy Airtable hooks (for gradual migration)
 export { useAirtableCreate } from "./useAirtableCreate";
-export { useAirtableList } from "./useAirtableList";
-export { useAirtableMutation } from "./useAirtableMutation";
 export { useAirtableRecord } from "./useAirtableRecord";
 
 // Authentication hooks

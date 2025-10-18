@@ -8,10 +8,10 @@ import CommentSection from "../Components/CommentSection";
 import RubaiCard from "../Components/RubaiCard";
 import SkeletonLoader from "../Components/SkeletonLoader";
 
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
+import { useRubaiData } from "@/hooks/useRubaiData";
 import { useShareAction } from "@/hooks/useShareAction";
 import type { Rubai } from "../types";
 
@@ -26,19 +26,21 @@ interface Comment {
   comment: string;
 }
 
-const Ashaar: React.FC<{}> = () => {
+interface RubaiComponentProps {
+  initialData?: string | null;
+  fallbackData?: any;
+}
+
+const RubaiComponent: React.FC<RubaiComponentProps> = ({ 
+  initialData, 
+  fallbackData 
+}) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
-  const [voffset, setOffset] = useState<string | null>("");
-  const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [scrolledPosition, setScrolledPosition] = useState<number>();
-  const [loading, setLoading] = useState(true);
-  const [moreloading, setMoreLoading] = useState(true);
-  const [dataItems, setDataItems] = useState<Rubai[]>([]);
   const [initialDataItems, setInitialdDataItems] = useState<Rubai[]>([]);
-  const [noMoreData, setNoMoreData] = useState(false);
   // Comment system
   const [newComment, setNewComment] = useState("");
   const {
@@ -68,7 +70,20 @@ const Ashaar: React.FC<{}> = () => {
       });
     }
   }
-  // Build filter formula and use unified list hook - prioritize shaer (poet name)
+  // Parse initial data from server
+  const hydratedInitialData = useMemo(() => {
+    if (initialData) {
+      try {
+        return JSON.parse(initialData);
+      } catch (error) {
+        console.error("Error parsing Rubai initial data:", error);
+        return fallbackData;
+      }
+    }
+    return fallbackData;
+  }, [initialData, fallbackData]);
+
+  // Build filter formula and use new Rubai data hook
   const filterFormula = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     if (!q) return undefined;
@@ -76,20 +91,29 @@ const Ashaar: React.FC<{}> = () => {
     // Priority order: shaer (poet name), then body, unwan
     return `OR( FIND('${escaped}', LOWER({shaer})), FIND('${escaped}', LOWER({body})), FIND('${escaped}', LOWER({unwan})) )`;
   }, [searchText]);
-  const { records, isLoading, hasMore, loadMore } = useAirtableList<Rubai>(
-    "rubai",
+
+  const { 
+    records, 
+    isLoading, 
+    hasMore, 
+    loadMore,
+    optimisticUpdate 
+  } = useRubaiData(
     { pageSize: 30, filterByFormula: filterFormula },
-    { debounceMs: 300 }
+    { 
+      debounceMs: 300,
+      initialData: hydratedInitialData
+    }
   );
 
   const { updateRecord: updateRubai } = useAirtableMutation("rubai");
 
-  useEffect(() => {
-    // Sort by search relevance when there's a search query
+  // Sort by search relevance when there's a search query
+  const dataItems = useMemo(() => {
     let sortedData = records || [];
     if (searchText.trim()) {
       const query = searchText.trim().toLowerCase();
-      sortedData = (records || []).slice().sort((a, b) => {
+      sortedData = (records || []).slice().sort((a: Rubai, b: Rubai) => {
         const aShaer = (a.fields.shaer || "").toLowerCase();
         const aBody = (a.fields.body || "").toLowerCase();
         const aUnwan = (a.fields.unwan || "").toLowerCase();
@@ -116,19 +140,14 @@ const Ashaar: React.FC<{}> = () => {
         return aShaer.localeCompare(bShaer);
       });
     }
-
-    setDataItems(sortedData);
-    setLoading(isLoading);
-    setMoreLoading(false);
-    setNoMoreData(!hasMore);
-  }, [records, isLoading, hasMore, searchText]);
+    return sortedData;
+  }, [records, searchText]);
 
   const handleLoadMore = async () => {
     try {
-      setMoreLoading(true);
       await loadMore();
-    } finally {
-      setMoreLoading(false);
+    } catch (error) {
+      console.error("Error loading more Rubai:", error);
     }
   };
   const searchQuery = () => {
@@ -166,13 +185,7 @@ const Ashaar: React.FC<{}> = () => {
     liked: boolean;
     likes: number;
   }) => {
-    setDataItems((prev) =>
-      prev.map((it) =>
-        it.id === args.id
-          ? { ...it, fields: { ...it.fields, likes: args.likes } }
-          : it
-      )
-    );
+    optimisticUpdate.updateRecord(args.id, { likes: args.likes });
   };
 
   // Per-card wrapper to bind Clerk like hook to RubaiCard
@@ -238,40 +251,19 @@ const Ashaar: React.FC<{}> = () => {
       setRecordId(dataId); // Set the record ID first
       await submitComment(newComment);
       setNewComment("");
-      setDataItems((prevDataItems) => {
-        return prevDataItems.map((prevItem) => {
-          if (prevItem.id === dataId) {
-            return {
-              ...prevItem,
-              fields: {
-                ...prevItem.fields,
-                comments: (prevItem.fields.comments || 0) + 1,
-              },
-            };
-          } else {
-            return prevItem;
-          }
-        });
-      });
+      // Optimistically update comment count
+      const currentRecord = dataItems.find((i: Rubai) => i.id === dataId);
+      const newCommentCount = (currentRecord?.fields.comments || 0) + 1;
+      optimisticUpdate.updateRecord(dataId, { comments: newCommentCount });
       try {
-        const current = dataItems.find((i) => i.id === dataId);
+        const current = dataItems.find((i: Rubai) => i.id === dataId);
         const next = (current?.fields.comments || 0) + 1;
         await updateRubai(dataId, { comments: next });
       } catch (error) {
         // Rollback optimistic comment increment
-        setDataItems((prevDataItems) =>
-          prevDataItems.map((prevItem) =>
-            prevItem.id === dataId
-              ? {
-                  ...prevItem,
-                  fields: {
-                    ...prevItem.fields,
-                    comments: Math.max(0, (prevItem.fields.comments || 1) - 1),
-                  },
-                }
-              : prevItem
-          )
-        );
+        const currentRecord = dataItems.find((i: Rubai) => i.id === dataId);
+        const rollbackCount = Math.max(0, (currentRecord?.fields.comments || 1) - 1);
+        optimisticUpdate.updateRecord(dataId, { comments: rollbackCount });
         console.error("Error updating comments on the server:", error);
       }
     } catch (error) {
@@ -286,11 +278,9 @@ const Ashaar: React.FC<{}> = () => {
     setSelectedCommentId(null);
     setRecordId(null);
   };
-  // reseting  search
+  // reseting search
   const resetSearch = () => {
-    setDataOffset(voffset);
     searchText && clearSearch();
-    setDataItems(initialDataItems);
     if (typeof window !== "undefined") {
       let section = window;
       section!.scrollTo({
@@ -355,7 +345,7 @@ const Ashaar: React.FC<{}> = () => {
           </div>
         </div>
       </div>
-      {loading && <SkeletonLoader />}
+      {isLoading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
           سرچ میں کچھ نہیں ملا
@@ -370,14 +360,14 @@ const Ashaar: React.FC<{}> = () => {
           تلاش ریسیٹ کریں
         </button>
       )}
-      {!loading && (
+      {!isLoading && (
         <section>
           <div
             id="section"
             dir="rtl"
             className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky mt-6`}
           >
-            {dataItems.map((data, index) => (
+            {dataItems.map((data: Rubai, index: number) => (
               <div data-aos="fade-up" key={data.id}>
                 <CardItem item={data} index={index} />
               </div>
@@ -386,12 +376,12 @@ const Ashaar: React.FC<{}> = () => {
               <div className="flex justify-center text-lg m-5">
                 <button
                   onClick={handleLoadMore}
-                  disabled={noMoreData || moreloading}
+                  disabled={!hasMore || isLoading}
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
-                  {moreloading
+                  {isLoading
                     ? "لوڈ ہو رہا ہے۔۔۔"
-                    : noMoreData
+                    : !hasMore
                     ? "مزید رباعی نہیں ہیں"
                     : "مزید رباعی لوڈ کریں"}
                 </button>
@@ -417,4 +407,4 @@ const Ashaar: React.FC<{}> = () => {
   );
 };
 
-export default Ashaar;
+export default RubaiComponent;

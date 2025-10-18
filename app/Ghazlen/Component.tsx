@@ -1,14 +1,14 @@
 "use client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
+import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { shareRecordWithCount } from "@/lib/social-utils";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { House, Search, X } from "lucide-react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import CommentSection from "../Components/CommentSection";
 import DataCard from "../Components/DataCard";
@@ -44,11 +44,11 @@ interface Comment {
   comment: string;
 }
 
-interface AshaarProps {
+interface GhazlenProps {
   initialData?: any[];
 }
 
-const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
+const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
@@ -61,11 +61,9 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
   const [searchText, setSearchText] = useState("");
   const [showIcons, setShowIcons] = useState(false);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
-  const [loading, setLoading] = useState(true);
-  const [moreloading, setMoreLoading] = useState(true);
-  const [dataItems, setDataItems] = useState<Shaer[]>([]);
+  const [moreloading, setMoreLoading] = useState(false);
   const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
-  const [noMoreData, setNoMoreData] = useState(false);
+
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   // Comment system
   const [newComment, setNewComment] = useState("");
@@ -113,10 +111,9 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
     return `OR( FIND('${safeQ}', LOWER({shaer})), FIND('${safeQ}', LOWER({ghazalHead})), FIND('${safeQ}', LOWER({ghazal})), FIND('${safeQ}', LOWER({unwan})) )`;
   }, [searchText]);
 
-  const { records, isLoading, hasMore, loadMore } = useAirtableList<Shaer>(
-    "ghazlen",
+  const { records, isLoading, hasMore, loadMore, optimisticUpdate } = useGhazlenData(
     { pageSize: 30, filterByFormula: filterFormula },
-    { debounceMs: 300 }
+    { debounceMs: 300, initialData }
   );
 
   const { updateRecord: updateGhazlen } = useAirtableMutation("ghazlen");
@@ -124,7 +121,6 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
 
   // Format records and sort by search relevance
   const formattedRecords: Shaer[] = useMemo(() => {
-    console.log("Records fetched:", records);
     const formatted = (records || []).map((record: any) => ({
       ...record,
       fields: {
@@ -182,12 +178,13 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
     return formatted;
   }, [records, searchText]);
 
-  useEffect(() => {
-    setDataItems(formattedRecords);
-    setLoading(isLoading);
-    setMoreLoading(false);
-    setNoMoreData(!hasMore);
-  }, [formattedRecords, isLoading, hasMore]);
+  // Use the hook values directly instead of copying to state
+  const dataItems = formattedRecords;
+  const loading = isLoading;
+  const noMoreData = !hasMore;
+
+  // Remove the problematic useEffect that causes infinite re-renders
+  // Use the formattedRecords directly instead of copying to state
 
   const handleLoadMore = async () => {
     try {
@@ -235,13 +232,18 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
         onShared: async () => {
           try {
             const updatedShares = (shaerData.fields.shares ?? 0) + 1;
-            await updateGhazlen(shaerData.id, { shares: updatedShares });
-            setDataItems((prev) => {
-              const copy = [...prev];
-              const item = copy[index];
-              if (item?.fields) item.fields.shares = updatedShares;
-              return copy;
-            });
+
+            // Optimistically update the UI first
+            optimisticUpdate.updateRecord(shaerData.id, { shares: updatedShares });
+
+            // Then persist to server
+            try {
+              await updateGhazlen(shaerData.id, { shares: updatedShares });
+            } catch (error) {
+              console.error("Error updating shares:", error);
+              // Revert optimistic update on failure
+              optimisticUpdate.revert();
+            }
           } catch (error) {
             console.error("Error updating shares:", error);
           }
@@ -265,11 +267,7 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
   };
-  // Keep latest data items in a ref to avoid stale-closure in effects
-  const latestDataRef = useRef<Shaer[]>(dataItems);
-  useEffect(() => {
-    latestDataRef.current = dataItems;
-  }, [dataItems]);
+  // Removed latestDataRef as it's no longer needed
 
   // Removed legacy localStorage-driven heart coloring; like state is owned by card
   //toggling anaween box
@@ -280,49 +278,31 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
-  // Pure helper to increment comments immutably
-  const incrementComments = (item: Shaer): Shaer => ({
-    ...item,
-    fields: {
-      ...item.fields,
-      comments: (item.fields?.comments || 0) + 1,
-    },
-  });
+  // Removed incrementComments helper as we're using optimistic updates
   const handleCommentSubmit = async (dataId: string) => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
     try {
       setRecordId(dataId); // Set the record ID first
       await submitComment(newComment);
-      // Clear input and optimistically increment comments count in local state
+      // Optimistically bump the comments count
+      const current = dataItems.find((i) => i.id === dataId);
+      const nextCount = ((current?.fields.comments) || 0) + 1;
+
+      // Update UI optimistically
+      optimisticUpdate.updateRecord(dataId, { comments: nextCount });
       setNewComment("");
-      const currentItem = dataItems.find((i) => i.id === dataId);
-      const newCommentsCount = (currentItem?.fields?.comments || 0) + 1;
-      // Optimistically increment
-      setDataItems((prev) =>
-        prev.map((i) => (i.id === dataId ? incrementComments(i) : i))
-      );
+
+      // Persist comments count; rollback the optimistic update if it fails
       try {
-        await updateGhazlen(dataId, { comments: newCommentsCount });
-      } catch (error) {
-        // Rollback optimistic count on failure
-        setDataItems((prev) =>
-          prev.map((i) =>
-            i.id === dataId
-              ? {
-                  ...i,
-                  fields: {
-                    ...i.fields,
-                    comments: Math.max(0, (i.fields?.comments || 1) - 1),
-                  },
-                }
-              : i
-          )
-        );
-        console.error("Error updating comments on the server:", error);
+        await updateGhazlen(dataId, { comments: nextCount });
+      } catch (err) {
+        console.error("Error updating comment count:", err);
+        // Revert the optimistic update
+        optimisticUpdate.updateRecord(dataId, { comments: Math.max(0, nextCount - 1) });
       }
-    } catch (error) {
-      // errors are handled via toasts inside the hook
+    } catch (e) {
+    // errors are toasted inside hook
     }
   };
   const openComments = (dataId: string) => {
@@ -339,7 +319,8 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
   const resetSearch = () => {
     setDataOffset(pagination.offset);
     searchText && clearSearch();
-    setDataItems(initialDataItems);
+    // Clear the search text which will trigger the hook to reload data
+    setSearchText("");
     if (typeof window !== "undefined") {
       let section = window;
       section!.scrollTo({
@@ -458,8 +439,8 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
                   {moreloading
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                    ? "مزید غزلیں نہیں ہیں"
-                    : "مزید غزلیں لوڈ کریں"}
+                      ? "مزید غزلیں نہیں ہیں"
+                      : "مزید غزلیں لوڈ کریں"}
                 </button>
               </div>
             )}
@@ -482,4 +463,4 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData = [] }) => {
   );
 };
 
-export default Ashaar;
+export default Ghazlen;

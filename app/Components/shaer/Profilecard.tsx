@@ -31,7 +31,6 @@ const Card = ({
   storageKey = "Shura",
   onLikeChange,
 }: CardProps) => {
-  console.log("Profilecard", data);
   const { fields, id: recordId } = data;
   const takhallus = fields?.takhallus as string | undefined;
   const slugId = fields?.slugId as string | undefined;
@@ -52,35 +51,35 @@ const Card = ({
   const like =
     likeEnabled && recId
       ? useLikeButton({
-          baseId,
-          table,
-          storageKey,
-          recordId: recId,
-          currentLikes: Number(fields?.likes || 0),
-          onChange: onLikeChange,
-        })
+        baseId,
+        table,
+        storageKey,
+        recordId: recId,
+        currentLikes: Number(fields?.likes || 0),
+        onChange: onLikeChange,
+      })
       : null;
 
   return (
-    <div className="w-[180px] rounded overflow-hidden shadow-[#00000080] shadow-md mx-auto my-1 bg-background text-foreground">
-      <div className="relative bg-cover bg-center">
+    <div className="w-[180px] h-52 rounded overflow-hidden shadow-[#00000080] shadow-md mx-auto my-1 bg-background text-foreground">
+      <div className="relative h-full">
         <Link
           href={{ pathname: `/Shaer/${(name || "").replace(/\s+/g, "-")}` }}
-          className="block"
+          className="block h-full"
         >
           {img?.url ? (
             <img
-              className="w-full h-52 object-cover object-center"
+              className="w-full h-full object-cover object-center"
               src={img.url}
-              height={img.height}
-              width={img.width}
+              height={208}
+              width={180}
               alt="Poet's Photo"
             />
           ) : (
             <img
-              className="w-full h-52 object-cover object-center"
+                className="w-full h-full object-cover object-center"
               src={"/poets/nodp.jpg"}
-              height={180}
+                height={208}
               width={180}
               alt="Poet's Photo"
             />
@@ -89,9 +88,8 @@ const Card = ({
         {likeEnabled && like && (
           <>
             <button
-              className={`absolute top-0 right-0 px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 ${
-                like.isLiked ? "text-red-600" : "text-gray-600"
-              }`}
+              className={`absolute top-0 right-0 px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 ${like.isLiked ? "text-red-600" : "text-gray-600"
+                }`}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -112,10 +110,12 @@ const Card = ({
           </>
         )}
         <div
-          className="absolute bottom-0 w-full text-center p-2 bg-black/40 text-white backdrop-blur-sm"
+          className="absolute bottom-0 left-0 right-0 text-center p-2 bg-black/60 text-white backdrop-blur-sm min-h-[40px] flex items-center justify-center"
           style={{ WebkitBackdropFilter: "blur(4px)" }}
         >
-          {takhallus}
+          <span className="text-sm font-medium leading-tight break-words max-w-full">
+            {takhallus}
+          </span>
         </div>
       </div>
     </div>

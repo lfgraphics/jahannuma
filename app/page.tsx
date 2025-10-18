@@ -1,5 +1,8 @@
 import { generatePageMetadata } from "@/lib/seo/metadata";
-import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
+import {
+  generateOrganizationStructuredData,
+  generateWebsiteStructuredData
+} from "@/lib/seo/structured-data";
 import { Metadata } from "next";
 import Ads from "./Components/Ads";
 import Branches from "./Components/Branches";
@@ -20,7 +23,13 @@ async function fetchFromAPI(
   try {
     // Simple relative URL for server-side fetching
     const searchParams = new URLSearchParams(params);
-    const url = `/api/airtable/${endpoint}${
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NODE_ENV === 'development'
+        ? 'http://localhost:3000'
+        : 'https://jahan-numa.org';
+
+    const url = `${baseUrl}/api/airtable/${endpoint}${
       searchParams.toString() ? `?${searchParams.toString()}` : ""
     }`;
 
@@ -116,7 +125,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Home() {
   const homeData = await getHomePageData();
 
-  // Generate structured data for SEO
+  // Generate comprehensive structured data for homepage
   const websiteStructuredData = generateWebsiteStructuredData({
     name: "Jahannuma - جہاں نما",
     description:
@@ -126,9 +135,108 @@ export default async function Home() {
     language: "ur",
   });
 
+  const organizationData = generateOrganizationStructuredData({
+    name: "Jahan Numa",
+    description: "A comprehensive digital library of Urdu poetry and literature",
+    url: "https://jahannuma.vercel.app",
+    logo: "https://jahannuma.vercel.app/logo.png"
+  });
+
+  // Create featured content collections for structured data
+  const featuredCollections = [
+    {
+      "@type": "CreativeWork",
+      "@id": "https://jahan-numa.org/Ashaar#collection",
+      "name": "Ashaar Collection",
+      "description": "Beautiful poetry couplets from renowned Urdu poets",
+      "url": "https://jahan-numa.org/Ashaar",
+      "genre": "Poetry",
+      "inLanguage": "ur",
+      "author": {
+        "@type": "Organization",
+        "name": "Jahannuma"
+      }
+    },
+    {
+      "@type": "CreativeWork",
+      "@id": "https://jahan-numa.org/Ghazlen#collection",
+      "name": "Ghazlen Collection",
+      "description": "Classical and contemporary Urdu ghazals",
+      "url": "https://jahan-numa.org/Ghazlen",
+      "genre": "Poetry",
+      "inLanguage": "ur",
+      "author": {
+        "@type": "Organization",
+        "name": "Jahannuma"
+      }
+    },
+    {
+      "@type": "Book",
+      "@id": "https://jahan-numa.org/E-Books#collection",
+      "name": "Digital Library",
+      "description": "Collection of Urdu literature and poetry books",
+      "url": "https://jahan-numa.org/E-Books",
+      "genre": ["Literature", "Poetry"],
+      "inLanguage": "ur",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Jahannuma"
+      }
+    }
+  ];
+
+  // Add breadcrumb for homepage
+  const breadcrumbData = {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://jahan-numa.org"
+      }
+    ]
+  };
+
+  // Create comprehensive structured data graph
   const structuredData = {
     "@context": "https://schema.org",
-    "@graph": [websiteStructuredData],
+    "@graph": [
+      websiteStructuredData,
+      organizationData,
+      breadcrumbData,
+      ...featuredCollections,
+      // Add FAQ structured data for common questions
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Jahannuma?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Jahannuma is a comprehensive digital platform for Urdu poetry, literature, and cultural content featuring ashaar, ghazals, nazms, and e-books."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the content free to access?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, all poetry and literature content on Jahannuma is freely accessible to promote Urdu language and culture."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What types of poetry are available?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Jahannuma features various forms of Urdu poetry including Ashaar (couplets), Ghazals, Nazms (poems), and Rubai (quatrains) from classical and contemporary poets."
+            }
+          }
+        ]
+      }
+    ],
   };
 
   return (

@@ -1,35 +1,82 @@
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
+import { fetchList } from "@/lib/universal-data-fetcher";
 import { Metadata } from "next";
 import Ashaar from "./Component";
+import AshaarErrorBoundary from "./ErrorBoundary";
 
-// Generate dynamic metadata
+// Generate dynamic metadata with server-side data
 export async function generateMetadata(): Promise<Metadata> {
-  const dynamicKeywords = [
-    "اشعار",
-    "اردو شاعری",
-    "poetry",
-    "urdu poetry",
-    "ashaar",
-  ];
+  try {
+    // Fetch some sample data for dynamic metadata
+    const ashaarData = await fetchList<any>(
+      "appeI2xzzyvUN5bR7", // Ashaar base ID
+      "Ashaar",
+      { pageSize: 5 },
+      {
+        cache: true,
+        fallback: null,
+        throwOnError: false
+      }
+    );
 
-  return generatePageMetadata({
-    title: "Ashaar - اشعار",
-    description:
-      "Explore beautiful Ashaar (poetry couplets) from renowned poets. Discover timeless verses in Urdu literature with likes, comments and sharing features.",
-    keywords: dynamicKeywords,
-    url: "/Ashaar",
-    image: "/metaImages/ashaar.jpg",
-    language: "ur",
-    alternateLanguages: {
-      en: "https://jahan-numa.org/EN/Ashaar",
-      hi: "https://jahan-numa.org/HI/Ashaar",
-    },
-  });
+    const dynamicKeywords = [
+      "اشعار",
+      "اردو شاعری",
+      "poetry",
+      "urdu poetry",
+      "ashaar",
+    ];
+
+    // Add poet names from fetched data to keywords if available
+    if (ashaarData?.records) {
+      const poetNames = ashaarData.records
+        .map((record: any) => record.fields?.shaer)
+        .filter(Boolean)
+        .slice(0, 3); // Add up to 3 poet names
+      dynamicKeywords.push(...poetNames);
+    }
+
+    return generatePageMetadata({
+      title: "Ashaar - اشعار",
+      description:
+        "Explore beautiful Ashaar (poetry couplets) from renowned poets. Discover timeless verses in Urdu literature with likes, comments and sharing features.",
+      keywords: dynamicKeywords,
+      url: "/Ashaar",
+      image: "/metaImages/ashaar.jpg",
+      language: "ur",
+      alternateLanguages: {
+        en: "https://jahan-numa.org/EN/Ashaar",
+        hi: "https://jahan-numa.org/HI/Ashaar",
+      },
+    });
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+
+    // Fallback metadata if data fetching fails
+    return generatePageMetadata({
+      title: "Ashaar - اشعار",
+      description:
+        "Explore beautiful Ashaar (poetry couplets) from renowned poets. Discover timeless verses in Urdu literature with likes, comments and sharing features.",
+      keywords: ["اشعار", "اردو شاعری", "poetry", "urdu poetry", "ashaar"],
+      url: "/Ashaar",
+      image: "/metaImages/ashaar.jpg",
+      language: "ur",
+      alternateLanguages: {
+        en: "https://jahan-numa.org/EN/Ashaar",
+        hi: "https://jahan-numa.org/HI/Ashaar",
+      },
+    });
+  }
 }
 
 // Server component with SSR data
-const AshaarPage = () => {
+const AshaarPage = async () => {
+  let initialData = null;
+
+// For now, let's disable server-side fetching to test client-side only
+// This will help us identify if the issue is with server-side or client-side fetching
+
   // Generate structured data for SEO
   const websiteStructuredData = generateWebsiteStructuredData({
     name: "Jahannuma - Ashaar",
@@ -39,9 +86,12 @@ const AshaarPage = () => {
     language: "ur",
   });
 
+  // Create structured data for SEO
+  const structuredDataGraph = [websiteStructuredData];
+
   const structuredData = {
     "@context": "https://schema.org",
-    "@graph": [websiteStructuredData],
+    "@graph": structuredDataGraph,
   };
 
   return (
@@ -52,7 +102,9 @@ const AshaarPage = () => {
           __html: JSON.stringify(structuredData),
         }}
       />
-      <Ashaar />
+      <AshaarErrorBoundary>
+        <Ashaar initialData={initialData} />
+      </AshaarErrorBoundary>
     </div>
   );
 };

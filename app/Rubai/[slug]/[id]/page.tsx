@@ -1,14 +1,14 @@
 "use client";
-import Link from "next/link";
-import React, { useEffect, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useAirtableRecord } from "@/hooks/useAirtableRecord";
+import { useRubaiData } from "@/hooks/useRubaiData";
+import { buildIdFilter } from "@/lib/airtable-utils";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 import Loader from "../../../Components/Loader";
 import type { AirtableRecord } from "../../../types";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableRecord } from "@/hooks/useAirtableRecord";
-import { buildIdFilter } from "@/lib/airtable-utils";
 
 type RubaiFields = {
   shaer: string;
@@ -30,7 +30,7 @@ export default function Page() {
     AOS.init({ offset: 50, delay: 0, duration: 300 });
   }, []);
 
-  const { records, isLoading: listLoading, error: listError } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
+  const { records, isLoading: listLoading, error: listError } = useRubaiData({
     filterByFormula: id ? buildIdFilter(id) : undefined,
     pageSize: 1,
   });

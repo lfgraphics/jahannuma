@@ -6,7 +6,12 @@
   "scripts": {
     "preinstall": "node -e \"if(!String(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('This repository uses pnpm. Please run: pnpm install'); process.exit(1)}\"",
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "node scripts/build-performance-monitor.js && next build --turbopack",
+    "build:monitor": "node scripts/build-performance-monitor.js",
+    "analyze:bundle": "node scripts/bundle-analyzer.js",
+    "analyze:webpack": "ANALYZE=true next build",
+    "test:fixes": "node scripts/test-fixes.js",
+    "test:server-fetch": "node scripts/test-server-fetch.js",
     "start": "next start",
     "test:api": "node scripts/test-api-endpoints.js"
   },
@@ -44,6 +49,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "webpack-bundle-analyzer": "^4.10.1",
     "@types/aos": "^3.0.7",
     "@types/node": "^20",
     "@types/react": "^19",

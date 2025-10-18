@@ -1,8 +1,8 @@
 "use client";
-import useSWRInfinite from "swr/infinite";
-import { useMemo } from "react";
-import { airtableSWRFetcher, TTL, type AirtableListKey, buildAirtableCacheKey } from "@/lib/airtable-fetcher";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { TTL, airtableSWRFetcher, buildAirtableCacheKey, type AirtableListKey } from "@/lib/airtable-fetcher";
+import { useMemo } from "react";
+import useSWRInfinite from "swr/infinite";
 import { useDebouncedValue } from "./useDebouncedValue";
 
 export interface ListParams {
@@ -53,8 +53,12 @@ export function useAirtableList<T = any>(baseId: string, table: string, params: 
 
     const getKey = (pageIndex: number, previousPageData: any): AirtableListKey | null => {
         if (options.enabled === false) return null;
-        if (previousPageData && !previousPageData.offset) return null; // reached end
-        const offset = pageIndex === 0 ? undefined : previousPageData?.offset;
+
+      // Handle new data structure where offset is nested under 'data'
+      const pageData = previousPageData?.data || previousPageData;
+      if (previousPageData && !pageData?.offset) return null; // reached end
+
+      const offset = pageIndex === 0 ? undefined : pageData?.offset;
         return { kind: "list", baseId, table, params: queryParams, lang: language, offset, ttl: options.ttl ?? TTL.list };
     };
 
@@ -66,11 +70,19 @@ export function useAirtableList<T = any>(baseId: string, table: string, params: 
 
     // Memoize derived arrays/values so consumers don't get a new reference each render
     const records = useMemo(() => {
-        return (swr.data ?? []).flatMap((page: any) => page?.records ?? []);
+      return (swr.data ?? []).flatMap((page: any) => {
+        // Handle new data structure where records are nested under 'data'
+        const pageData = page?.data || page;
+        return pageData?.records ?? [];
+      });
     }, [swr.data]);
 
     const hasMore = useMemo(() => {
-        return !!(swr.data && swr.data[swr.data.length - 1]?.offset);
+      if (!swr.data || swr.data.length === 0) return false;
+      const lastPage = swr.data[swr.data.length - 1];
+      // Handle new data structure where offset is nested under 'data'
+      const pageData = lastPage?.data || lastPage;
+      return !!(pageData?.offset);
     }, [swr.data]);
 
     const loadMore = () => swr.setSize((size) => size + 1);

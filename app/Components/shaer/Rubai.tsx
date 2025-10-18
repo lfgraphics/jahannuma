@@ -5,9 +5,9 @@ import RubaiCard from "../../Components/RubaiCard";
 import ComponentsLoader from "../../Components/SkeletonLoader";
 // icons were handled inside child components; no direct icon usage here
 import type { AirtableRecord, Rubai as RubaiType } from "@/app/types";
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useLikeButton } from "@/hooks/useLikeButton";
+import { useRubaiData } from "@/hooks/useRubaiData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { buildShaerFilter } from "@/lib/airtable-utils";
 
@@ -24,11 +24,10 @@ const Rubai: React.FC<Props> = ({ takhallus }) => {
     null
   );
 
-  const { records, isLoading } = useAirtableList<AirtableRecord<any>>("rubai", {
+  const { records: dataItems, isLoading, optimisticUpdate } = useRubaiData({
     filterByFormula: buildShaerFilter(takhallus),
     pageSize: 30,
   });
-  const dataItems = records;
 
   const { requireAuth } = useAuthGuard();
   const share = useShareAction({
@@ -37,6 +36,11 @@ const Rubai: React.FC<Props> = ({ takhallus }) => {
     baseId: RUBAI_BASE,
     table: RUBAI_TABLE,
   });
+  // Handle like changes with optimistic updates
+  const handleLikeChange = (args: { id: string; liked: boolean; likes: number }) => {
+    optimisticUpdate.updateRecord(args.id, { likes: args.likes });
+  };
+
   const CardItem: React.FC<{
     rec: AirtableRecord<RubaiType>;
     index: number;
@@ -47,7 +51,7 @@ const Rubai: React.FC<Props> = ({ takhallus }) => {
       storageKey: "Rubai",
       recordId: rec.id,
       currentLikes: (rec as any).fields?.likes ?? 0,
-      swrKey: undefined,
+      onChange: handleLikeChange,
     });
     const onHeart = async (_e: React.MouseEvent<HTMLButtonElement>) => {
       if (!requireAuth("like")) return;

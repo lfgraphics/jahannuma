@@ -4,68 +4,25 @@ import React, { useEffect, useMemo, useState } from "react";
 import Card from "../Components/BookCard";
 import SkeletonLoader from "../Components/SkeletonLoader";
 // aos for cards animation
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
-import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { useEbooksData, type EBooksType } from "@/hooks/useEbooksData";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-interface Book {
-  filename: string;
-  height: number;
-  id: string;
-  size: number;
-  thumbnails: {
-    full: {
-      height: number;
-      url: string;
-      width: number;
-    };
-    large: {
-      height: number;
-      url: string;
-      width: number;
-    };
-    small: {
-      height: number;
-      url: string;
-      width: number;
-    };
-  };
-  type: string;
-  url: string;
-  width: number;
-}
-
-interface EBooksType {
-  fields: {
-    bookName: string;
-    enBookName: string;
-    hiBookName: string;
-    publishingDate: string;
-    writer: string;
-    enWriter: string;
-    hiWriter: string;
-    desc: string;
-    enDesc: string;
-    hiDesc: string;
-    book: Book[];
-    likes: number;
-  };
-  id: string;
-  createdTime: string;
-}
 interface Pagination {
   offset: string | null;
   pageSize: number;
 }
-const Page: React.FC<{}> = () => {
-  const [data, setData] = useState<EBooksType[]>([]);
-  const [loading, setLoading] = useState(true);
+
+interface PageProps {
+  initialData?: EBooksType[];
+}
+
+const Page: React.FC<PageProps> = ({ initialData = [] }) => {
+// Removed data and loading state - using memoized values directly
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [searchText, setSearchText] = useState("");
-  const [moreloading, setMoreLoading] = useState(true);
-  const [initialDataItems, setInitialdDataItems] = useState<EBooksType[]>([]);
-  const [noMoreData, setNoMoreData] = useState(false);
+  // Removed unused state variables - using SWR values directly
   const [pagination, setPagination] = useState<Pagination>({
     offset: null,
     pageSize: 30,
@@ -90,16 +47,24 @@ const Page: React.FC<{}> = () => {
     // Priority order: writer names first, then book names, then descriptions and dates
     return `OR( FIND('${escaped}', LOWER({writer})), FIND('${escaped}', LOWER({enWriter})), FIND('${escaped}', LOWER({hiWriter})), FIND('${escaped}', LOWER({bookName})), FIND('${escaped}', LOWER({enBookName})), FIND('${escaped}', LOWER({hiBookName})), FIND('${escaped}', LOWER({desc})), FIND('${escaped}', LOWER({enDesc})), FIND('${escaped}', LOWER({hiDesc})), FIND('${escaped}', LOWER({publishingDate})) )`;
   }, [searchText]);
-  const { records, isLoading, hasMore, loadMore } = useAirtableList<EBooksType>(
-    "ebooks",
+  const { records, isLoading, isValidating, hasMore, loadMore, optimisticUpdate, trackDownload } = useEbooksData(
     { pageSize: 30, filterByFormula: filterFormula },
-    { debounceMs: 300 }
+    {
+      debounceMs: 300,
+      initialData: initialData,
+      enabled: true
+    }
   );
+  // Differentiate between initial loading and loading more data
+  const isInitialLoading = isLoading && (!records || records.length === 0);
+  const isLoadingMore = isValidating && !isLoading && records && records.length > 0;
 
-  const { updateRecord: updateBooks } = useAirtableMutation("ebooks");
+  const { updateRecord: updateBooks } = useAirtableMutation("appXcBoNMGdIaSUyA", "E-Books");
 
   const formattedRecords: EBooksType[] = useMemo(() => {
-    const formatted = (records || []).map((record: any) => ({
+    // Use initial data if client-side records are not yet available
+    const dataToUse = records && records.length > 0 ? records : initialData;
+    const formatted = (dataToUse || []).map((record: any) => ({
       ...record,
       fields: {
         ...record.fields,
@@ -122,9 +87,8 @@ const Page: React.FC<{}> = () => {
         const aBookName = (a.fields.bookName || "").toLowerCase();
         const aEnBookName = (a.fields.enBookName || "").toLowerCase();
         const aHiBookName = (a.fields.hiBookName || "").toLowerCase();
-        const aOther = `${a.fields.desc || ""} ${a.fields.enDesc || ""} ${
-          a.fields.hiDesc || ""
-        } ${a.fields.publishingDate || ""}`.toLowerCase();
+        const aOther = `${a.fields.desc || ""} ${a.fields.enDesc || ""} ${a.fields.hiDesc || ""
+          } ${a.fields.publishingDate || ""}`.toLowerCase();
 
         const bWriter = (b.fields.writer || "").toLowerCase();
         const bEnWriter = (b.fields.enWriter || "").toLowerCase();
@@ -132,9 +96,8 @@ const Page: React.FC<{}> = () => {
         const bBookName = (b.fields.bookName || "").toLowerCase();
         const bEnBookName = (b.fields.enBookName || "").toLowerCase();
         const bHiBookName = (b.fields.hiBookName || "").toLowerCase();
-        const bOther = `${b.fields.desc || ""} ${b.fields.enDesc || ""} ${
-          b.fields.hiDesc || ""
-        } ${b.fields.publishingDate || ""}`.toLowerCase();
+        const bOther = `${b.fields.desc || ""} ${b.fields.enDesc || ""} ${b.fields.hiDesc || ""
+          } ${b.fields.publishingDate || ""}`.toLowerCase();
 
         // Priority scoring: writer=5, writer translations=4, book names=3, book name translations=2, other=1
         const getScore = (
@@ -183,14 +146,10 @@ const Page: React.FC<{}> = () => {
     }
 
     return formatted;
-  }, [records, searchText]);
+  }, [records, initialData, searchText]);
 
-  useEffect(() => {
-    setData(formattedRecords);
-    setLoading(isLoading);
-    setMoreLoading(false);
-    setNoMoreData(!hasMore);
-  }, [formattedRecords, isLoading, hasMore]);
+  // Remove the useEffect that was causing infinite re-renders
+  // Use the memoized values directly instead of copying to state
   // likes handled inside BookCard
 
   const searchQuery = () => {
@@ -226,7 +185,7 @@ const Page: React.FC<{}> = () => {
   };
   const resetSearch = () => {
     searchText && clearSearch();
-    setData(initialDataItems);
+    // Data will automatically update through formattedRecords memoization
     if (typeof window !== "undefined") {
       const section = document.getElementById("section");
       section?.scrollTo({
@@ -234,26 +193,25 @@ const Page: React.FC<{}> = () => {
         behavior: "smooth",
       } as ScrollToOptions);
     }
-    setInitialdDataItems([]);
+    // State cleanup no longer needed
   };
   const handleLoadMore = async () => {
     try {
-      setMoreLoading(true);
       await loadMore();
-    } finally {
-      setMoreLoading(false);
+    } catch (error) {
+      console.error('Error loading more:', error);
     }
   };
 
   return (
     <>
-      {loading && <SkeletonLoader />}
-      {initialDataItems.length > 0 && data.length == 0 && (
+      {isInitialLoading && <SkeletonLoader />}
+      {initialData.length > 0 && formattedRecords.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
           سرچ میں کچھ نہیں ملا
         </div>
       )}
-      {initialDataItems.length > 0 && (
+      {initialData.length > 0 && (
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
@@ -262,7 +220,7 @@ const Page: React.FC<{}> = () => {
           تلاش ریسیٹ کریں
         </button>
       )}
-      {!loading && (
+      {!isLoading && (
         <div>
           <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
             <div className="filter-btn basis-[75%] text-center flex">
@@ -319,7 +277,7 @@ const Page: React.FC<{}> = () => {
             dir="rtl"
             className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2 sticky m-3 md:mt-4`}
           >
-            {data.map((item, index) => (
+            {formattedRecords.map((item, index) => (
               <div className="relative" key={index} data-aos="fade-up">
                 <Card
                   data={item}
@@ -328,25 +286,36 @@ const Page: React.FC<{}> = () => {
                   table="E-Books"
                   storageKey="Books"
                   onLikeChange={({ id, liked, likes }) => {
-                    // placeholder for analytics
-                    // console.info("Book like changed", { id, liked, likes });
+                    // Update likes count optimistically
+                    optimisticUpdate.updateLikes(id, likes);
+
+                    // Analytics tracking
+                    console.info("Book like changed", { id, liked, likes });
+                  }}
+                  onDownload={(bookId: string, bookUrl: string) => {
+                    // Track download with error handling
+                    trackDownload.trackBookDownload(bookId, bookUrl);
+                  }}
+                  onDownloadError={(bookId: string, error: Error) => {
+                    // Handle download failures
+                    trackDownload.handleDownloadError(bookId, error);
                   }}
                 />
               </div>
             ))}
           </div>
-          {data.length > 0 && (
+          {formattedRecords.length > 0 && (
             <div className="flex justify-center text-lg m-5">
               <button
                 onClick={handleLoadMore}
-                disabled={noMoreData || moreloading}
+                disabled={!hasMore || isLoadingMore}
                 className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
               >
-                {moreloading
+                {isLoadingMore
                   ? "لوڈ ہو رہا ہے۔۔۔"
-                  : noMoreData
-                  ? "مزید کتابیں موجود نہیں ہیں"
-                  : "مزید کتابیں لوڈ کریں"}
+                  : !hasMore
+                    ? "مزید کتابیں موجود نہیں ہیں"
+                    : "مزید کتابیں لوڈ کریں"}
               </button>
             </div>
           )}

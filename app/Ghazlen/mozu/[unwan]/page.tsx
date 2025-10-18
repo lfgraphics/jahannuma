@@ -1,21 +1,20 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
-import { XCircle } from "lucide-react";
-import CommentSection from "../../../Components/CommentSection";
-import DataCard from "../../../Components/DataCard";
+import type { AirtableRecord, GhazlenRecord, LikedMap, MozuPageParams, SelectedCard } from "@/app/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useCommentSystem } from "@/hooks/useCommentSystem";
+import { useGhazlenData } from "@/hooks/useGhazlenData";
+import { COMMENTS_TABLE, GHAZLEN_COMMENTS_BASE } from "@/lib/airtable-constants";
+import { buildUnwanFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
+import { shareRecordWithCount } from "@/lib/social-utils";
+import { updatePagedListField } from "@/lib/swr-updater";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { toast } from "sonner";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
-import type { AirtableRecord, GhazlenRecord, LikedMap, MozuPageParams, SelectedCard } from "@/app/types";
-import { buildUnwanFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
-import { updatePagedListField } from "@/lib/swr-updater";
-import { useCommentSystem } from "@/hooks/useCommentSystem";
-import { GHAZLEN_COMMENTS_BASE, COMMENTS_TABLE } from "@/lib/airtable-constants";
-import useAuthGuard from "@/hooks/useAuthGuard";
-import { shareRecordWithCount } from "@/lib/social-utils";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { XCircle } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import CommentSection from "../../../Components/CommentSection";
+import DataCard from "../../../Components/DataCard";
 
 const GHAZLEN_BASE = "appvzkf6nX376pZy6";
 const GHAZLEN_TABLE = "Ghazlen";
@@ -36,7 +35,7 @@ export default function Page({ params }: { params: MozuPageParams }) {
   const encodedUnwan = params.unwan;
   const decodedUnwan = decodeURIComponent(encodedUnwan);
 
-  const { records, isLoading, swrKey: listSWRKey, mutate } = useAirtableList<AirtableRecord<any>>(GHAZLEN_BASE, GHAZLEN_TABLE, {
+  const { records, isLoading, cacheKey: listSWRKey, mutate } = useGhazlenData({
     filterByFormula: buildUnwanFilter(decodedUnwan),
     pageSize: 30,
   });

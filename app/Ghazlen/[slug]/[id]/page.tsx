@@ -2,9 +2,9 @@
 import ComponentsLoader from "@/app/Components/shaer/ComponentsLoader";
 import type { AirtableRecord, GhazlenRecord } from "@/app/types";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
-import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableRecord } from "@/hooks/useAirtableRecord";
 import useAuthGuard from "@/hooks/useAuthGuard";
+import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { buildIdFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -27,7 +27,7 @@ const Page: React.FC = () => {
     AOS.init({ offset: 50, delay: 0, duration: 300 });
   }, []);
 
-  const { records, isLoading: listLoading, error: listError } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
+  const { records, isLoading: listLoading, error: listError } = useGhazlenData({
     filterByFormula: id ? buildIdFilter(id) : undefined,
     pageSize: 1,
   });
@@ -250,7 +250,7 @@ const Page: React.FC = () => {
         ) : (
           <div id="main" ref={mainRef} className="p-4 mt-3 relative bg-background text-foreground">
             <div className={`ghazalHead text-2xl text-foreground text-center leading-[3rem]`}>
-              {(Array.isArray(data?.ghazalHead) ? data?.ghazalHead : String(data?.ghazalHead ?? "").split("\n")).map((line, index) => (
+                {(Array.isArray(data?.ghazalHead) ? data?.ghazalHead : String(data?.ghazalHead ?? "").split("\n"))?.map((line, index) => (
                 <h2 key={index} className="text-foreground">
                   {line}
                 </h2>

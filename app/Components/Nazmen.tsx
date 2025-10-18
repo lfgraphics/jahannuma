@@ -1,7 +1,7 @@
 "use client";
 import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, NazmenRecord } from "@/app/types";
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { useNazmenData } from "@/hooks/useNazmenData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { formatNazmenRecord } from "@/lib/airtable-utils";
 import { useMemo } from "react";
@@ -10,8 +10,7 @@ const BASE_ID = "app5Y2OsuDgpXeQdz";
 const TABLE = "nazmen";
 
 export default function Nazmen() {
-  const { records, isLoading } = useAirtableList<AirtableRecord<NazmenRecord>>(
-    "nazmen",
+  const { records, isLoading } = useNazmenData(
     { pageSize: 30 }
   );
   const items = useMemo(

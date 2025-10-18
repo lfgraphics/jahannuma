@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
-import Link from "next/link";
 import { createSlug } from "@/lib/airtable-utils";
+import Link from "next/link";
+import React from "react";
 
 interface BookAttachmentThumb {
   url?: string;
@@ -33,6 +33,8 @@ interface CardProps {
   table?: string;
   storageKey?: string;
   onLikeChange?: (args: { id: string; liked: boolean; likes: number }) => void;
+  onDownload?: (bookId: string, bookUrl: string) => void;
+  onDownloadError?: (bookId: string, error: Error) => void;
   swrKey?: any;
 }
 
@@ -43,10 +45,10 @@ const formatDate = (dateString?: string) => {
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 };
 
-import { Heart } from "lucide-react";
-import { useLikeButton } from "@/hooks/useLikeButton";
-import useAuthGuard from "@/hooks/useAuthGuard";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useLikeButton } from "@/hooks/useLikeButton";
+import { Heart } from "lucide-react";
 
 const Card: React.FC<CardProps> = ({ data, showLikeButton = false, baseId = "appXcBoNMGdIaSUyA", table = "E-Books", storageKey = "Books", onLikeChange, swrKey }) => {
   const { fields } = data;
