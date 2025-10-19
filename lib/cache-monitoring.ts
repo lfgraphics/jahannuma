@@ -40,7 +40,6 @@ export function setCacheDebugLogging(enabled: boolean) {
 
 export function logCacheEvent(kind: "session" | "cache", hit: boolean, key?: string) {
     if (!debug) return;
-    const label = kind === "session" ? "SESSION" : "CACHE";
-    // eslint-disable-next-line no-console
+  const label = kind === "session" ? "SESSION" : "CACHE";
     console.info(`[${label}] ${hit ? "HIT" : "MISS"}${key ? ` ${key}` : ""}`);
 }

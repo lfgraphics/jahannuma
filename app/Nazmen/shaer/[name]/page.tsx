@@ -1,12 +1,10 @@
 "use client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useCommentSystem } from "@/hooks/useCommentSystem";
 import { COMMENTS_TABLE, NAZMEN_COMMENTS_BASE } from "@/lib/airtable-constants";
 import { shareRecordWithCount } from "@/lib/social-utils";
-import { updatePagedListField } from "@/lib/swr-updater";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import React, { useEffect, useMemo, useState } from "react";
@@ -39,10 +37,36 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
 
   useEffect(() => { AOS.init({ offset: 50, delay: 0, duration: 300 }); }, []);
 
-  const { records, isLoading, swrKey, mutate } = useAirtableList<AirtableRecord<any>>(BASE_ID, TABLE, {
-    filterByFormula: buildShaerFilter(displayName),
-    pageSize: 30,
-  });
+  const [records, setRecords] = useState<AirtableRecord<any>[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams({
+          filterByFormula: buildShaerFilter(displayName),
+          pageSize: "30",
+        });
+
+        const response = await fetch(`/api/airtable/nazmen?${params}`);
+        if (!response.ok) throw new Error("Failed to fetch");
+
+        const result = await response.json();
+        setRecords(result.data?.records || []);
+      } catch (error) {
+        console.error("Error fetching nazmen data:", error);
+        setRecords([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (displayName) {
+      fetchData();
+    }
+  }, [displayName]);
+
   const dataItems = useMemo(() => (records || []).map(formatNazmenRecord) as AirtableRecord<NazmenRecord>[], [records]);
 
   const { updateRecord } = useAirtableMutation(BASE_ID, TABLE);
@@ -85,20 +109,34 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
     try {
       await submitComment({ recordId: dataId, content: newComment });
       setNewComment("");
-      // Persist comments count with optimistic update and rollback on failure
+      // Update comments count optimistically
+      const currentRecord = dataItems.find(d => d.id === dataId);
+      const newCommentCount = (currentRecord?.fields.comments ?? 0) + 1;
+
+      // Update local state optimistically
+      setRecords(prev =>
+        prev.map(r =>
+          r.id === dataId
+            ? { ...r, fields: { ...r.fields, comments: newCommentCount } }
+            : r
+        )
+      );
+
       try {
         await updateRecord([
-          { id: dataId, fields: { comments: ((dataItems.find(d => d.id === dataId)?.fields.comments ?? 0) + 1) as number } }
-        ], {
-          optimistic: true,
-          affectedKeys: swrKey ? [swrKey] : undefined,
-          updater: (current: any) => updatePagedListField(current, dataId, "comments", 1),
-        });
+          { id: dataId, fields: { comments: newCommentCount } }
+        ]);
       } catch (err) {
         // Rollback the optimistic increment
-        try { await mutate((current: any) => updatePagedListField(current, dataId, "comments", -1), { revalidate: false }); } catch {}
+        setRecords(prev =>
+          prev.map(r =>
+            r.id === dataId
+              ? { ...r, fields: { ...r.fields, comments: Math.max(0, newCommentCount - 1) } }
+              : r
+          )
+        );
       }
-    } catch {}
+    } catch { }
   };
   const openComments = (dataId: string) => { toggleanaween(null); setSelectedCommentId(dataId); setRecordId(dataId); };
   const closeComments = () => { setSelectedCommentId(null); setRecordId(null); };
@@ -121,7 +159,7 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
                   baseId={BASE_ID}
                   table={TABLE}
                   storageKey="Nazmen"
-                  swrKey={swrKey as any}
+
                   handleCardClick={handleCardClick}
                   toggleanaween={toggleanaween}
                   openanaween={openanaween}

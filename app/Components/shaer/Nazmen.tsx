@@ -2,130 +2,208 @@
 import CommentSection from "@/app/Components/CommentSection";
 import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, NazmenRecord } from "@/app/types";
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
+import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
-import { useCommentSystem } from "@/hooks/useCommentSystem";
-import { useShareAction } from "@/hooks/useShareAction";
-import { COMMENTS_TABLE, NAZMEN_COMMENTS_BASE } from "@/lib/airtable-constants";
-import { buildShaerFilter, formatNazmenRecord } from "@/lib/airtable-utils";
-import React, { useEffect, useMemo, useState } from "react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useNazmenData } from "@/hooks/useNazmenData";
+import { buildShaerFilter } from "@/lib/airtable-utils";
+import { shareRecordWithCount } from "@/lib/social-utils";
+import { escapeAirtableFormulaValue } from "@/lib/utils";
+import React, { useMemo, useState } from "react";
+import { toast } from "sonner";
 import ComponentsLoader from "./ComponentsLoader";
 
 interface Props {
   takhallus: string;
 }
 
-const BASE_ID = "app5Y2OsuDgpXeQdz";
-const TABLE = "nazmen";
-
 const Nazmen: React.FC<Props> = ({ takhallus }) => {
-  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const debouncedSearchText = useDebouncedValue(searchText, 300);
+  const { language } = useLanguage();
 
-  const { records, isLoading } = useAirtableList<AirtableRecord<any>>(
-    "nazmen",
+  const filterFormula = useMemo(() => {
+    const shaerFilter = buildShaerFilter(takhallus);
+    const searchQuery = debouncedSearchText.trim().toLowerCase();
+
+    if (!searchQuery) {
+      return shaerFilter;
+    }
+
+    const escapedQ = escapeAirtableFormulaValue(searchQuery);
+    const searchFilter = `OR( FIND('${escapedQ}', LOWER({shaer})), FIND('${escapedQ}', LOWER({displayLine})), FIND('${escapedQ}', LOWER({nazm})), FIND('${escapedQ}', LOWER({unwan})) )`;
+
+    return `AND(${shaerFilter}, ${searchFilter})`;
+  }, [takhallus, debouncedSearchText]);
+
+  const {
+    records,
+    isLoading,
+    hasMore,
+    loadMore,
+    isLoadingMore,
+    optimisticUpdate
+  } = useNazmenData(
     {
-      filterByFormula: buildShaerFilter(takhallus),
       pageSize: 30,
+      filterByFormula: filterFormula,
+      search: debouncedSearchText
+    },
+    {
+      debounceMs: 300
     }
   );
-  // Map records similar to legacy implementation so DataCard (page="nazm") shows the right lines
-  const items = useMemo(() => {
-    return records.map((rec) => {
-      const formatted = formatNazmenRecord(rec) as AirtableRecord<NazmenRecord>;
-      const f: any = rec.fields || {};
-      const displayLines = String(f.displayLine || "")
-        .replace(/\r\n?/g, "\n")
-        .split("\n")
-        .filter(Boolean);
-      const nazmLines = String(f.nazm || "")
-        .replace(/\r\n?/g, "\n")
-        .split("\n")
-        .filter(Boolean);
-      const unwanLines = String(f.unwan || "")
-        .replace(/\r\n?/g, "\n")
-        .split("\n")
-        .filter(Boolean);
-      return {
-        ...formatted,
-        fields: {
-          ...formatted.fields,
-          ghazalHead: displayLines, // DataCard expects ghazalHeadLines for nazm view
-          ghazal: nazmLines, // keep full nazm lines
-          unwan: unwanLines,
-        } as any,
-      } as AirtableRecord<NazmenRecord>;
-    });
-  }, [records]);
-  useEffect(() => {
-    setLoading(isLoading);
-  }, [isLoading]);
 
-  const share = useShareAction({ section: "Nazmen", title: "" });
+  const { updateRecord: updateNazmen } = useAirtableMutation("nazmen");
+
+  const formattedRecords = useMemo(() => {
+    const formatted = (records || []).map((record: any) => ({
+      ...record,
+      fields: {
+        ...record.fields,
+        ghazal: String(record.fields?.nazm || "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter(Boolean),
+        ghazalHead: String(record.fields?.displayLine || "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter(Boolean),
+        unwan: String(record.fields?.unwan || "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter(Boolean),
+      },
+    }));
+
+    if (debouncedSearchText.trim()) {
+      const query = debouncedSearchText.trim().toLowerCase();
+      return formatted.sort((a: any, b: any) => {
+        const aShaer = (a.fields.shaer || "").toLowerCase();
+        const aDisplayLine = (
+          Array.isArray(a.fields.ghazalHead) ? a.fields.ghazalHead.join(" ") : String(a.fields.ghazalHead || "")
+        ).toLowerCase();
+        const aNazm = (Array.isArray(a.fields.ghazal) ? a.fields.ghazal.join(" ") : String(a.fields.ghazal || "")).toLowerCase();
+        const aUnwan = (Array.isArray(a.fields.unwan) ? a.fields.unwan.join(" ") : String(a.fields.unwan || "")).toLowerCase();
+
+        const bShaer = (b.fields.shaer || "").toLowerCase();
+        const bDisplayLine = (
+          Array.isArray(b.fields.ghazalHead) ? b.fields.ghazalHead.join(" ") : String(b.fields.ghazalHead || "")
+        ).toLowerCase();
+        const bNazm = (Array.isArray(b.fields.ghazal) ? b.fields.ghazal.join(" ") : String(b.fields.ghazal || "")).toLowerCase();
+        const bUnwan = (Array.isArray(b.fields.unwan) ? b.fields.unwan.join(" ") : String(b.fields.unwan || "")).toLowerCase();
+
+        const getScore = (
+          shaer: string,
+          displayLine: string,
+          nazm: string,
+          unwan: string
+        ) => {
+          if (shaer.includes(query)) return 4;
+          if (displayLine.includes(query)) return 3;
+          if (nazm.includes(query)) return 2;
+          if (unwan.includes(query)) return 1;
+          return 0;
+        };
+
+        const scoreA = getScore(aShaer, aDisplayLine, aNazm, aUnwan);
+        const scoreB = getScore(bShaer, bDisplayLine, bNazm, bUnwan);
+
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return aShaer.localeCompare(bShaer);
+      });
+    }
+
+    return formatted;
+  }, [records, debouncedSearchText]);
 
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   const toggleanaween = (cardId: string | null) =>
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
-  const handleCardClick = (_rec: AirtableRecord<NazmenRecord>) => {};
+  const handleCardClick = (_rec: AirtableRecord<NazmenRecord>) => { };
 
-  // Comments wiring (parity with legacy Component.tsx)
   const { requireAuth } = useAuthGuard();
-  const { updateRecord: updateNazmen } = useAirtableMutation(BASE_ID, TABLE);
-  const [selectedCommentId, setSelectedCommentId] = useState<string | null>(
-    null
-  );
+  const [selectedCommentId, setSelectedCommentId] = useState<string | null>(null);
   const [newComment, setNewComment] = useState("");
   const {
     comments,
     isLoading: commentLoading,
     submitComment,
     setRecordId,
-  } = useCommentSystem(NAZMEN_COMMENTS_BASE, COMMENTS_TABLE, null);
-  const [commentOverrides, setCommentOverrides] = useState<
-    Record<string, number>
-  >({});
+  } = useCommentSystem({ contentType: "nazmen" });
 
-  const openComments = (id: string) => {
-    setSelectedCommentId(id);
-    setRecordId(id);
+  const handleLoadMore = async () => {
+    try {
+      await loadMore();
+    } catch {
+      toast.error("مزید ڈیٹا لوڈ کرنے میں خرابی");
+    }
   };
+
+  const handleShareClick = async (shaerData: any): Promise<void> => {
+    toggleanaween(null);
+    await shareRecordWithCount(
+      {
+        section: "Nazmen",
+        id: shaerData.id,
+        title: shaerData.fields.shaer,
+        textLines: shaerData.fields.ghazalHead || [],
+        fallbackSlugText:
+          (shaerData.fields.ghazalHead?.[0]) ||
+          (shaerData.fields.unwan?.[0]) ||
+          "",
+        language,
+      },
+      {
+        onShared: async () => {
+          try {
+            const updatedShares = (shaerData.fields.shares ?? 0) + 1;
+            optimisticUpdate.updateRecord(shaerData.id, { shares: updatedShares });
+            await updateNazmen(shaerData.id, { shares: updatedShares });
+          } catch {
+            optimisticUpdate.revert();
+            toast.error("شیئر کرنے میں خرابی");
+          }
+        },
+      }
+    );
+  };
+
+  const openComments = (dataId: string) => {
+    toggleanaween(null);
+    setSelectedCommentId(dataId);
+    setRecordId(dataId);
+  };
+
   const closeComments = () => {
     setSelectedCommentId(null);
     setRecordId(null);
   };
+
   const handleCommentSubmit = async (dataId: string) => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
     try {
-      await submitComment({ recordId: dataId, content: newComment });
+      setRecordId(dataId);
+      await submitComment(newComment);
       setNewComment("");
-      // Optimistically bump local override and persist to Airtable
-      const current =
-        commentOverrides[dataId] ??
-        items.find((x) => x.id === dataId)?.fields?.comments ??
-        0;
-      const next = (current || 0) + 1;
-      setCommentOverrides((prev) => ({ ...prev, [dataId]: next }));
+
+      const currentRecord = formattedRecords.find((i: any) => i.id === dataId);
+      const nextCommentCount = (currentRecord?.fields.comments || 0) + 1;
+      optimisticUpdate.updateRecord(dataId, { comments: nextCommentCount });
+
       try {
-        await updateNazmen([{ id: dataId, fields: { comments: next } }], {
-          optimistic: false,
-        });
-      } catch {}
+        await updateNazmen(dataId, { comments: nextCommentCount });
+      } catch {
+        optimisticUpdate.revert();
+        toast.error("کمنٹ اپ ڈیٹ کرنے میں خرابی");
+      }
     } catch {}
   };
-
-  const itemsWithOverrides = useMemo(
-    () =>
-      items.map((rec) =>
-        commentOverrides[rec.id]
-          ? ({
-              ...rec,
-              fields: { ...rec.fields, comments: commentOverrides[rec.id] },
-            } as typeof rec)
-          : rec
-      ),
-    [items, commentOverrides]
-  );
 
   return (
     <>
@@ -133,42 +211,51 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
         dir="rtl"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
       >
-        {loading && <ComponentsLoader />}
-        {!loading && itemsWithOverrides.length === 0 && (
+        {isLoading && <ComponentsLoader />}
+        {!isLoading && formattedRecords.length === 0 && (
           <div className="h-[30vh] col-span-full grid place-items-center text-muted-foreground">
             کوئی مواد نہیں ملا
           </div>
         )}
-        {!loading &&
-          itemsWithOverrides.map((rec, index) => (
+        {!isLoading &&
+          formattedRecords.map((rec: any, index: number) => (
             <DataCard
               key={rec.id}
               page="nazm"
               shaerData={rec as any}
               index={index}
               download={false}
+              baseId="app5Y2OsuDgpXeQdz"
+              table="nazmen"
               storageKey="Nazmen"
               toggleanaween={toggleanaween}
               openanaween={openanaween}
               handleCardClick={handleCardClick as any}
-              handleShareClick={(r: any) => {
-                const rr = r as AirtableRecord<NazmenRecord>;
-                const lines = Array.isArray(rr.fields.ghazalLines)
-                  ? rr.fields.ghazalLines
-                  : String(rr.fields.nazm || "").split("\n");
-                return share.handleShare({
-                  recordId: rr.id,
-                  title: rr.fields.shaer,
-                  textLines: lines,
-                  slugId: rr.fields.slugId,
-                  currentShares: rr.fields.shares ?? 0,
-                });
-              }}
+              handleShareClick={handleShareClick}
               openComments={openComments}
+              onLikeChange={({ id, likes }) => {
+                optimisticUpdate.updateRecord(id, { likes });
+              }}
             />
           ))}
-        {/* Share no longer requires login */}
+
+        {formattedRecords.length > 0 && (
+          <div className="col-span-full flex justify-center text-lg m-5">
+            <button
+              onClick={handleLoadMore}
+              disabled={!hasMore || isLoadingMore}
+              className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
+            >
+              {isLoadingMore
+                ? "لوڈ ہو رہا ہے۔۔۔"
+                : !hasMore
+                  ? "مزید نظمیں نہیں ہیں"
+                  : "اور نظمیں لوڈ کریں"}
+            </button>
+          </div>
+        )}
       </div>
+
       {selectedCommentId && (
         <CommentSection
           dataId={selectedCommentId}

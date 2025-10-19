@@ -1,11 +1,36 @@
 "use client";
-import "../../public/service-worker";
 import React, { useEffect, useState } from "react";
+import "../../public/service-worker";
 
 const InstallPWAButton: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState<boolean>(false);
 
   useEffect(() => {
+    // Detect if app is running in standalone mode (PWA)
+    const checkStandaloneMode = () => {
+      // Check for display-mode: standalone
+      const isStandaloneDisplay = window.matchMedia('(display-mode: standalone)').matches;
+
+      // Check for iOS standalone mode
+      const isIOSStandalone = (window.navigator as any).standalone === true;
+
+      // Check for Android standalone mode (fallback)
+      const isAndroidStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+      return isStandaloneDisplay || isIOSStandalone || isAndroidStandalone;
+    };
+
+    setIsStandalone(checkStandaloneMode());
+
+    // Listen for display mode changes
+    const standaloneMediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayModeChange = (e: MediaQueryListEvent) => {
+      setIsStandalone(e.matches || (window.navigator as any).standalone === true);
+    };
+
+    standaloneMediaQuery.addEventListener('change', handleDisplayModeChange);
+
     const handleBeforeInstallPrompt = (e: any) => {
       console.log("fired inside useEffect");
       e.preventDefault();
@@ -19,8 +44,9 @@ const InstallPWAButton: React.FC = () => {
         "beforeinstallprompt",
         handleBeforeInstallPrompt
       );
+      standaloneMediaQuery.removeEventListener('change', handleDisplayModeChange);
     };
-  }, [deferredPrompt]);
+  }, []);
 
   const handleInstallPrompt = () => {
     console.log("handleInstallPrompt is fired");
@@ -40,10 +66,15 @@ const InstallPWAButton: React.FC = () => {
     }
   };
 
+  // Don't render the button if app is in standalone mode (PWA)
+  if (isStandalone) {
+    return null;
+  }
+
   return (
     <button
       onClick={handleInstallPrompt}
-      className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem] standalone:hidden"
+      className="bg-[#984A02] text-white hover:text-[#984A02] hover:bg-white transition-all 500ms ease-in-out p-2 rounded-sm mr-3 w-32 text-[1rem]"
     >
       ایپ انسٹال کریں
     </button>

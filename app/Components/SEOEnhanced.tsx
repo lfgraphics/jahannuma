@@ -224,8 +224,7 @@ export function CriticalResourceHints({ contentType }: { contentType?: string })
 
   return (
     <>
-      {/* Preload critical CSS */}
-      <link rel="preload" href="/globals.css" as="style" />
+      {/* Note: globals.css is handled by Next.js CSS processing, no need to preload */}
 
       {/* Preload hero image if content type is specified */}
       {contentType && contentImages[contentType] && (

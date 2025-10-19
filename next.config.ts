@@ -50,12 +50,30 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/(.*)",
+        // CSS files should have proper MIME type
+        source: "/:path*.css",
         headers: [
           {
-            key: "X-Frame-Options",
-            value: "DENY",
+            key: "Content-Type",
+            value: "text/css",
           },
+        ],
+      },
+      {
+        // JavaScript files should have proper MIME type
+        source: "/:path*.js",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/javascript",
+          },
+        ],
+      },
+      {
+        // All other routes get security headers
+        source: "/(.*)",
+        headers: [
+
           {
             key: "X-Content-Type-Options",
             value: "nosniff",

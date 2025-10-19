@@ -1,13 +1,13 @@
 "use client";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useEbooksData, type EBooksType } from "@/hooks/useEbooksData";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import { House, Search, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import Card from "../Components/BookCard";
 import SkeletonLoader from "../Components/SkeletonLoader";
-// aos for cards animation
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
-import { useEbooksData, type EBooksType } from "@/hooks/useEbooksData";
-import AOS from "aos";
-import "aos/dist/aos.css";
 
 interface Pagination {
   offset: string | null;
@@ -19,17 +19,15 @@ interface PageProps {
 }
 
 const Page: React.FC<PageProps> = ({ initialData = [] }) => {
-// Removed data and loading state - using memoized values directly
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [searchText, setSearchText] = useState("");
-  // Removed unused state variables - using SWR values directly
+  const debouncedSearchText = useDebouncedValue(searchText, 300);
   const [pagination, setPagination] = useState<Pagination>({
     offset: null,
     pageSize: 30,
   });
   const [voffset, setOffset] = useState<string | null>("");
   const [dataOffset, setDataOffset] = useState<string | null>(null);
-  // toast via sonner
 
   useEffect(() => {
     AOS.init({
@@ -40,13 +38,13 @@ const Page: React.FC<PageProps> = ({ initialData = [] }) => {
   }, []);
   // Build filter formula - prioritize writer (author name) and book names
   const filterFormula = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
+    const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     // Escape single quotes to prevent formula injection
     const escaped = q.replace(/'/g, "\\'");
     // Priority order: writer names first, then book names, then descriptions and dates
     return `OR( FIND('${escaped}', LOWER({writer})), FIND('${escaped}', LOWER({enWriter})), FIND('${escaped}', LOWER({hiWriter})), FIND('${escaped}', LOWER({bookName})), FIND('${escaped}', LOWER({enBookName})), FIND('${escaped}', LOWER({hiBookName})), FIND('${escaped}', LOWER({desc})), FIND('${escaped}', LOWER({enDesc})), FIND('${escaped}', LOWER({hiDesc})), FIND('${escaped}', LOWER({publishingDate})) )`;
-  }, [searchText]);
+  }, [debouncedSearchText]);
   const { records, isLoading, isValidating, hasMore, loadMore, optimisticUpdate, trackDownload } = useEbooksData(
     { pageSize: 30, filterByFormula: filterFormula },
     {
@@ -78,8 +76,8 @@ const Page: React.FC<PageProps> = ({ initialData = [] }) => {
     }));
 
     // Sort by search relevance when there's a search query
-    if (searchText.trim()) {
-      const query = searchText.trim().toLowerCase();
+    if (debouncedSearchText.trim()) {
+      const query = debouncedSearchText.trim().toLowerCase();
       return formatted.sort((a, b) => {
         const aWriter = (a.fields.writer || "").toLowerCase();
         const aEnWriter = (a.fields.enWriter || "").toLowerCase();
@@ -146,7 +144,7 @@ const Page: React.FC<PageProps> = ({ initialData = [] }) => {
     }
 
     return formatted;
-  }, [records, initialData, searchText]);
+  }, [records, initialData, debouncedSearchText]);
 
   // Remove the useEffect that was causing infinite re-renders
   // Use the memoized values directly instead of copying to state
@@ -220,58 +218,58 @@ const Page: React.FC<PageProps> = ({ initialData = [] }) => {
           تلاش ریسیٹ کریں
         </button>
       )}
-      {!isLoading && (
-        <div>
-          <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
-            <div className="filter-btn basis-[75%] text-center flex">
-              <div
-                dir="rtl"
-                className="flex justify-center items-center basis-[100%] h-auto pt-1"
-              >
-                <House
-                  color="#984A02"
-                  className="ml-3 cursor-pointer"
-                  size={30}
-                  onClick={() => {
-                    window.location.href = "/";
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="لکھ کر تلاش کریں"
-                  className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
-                  id="searchBox"
-                  onKeyUp={(e) => {
-                    handleSearchKeyUp(e);
-                    if (e.key === "Enter") {
-                      if (document.activeElement === e.target) {
-                        e.preventDefault();
-                        searchQuery();
-                      }
-                    }
-                  }}
-                />
-                <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
-                  <X
-                    color="#984A02"
-                    size={24}
-                    onClick={clearSearch}
-                    id="searchClear"
-                    className="hidden text-[#984A02] cursor-pointer"
-                  />
-                </div>
-                <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
-                  <Search
-                    color="#984A02"
-                    size={24}
-                    onClick={searchQuery}
-                    id="searchIcon"
-                    className="hidden text-[#984A02] text-xl cursor-pointer"
-                  />
-                </div>
-              </div>
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
+        <div className="filter-btn basis-[75%] text-center flex">
+          <div
+            dir="rtl"
+            className="flex justify-center items-center basis-[100%] h-auto pt-1"
+          >
+            <House
+              color="#984A02"
+              className="ml-3 cursor-pointer"
+              size={30}
+              onClick={() => {
+                window.location.href = "/";
+              }}
+            />
+            <input
+              type="text"
+              placeholder="لکھ کر تلاش کریں"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
+              id="searchBox"
+              onKeyUp={(e) => {
+                handleSearchKeyUp(e);
+                if (e.key === "Enter") {
+                  if (document.activeElement === e.target) {
+                    e.preventDefault();
+                    searchQuery();
+                  }
+                }
+              }}
+            />
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+              <X
+                color="#984A02"
+                size={24}
+                onClick={clearSearch}
+                id="searchClear"
+                className="hidden text-[#984A02] cursor-pointer"
+              />
+            </div>
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+              <Search
+                color="#984A02"
+                size={24}
+                onClick={searchQuery}
+                id="searchIcon"
+                className="hidden text-[#984A02] text-xl cursor-pointer"
+              />
             </div>
           </div>
+        </div>
+      </div>
+      {!isLoading && (
+        <div>
           <div
             id="section"
             dir="rtl"

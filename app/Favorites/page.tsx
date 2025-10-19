@@ -1,9 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAirtableList } from "@/hooks/useAirtableList";
 import { useAirtableMutation } from "@/hooks/useAirtableMutation";
-import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { formatAshaarRecord, formatGhazlenRecord } from "@/lib/airtable-utils";
 import { shareRecordWithCount } from "@/lib/social-utils";
@@ -15,10 +13,8 @@ import RubaiCard from "../Components/RubaiCard";
 import ShaerCard from "../Components/shaer/Profilecard";
 import type {
   AirtableRecord,
-  AshaarRecord,
   GhazlenRecord,
-  NazmenRecord,
-  Shaer,
+  Shaer
 } from "../types";
 import "./tabs.css";
 
@@ -47,6 +43,31 @@ export default function FavoritesPage() {
   const { language } = useLanguage();
   const { user, isLoaded } = useUser();
   const [likes, setLikes] = React.useState<any>({});
+
+  // State for API data
+  const [ashaarRecords, setAshaarRecords] = useState<any[]>([]);
+  const [ghazlenRecords, setGhazlenRecords] = useState<any[]>([]);
+  const [nazmenRecords, setNazmenRecords] = useState<any[]>([]);
+  const [bookRecords, setBookRecords] = useState<any[]>([]);
+  const [shaerRecords, setShaerRecords] = useState<any[]>([]);
+  const [rubaiRecords, setRubaiRecords] = useState<any[]>([]);
+
+  // Loading states
+  const [ashaarLoading, setAshaarLoading] = useState(false);
+  const [ghazlenLoading, setGhazlenLoading] = useState(false);
+  const [nazmenLoading, setNazmenLoading] = useState(false);
+  const [booksLoading, setBooksLoading] = useState(false);
+  const [shaerLoading, setShaerLoading] = useState(false);
+  const [rubaiLoading, setRubaiLoading] = useState(false);
+
+  // Error states
+  const [ashaarError, setAshaarError] = useState<string | null>(null);
+  const [ghazlenError, setGhazlenError] = useState<string | null>(null);
+  const [nazmenError, setNazmenError] = useState<string | null>(null);
+  const [booksError, setBooksError] = useState<string | null>(null);
+  const [shaerError, setShaerError] = useState<string | null>(null);
+  const [rubaiError, setRubaiError] = useState<string | null>(null);
+
   // Rely on Clerk user.publicMetadata for likes (no manual refresh button or API fetch here)
   useEffect(() => {
     if (!isLoaded || !user?.id) return;
@@ -102,109 +123,165 @@ export default function FavoritesPage() {
     "Ashaar"
   );
 
-  const {
-    records: ashaarRecords,
-    isLoading: ashaarLoading,
-    error: ashaarError,
-    swrKey: ashaarSWR,
-    mutate: mutateAshaar,
-  } = useAirtableList<AirtableRecord<AshaarRecord>>(
-    ASHAAR_BASE,
-    ASHAAR_TABLE,
-    {
-      pageSize: Math.min(Math.max(ashaarIds.length, 1), 100),
-      filterByFormula: ashaarFilter,
-    },
-    { enabled: ashaarIds.length > 0 }
-  );
+  // Fetch functions for each category
+  const fetchAshaar = async () => {
+    if (ashaarIds.length === 0) return;
+    try {
+      setAshaarLoading(true);
+      setAshaarError(null);
+      const params = new URLSearchParams({
+        pageSize: String(Math.min(Math.max(ashaarIds.length, 1), 100)),
+        filterByFormula: ashaarFilter!,
+      });
+      const response = await fetch(`/api/airtable/ashaar?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch ashaar");
+      const result = await response.json();
+      setAshaarRecords(result.data?.records || []);
+    } catch (error) {
+      setAshaarError("Failed to load ashaar");
+      setAshaarRecords([]);
+    } finally {
+      setAshaarLoading(false);
+    }
+  };
+
+  const fetchGhazlen = async () => {
+    if (ghazlenIds.length === 0) return;
+    try {
+      setGhazlenLoading(true);
+      setGhazlenError(null);
+      const params = new URLSearchParams({
+        pageSize: String(Math.min(Math.max(ghazlenIds.length, 1), 100)),
+        filterByFormula: ghazlenFilter!,
+      });
+      const response = await fetch(`/api/airtable/ghazlen?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch ghazlen");
+      const result = await response.json();
+      setGhazlenRecords(result.data?.records || []);
+    } catch (error) {
+      setGhazlenError("Failed to load ghazlen");
+      setGhazlenRecords([]);
+    } finally {
+      setGhazlenLoading(false);
+    }
+  };
+
+  const fetchNazmen = async () => {
+    if (nazmenIds.length === 0) return;
+    try {
+      setNazmenLoading(true);
+      setNazmenError(null);
+      const params = new URLSearchParams({
+        pageSize: String(Math.min(Math.max(nazmenIds.length, 1), 100)),
+        filterByFormula: nazmenFilter!,
+      });
+      const response = await fetch(`/api/airtable/nazmen?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch nazmen");
+      const result = await response.json();
+      setNazmenRecords(result.data?.records || []);
+    } catch (error) {
+      setNazmenError("Failed to load nazmen");
+      setNazmenRecords([]);
+    } finally {
+      setNazmenLoading(false);
+    }
+  };
+
+  const fetchBooks = async () => {
+    if (bookIds.length === 0) return;
+    try {
+      setBooksLoading(true);
+      setBooksError(null);
+      const params = new URLSearchParams({
+        pageSize: String(Math.min(Math.max(bookIds.length, 1), 100)),
+        filterByFormula: booksFilter!,
+      });
+      const response = await fetch(`/api/airtable/ebooks?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch books");
+      const result = await response.json();
+      setBookRecords(result.data?.records || []);
+    } catch (error) {
+      setBooksError("Failed to load books");
+      setBookRecords([]);
+    } finally {
+      setBooksLoading(false);
+    }
+  };
+
+  const fetchShaer = async () => {
+    if (shaerIds.length === 0) return;
+    try {
+      setShaerLoading(true);
+      setShaerError(null);
+      const params = new URLSearchParams({
+        pageSize: String(Math.min(Math.max(shaerIds.length, 1), 100)),
+        filterByFormula: shaerFilter!,
+      });
+      const response = await fetch(`/api/airtable/shaer?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch shaer");
+      const result = await response.json();
+      setShaerRecords(result.data?.records || []);
+    } catch (error) {
+      setShaerError("Failed to load shaer");
+      setShaerRecords([]);
+    } finally {
+      setShaerLoading(false);
+    }
+  };
+
+  const fetchRubai = async () => {
+    if (rubaiIds.length === 0) return;
+    try {
+      setRubaiLoading(true);
+      setRubaiError(null);
+      const params = new URLSearchParams({
+        pageSize: String(Math.min(Math.max(rubaiIds.length, 1), 100)),
+        filterByFormula: rubaiFilter!,
+      });
+      const response = await fetch(`/api/airtable/rubai?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch rubai");
+      const result = await response.json();
+      setRubaiRecords(result.data?.records || []);
+    } catch (error) {
+      setRubaiError("Failed to load rubai");
+      setRubaiRecords([]);
+    } finally {
+      setRubaiLoading(false);
+    }
+  };
+
+  // Fetch data when IDs change
+  useEffect(() => {
+    if (ashaarIds.length > 0) fetchAshaar();
+  }, [ashaarIds.join("|")]);
+
+  useEffect(() => {
+    if (ghazlenIds.length > 0) fetchGhazlen();
+  }, [ghazlenIds.join("|")]);
+
+  useEffect(() => {
+    if (nazmenIds.length > 0) fetchNazmen();
+  }, [nazmenIds.join("|")]);
+
+  useEffect(() => {
+    if (bookIds.length > 0) fetchBooks();
+  }, [bookIds.join("|")]);
+
+  useEffect(() => {
+    if (shaerIds.length > 0) fetchShaer();
+  }, [shaerIds.join("|")]);
+
+  useEffect(() => {
+    if (rubaiIds.length > 0) fetchRubai();
+  }, [rubaiIds.join("|")]);
+
   const ashaarItems = useMemo(
     () => (ashaarRecords || []).map(formatAshaarRecord),
     [ashaarRecords]
   );
-
-  const {
-    records: ghazlenRecords,
-    isLoading: ghazlenLoading,
-    error: ghazlenError,
-    cacheKey: ghazlenSWR,
-    mutate: mutateGhazlen,
-  } = useGhazlenData(
-    {
-      pageSize: Math.min(Math.max(ghazlenIds.length, 1), 100),
-      filterByFormula: ghazlenFilter,
-    },
-    { enabled: ghazlenIds.length > 0 }
-  );
   const ghazlenItems = useMemo(
     () => (ghazlenRecords || []).map(formatGhazlenRecord),
     [ghazlenRecords]
-  );
-
-  const {
-    records: nazmenRecords,
-    isLoading: nazmenLoading,
-    error: nazmenError,
-    swrKey: nazmenSWR,
-    mutate: mutateNazmen,
-  } = useAirtableList<AirtableRecord<NazmenRecord>>(
-    NAZMEN_BASE,
-    NAZMEN_TABLE,
-    {
-      pageSize: Math.min(Math.max(nazmenIds.length, 1), 100),
-      filterByFormula: nazmenFilter,
-    },
-    { enabled: nazmenIds.length > 0 }
-  );
-
-  // Books: we only render cards; like/share handled by component
-  const {
-    records: bookRecords,
-    isLoading: booksLoading,
-    error: booksError,
-    swrKey: booksSWR,
-    mutate: mutateBooks,
-  } = useAirtableList<any>(
-    BOOKS_BASE,
-    BOOKS_TABLE,
-    {
-      pageSize: Math.min(Math.max(bookIds.length, 1), 100),
-      filterByFormula: booksFilter,
-    },
-    { enabled: bookIds.length > 0 }
-  );
-
-  // Favorite Shaer (Intro records) for liked poet profiles
-  const {
-    records: shaerRecords,
-    isLoading: shaerLoading,
-    error: shaerError,
-    swrKey: shaerSWR,
-    mutate: mutateShaer,
-  } = useAirtableList<any>(
-    SHAER_BASE,
-    SHAER_TABLE,
-    {
-      pageSize: Math.min(Math.max(shaerIds.length, 1), 100),
-      filterByFormula: shaerFilter,
-    },
-    { enabled: shaerIds.length > 0 }
-  );
-
-  // Favorite Rubai for liked poet profiles
-  const {
-    records: rubaiRecords,
-    isLoading: rubaiLoading,
-    error: rubaiError,
-    swrKey: rubaiSWR,
-    mutate: mutateRubai,
-  } = useAirtableList<any>(
-    RUBAI_BASE,
-    RUBAI_TABLE,
-    {
-      pageSize: Math.min(Math.max(rubaiIds.length, 1), 100),
-      filterByFormula: rubaiFilter,
-    },
-    { enabled: rubaiIds.length > 0 }
   );
 
   // Share handlers per section to ensure correct auth gating and dialogs
@@ -214,35 +291,23 @@ export default function FavoritesPage() {
 
   const nothingToShow =
     ashaarIds.length +
-      ghazlenIds.length +
-      nazmenIds.length +
-      bookIds.length +
-      shaerIds.length +
-      rubaiIds.length ===
+    ghazlenIds.length +
+    nazmenIds.length +
+    bookIds.length +
+    shaerIds.length +
+    rubaiIds.length ===
     0;
 
   // Revalidate lists on likes changes (debounced per-category)
   useEffect(() => {
     const revalidate = (table?: string) => {
       const t = String(table || "").toLowerCase();
-      try {
-        if ((!t || t === "ashaar") && ashaarIds.length) mutateAshaar?.();
-      } catch {}
-      try {
-        if ((!t || t === "ghazlen") && ghazlenIds.length) mutateGhazlen?.();
-      } catch {}
-      try {
-        if ((!t || t === "nazmen") && nazmenIds.length) mutateNazmen?.();
-      } catch {}
-      try {
-        if ((!t || t === "books") && bookIds.length) mutateBooks?.();
-      } catch {}
-      try {
-        if ((!t || t === "shaer") && shaerIds.length) mutateShaer?.();
-      } catch {}
-      try {
-        if ((!t || t === "rubai") && rubaiIds.length) mutateRubai?.();
-      } catch {}
+      if (!t || t === "ashaar") fetchAshaar();
+      if (!t || t === "ghazlen") fetchGhazlen();
+      if (!t || t === "nazmen") fetchNazmen();
+      if (!t || t === "books") fetchBooks();
+      if (!t || t === "shaer") fetchShaer();
+      if (!t || t === "rubai") fetchRubai();
     };
     let t: ReturnType<typeof setTimeout> | null = null;
     const onLikesUpdated = (ev: any) => {
@@ -262,12 +327,6 @@ export default function FavoritesPage() {
     bookIds.length,
     shaerIds.length,
     rubaiIds.length,
-    mutateAshaar,
-    mutateGhazlen,
-    mutateNazmen,
-    mutateBooks,
-    mutateShaer,
-    mutateRubai,
   ]);
 
   // Tab state and URL sync (similar to Shaer page)
@@ -342,19 +401,19 @@ export default function FavoritesPage() {
     const ghazalLines: string[] = Array.isArray(shaerData.fields.ghazalHead)
       ? shaerData.fields.ghazalHead
       : typeof shaerData.fields.ghazalHead === "string"
-      ? String(shaerData.fields.ghazalHead)
+        ? String(shaerData.fields.ghazalHead)
           .replace(/\r\n?/g, "\n")
           .split("\n")
           .map((s) => s.trim())
           .filter(Boolean)
-      : [];
+        : [];
     const unwanFirst = Array.isArray(shaerData.fields.unwan)
       ? shaerData.fields.unwan[0] || ""
       : typeof shaerData.fields.unwan === "string"
-      ? String(shaerData.fields.unwan)
+        ? String(shaerData.fields.unwan)
           .split("\n")
           .find((s) => s.trim().length > 0) || ""
-      : "";
+        : "";
     await shareRecordWithCount(
       {
         section: "Ashaar",
@@ -371,20 +430,13 @@ export default function FavoritesPage() {
             await updateAshaar([
               { id: shaerData.id, fields: { shares: updatedShares } },
             ]);
-            // Optimistically update SWR cache using the correct key
-            await mutateAshaar(
-              (pages: any[] | undefined) => {
-                if (!pages || !Array.isArray(pages)) return pages;
-                return pages.map((p: any) => ({
-                  ...p,
-                  records: (p.records || []).map((r: any) =>
-                    r.id === shaerData.id
-                      ? { ...r, fields: { ...r.fields, shares: updatedShares } }
-                      : r
-                  ),
-                }));
-              },
-              { revalidate: false }
+            // Optimistically update local state
+            setAshaarRecords(prev =>
+              prev.map(r =>
+                r.id === shaerData.id
+                  ? { ...r, fields: { ...r.fields, shares: updatedShares } }
+                  : r
+              )
             );
           } catch (error) {
             console.error("Error updating shares:", error);
@@ -422,9 +474,8 @@ export default function FavoritesPage() {
           <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 border-b-2 self-center pb-0 px-4 pt-4 text-xl">
             {hasShaer && (
               <div
-                className={`nav-item ${
-                  activeNav === "شعراء" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "شعراء" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Favorites?tab=${encodeURIComponent("شعراء")}`}
@@ -436,9 +487,8 @@ export default function FavoritesPage() {
             )}
             {hasAshaar && (
               <div
-                className={`nav-item ${
-                  activeNav === "اشعار" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "اشعار" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Favorites?tab=${encodeURIComponent("اشعار")}`}
@@ -450,9 +500,8 @@ export default function FavoritesPage() {
             )}
             {hasGhazlen && (
               <div
-                className={`nav-item ${
-                  activeNav === "غزلیں" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "غزلیں" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Favorites?tab=${encodeURIComponent("غزلیں")}`}
@@ -464,9 +513,8 @@ export default function FavoritesPage() {
             )}
             {hasNazmen && (
               <div
-                className={`nav-item ${
-                  activeNav === "نظمیں" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "نظمیں" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Favorites?tab=${encodeURIComponent("نظمیں")}`}
@@ -478,9 +526,8 @@ export default function FavoritesPage() {
             )}
             {hasBooks && (
               <div
-                className={`nav-item ${
-                  activeNav === "کتابیں" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "کتابیں" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Favorites?tab=${encodeURIComponent("کتابیں")}`}
@@ -492,9 +539,8 @@ export default function FavoritesPage() {
             )}
             {hasRubai && (
               <div
-                className={`nav-item ${
-                  activeNav === "رباعی" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "رباعی" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Favorites?tab=${encodeURIComponent("رباعی")}`}
@@ -516,7 +562,7 @@ export default function FavoritesPage() {
               <div className="col-span-full border border-orange-400/50 bg-orange-100/30 text-orange-900 rounded p-3 flex items-center justify-between">
                 <span>ڈیٹا لوڈ کرنے میں خرابی</span>
                 <button
-                  onClick={() => mutateShaer?.()}
+                  onClick={fetchShaer}
                   className="px-3 py-1 rounded border"
                 >
                   دوبارہ کوشش کریں
@@ -549,7 +595,7 @@ export default function FavoritesPage() {
               <div className="col-span-full border border-orange-400/50 bg-orange-100/30 text-orange-900 rounded p-3 flex items-center justify-between">
                 <span>ڈیٹا لوڈ کرنے میں خرابی</span>
                 <button
-                  onClick={() => mutateAshaar?.()}
+                  onClick={fetchAshaar}
                   className="px-3 py-1 rounded border"
                 >
                   دوبارہ کوشش کریں
@@ -567,12 +613,11 @@ export default function FavoritesPage() {
                   baseId={ASHAAR_BASE}
                   table={"Ashaar"}
                   storageKey="Ashaar"
-                  swrKey={ashaarSWR}
-                  toggleanaween={() => {}}
+                  toggleanaween={() => { }}
                   openanaween={null}
-                  handleCardClick={() => {}}
+                  handleCardClick={() => { }}
                   handleShareClick={handleShareClick}
-                  openComments={() => {}}
+                  openComments={() => { }}
                 />
               ))}
             {ashaarLoading &&
@@ -591,7 +636,7 @@ export default function FavoritesPage() {
               <div className="col-span-full border border-orange-400/50 bg-orange-100/30 text-orange-900 rounded p-3 flex items-center justify-between">
                 <span>ڈیٹا لوڈ کرنے میں خرابی</span>
                 <button
-                  onClick={() => mutateGhazlen?.()}
+                  onClick={fetchGhazlen}
                   className="px-3 py-1 rounded border"
                 >
                   دوبارہ کوشش کریں
@@ -609,10 +654,9 @@ export default function FavoritesPage() {
                   baseId={GHAZLEN_BASE}
                   table={GHAZLEN_TABLE}
                   storageKey="Ghazlen"
-                  swrKey={ghazlenSWR}
-                  toggleanaween={() => {}}
+                  toggleanaween={() => { }}
                   openanaween={null}
-                  handleCardClick={() => {}}
+                  handleCardClick={() => { }}
                   handleShareClick={(r: any) =>
                     shareGhazlen.handleShare({
                       baseId: GHAZLEN_BASE,
@@ -623,19 +667,18 @@ export default function FavoritesPage() {
                         (r as AirtableRecord<GhazlenRecord>).fields.ghazalHead
                       )
                         ? ((r as AirtableRecord<GhazlenRecord>).fields
-                            .ghazalHead as any)
+                          .ghazalHead as any)
                         : String(
-                            (r as AirtableRecord<GhazlenRecord>).fields
-                              .ghazalHead || ""
-                          ).split("\n"),
+                          (r as AirtableRecord<GhazlenRecord>).fields
+                            .ghazalHead || ""
+                        ).split("\n"),
                       slugId: (r as AirtableRecord<GhazlenRecord>).fields
                         .slugId,
-                      swrKey: ghazlenSWR,
                       currentShares:
                         (r as AirtableRecord<GhazlenRecord>).fields.shares ?? 0,
                     })
                   }
-                  openComments={() => {}}
+                  openComments={() => { }}
                 />
               ))}
             {ghazlenLoading &&
@@ -654,7 +697,7 @@ export default function FavoritesPage() {
               <div className="col-span-full border border-orange-400/50 bg-orange-100/30 text-orange-900 rounded p-3 flex items-center justify-between">
                 <span>ڈیٹا لوڈ کرنے میں خرابی</span>
                 <button
-                  onClick={() => mutateNazmen?.()}
+                  onClick={fetchNazmen}
                   className="px-3 py-1 rounded border"
                 >
                   دوبارہ کوشش کریں
@@ -699,10 +742,9 @@ export default function FavoritesPage() {
                     baseId={NAZMEN_BASE}
                     table={NAZMEN_TABLE}
                     storageKey="Nazmen"
-                    swrKey={nazmenSWR}
-                    toggleanaween={() => {}}
+                    toggleanaween={() => { }}
                     openanaween={null}
-                    handleCardClick={() => {}}
+                    handleCardClick={() => { }}
                     handleShareClick={async (shaerData: any, idx: number) => {
                       toggleanaween(null);
                       const ghazalHead: string[] = Array.isArray(
@@ -710,19 +752,19 @@ export default function FavoritesPage() {
                       )
                         ? shaerData.fields.ghazalHead
                         : typeof shaerData.fields.ghazalHead === "string"
-                        ? String(shaerData.fields.ghazalHead)
+                          ? String(shaerData.fields.ghazalHead)
                             .replace(/\r\n?/g, "\n")
                             .split("\n")
                             .map((s) => s.trim())
                             .filter(Boolean)
-                        : [];
+                          : [];
                       const unwanFirst = Array.isArray(shaerData.fields.unwan)
                         ? shaerData.fields.unwan[0] || ""
                         : typeof shaerData.fields.unwan === "string"
-                        ? String(shaerData.fields.unwan)
+                          ? String(shaerData.fields.unwan)
                             .split("\n")
                             .find((s) => s.trim().length > 0) || ""
-                        : "";
+                          : "";
                       await shareRecordWithCount(
                         {
                           section: "Nazmen",
@@ -743,26 +785,13 @@ export default function FavoritesPage() {
                                   fields: { shares: updatedShares },
                                 },
                               ]);
-                              await mutateNazmen(
-                                (pages: any[] | undefined) => {
-                                  if (!pages || !Array.isArray(pages))
-                                    return pages;
-                                  return pages.map((p: any) => ({
-                                    ...p,
-                                    records: (p.records || []).map((r: any) =>
-                                      r.id === shaerData.id
-                                        ? {
-                                            ...r,
-                                            fields: {
-                                              ...r.fields,
-                                              shares: updatedShares,
-                                            },
-                                          }
-                                        : r
-                                    ),
-                                  }));
-                                },
-                                { revalidate: false }
+                              // Optimistically update local state
+                              setNazmenRecords(prev =>
+                                prev.map(r =>
+                                  r.id === shaerData.id
+                                    ? { ...r, fields: { ...r.fields, shares: updatedShares } }
+                                    : r
+                                )
                               );
                             } catch (error) {
                               console.error("Error updating shares:", error);
@@ -771,7 +800,7 @@ export default function FavoritesPage() {
                         }
                       );
                     }}
-                    openComments={() => {}}
+                    openComments={() => { }}
                   />
                 );
               })}
@@ -791,7 +820,7 @@ export default function FavoritesPage() {
               <div className="col-span-full border border-orange-400/50 bg-orange-100/30 text-orange-900 rounded p-3 flex items-center justify-between">
                 <span>ڈیٹا لوڈ کرنے میں خرابی</span>
                 <button
-                  onClick={() => mutateBooks?.()}
+                  onClick={fetchBooks}
                   className="px-3 py-1 rounded border"
                 >
                   دوبارہ کوشش کریں
@@ -807,7 +836,6 @@ export default function FavoritesPage() {
                   baseId={BOOKS_BASE}
                   table={BOOKS_TABLE}
                   storageKey="Books"
-                  swrKey={booksSWR}
                 />
               ))}
             {booksLoading &&
@@ -825,7 +853,7 @@ export default function FavoritesPage() {
               <div className="col-span-full border border-orange-400/50 bg-orange-100/30 text-orange-900 rounded p-3 flex items-center justify-between">
                 <span>ڈیٹا لوڈ کرنے میں خرابی</span>
                 <button
-                  onClick={() => mutateRubai?.()}
+                  onClick={fetchRubai}
                   className="px-3 py-1 rounded border"
                 >
                   دوبارہ کوشش کریں
@@ -847,7 +875,6 @@ export default function FavoritesPage() {
                     storageKey: "Rubai",
                     recordId: record.id,
                     currentLikes: (record as any).fields?.likes ?? 0,
-                    swrKey: rubaiSWR,
                   });
                   const share = useShareAction({ section: "Rubai", title: "" });
                   const onHeartClick = async (
@@ -866,7 +893,6 @@ export default function FavoritesPage() {
                         String((record as any).fields?.body ?? "")
                           .split("\n")
                           .find((l: string) => l.trim().length > 0) ?? "",
-                      swrKey: rubaiSWR,
                       currentShares: (record as any).fields?.shares ?? 0,
                     });
                   };
@@ -875,7 +901,7 @@ export default function FavoritesPage() {
                       RubaiData={record as any}
                       index={index}
                       handleHeartClick={onHeartClick}
-                      openComments={() => {}}
+                      openComments={() => { }}
                       handleShareClick={() => onShare()}
                       isLiking={like.isDisabled}
                       isLiked={like.isLiked}

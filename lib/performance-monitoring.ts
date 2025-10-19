@@ -187,9 +187,6 @@ export class PerformanceMonitor {
       alertData: data,
       timestamp: Date.now()
     });
-
-    // In a real application, you might send this to an external monitoring service
-    // like DataDog, New Relic, or a custom alerting system
   }
 
   private checkAPIFailureRate(endpoint: string): void {

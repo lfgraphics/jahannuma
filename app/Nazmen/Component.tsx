@@ -1,23 +1,20 @@
 "use client";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
+import { useCommentSystem } from "@/hooks/social/useCommentSystem";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useNazmenData } from "@/hooks/useNazmenData";
+import { shareRecordWithCount } from "@/lib/social-utils";
+import { escapeAirtableFormulaValue } from "@/lib/utils";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { House, Search, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-// FontAwesome removed; using Lucide icons instead
 import { toast } from "sonner";
 import CommentSection from "../Components/CommentSection";
 import DataCard from "../Components/DataCard";
 import SkeletonLoader from "../Components/SkeletonLoader";
-// aos for cards animation
-import AOS from "aos";
-import "aos/dist/aos.css";
-import { House, Search, X } from "lucide-react";
-// Removed deprecated Dialog UI imports
-import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
-import { useNazmenData } from "@/hooks/useNazmenData";
-import { escapeAirtableFormulaValue } from "@/lib/utils";
-// createSlug no longer needed here; using centralized share helper
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useCommentSystem } from "@/hooks/social/useCommentSystem";
-import useAuthGuard from "@/hooks/useAuthGuard";
-import { shareRecordWithCount } from "@/lib/social-utils";
 
 interface Shaer {
   fields: {
@@ -34,16 +31,6 @@ interface Shaer {
   id: string;
   createdTime: string;
 }
-interface ApiResponse {
-  records: any[];
-  offset: string | null;
-}
-interface Comment {
-  dataId: string | null;
-  commentorName: string | null;
-  timestamp: string;
-  comment: string;
-}
 
 interface NazmenProps {
   initialData?: any;
@@ -58,6 +45,7 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
     fields: { shaer: string; ghazal: string[]; id: string };
   } | null>(null);
   const [searchText, setSearchText] = useState("");
+  const debouncedSearchText = useDebouncedValue(searchText, 300);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   // Comment system
@@ -81,24 +69,25 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
 
   // List records with SWR and filter - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
+    const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     const escapedQ = escapeAirtableFormulaValue(q);
     // Priority order: shaer (poet name), then displayLine, nazm, unwan
     return `OR( FIND('${escapedQ}', LOWER({shaer})), FIND('${escapedQ}', LOWER({displayLine})), FIND('${escapedQ}', LOWER({nazm})), FIND('${escapedQ}', LOWER({unwan})) )`;
-  }, [searchText]);
+  }, [debouncedSearchText]);
 
   const { 
     records, 
     isLoading, 
     hasMore, 
     loadMore,
+    isLoadingMore,
     optimisticUpdate 
   } = useNazmenData(
     { 
       pageSize: 30, 
       filterByFormula: filterFormula,
-      search: searchText 
+      search: debouncedSearchText 
     },
     { 
       debounceMs: 300,
@@ -128,22 +117,22 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
     }));
 
     // Sort by search relevance when there's a search query
-    if (searchText.trim()) {
-      const query = searchText.trim().toLowerCase();
+    if (debouncedSearchText.trim()) {
+      const query = debouncedSearchText.trim().toLowerCase();
       return formatted.sort((a: any, b: any) => {
         const aShaer = (a.fields.shaer || "").toLowerCase();
         const aDisplayLine = (
-          Array.isArray(a.fields.ghazalHead) ? a.fields.ghazalHead.join(" ") : a.fields.ghazalHead || ""
+          Array.isArray(a.fields.ghazalHead) ? a.fields.ghazalHead.join(" ") : String(a.fields.ghazalHead || "")
         ).toLowerCase(); // ghazalHead is from displayLine
-        const aNazm = (a.fields.ghazal?.join(" ") || "").toLowerCase(); // ghazal is from nazm
-        const aUnwan = (a.fields.unwan?.join(" ") || "").toLowerCase();
+        const aNazm = (Array.isArray(a.fields.ghazal) ? a.fields.ghazal.join(" ") : String(a.fields.ghazal || "")).toLowerCase(); // ghazal is from nazm
+        const aUnwan = (Array.isArray(a.fields.unwan) ? a.fields.unwan.join(" ") : String(a.fields.unwan || "")).toLowerCase();
 
         const bShaer = (b.fields.shaer || "").toLowerCase();
         const bDisplayLine = (
-          Array.isArray(b.fields.ghazalHead) ? b.fields.ghazalHead.join(" ") : b.fields.ghazalHead || ""
+          Array.isArray(b.fields.ghazalHead) ? b.fields.ghazalHead.join(" ") : String(b.fields.ghazalHead || "")
         ).toLowerCase();
-        const bNazm = (b.fields.ghazal?.join(" ") || "").toLowerCase();
-        const bUnwan = (b.fields.unwan?.join(" ") || "").toLowerCase();
+        const bNazm = (Array.isArray(b.fields.ghazal) ? b.fields.ghazal.join(" ") : String(b.fields.ghazal || "")).toLowerCase();
+        const bUnwan = (Array.isArray(b.fields.unwan) ? b.fields.unwan.join(" ") : String(b.fields.unwan || "")).toLowerCase();
 
         // Priority scoring: shaer=4, displayLine=3, nazm=2, unwan=1
         const getScore = (
@@ -171,7 +160,7 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
     }
 
     return formatted;
-  }, [records, searchText]);
+  }, [records, debouncedSearchText]);
 
   const handleLoadMore = async () => {
     try {
@@ -371,12 +360,12 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
         </div>
       </div>
       {isLoading && <SkeletonLoader />}
-      {searchText && formattedRecords.length === 0 && !isLoading && (
+      {debouncedSearchText && formattedRecords.length === 0 && !isLoading && (
         <div className="block mx-auto text-center my-3 text-2xl">
           سرچ میں کچھ نہیں ملا
         </div>
       )}
-      {searchText && (
+      {debouncedSearchText && (
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
@@ -421,10 +410,10 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
               <div className="flex justify-center text-lg m-5">
                 <button
                   onClick={handleLoadMore}
-                  disabled={!hasMore || isLoading}
+                  disabled={!hasMore || isLoadingMore}
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
-                  {isLoading
+                  {isLoadingMore
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : !hasMore
                     ? "مزید نظمیں نہیں ہیں"

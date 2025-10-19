@@ -1,7 +1,6 @@
 "use client";
 import type { AirtableRecord } from "@/app/types";
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Card from "../../Components/BookCard";
 import ComponentsLoader from "./ComponentsLoader";
 
@@ -33,13 +32,40 @@ const EBooks: React.FC<Props> = ({ takhallus }) => {
     return `OR( FIND('${safe}', LOWER({writer})), FIND('${safe}', LOWER({enWriter})), FIND('${safe}', LOWER({hiWriter})) )`;
   }, [takhallus]);
 
-  const { records, isLoading } = useAirtableList<AirtableRecord<any>>(
-    "ebooks",
-    {
-      filterByFormula,
-      pageSize: 30,
-    }
-  );
+  const [records, setRecords] = useState<AirtableRecord<any>[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!filterByFormula) {
+        setRecords([]);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams({
+          filterByFormula,
+          pageSize: "30",
+        });
+
+        const response = await fetch(`/api/airtable/ebooks?${params}`);
+        if (!response.ok) throw new Error("Failed to fetch");
+
+        const result = await response.json();
+        setRecords(result.data?.records || []);
+      } catch (error) {
+        console.error("Error fetching ebooks data:", error);
+        setRecords([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [filterByFormula]);
+
   const dataItems = records;
 
   return (

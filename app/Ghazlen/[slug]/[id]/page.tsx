@@ -1,8 +1,7 @@
 "use client";
 import ComponentsLoader from "@/app/Components/shaer/ComponentsLoader";
-import type { AirtableRecord, GhazlenRecord } from "@/app/types";
+import type { GhazlenRecord } from "@/app/types";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
-import { useAirtableRecord } from "@/hooks/useAirtableRecord";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { buildIdFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
@@ -14,28 +13,52 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
-const BASE_ID = "appvzkf6nX376pZy6";
-const TABLE = "Ghazlen";
-
 const Page: React.FC = () => {
   const params = useParams();
   const id = params?.id as string | undefined;
   const mainRef = useRef<HTMLDivElement | null>(null);
   const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
+  const [isDownloading, setIsDownloading] = React.useState(false);
+
+  // Early return if no ID is provided
+  if (!id) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-2xl font-bold text-red-600 mb-4" dir="rtl">
+            غلط لنک
+          </h2>
+          <p className="text-gray-600 mb-6" dir="rtl">
+            غزل کی شناخت نہیں ملی۔ براہ کرم صحیح لنک استعمال کریں۔
+          </p>
+          <Link
+            href="/Ghazlen"
+            className="px-4 py-2 bg-[#984A02] text-white rounded hover:bg-[#7a3a02] transition-colors"
+          >
+            تمام غزلیں دیکھیں
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     AOS.init({ offset: 50, delay: 0, duration: 300 });
   }, []);
 
-  const { records, isLoading: listLoading, error: listError } = useGhazlenData({
-    filterByFormula: id ? buildIdFilter(id) : undefined,
+  // Use the more efficient useGhazlenData hook with ID filter
+  const { records, isLoading, error } = useGhazlenData({
+    filterByFormula: buildIdFilter(id),
     pageSize: 1,
   });
-  const { data: recordData, isLoading: recordLoading, error: recordError } = useAirtableRecord<AirtableRecord<any>>(BASE_ID, TABLE, id || "");
 
-  const rec = (records?.[0] ?? (recordData as AirtableRecord<any> | undefined));
+  const rec = records?.[0];
   const formatted = useMemo(() => (rec ? formatGhazlenRecord(rec) : undefined), [rec]);
   const data = formatted?.fields as GhazlenRecord | undefined;
+
+  // Improved loading and error state logic
+  const hasError = !!error;
+  const hasData = !!data;
   const ghazalLines = useMemo(() => (Array.isArray(data?.ghazal) ? data?.ghazal : String(data?.ghazal ?? "").split("\n")), [data?.ghazal]);
   const anaween = useMemo(() => (Array.isArray(data?.unwan) ? data?.unwan : String(data?.unwan ?? "").split("\n")), [data?.unwan]);
 
@@ -64,15 +87,18 @@ const Page: React.FC = () => {
   };
 
   const downloadImageWithWatermark = async () => {
-    // Hide elements we don't want in the capture
-    const elementsToHide = document.querySelectorAll<HTMLElement>(".ghazalHead, .unwan");
-    elementsToHide.forEach((el) => (el.style.visibility = "hidden"));
+    setIsDownloading(true);
+    try {
+      // Hide elements we don't want in the capture
+      const elementsToHide = document.querySelectorAll<HTMLElement>(".ghazalHead, .unwan");
+      elementsToHide.forEach((el) => (el.style.visibility = "hidden"));
 
-    const mainElement = mainRef.current;
-    if (!mainElement) {
-      console.error("Main content element not found.");
-      return;
-    }
+      const mainElement = mainRef.current;
+      if (!mainElement) {
+        console.error("Main content element not found.");
+        toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
+        return;
+      }
 
     // Read computed colors from the element so the capture matches the current theme exactly
     const cs = window.getComputedStyle(mainElement);
@@ -234,19 +260,78 @@ const Page: React.FC = () => {
       toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
     } finally {
       // Restore hidden elements and cleanup
+      const elementsToHide = document.querySelectorAll<HTMLElement>(".ghazalHead, .unwan");
       elementsToHide.forEach((el) => (el.style.visibility = "visible"));
-      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      if (overlay?.parentNode) overlay.parentNode.removeChild(overlay);
       // Restore inline styles
-      mainElement.style.backgroundColor = prevBg;
-      mainElement.style.color = prevColor;
+      if (mainElement) {
+        mainElement.style.backgroundColor = prevBg;
+        mainElement.style.color = prevColor;
+      }
+      }
+    } catch (error) {
+      console.error("Failed to generate and download image:", error);
+      toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
   return (
     <div dir="rtl" className="flex flex-col items-center">
       <div className="w-full sm:w-[400px]">
-        {(listLoading && recordLoading) ? (
+        {isLoading ? (
           <ComponentsLoader />
+        ) : hasError ? (
+          <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
+            <div className="max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-red-600 mb-4" dir="rtl">
+                خرابی ہوئی ہے
+              </h2>
+              <p className="text-gray-600 mb-6" dir="rtl">
+                غزل لوڈ کرنے میں مسئلہ ہوا ہے۔ براہ کرم دوبارہ کوشش کریں۔
+              </p>
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-[#984A02] text-white rounded hover:bg-[#7a3a02] transition-colors"
+                >
+                  دوبارہ کوشش کریں
+                </button>
+                <button
+                  onClick={() => window.history.back()}
+                  className="px-4 py-2 border border-[#984A02] text-[#984A02] rounded hover:bg-[#984A02] hover:text-white transition-colors"
+                >
+                  واپس جائیں
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : !hasData ? (
+          <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
+            <div className="max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-gray-600 mb-4" dir="rtl">
+                غزل نہیں ملی
+              </h2>
+              <p className="text-gray-500 mb-6" dir="rtl">
+                یہ غزل دستیاب نہیں ہے یا ہٹا دی گئی ہے۔
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Link
+                  href="/Ghazlen"
+                  className="px-4 py-2 bg-[#984A02] text-white rounded hover:bg-[#7a3a02] transition-colors"
+                >
+                  تمام غزلیں دیکھیں
+                </Link>
+                <button
+                  onClick={() => window.history.back()}
+                  className="px-4 py-2 border border-[#984A02] text-[#984A02] rounded hover:bg-[#984A02] hover:text-white transition-colors"
+                >
+                  واپس جائیں
+                </button>
+              </div>
+            </div>
+          </div>
         ) : (
           <div id="main" ref={mainRef} className="p-4 mt-3 relative bg-background text-foreground">
             <div className={`ghazalHead text-2xl text-foreground text-center leading-[3rem]`}>
@@ -287,7 +372,7 @@ const Page: React.FC = () => {
             </div>
           </div>
         )}
-        {!(listLoading && recordLoading) && (
+        {!isLoading && hasData && (
           <div className="mazeed flex mb-4 justify-around" data-aos="fade-up">
             <button
               onClick={visitGhazlen}
@@ -304,9 +389,10 @@ const Page: React.FC = () => {
             </Link>
             <button
               onClick={() => { if (requireAuth("download")) downloadImageWithWatermark(); }}
-              className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+              disabled={isDownloading}
+              className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              تصویر ڈاؤن لوڈ کریں
+              {isDownloading ? "ڈاؤن لوڈ ہو رہا ہے..." : "تصویر ڈاؤن لوڈ کریں"}
             </button>
           </div>
         )}

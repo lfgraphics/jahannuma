@@ -56,7 +56,6 @@ export default function CoreWebVitalsOptimizer({
 function preloadCriticalResources() {
   const criticalResources = [
     { href: "/Mehr_Nastaliq.ttf", as: "font", type: "font/truetype" },
-    { href: "/globals.css", as: "style" },
     { href: "/logo.png", as: "image" },
   ];
 

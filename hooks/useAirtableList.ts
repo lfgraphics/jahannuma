@@ -87,6 +87,11 @@ export function useAirtableList<T = any>(baseId: string, table: string, params: 
 
     const loadMore = () => swr.setSize((size) => size + 1);
 
+  // Determine if we're loading more data (not initial load)
+  const isLoadingMore = useMemo(() => {
+    return swr.isValidating && !swr.isLoading && records && records.length > 0;
+  }, [swr.isValidating, swr.isLoading, records]);
+
     // Expose the first page key and its string cache key for optimistic updates
     const firstPageKey = getKey(0, undefined as any);
     const cacheKey = firstPageKey ? buildAirtableCacheKey(firstPageKey) : null;
@@ -96,6 +101,7 @@ export function useAirtableList<T = any>(baseId: string, table: string, params: 
         records: records as T[],
         hasMore,
         loadMore,
+      isLoadingMore,
         swrKey: firstPageKey,
         cacheKey,
     } as const;

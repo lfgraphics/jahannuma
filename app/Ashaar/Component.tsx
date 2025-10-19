@@ -12,6 +12,7 @@ import { House, Search, X } from "lucide-react";
 // Removed deprecated Dialog UI imports
 import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { useAshaarData } from "@/hooks/useAshaarData";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 // createSlug no longer needed here; using centralized share helper
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -55,7 +56,8 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
   >(null);
   // Removed modal state; comments use a Drawer inside CommentSection
   const [searchText, setSearchText] = useState("");
-  const [moreloading, setMoreLoading] = useState(false);
+  const debouncedSearchText = useDebouncedValue(searchText, 300);
+
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   // Comment system
   const [newComment, setNewComment] = useState("");
@@ -83,21 +85,20 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
 
   // Build filter formula used by SWR hook - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
+    const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     const safe = escapeAirtableFormulaValue(q);
     // Priority order: shaer (poet name), then sher, body, unwan
     return `OR( FIND('${safe}', LOWER({shaer})), FIND('${safe}', LOWER({sher})), FIND('${safe}', LOWER({body})), FIND('${safe}', LOWER({unwan})) )`;
-  }, [searchText]);
+  }, [debouncedSearchText]);
 
-  const { records, isLoading, isValidating, hasMore, loadMore, mutate, optimisticUpdate } = useAshaarData(
+  const { records, isLoading, isValidating, hasMore, loadMore, mutate, optimisticUpdate, isLoadingMore } = useAshaarData(
     { pageSize: 30, filterByFormula: filterFormula },
     { debounceMs: 300, initialData }
   );
 
   // Differentiate between initial loading and loading more data
   const isInitialLoading = isLoading && (!records || records.length === 0);
-  const isLoadingMore = isValidating && !isLoading && records && records.length > 0;
 
   const { updateRecord: updateAshaar } = useAirtableMutation("ashaar");
   // Removed deprecated createAshaarComment; comment creation uses useCommentSystem
@@ -115,18 +116,18 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
     }));
 
     // Sort by search relevance when there's a search query
-    if (searchText.trim()) {
-      const query = searchText.trim().toLowerCase();
+    if (debouncedSearchText.trim()) {
+      const query = debouncedSearchText.trim().toLowerCase();
       return formatted.sort((a, b) => {
         const aShaer = (a.fields.shaer || '').toLowerCase();
-        const aSher = (a.fields.sher?.join(' ') || '').toLowerCase();
+        const aSher = (Array.isArray(a.fields.sher) ? a.fields.sher.join(' ') : String(a.fields.sher || '')).toLowerCase();
         const aBody = (a.fields.body || '').toLowerCase();
-        const aUnwan = (a.fields.unwan?.join(' ') || '').toLowerCase();
+        const aUnwan = (Array.isArray(a.fields.unwan) ? a.fields.unwan.join(' ') : String(a.fields.unwan || '')).toLowerCase();
         
         const bShaer = (b.fields.shaer || '').toLowerCase();
-        const bSher = (b.fields.sher?.join(' ') || '').toLowerCase();
+        const bSher = (Array.isArray(b.fields.sher) ? b.fields.sher.join(' ') : String(b.fields.sher || '')).toLowerCase();
         const bBody = (b.fields.body || '').toLowerCase();
-        const bUnwan = (b.fields.unwan?.join(' ') || '').toLowerCase();
+        const bUnwan = (Array.isArray(b.fields.unwan) ? b.fields.unwan.join(' ') : String(b.fields.unwan || '')).toLowerCase();
 
         // Priority scoring: shaer=4, sher=3, body=2, unwan=1
         const getScore = (shaer: string, sher: string, body: string, unwan: string) => {
@@ -149,7 +150,7 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
     }
 
     return formatted;
-  }, [records, searchText]);
+  }, [records, debouncedSearchText]);
 
   const dataItems = formattedRecords;
   const loading = isInitialLoading;
@@ -158,10 +159,9 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
   // fetching more data by load more data button
   const handleLoadMore = async () => {
     try {
-      setMoreLoading(true);
       await loadMore();
-    } finally {
-      setMoreLoading(false);
+    } catch (error) {
+      console.error("Error loading more data:", error);
     }
   };
   // re-run when search clicked
@@ -371,10 +371,10 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
               <div className="flex justify-center text-lg m-5">
                 <button
                   onClick={handleLoadMore}
-                  disabled={noMoreData || moreloading}
+                  disabled={noMoreData || isLoadingMore}
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
-                  {moreloading
+                  {isLoadingMore
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
                       ? "مزید اشعار نہیں ہیں"

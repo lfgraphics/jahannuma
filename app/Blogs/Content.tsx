@@ -1,9 +1,8 @@
 "use client";
 import Aos from "aos";
 import "aos/dist/aos.css";
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface BloggerPostList {
@@ -149,7 +148,7 @@ const Content = () => {
           <div
             id="section"
             dir="rtl"
-            className="flex flex-col items-center justify-center md:items-start md:grid md:grid-cols-2 lg:grid-cols-3 gap-3 m-3"
+            className="grid grid-cols-2 md:items-start md:grid md:grid-cols-3 lg:grid-cols-4 gap-3 m-3"
           >
             {dataItems.map((cardData, index) => (
               <div dir="ltr" key={index} data-aos="fade-up">
@@ -163,11 +162,11 @@ const Content = () => {
                         <img
                           src={sizedSrc}
                           alt={`blog iamge ${cardData.id}`}
-                          className="object-cover h-auto sm:h-48 w-96"
+                          className="object-cover h-auto sm:h-48 w-[180px]"
                         />
                       );
                     })()}
-                    <div className="text-lg text-center p-2 line-clamp-2">
+                    <div className="text-lg text-center p-2">
                       {cardData.title}
                     </div>
                   </div>
@@ -185,8 +184,8 @@ const Content = () => {
                 {moreloading
                   ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                  ? "مزید ویڈیوز نہیں ہیں"
-                  : "مزید ویڈیوز لوڈ کریں"}
+                    ? "مزید ویڈیوز نہیں ہیں"
+                    : "مزید ویڈیوز لوڈ کریں"}
               </button>
             </div>
           )}

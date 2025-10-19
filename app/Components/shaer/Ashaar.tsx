@@ -1,10 +1,9 @@
 "use client";
 import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, AshaarRecord } from "@/app/types";
-import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import { useShareAction } from "@/hooks/useShareAction";
 import { buildShaerFilter, formatAshaarRecord } from "@/lib/airtable-utils";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ComponentsLoader from "./ComponentsLoader";
 
 interface Props {
@@ -15,13 +14,35 @@ const BASE_ID = "appeI2xzzyvUN5bR7";
 const TABLE = "Ashaar";
 
 const Ashaar: React.FC<Props> = ({ takhallus }) => {
-  const { records, isLoading } = useAirtableList<AirtableRecord<AshaarRecord>>(
-    "ashaar",
-    {
-      filterByFormula: buildShaerFilter(takhallus),
-      pageSize: 30,
+  const [records, setRecords] = useState<AirtableRecord<AshaarRecord>[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams({
+          filterByFormula: buildShaerFilter(takhallus),
+          pageSize: "30",
+        });
+
+        const response = await fetch(`/api/airtable/ashaar?${params}`);
+        if (!response.ok) throw new Error("Failed to fetch");
+
+        const result = await response.json();
+        setRecords(result.data?.records || []);
+      } catch (error) {
+        console.error("Error fetching ashaar data:", error);
+        setRecords([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (takhallus) {
+      fetchData();
     }
-  );
+  }, [takhallus]);
 
   // Format records for UI
   const dataItems: AirtableRecord<AshaarRecord>[] = useMemo(() => {
@@ -33,8 +54,8 @@ const Ashaar: React.FC<Props> = ({ takhallus }) => {
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   const toggleanaween = (cardId: string | null) =>
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
-  const handleCardClick = (_rec: AirtableRecord<AshaarRecord>) => {};
-  const openComments = (_id: string) => {};
+  const handleCardClick = (_rec: AirtableRecord<AshaarRecord>) => { };
+  const openComments = (_id: string) => { };
   const share = useShareAction({ section: "Ashaar", title: "" });
 
   return (

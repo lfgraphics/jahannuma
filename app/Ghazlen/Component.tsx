@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { shareRecordWithCount } from "@/lib/social-utils";
 import AOS from "aos";
@@ -59,9 +60,10 @@ const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
   });
   const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
+  const debouncedSearchText = useDebouncedValue(searchText, 300);
   const [showIcons, setShowIcons] = useState(false);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
-  const [moreloading, setMoreLoading] = useState(false);
+
   const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
 
   const [openanaween, setOpenanaween] = useState<string | null>(null);
@@ -103,15 +105,15 @@ const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
   }
   // Build filter formula via SWR hook - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
+    const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     // sanitize to avoid Airtable formula injection: escape backslashes and single quotes
     const safeQ = q.replace(/\\/g, "\\\\").replace(/'/g, "''");
     // Priority order: shaer (poet name), then ghazalHead, ghazal, unwan
     return `OR( FIND('${safeQ}', LOWER({shaer})), FIND('${safeQ}', LOWER({ghazalHead})), FIND('${safeQ}', LOWER({ghazal})), FIND('${safeQ}', LOWER({unwan})) )`;
-  }, [searchText]);
+  }, [debouncedSearchText]);
 
-  const { records, isLoading, hasMore, loadMore, optimisticUpdate } = useGhazlenData(
+  const { records, isLoading, hasMore, loadMore, isLoadingMore, optimisticUpdate } = useGhazlenData(
     { pageSize: 30, filterByFormula: filterFormula },
     { debounceMs: 300, initialData }
   );
@@ -133,22 +135,22 @@ const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
     }));
 
     // Sort by search relevance when there's a search query
-    if (searchText.trim()) {
-      const query = searchText.trim().toLowerCase();
+    if (debouncedSearchText.trim()) {
+      const query = debouncedSearchText.trim().toLowerCase();
       return formatted.sort((a, b) => {
         const aShaer = (a.fields.shaer || "").toLowerCase();
         const aGhazalHead = (
-          a.fields.ghazalHead?.join(" ") || ""
+          Array.isArray(a.fields.ghazalHead) ? a.fields.ghazalHead.join(" ") : String(a.fields.ghazalHead || "")
         ).toLowerCase();
-        const aGhazal = (a.fields.ghazal?.join(" ") || "").toLowerCase();
-        const aUnwan = (a.fields.unwan?.join(" ") || "").toLowerCase();
+        const aGhazal = (Array.isArray(a.fields.ghazal) ? a.fields.ghazal.join(" ") : String(a.fields.ghazal || "")).toLowerCase();
+        const aUnwan = (Array.isArray(a.fields.unwan) ? a.fields.unwan.join(" ") : String(a.fields.unwan || "")).toLowerCase();
 
         const bShaer = (b.fields.shaer || "").toLowerCase();
         const bGhazalHead = (
-          b.fields.ghazalHead?.join(" ") || ""
+          Array.isArray(b.fields.ghazalHead) ? b.fields.ghazalHead.join(" ") : String(b.fields.ghazalHead || "")
         ).toLowerCase();
-        const bGhazal = (b.fields.ghazal?.join(" ") || "").toLowerCase();
-        const bUnwan = (b.fields.unwan?.join(" ") || "").toLowerCase();
+        const bGhazal = (Array.isArray(b.fields.ghazal) ? b.fields.ghazal.join(" ") : String(b.fields.ghazal || "")).toLowerCase();
+        const bUnwan = (Array.isArray(b.fields.unwan) ? b.fields.unwan.join(" ") : String(b.fields.unwan || "")).toLowerCase();
 
         // Priority scoring: shaer=4, ghazalHead=3, ghazal=2, unwan=1
         const getScore = (
@@ -176,7 +178,7 @@ const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
     }
 
     return formatted;
-  }, [records, searchText]);
+  }, [records, debouncedSearchText]);
 
   // Use the hook values directly instead of copying to state
   const dataItems = formattedRecords;
@@ -188,10 +190,9 @@ const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
 
   const handleLoadMore = async () => {
     try {
-      setMoreLoading(true);
       await loadMore();
-    } finally {
-      setMoreLoading(false);
+    } catch (error) {
+      console.error("Error loading more data:", error);
     }
   };
   const searchQuery = () => {
@@ -433,10 +434,10 @@ const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
               <div className="flex justify-center text-lg m-5">
                 <button
                   onClick={handleLoadMore}
-                  disabled={noMoreData || moreloading}
+                  disabled={noMoreData || isLoadingMore}
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
-                  {moreloading
+                  {isLoadingMore
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
                       ? "مزید غزلیں نہیں ہیں"

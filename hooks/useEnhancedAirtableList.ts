@@ -48,6 +48,7 @@ export interface EnhancedListResult<T> {
   error: EnhancedError | null;
   isLoading: boolean;
   isValidating: boolean;
+  isLoadingMore: boolean;
   hasMore: boolean;
   loadMore: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -244,6 +245,11 @@ export function useEnhancedAirtableList<T = any>(
     }
   }, [swr.mutate, baseId, table]);
 
+  // Determine if we're loading more data (not initial load)
+  const isLoadingMore = useMemo(() => {
+    return swr.isValidating && !swr.isLoading && records && records.length > 0;
+  }, [swr.isValidating, swr.isLoading, records]);
+
   // Get cache key for optimistic updates
   const firstPageKey = getKey(0, undefined as any);
   const cacheKey = firstPageKey ? `${firstPageKey.baseId}:${firstPageKey.table}:${JSON.stringify(firstPageKey.params)}` : null;
@@ -253,6 +259,7 @@ export function useEnhancedAirtableList<T = any>(
     error: swr.error || null,
     isLoading: swr.isLoading,
     isValidating: swr.isValidating,
+    isLoadingMore,
     hasMore,
     loadMore,
     refresh,

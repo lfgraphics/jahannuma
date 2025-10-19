@@ -6,14 +6,10 @@
   "scripts": {
     "preinstall": "node -e \"if(!String(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('This repository uses pnpm. Please run: pnpm install'); process.exit(1)}\"",
     "dev": "next dev --turbopack",
-    "build": "node scripts/build-performance-monitor.js && next build --turbopack",
-    "build:monitor": "node scripts/build-performance-monitor.js",
-    "analyze:bundle": "node scripts/bundle-analyzer.js",
-    "analyze:webpack": "ANALYZE=true next build",
-    "test:fixes": "node scripts/test-fixes.js",
-    "test:server-fetch": "node scripts/test-server-fetch.js",
+    "build": "next build --turbopack",
     "start": "next start",
-    "test:api": "node scripts/test-api-endpoints.js"
+    "analyze:bundle": "node scripts/bundle-analyzer.js",
+    "analyze:webpack": "ANALYZE=true next build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.0.0",

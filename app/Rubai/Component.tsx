@@ -11,6 +11,7 @@ import SkeletonLoader from "../Components/SkeletonLoader";
 import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useRubaiData } from "@/hooks/useRubaiData";
 import { useShareAction } from "@/hooks/useShareAction";
 import type { Rubai } from "../types";
@@ -39,6 +40,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     string | null
   >(null);
   const [searchText, setSearchText] = useState("");
+  const debouncedSearchText = useDebouncedValue(searchText, 300);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [initialDataItems, setInitialdDataItems] = useState<Rubai[]>([]);
   // Comment system
@@ -85,18 +87,19 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
 
   // Build filter formula and use new Rubai data hook
   const filterFormula = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
+    const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     const escaped = q.replace(/'/g, "\\'");
     // Priority order: shaer (poet name), then body, unwan
     return `OR( FIND('${escaped}', LOWER({shaer})), FIND('${escaped}', LOWER({body})), FIND('${escaped}', LOWER({unwan})) )`;
-  }, [searchText]);
+  }, [debouncedSearchText]);
 
   const { 
     records, 
     isLoading, 
     hasMore, 
     loadMore,
+    isLoadingMore,
     optimisticUpdate 
   } = useRubaiData(
     { pageSize: 30, filterByFormula: filterFormula },
@@ -111,8 +114,8 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
   // Sort by search relevance when there's a search query
   const dataItems = useMemo(() => {
     let sortedData = records || [];
-    if (searchText.trim()) {
-      const query = searchText.trim().toLowerCase();
+    if (debouncedSearchText.trim()) {
+      const query = debouncedSearchText.trim().toLowerCase();
       sortedData = (records || []).slice().sort((a: Rubai, b: Rubai) => {
         const aShaer = (a.fields.shaer || "").toLowerCase();
         const aBody = (a.fields.body || "").toLowerCase();
@@ -141,7 +144,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       });
     }
     return sortedData;
-  }, [records, searchText]);
+  }, [records, debouncedSearchText]);
 
   const handleLoadMore = async () => {
     try {
@@ -376,10 +379,10 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
               <div className="flex justify-center text-lg m-5">
                 <button
                   onClick={handleLoadMore}
-                  disabled={!hasMore || isLoading}
+                  disabled={!hasMore || isLoadingMore}
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
-                  {isLoading
+                  {isLoadingMore
                     ? "لوڈ ہو رہا ہے۔۔۔"
                     : !hasMore
                     ? "مزید رباعی نہیں ہیں"

@@ -1,10 +1,11 @@
 "use client";
 import { House, Search, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import Card from "../Components/shaer/Profilecard";
 import SkeletonLoader from "../Components/SkeletonLoader";
+import Card from "../Components/shaer/Profilecard";
 // aos for cards animation
 import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -58,16 +59,14 @@ interface FormattedRecord {
   id: string;
   createdTime: string;
 }
-interface Pagination {
-  offset: string | null;
-  pageSize: number;
-}
+
 const Page: React.FC<{}> = () => {
   const [data, setData] = useState<FormattedRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [scrolledPosition, setScrolledPosition] = useState<number>();
+
   const [searchText, setSearchText] = useState("");
-  const [moreloading, setMoreLoading] = useState(false);
+  const debouncedSearchText = useDebouncedValue(searchText, 300);
+
   const [initialDataItems, setInitialdDataItems] = useState<FormattedRecord[]>(
     []
   );
@@ -84,37 +83,30 @@ const Page: React.FC<{}> = () => {
 
   // Build search filter formula safely - prioritize takhallus and poet names
   const filterFormula = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
+    const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     const safe = escapeAirtableFormulaValue(q);
     // Priority order: takhallus first, then names, then other fields
     return `OR( FIND('${safe}', LOWER({takhallus})), FIND('${safe}', LOWER({enTakhallus})), FIND('${safe}', LOWER({hiTakhallus})), FIND('${safe}', LOWER({name})), FIND('${safe}', LOWER({enName})), FIND('${safe}', LOWER({hiName})), FIND('${safe}', LOWER({dob})), FIND('${safe}', LOWER({location})), FIND('${safe}', LOWER({enLocation})), FIND('${safe}', LOWER({hiLocation})), FIND('${safe}', LOWER({tafseel})), FIND('${safe}', LOWER({searchKeys})) )`;
-  }, [searchText]);
+  }, [debouncedSearchText]);
 
   const {
-    data: records,
+    records,
     isLoading,
     hasMore,
     loadMore,
-    mutate,
+    isValidating,
   } = useAirtableList("shaer", {
     pageSize: 30,
     filterByFormula: filterFormula,
   });
 
-  function scrollToTop() {
-    if (typeof window !== "undefined") {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
+
 
   useEffect(() => {
     // format records to expected local shape and sort by search relevance
     const formatted: FormattedRecord[] = (records || []).map((record: any) => ({
-      ...record.data.records,
+      ...record,
       fields: {
         ...record.fields,
         tafseel: String(record.fields?.tafseel || "")
@@ -158,34 +150,32 @@ const Page: React.FC<{}> = () => {
 
     // Sort by search relevance when there's a search query
     let sortedData = formatted;
-    if (searchText.trim()) {
-      const query = searchText.trim().toLowerCase();
+    if (debouncedSearchText.trim()) {
+      const query = debouncedSearchText.trim().toLowerCase();
       sortedData = formatted.sort((a, b) => {
         const aTakhallus = (a.fields.takhallus || "").toLowerCase();
         const aEnTakhallus = (
-          a.fields.enTakhallus?.join(" ") || ""
+          Array.isArray(a.fields.enTakhallus) ? a.fields.enTakhallus.join(" ") : String(a.fields.enTakhallus || "")
         ).toLowerCase();
         const aHiTakhallus = (
-          a.fields.hiTakhallus?.join(" ") || ""
+          Array.isArray(a.fields.hiTakhallus) ? a.fields.hiTakhallus.join(" ") : String(a.fields.hiTakhallus || "")
         ).toLowerCase();
-        const aEnName = (a.fields.enName?.join(" ") || "").toLowerCase();
-        const aHiName = (a.fields.hiName?.join(" ") || "").toLowerCase();
-        const aOther = `${a.fields.dob || ""} ${a.fields.location || ""} ${
-          a.fields.tafseel?.join(" ") || ""
-        }`.toLowerCase();
+        const aEnName = (Array.isArray(a.fields.enName) ? a.fields.enName.join(" ") : String(a.fields.enName || "")).toLowerCase();
+        const aHiName = (Array.isArray(a.fields.hiName) ? a.fields.hiName.join(" ") : String(a.fields.hiName || "")).toLowerCase();
+        const aOther = `${a.fields.dob || ""} ${a.fields.location || ""} ${Array.isArray(a.fields.tafseel) ? a.fields.tafseel.join(" ") : String(a.fields.tafseel || "")
+          }`.toLowerCase();
 
         const bTakhallus = (b.fields.takhallus || "").toLowerCase();
         const bEnTakhallus = (
-          b.fields.enTakhallus?.join(" ") || ""
+          Array.isArray(b.fields.enTakhallus) ? b.fields.enTakhallus.join(" ") : String(b.fields.enTakhallus || "")
         ).toLowerCase();
         const bHiTakhallus = (
-          b.fields.hiTakhallus?.join(" ") || ""
+          Array.isArray(b.fields.hiTakhallus) ? b.fields.hiTakhallus.join(" ") : String(b.fields.hiTakhallus || "")
         ).toLowerCase();
-        const bEnName = (b.fields.enName?.join(" ") || "").toLowerCase();
-        const bHiName = (b.fields.hiName?.join(" ") || "").toLowerCase();
-        const bOther = `${b.fields.dob || ""} ${b.fields.location || ""} ${
-          b.fields.tafseel?.join(" ") || ""
-        }`.toLowerCase();
+        const bEnName = (Array.isArray(b.fields.enName) ? b.fields.enName.join(" ") : String(b.fields.enName || "")).toLowerCase();
+        const bHiName = (Array.isArray(b.fields.hiName) ? b.fields.hiName.join(" ") : String(b.fields.hiName || "")).toLowerCase();
+        const bOther = `${b.fields.dob || ""} ${b.fields.location || ""} ${Array.isArray(b.fields.tafseel) ? b.fields.tafseel.join(" ") : String(b.fields.tafseel || "")
+          }`.toLowerCase();
 
         // Priority scoring: takhallus=5, takhallus translations=4, name translations=3, other=1
         const getScore = (
@@ -232,8 +222,7 @@ const Page: React.FC<{}> = () => {
     setData(sortedData);
     setLoading(isLoading);
     setNoMoreData(!hasMore);
-    setMoreLoading(false);
-  }, [records, isLoading, hasMore, searchText]);
+  }, [records, isLoading, hasMore, debouncedSearchText]);
 
   // Removed legacy localStorage-based highlighting; likes are handled in Profilecard via Clerk
 
@@ -276,7 +265,7 @@ const Page: React.FC<{}> = () => {
     if (typeof window !== "undefined") {
       let section = document.getElementById("section");
       section!.scrollTo({
-        top: Number(scrolledPosition) || 0,
+        top: 0,
         behavior: "smooth",
       } as ScrollToOptions);
     }
@@ -284,10 +273,9 @@ const Page: React.FC<{}> = () => {
   };
   const handleLoadMore = async () => {
     try {
-      setMoreLoading(true);
       await loadMore();
-    } finally {
-      setMoreLoading(false);
+    } catch (error) {
+      console.error("Error loading more data:", error);
     }
   };
 
@@ -366,29 +354,25 @@ const Page: React.FC<{}> = () => {
               dir="rtl"
               className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[110px] lg:top-[71px] m-3`}
             >
-              {data.map((item) => {
-                const array = Object.values(item);
-                console.log(array);
-                return array.map((value, index) => (
-                  <div className="relative" key={index} data-aos="fade-up">
-                    <Card data={value} />
-                  </div>
-                ));
-              })}
+              {data.map((item, index) => (
+                <div className="relative" key={item.id || index} data-aos="fade-up">
+                  <Card data={item} />
+                </div>
+              ))}
             </div>
           </div>
           {data.length > 0 && (
             <div className="flex justify-center text-lg m-5">
               <button
                 onClick={handleLoadMore}
-                disabled={noMoreData || moreloading}
+                disabled={noMoreData || isValidating}
                 className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
               >
-                {moreloading
+                {isValidating
                   ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                  ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
-                  : "مزید شعراء کی تفصیات لوڈ کریں"}
+                    ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
+                    : "مزید شعراء کی تفصیات لوڈ کریں"}
               </button>
             </div>
           )}

@@ -8,13 +8,11 @@ import Intro from "@/app/Components/shaer/IntroPhoto";
 import Nazmen from "@/app/Components/shaer/Nazmen";
 import Rubai from "@/app/Components/shaer/Rubai";
 import { useParams } from "next/navigation";
-import React, { use, useEffect, useMemo } from "react";
+import React, { use, useEffect, useMemo, useState } from "react";
 import "./shaer.css";
 
 // Using simple custom nav instead of shadcn Tabs
 
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { TTL } from "@/lib/airtable-fetcher";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 
 interface IntroFields {
@@ -60,38 +58,58 @@ const Page = ({
     return `({takhallus}='${safe}')`;
   }, [nameParam]);
 
-  const { records, isLoading } = useAirtableList<{ fields: IntroFields }>(
-    "appgWv81tu4RT3uRB",
-    "Intro",
-    {
-      pageSize: 1,
-      fields: [
-        "photo",
-        "takhallus",
-        "ghazlen",
-        "eBooks",
-        "nazmen",
-        "ashaar",
-        "rubai",
-        "name",
-        "dob",
-        "location",
-        "tafseel",
-        "searchKeys",
-        "enTakhallus",
-        "hiTakhallus",
-        "enName",
-        "hiName",
-        "enLocation",
-        "hiLocation",
-        "description",
-        "enDescription",
-        "hiDescription",
-      ],
-      filterByFormula,
-    },
-    { ttl: TTL.static }
-  );
+  const [records, setRecords] = useState<{ fields: IntroFields }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!filterByFormula) return;
+
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams({
+          pageSize: "1",
+          filterByFormula,
+          fields: [
+            "photo",
+            "takhallus",
+            "ghazlen",
+            "eBooks",
+            "nazmen",
+            "ashaar",
+            "rubai",
+            "name",
+            "dob",
+            "location",
+            "tafseel",
+            "searchKeys",
+            "enTakhallus",
+            "hiTakhallus",
+            "enName",
+            "hiName",
+            "enLocation",
+            "hiLocation",
+            "description",
+            "enDescription",
+            "hiDescription",
+          ].join(","),
+        });
+
+        const response = await fetch(`/api/airtable/shaer?${params}`);
+        if (!response.ok) throw new Error("Failed to fetch");
+
+        const result = await response.json();
+        setRecords(result.data?.records || []);
+      } catch (error) {
+        console.error("Error fetching shaer data:", error);
+        setRecords([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [filterByFormula]);
 
   const data: IntroFields = useMemo(() => {
     const rec = (records ?? [])[0]?.fields || {};
@@ -132,6 +150,10 @@ const Page = ({
 
   const handleNavClick = (nav: string) => {
     setActiveNav(nav);
+    // Update URL to reflect the active tab
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', nav);
+    window.history.pushState({}, '', url.toString());
   };
 
   const handleLinkClick =
@@ -155,9 +177,8 @@ const Page = ({
           </div>
           <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 border-b-2 self-center pb-0 px-4 pt-4 text-xl">
             <div
-              className={`nav-item ${
-                activeNav === "تعارف" ? "active" : ""
-              } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+              className={`nav-item ${activeNav === "تعارف" ? "active" : ""
+                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
             >
               <a
                 href={`/Shaer/${nameParam}?tab=${encodeURIComponent("تعارف")}`}
@@ -168,9 +189,8 @@ const Page = ({
             </div>
             {data.ghazlen && (
               <div
-                className={`nav-item ${
-                  activeNav === "غزلیں" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "غزلیں" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
@@ -184,9 +204,8 @@ const Page = ({
             )}
             {data.nazmen && (
               <div
-                className={`nav-item ${
-                  activeNav === "نظمیں" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "نظمیں" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
@@ -200,9 +219,8 @@ const Page = ({
             )}
             {data.ashaar && (
               <div
-                className={`nav-item ${
-                  activeNav === "اشعار" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "اشعار" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
@@ -216,9 +234,8 @@ const Page = ({
             )}
             {data.eBooks && (
               <div
-                className={`nav-item ${
-                  activeNav === "ئی - بکس" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "ئی - بکس" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
@@ -232,9 +249,8 @@ const Page = ({
             )}
             {data.rubai && (
               <div
-                className={`nav-item ${
-                  activeNav === "رباعی" ? "active" : ""
-                } min-w-[40px] text-center transition-all ease-in-out duration-500`}
+                className={`nav-item ${activeNav === "رباعی" ? "active" : ""
+                  } min-w-[40px] text-center transition-all ease-in-out duration-500`}
               >
                 <a
                   href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
