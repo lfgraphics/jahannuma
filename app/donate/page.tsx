@@ -29,6 +29,9 @@ const page = () => {
 
         <span className="border-b "><strong>Bank and Branch:</strong></span>
         <span className="border-b ">Canara Bank, Sahebganj</span>
+
+        <span className="border-b "><strong>UPI ID:</strong></span>
+        <span className="border-b ">334077001382809@cnrb</span>
       </div>
       <div className="flex flex-col items-center">
         <div className="qr">
