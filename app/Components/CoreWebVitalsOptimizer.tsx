@@ -356,7 +356,7 @@ export function ServiceWorkerRegistration() {
   useEffect(() => {
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
       navigator.serviceWorker
-        .register("/sw.js")
+        .register("/service-worker.js")
         .then((registration) => {
           console.log("SW registered:", registration);
         })

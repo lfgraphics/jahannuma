@@ -73,7 +73,6 @@ const nextConfig: NextConfig = {
         // All other routes get security headers
         source: "/(.*)",
         headers: [
-
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
@@ -93,6 +92,30 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+      {
+        // Service Worker should not be cached
+        source: "/service-worker.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+          {
+            key: "Service-Worker-Allowed",
+            value: "/",
+          },
+        ],
+      },
+      {
+        // Manifest is now handled by app/manifest.ts
+        source: "/manifest.webmanifest",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600",
           },
         ],
       },

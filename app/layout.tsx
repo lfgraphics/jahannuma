@@ -2,7 +2,9 @@ import CoreWebVitalsOptimizer, { ResourceHints } from "@/app/Components/CoreWebV
 import Footer from "@/app/Components/Footer";
 import InitLikesMigration from "@/app/Components/InitLikesMigration";
 import Navbar from "@/app/Components/Navbar";
+import PWAInstall from "@/app/Components/PWAInstall";
 import { PerformanceMonitor } from "@/app/Components/SEOEnhanced";
+
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import Providers from "./providers";
@@ -109,9 +111,6 @@ export default function RootLayout({
           href="/favicon/favicon-16x16.png"
         />
 
-        {/* Web app manifest */}
-        <link rel="manifest" href="/manifest.json" />
-
         {/* Microsoft tiles */}
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta
@@ -146,7 +145,7 @@ export default function RootLayout({
       <body className="bg-background text-foreground font-noto-nastaliq">
         <ClerkProvider>
           {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? null : (
-            <div className="w-full bg-yellow-700/30 text-yellow-200 text-sm text-center py-1">
+            <div className="w-full text-sm text-center py-1">
               Clerk publishable key missing. Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in .env.local (dev only banner).
             </div>
           )}
@@ -166,7 +165,8 @@ export default function RootLayout({
           <CoreWebVitalsOptimizer />
           <ResourceHints />
           <PerformanceMonitor />
-          {/* <DynamicPerformanceDashboard /> */}
+          <PWAInstall />
+
         </ClerkProvider>
       </body>
     </html>

@@ -6,6 +6,7 @@
   "scripts": {
     "preinstall": "node -e \"if(!String(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('This repository uses pnpm. Please run: pnpm install'); process.exit(1)}\"",
     "dev": "next dev --turbopack",
+    "dev:https": "node scripts/https-server.js",
     "build": "next build --turbopack",
     "start": "next start",
     "analyze:bundle": "node scripts/bundle-analyzer.js",
