@@ -1,10 +1,10 @@
 "use client";
-import React from "react";
-import Link from "next/link";
-import ContactForm from "./ContactForm";
-import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { navPages } from "@/lib/multilingual-texts";
+import { Facebook, Instagram, Twitter, YoutubeIcon } from "lucide-react";
+import Link from "next/link";
+import React from "react";
+import ContactForm from "./ContactForm";
 
 const Footer: React.FC = () => {
   const { language } = useLanguage();
@@ -75,7 +75,7 @@ const Footer: React.FC = () => {
               <Facebook className="h-5 w-5" />
             </a>
             <a
-              href="https://www.instagram.com/jahannuma_official?igsh=aDdhdXV6OWtmZzRt"
+              href="https://www.instagram.com/jahan_numa_official_"
               className="hover:text-primary"
             >
               <Instagram className="h-5 w-5" />
@@ -86,8 +86,8 @@ const Footer: React.FC = () => {
             >
               <Twitter className="h-5 w-5" />
             </a>
-            <a href="#" className="hover:text-primary">
-              <Linkedin className="h-5 w-5" />
+            <a href="#" className="https://youtube.com/@jahannuma.">
+              <YoutubeIcon className="h-5 w-5" />
             </a>
           </div>
         </div>

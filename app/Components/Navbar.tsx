@@ -178,7 +178,7 @@ const Navbar: React.FC = () => {
                 {getButtonText("signIn" as any, language as any)}
               </Link>
             </SignedOut>
-            <Link href={`https://rzp.io/l/QpiIjiU`} className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out px-3.5 py-2.5 rounded-sm text-[1rem]">
+            <Link href="/donate" className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out px-3.5 py-2.5 rounded-sm text-[1rem]">
               {language === "UR" ? "ہمیں عطیہ کریں" : language == "EN" ? "Donate Us" : "हमें दान करें"}
             </Link>
             <SignedIn>
