@@ -5,6 +5,7 @@ import Navbar from "@/app/Components/Navbar";
 import PWAInstall from "@/app/Components/PWAInstall";
 import { PerformanceMonitor } from "@/app/Components/SEOEnhanced";
 
+import DialogManager from "@/components/dialogs/dialog-manager";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import Providers from "./providers";
@@ -166,6 +167,7 @@ export default function RootLayout({
           <ResourceHints />
           <PerformanceMonitor />
           <PWAInstall />
+          <DialogManager />
 
         </ClerkProvider>
       </body>

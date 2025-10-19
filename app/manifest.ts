@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#F0D586',
     orientation: 'portrait-primary',
     scope: '/',
-    lang: 'en',
+    lang: 'ur',
     categories: ['education', 'books', 'entertainment', 'lifestyle'],
 
     icons: [
@@ -103,13 +103,13 @@ export default function manifest(): MetadataRoute.Manifest {
       },
       {
         src: '/screenshots/download.jpg',
-        sizes: '390x844',
+        sizes: '1280x720',
         type: 'image/jpg',
         form_factor: 'narrow',
         label: 'Download Feature'
       },
       {
-        src: '/screenshots/desktip_home.jpg',
+        src: '/screenshots/desktop_home.jpg',
         sizes: '390x844',
         type: 'image/jpg',
         form_factor: 'wide',
@@ -139,19 +139,6 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [
           {
             src: '/icons/ghazlen.png',
-            sizes: '96x96',
-            type: 'image/png'
-          }
-        ]
-      },
-      {
-        name: 'Nazms',
-        short_name: 'Nazms',
-        description: 'Read Nazms',
-        url: '/Nazmen',
-        icons: [
-          {
-            src: '/icons/nazmen.png',
             sizes: '96x96',
             type: 'image/png'
           }
