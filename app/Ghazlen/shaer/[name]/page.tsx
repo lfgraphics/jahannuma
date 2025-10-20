@@ -119,7 +119,7 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
   return (
     <div>
       {/* Removed legacy name dialog; comments rely on authenticated user */}
-      <div className="flex flex-row w-screen bg-white p-3 justify-center items-center top-14 z-10">{`${displayName} کی غزلیں`}</div>
+      <div className="flex flex-row w-screen p-3 justify-center items-center top-14 z-10">{`${displayName} کی غزلیں`}</div>
       {isLoading && <SkeletonLoader />}
       {!isLoading && (
         <section>

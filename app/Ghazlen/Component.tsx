@@ -207,8 +207,15 @@ const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
   };
   //clear search box handeling
   const clearSearch = () => {
-    setSearchText("");
-    setShowIcons(false);
+    let input = document.getElementById("searchBox") as HTMLInputElement;
+    let xMark = document.getElementById("searchClear");
+    let sMark = document.getElementById("searchIcon");
+
+    input.value ? (input.value = "") : null;
+    xMark?.classList.add("hidden");
+    sMark?.classList.add("hidden");
+    // Clear the searched data and show all data again
+    setSearchText(""); // Clear the searchText state
   };
   // Likes handled inside DataCard; legacy no-op removed
   //handeling sahre
@@ -303,7 +310,7 @@ const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
         optimisticUpdate.updateRecord(dataId, { comments: Math.max(0, nextCount - 1) });
       }
     } catch (e) {
-    // errors are toasted inside hook
+      // errors are toasted inside hook
     }
   };
   const openComments = (dataId: string) => {

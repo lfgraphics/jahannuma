@@ -97,7 +97,7 @@ const nextConfig: NextConfig = {
       },
       {
         // Service Worker should not be cached
-        source: "/service-worker.js",
+        source: "/sw.js",
         headers: [
           {
             key: "Cache-Control",

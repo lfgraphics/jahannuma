@@ -1,21 +1,25 @@
 "use client";
 import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, AshaarRecord } from "@/app/types";
-import { useShareAction } from "@/hooks/useShareAction";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { buildShaerFilter, formatAshaarRecord } from "@/lib/airtable-utils";
+import { shareRecordWithCount } from "@/lib/social-utils";
 import React, { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import ComponentsLoader from "./ComponentsLoader";
 
 interface Props {
   takhallus: string;
 }
 
-const BASE_ID = "appeI2xzzyvUN5bR7";
-const TABLE = "Ashaar";
+
 
 const Ashaar: React.FC<Props> = ({ takhallus }) => {
   const [records, setRecords] = useState<AirtableRecord<AshaarRecord>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { language } = useLanguage();
+  const { updateRecord: updateAshaar } = useAirtableMutation("ashaar");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +60,42 @@ const Ashaar: React.FC<Props> = ({ takhallus }) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   const handleCardClick = (_rec: AirtableRecord<AshaarRecord>) => { };
   const openComments = (_id: string) => { };
-  const share = useShareAction({ section: "Ashaar", title: "" });
+
+  const handleShareClick = async (shaerData: any): Promise<void> => {
+    toggleanaween(null);
+    await shareRecordWithCount(
+      {
+        section: "Ashaar",
+        id: shaerData.id,
+        title: shaerData.fields.shaer,
+        textLines: shaerData.fields.ghazalHead || [],
+        fallbackSlugText:
+          (shaerData.fields.ghazalHead?.[0]) ||
+          (shaerData.fields.unwan?.[0]) ||
+          "",
+        language,
+      },
+      {
+        onShared: async () => {
+          try {
+            const updatedShares = (shaerData.fields.shares ?? 0) + 1;
+            // Note: This component doesn't have optimistic updates like the others
+            // We could add them if needed
+            await updateAshaar(shaerData.id, { shares: updatedShares });
+            // Update local state to reflect the change
+            setRecords(prev => prev.map(record =>
+              record.id === shaerData.id
+                ? { ...record, fields: { ...record.fields, shares: updatedShares } }
+                : record
+            ));
+          } catch (error) {
+            console.error("Error updating shares:", error);
+            toast.error("شیئر کرنے میں خرابی");
+          }
+        },
+      }
+    );
+  };
 
   return (
     <div
@@ -77,22 +116,22 @@ const Ashaar: React.FC<Props> = ({ takhallus }) => {
             shaerData={rec as any}
             index={index}
             download={false}
+            baseId="appeI2xzzyvUN5bR7"
+            table="Ashaar"
             storageKey="Ashaar"
             toggleanaween={toggleanaween}
             openanaween={openanaween}
             handleCardClick={handleCardClick as any}
-            handleShareClick={(r: any) =>
-              share.handleShare({
-                recordId: (r as AirtableRecord<AshaarRecord>).id,
-                title: (r as AirtableRecord<AshaarRecord>).fields.shaer,
-                textLines:
-                  (r as AirtableRecord<AshaarRecord>).fields.ghazalHead || [],
-                slugId: (r as AirtableRecord<AshaarRecord>).fields.slugId,
-                currentShares:
-                  (r as AirtableRecord<AshaarRecord>).fields.shares ?? 0,
-              })
-            }
+            handleShareClick={handleShareClick}
             openComments={openComments}
+            onLikeChange={({ id, likes }) => {
+              // Update local state to reflect the like change
+              setRecords(prev => prev.map(record =>
+                record.id === id
+                  ? { ...record, fields: { ...record.fields, likes } }
+                  : record
+              ));
+            }}
           />
         ))}
       {/* Share no longer requires login */}

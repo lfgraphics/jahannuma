@@ -10,7 +10,7 @@ const isProtectedPath = (pathname: string) => {
 };
 
 // Configure Clerk authorized parties (origins) from env; fallback to localhost
-const authorizedParties = (process.env.NEXT_PUBLIC_ALLOWED_ORIGINS || "http://localhost:3000,https://localhost:3000,https://www.jahan-numa.org")
+const authorizedParties = (process.env.NEXT_PUBLIC_ALLOWED_ORIGINS || "http://localhost:3000,https://localhost:3000,https://www.jahan-numa.org،https://jhbeta.vercel.app")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);

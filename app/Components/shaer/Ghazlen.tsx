@@ -1,23 +1,26 @@
 "use client";
 import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, GhazlenRecord } from "@/app/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { useGhazlenData } from "@/hooks/useGhazlenData";
-import { useShareAction } from "@/hooks/useShareAction";
 import { buildShaerFilter, formatGhazlenRecord } from "@/lib/airtable-utils";
+import { shareRecordWithCount } from "@/lib/social-utils";
 import React, { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import ComponentsLoader from "./ComponentsLoader";
 
 interface Props {
   takhallus: string;
 }
 
-const BASE_ID = "appvzkf6nX376pZy6";
-const TABLE = "Ghazlen";
+
 
 const Ghazlen: React.FC<Props> = ({ takhallus }) => {
   const [loading, setLoading] = useState(true);
+  const { language } = useLanguage();
 
-  const { records, isLoading } = useGhazlenData({
+  const { records, isLoading, optimisticUpdate } = useGhazlenData({
     filterByFormula: buildShaerFilter(takhallus),
     pageSize: 30,
   });
@@ -26,13 +29,42 @@ const Ghazlen: React.FC<Props> = ({ takhallus }) => {
     [records]
   );
 
+  const { updateRecord: updateGhazlen } = useAirtableMutation("ghazlen");
+
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   const toggleanaween = (cardId: string | null) =>
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   const handleCardClick = (_rec: AirtableRecord<GhazlenRecord>) => {};
   const openComments = (_id: string) => {};
 
-  const share = useShareAction({ section: "Ghazlen", title: "" });
+  const handleShareClick = async (shaerData: any): Promise<void> => {
+    toggleanaween(null);
+    await shareRecordWithCount(
+      {
+        section: "Ghazlen",
+        id: shaerData.id,
+        title: shaerData.fields.shaer,
+        textLines: shaerData.fields.ghazalHead || [],
+        fallbackSlugText:
+          (shaerData.fields.ghazalHead?.[0]) ||
+          (shaerData.fields.unwan?.[0]) ||
+          "",
+        language,
+      },
+      {
+        onShared: async () => {
+          try {
+            const updatedShares = (shaerData.fields.shares ?? 0) + 1;
+            optimisticUpdate.updateRecord(shaerData.id, { shares: updatedShares });
+            await updateGhazlen(shaerData.id, { shares: updatedShares });
+          } catch {
+            optimisticUpdate.revert();
+            toast.error("شیئر کرنے میں خرابی");
+          }
+        },
+      }
+    );
+  };
 
   useEffect(() => {
     setLoading(isLoading);
@@ -57,25 +89,17 @@ const Ghazlen: React.FC<Props> = ({ takhallus }) => {
             shaerData={rec as any}
             index={index}
             download={false}
+            baseId="appvzkf6nX376pZy6"
+            table="Ghazlen"
             storageKey="Ghazlen"
             toggleanaween={toggleanaween}
             openanaween={openanaween}
             handleCardClick={handleCardClick as any}
-            handleShareClick={(r: any) => {
-              const rr = r as AirtableRecord<GhazlenRecord>;
-              const headArr = Array.isArray(rr.fields.ghazalHead)
-                ? rr.fields.ghazalHead
-                : String(rr.fields.ghazalHead || "").split("\n");
-              return share.handleShare({
-                baseId: BASE_ID,
-                recordId: rr.id,
-                title: rr.fields.shaer,
-                textLines: headArr,
-                slugId: rr.fields.slugId,
-                currentShares: rr.fields.shares ?? 0,
-              });
-            }}
+            handleShareClick={handleShareClick}
             openComments={openComments}
+            onLikeChange={({ id, likes }) => {
+              optimisticUpdate.updateRecord(id, { likes });
+            }}
           />
         ))}
       {/* Share no longer requires login */}

@@ -57,6 +57,7 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
   // Removed modal state; comments use a Drawer inside CommentSection
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebouncedValue(searchText, 300);
+  const [scrolledPosition, setScrolledPosition] = useState<number>();
 
   const [openanaween, setOpenanaween] = useState<string | null>(null);
   // Comment system
@@ -123,7 +124,7 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
         const aSher = (Array.isArray(a.fields.sher) ? a.fields.sher.join(' ') : String(a.fields.sher || '')).toLowerCase();
         const aBody = (a.fields.body || '').toLowerCase();
         const aUnwan = (Array.isArray(a.fields.unwan) ? a.fields.unwan.join(' ') : String(a.fields.unwan || '')).toLowerCase();
-        
+
         const bShaer = (b.fields.shaer || '').toLowerCase();
         const bSher = (Array.isArray(b.fields.sher) ? b.fields.sher.join(' ') : String(b.fields.sher || '')).toLowerCase();
         const bBody = (b.fields.body || '').toLowerCase();
@@ -140,7 +141,7 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
 
         const scoreA = getScore(aShaer, aSher, aBody, aUnwan);
         const scoreB = getScore(bShaer, bSher, bBody, bUnwan);
-        
+
         // Higher score first, then alphabetical by shaer name
         if (scoreA !== scoreB) {
           return scoreB - scoreA;
@@ -166,7 +167,9 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
   };
   // re-run when search clicked
   const searchQuery = () => {
-    // no-op: filterFormula derives from searchText
+    if (typeof window !== "undefined") {
+      setScrolledPosition(window.scrollY);
+    }
   };
   //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -192,7 +195,6 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
     sMark?.classList.add("hidden");
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
-    // setDataItems(data.getAllShaers()); // Restore the original data
   };
   // Likes handled within DataCard; legacy no-op removed
   // handle share via centralized helper; increment only on confirmed OS share
@@ -279,7 +281,16 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
     setSelectedCommentId(null);
     setRecordId(null);
   };
-  // Legacy search reset removed; filtering is derived from searchText
+  const resetSearch = () => {
+    searchText && clearSearch();
+    if (typeof window !== "undefined") {
+      let section = window;
+      section!.scrollTo({
+        top: scrolledPosition ?? 0,
+        behavior: "smooth",
+      } as ScrollToOptions);
+    }
+  };
 
   return (
     <div>
@@ -337,6 +348,19 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
         </div>
       </div>
       {loading && <SkeletonLoader />}
+      {debouncedSearchText && dataItems.length === 0 && !loading && (
+        <div className="block mx-auto text-center my-3 text-2xl">
+          سرچ میں کچھ نہیں ملا
+        </div>
+      )}
+      {debouncedSearchText && (
+        <button
+          className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
+          onClick={resetSearch}
+        >
+          تلاش ریسیٹ کریں
+        </button>
+      )}
       {!loading && (
         <section>
           <div

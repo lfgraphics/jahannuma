@@ -257,7 +257,6 @@ const Page: React.FC<{}> = () => {
     sMark?.classList.add("hidden");
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
-    // setDataItems(data.getAllShaers()); // Restore the original data
   };
   const resetSearch = () => {
     searchText && clearSearch();

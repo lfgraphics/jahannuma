@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 // aos for cards animation
+import { Button } from "@/components/ui/button";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 import { useAirtableRecord } from "@/hooks/useAirtableRecord";
 import useAuthGuard from "@/hooks/useAuthGuard";
@@ -148,9 +149,8 @@ export default function Page() {
               <div className="photo mb-4">
                 <img
                   className="h-full w-[50%] p-2 border-2 block mx-auto"
-                  src={`${
-                    record?.fields?.book?.[0]?.thumbnails?.large?.url ?? ""
-                  }`}
+                  src={`${record?.fields?.book?.[0]?.thumbnails?.large?.url ?? ""
+                    }`}
                   height={record?.fields?.book?.[0]?.thumbnails?.large?.height}
                   width={record?.fields?.book?.[0]?.thumbnails?.large?.width}
                   alt="Book cover"
@@ -225,10 +225,12 @@ export default function Page() {
               )}
             </div>
           </div>
-          <RefreshCwIcon
-            onClick={() => setBookKey(Math.random() + 1)}
-            className="sticky top-[95px] right-3"
-          />
+          <Button onClick={() => setBookKey(Math.random() + 1)}>
+            <RefreshCwIcon
+              className="sticky top-[95px] right-3"
+            />
+            رفرش
+          </Button>
           <div id="pdf" className="p-4" key={bookKey}>
             {bookUrl && <PdfViewer url={bookUrl} />}
           </div>

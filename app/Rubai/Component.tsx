@@ -180,7 +180,6 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     sMark?.classList.add("hidden");
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
-    // setDataItems(data.getAllShaers()); // Restore the original data
   };
   // Update local list on like change (for instant UI feedback)
   const handleLikeChange = (args: {

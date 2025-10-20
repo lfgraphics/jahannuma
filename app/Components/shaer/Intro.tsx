@@ -3,6 +3,7 @@ import ComponentsLoader from "./ComponentsLoader";
 // aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { Bookmark } from "lucide-react";
 
 interface IntroProps {
   data: {
@@ -50,8 +51,11 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
       {!data && <ComponentsLoader />}
       {insideBrowser && data && (
         <div className="poet-intro text-lg">
-          {data.description && (
-            <div className="block mx-auto my-5">
+          {data.description &&
+            <div className="block mx-auto my-5 p-4 border-4 border-gray-500 bg-gray-300 text-black border-double relative shadow-lg">
+              <div className="absolute -top-2 right-0">
+                <Bookmark width={24} fill="#F0D586" color="#984a02" />
+              </div>
               <ul>
                 {data?.description?.split("\n").map((line, index) => (
                   <li data-aos="fade-up" key={index}>
@@ -60,7 +64,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
                 ))}
               </ul>
             </div>
-          )}
+          }
           <ul>
             <p>
               {data.tafseel?.split("\n").map((line, index) => (
