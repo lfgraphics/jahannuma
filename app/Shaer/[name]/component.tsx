@@ -33,6 +33,8 @@ interface IntroFields {
   nazmen?: boolean;
   ashaar?: boolean;
   rubai?: boolean;
+  likes?: number;
+  id?: string;
   photo?: Array<{
     id: string;
     url: string;
@@ -91,6 +93,8 @@ const ShaerComponent = ({
       hiName: toLines(rec.hiName),
       enLocation: toLines(rec.enLocation),
       hiLocation: toLines(rec.hiLocation),
+      likes: Number(rec.likes || 0),
+      id: rec.id || initialData?.id,
     } as IntroFields;
   }, [initialData]);
 
@@ -138,7 +142,18 @@ const ShaerComponent = ({
 
   return (
     <div dir="rtl" className="container mx-auto flex flex-col">
-      <Intro data={data as any} currentTab={activeNav} />
+      <Intro
+        data={data as any}
+        currentTab={activeNav}
+        recordId={initialData?.id}
+        showLikeButton={true}
+        baseId="appgWv81tu4RT3uRB"
+        table="Intro"
+        storageKey="Shura"
+        onLikeChange={({ id, liked, likes }) => {
+          console.info("Poet like changed", { id, liked, likes });
+        }}
+      />
       <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 border-b-2 self-center pb-0 px-4 pt-4 text-xl">
         <div
           className={`nav-item ${activeNav === "تعارف" ? "active" : ""

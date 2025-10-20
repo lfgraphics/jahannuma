@@ -1,16 +1,21 @@
-import { CalendarDays, MapPin, Share2 } from "lucide-react";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useLikeButton } from "@/hooks/useLikeButton";
+import { CalendarDays, Heart, MapPin, Share2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Loader from "../Loader";
 
 interface IntroProps {
   data: {
-    name: string;
+    name?: string;
     takhallus: string;
-    dob: string;
-    description: string;
-    location: string;
-    tafseel: string;
-    photo: {
+    dob?: string;
+    description?: string;
+    location?: string;
+    tafseel?: string;
+    likes?: number;
+    id?: string;
+    photo?: {
       filename: string;
       id: string;
       size: number;
@@ -35,17 +40,46 @@ interface IntroProps {
         };
       };
     }[];
-    ghazalen: boolean;
-    nazmen: boolean;
-    ashaar: boolean;
-    eBooks: boolean;
+    ghazalen?: boolean;
+    nazmen?: boolean;
+    ashaar?: boolean;
+    eBooks?: boolean;
   } | null;
   currentTab?: string; // currently selected tab label for sharing (?tab=...)
+  recordId?: string; // Airtable record ID for like functionality
+  showLikeButton?: boolean;
+  baseId?: string;
+  table?: string;
+  storageKey?: string;
+  onLikeChange?: (args: { id: string; liked: boolean; likes: number }) => void;
 }
 
-const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
+const Intro: React.FC<IntroProps> = ({
+  data,
+  currentTab,
+  recordId,
+  showLikeButton = true,
+  baseId = "appgWv81tu4RT3uRB",
+  table = "Intro",
+  storageKey = "Shura",
+  onLikeChange
+}) => {
   const [insideBrowser, setInsideBrowser] = useState(false);
-  // const [loading, setLoading] = useState(true);
+  const { requireAuth, showLoginDialog, setShowLoginDialog } = useAuthGuard();
+
+  // Like functionality
+  const likeEnabled = !!(showLikeButton && (data?.id || recordId));
+  const recId = (data?.id || recordId) as string | undefined;
+  const like = likeEnabled && recId
+    ? useLikeButton({
+      baseId,
+      table,
+      storageKey,
+      recordId: recId,
+      currentLikes: Number(data?.likes || 0),
+      onChange: onLikeChange,
+    })
+    : null;
   const handleShareClick = () => {
     try {
       if (navigator.share) {
@@ -60,9 +94,8 @@ const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
 
         navigator
           .share({
-            text: `${title}\n\n${
-              text !== "" ? `${text}\n` : ""
-            }Found this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
+            text: `${title}\n\n${text !== "" ? `${text}\n` : ""
+              }Found this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
             url: shareUrl,
           })
           .then(() => console.log("Successful share"))
@@ -105,15 +138,14 @@ const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
             >
               <div className="photo lg:h-32 h-24 md:h-28 lg:w-32 w-24 md:w-28 rounded-full overflow-clip border-[#984a0291] border-4 ">
                 {data &&
-                insideBrowser &&
-                data.photo &&
-                data.photo.length > 0 &&
-                data.photo[0]?.thumbnails?.large ? (
+                  insideBrowser &&
+                  data.photo &&
+                  data.photo.length > 0 &&
+                  data.photo[0]?.thumbnails?.large ? (
                   <img
                     alt={`${data.photo[0]?.filename ?? "poet"}`}
-                    src={`${
-                      data.photo[0]?.thumbnails?.large?.url ?? "/poets/nodp.jpg"
-                    }`}
+                      src={`${data.photo[0]?.thumbnails?.large?.url ?? "/poets/nodp.jpg"
+                        }`}
                     height={data.photo[0]?.thumbnails?.large?.height ?? 150}
                     width={data.photo[0]?.thumbnails?.large?.width ?? 150}
                   ></img>
@@ -143,9 +175,35 @@ const Intro: React.FC<IntroProps> = ({ data, currentTab }) => {
                 </p>
               </div>
               <span className="mx-3 text-white font-bold">|</span>{" "}
-              <div className="navs" onClick={() => handleShareClick()}>
-                <Share2 color="white" className="text-3xl ml-6" />
+              <div className="flex items-center gap-4">
+                {likeEnabled && like && (
+                  <button
+                    className={`flex items-center gap-1 transition-colors duration-300 ${like.isLiked ? "text-red-400" : "text-white"
+                      }`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (requireAuth("like")) like.handleLikeClick();
+                    }}
+                    disabled={like.isDisabled}
+                    aria-disabled={like.isDisabled}
+                    title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+                  >
+                    <Heart className="text-2xl" fill="currentColor" size={24} />
+                    <span className="text-sm">{like.likesCount}</span>
+                  </button>
+                )}
+                <div className="navs cursor-pointer" onClick={() => handleShareClick()}>
+                  <Share2 color="white" className="text-2xl" size={24} />
+                </div>
               </div>
+              {likeEnabled && (
+                <LoginRequiredDialog
+                  open={showLoginDialog}
+                  onOpenChange={setShowLoginDialog}
+                  actionType="like"
+                />
+              )}
             </div>
           </div>
         </div>

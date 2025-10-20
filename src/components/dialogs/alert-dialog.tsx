@@ -156,7 +156,7 @@ function AlertItem({ alert, onClick }: AlertItemProps) {
       className={`relative ${alert.url ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
       onClick={onClick}
     >
-      <div className="relative w-80 h-80 rounded-lg overflow-hidden">
+      <div className="relative w-64 h-64 rounded-lg overflow-hidden">
         <img
           src={alert.image}
           alt={alert.title || 'Alert'}

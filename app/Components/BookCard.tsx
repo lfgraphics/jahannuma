@@ -29,6 +29,7 @@ interface BookRecord {
 interface CardProps {
   data: BookRecord;
   showLikeButton?: boolean;
+  showShareButton?: boolean;
   baseId?: string;
   table?: string;
   storageKey?: string;
@@ -50,7 +51,7 @@ import useAuthGuard from "@/hooks/useAuthGuard";
 import { useLikeButton } from "@/hooks/useLikeButton";
 import { Heart } from "lucide-react";
 
-const Card: React.FC<CardProps> = ({ data, showLikeButton = false, baseId = "appXcBoNMGdIaSUyA", table = "E-Books", storageKey = "Books", onLikeChange, swrKey }) => {
+const Card: React.FC<CardProps> = ({ data, showLikeButton = false, showShareButton = true, baseId = "appXcBoNMGdIaSUyA", table = "E-Books", storageKey = "Books", onLikeChange, swrKey }) => {
   const { fields } = data;
   const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
   const { bookName, publishingDate, book, id: fieldId, desc, writer, slugId } = fields;
@@ -75,6 +76,36 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, baseId = "app
       })
     : null;
 
+  // Share functionality
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      if (navigator.share) {
+        const title = bookName || "کتاب";
+        const text = `${title}${writer ? ` - ${writer}` : ""}\n${Array.isArray(desc) ? desc.join(" ") : desc || ""}`;
+        const shareUrl = `${window.location.origin}/E-Books/${bookSlug}/${recordId}`;
+
+        navigator
+          .share({
+            title,
+            text: `${text}\n\nFound this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
+            url: shareUrl,
+          })
+          .then(() => console.log("Successful share"))
+          .catch((error) => console.log("Error sharing", error));
+      } else {
+        // Fallback: copy to clipboard
+        const shareUrl = `${window.location.origin}/E-Books/${bookSlug}/${recordId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          console.log("URL copied to clipboard");
+        });
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
   return (
     <div className="rounded overflow-hidden shadow-lg mx-auto border border-border bg-background text-foreground w-[180px]">
       <div className="relative bg-cover bg-center w-[180px] h-[260px]">
@@ -90,18 +121,29 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, baseId = "app
             />
           )}
         </Link>
-        {likeEnabled && like && (
-          <button
-            className={`absolute top-0 right-0 px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 ${like.isHydratingLikes ? "text-gray-600" : (like.isLiked ? "text-red-600" : "text-gray-600")}`}
-            onClick={async (e) => { e.preventDefault(); e.stopPropagation(); if (!requireAuth("like")) return; await like.handleLikeClick(); }}
-            disabled={like.isHydratingLikes || like.isDisabled}
-            aria-disabled={like.isHydratingLikes || like.isDisabled}
-            title={like.isHydratingLikes ? "" : (like.isLiked ? "پسندیدہ" : "پسند کریں")}
-          >
-            <Heart className="inline" fill="currentColor" size={16} />
-            <span className="text-xs text-foreground">{like.likesCount}</span>
-          </button>
-        )}
+        <div className="absolute top-0 right-0 flex gap-1">
+          {likeEnabled && like && (
+            <button
+              className={`px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 ${like.isHydratingLikes ? "text-gray-600" : (like.isLiked ? "text-red-600" : "text-gray-600")}`}
+              onClick={async (e) => { e.preventDefault(); e.stopPropagation(); if (!requireAuth("like")) return; await like.handleLikeClick(); }}
+              disabled={like.isHydratingLikes || like.isDisabled}
+              aria-disabled={like.isHydratingLikes || like.isDisabled}
+              title={like.isHydratingLikes ? "" : (like.isLiked ? "پسندیدہ" : "پسند کریں")}
+            >
+              <Heart className="inline" fill="currentColor" size={16} />
+              <span className="text-xs text-foreground">{like.likesCount}</span>
+            </button>
+          )}
+          {/* {showShareButton && (
+            <button
+              className="px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 text-gray-600 hover:text-blue-600"
+              onClick={handleShareClick}
+              title="شیئر کریں"
+            >
+              <Share2 className="inline" size={16} />
+            </button>
+          )} */}
+        </div>
       </div>
       <div className="px-3 py-2">
         <Link href={{ pathname: `/E-Books/${bookSlug}/${recordId}` }}>

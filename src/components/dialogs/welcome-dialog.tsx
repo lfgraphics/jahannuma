@@ -32,7 +32,7 @@ export default function WelcomeDialog() {
       <DialogContent className="max-w-80 mx-auto">
         <DialogTitle />
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative w-80 h-80 rounded-lg overflow-hidden">
+          <div className="relative w-64 h-64 rounded-lg overflow-hidden">
             <img
               src="/assets/welcome.jpg"
               alt="Welcome"

@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 import { useAirtableRecord } from "@/hooks/useAirtableRecord";
 import useAuthGuard from "@/hooks/useAuthGuard";
+import { useLikeButton } from "@/hooks/useLikeButton";
 import { TTL } from "@/lib/airtable-fetcher";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { RefreshCwIcon } from "lucide-react";
+import { Heart, RefreshCwIcon, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Dynamically import PdfViewer on the client only to avoid SSR/window issues
@@ -39,6 +40,8 @@ interface BookRecordFields {
   maloomat?: string;
   download?: boolean;
   book: AirtableAttachment[];
+  likes?: number;
+  id?: string;
 }
 
 export default function Page() {
@@ -60,6 +63,49 @@ export default function Page() {
     id,
     { ttl: TTL.fast }
   );
+
+  // Like functionality - after record is available
+  const like = useLikeButton({
+    baseId: "appXcBoNMGdIaSUyA",
+    table: "E-Books",
+    storageKey: "Books",
+    recordId: id || "",
+    currentLikes: Number(record?.fields?.likes || 0),
+    onChange: ({ id, liked, likes }: { id: string; liked: boolean; likes: number }) => {
+      console.info("Book like changed", { id, liked, likes });
+    },
+  });
+
+  // Share functionality
+  const handleShareClick = () => {
+    try {
+      if (navigator.share) {
+        const title = record?.fields?.bookName || "کتاب";
+        const writer = record?.fields?.writer;
+        const desc = record?.fields?.desc;
+        const text = `${title}${writer ? ` - ${writer}` : ""}\n${desc || ""}`;
+        const shareUrl = window.location.href;
+
+        navigator
+          .share({
+            title,
+            text: `${text}\n\nFound this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
+            url: shareUrl,
+          })
+          .then(() => console.log("Successful share"))
+          .catch((error) => console.log("Error sharing", error));
+      } else {
+        // Fallback: copy to clipboard
+        const shareUrl = window.location.href;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          toast.success("لنک کاپی ہو گیا");
+        });
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      toast.error("شیئر کرنے میں خرابی");
+    }
+  };
 
   useEffect(() => {
     AOS.init({
@@ -192,6 +238,35 @@ export default function Page() {
                       </p>
                     </div>
                   )}
+                  {/* Like and Share buttons */}
+                  <div className="flex items-center gap-4 my-4">
+                    <button
+                      className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors duration-300 ${like.isLiked
+                        ? "bg-red-100 text-red-600 border border-red-300"
+                        : "bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200"
+                        }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (requireAuth("like")) like.handleLikeClick();
+                      }}
+                      disabled={like.isDisabled}
+                      title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+                    >
+                      <Heart className="w-5 h-5" fill="currentColor" />
+                      <span>{like.likesCount}</span>
+                      <span className="text-sm">{like.isLiked ? "پسندیدہ" : "پسند"}</span>
+                    </button>
+
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 rounded-md bg-blue-100 text-blue-600 border border-blue-300 hover:bg-blue-200 transition-colors duration-300"
+                      onClick={handleShareClick}
+                      title="شیئر کریں"
+                    >
+                      <Share2 className="w-5 h-5" />
+                      <span className="text-sm">شیئر</span>
+                    </button>
+                  </div>
+
                   <div className="scale-75">
                     <Link
                       href={`#pdf`}
@@ -229,7 +304,7 @@ export default function Page() {
             <RefreshCwIcon
               className="sticky top-[95px] right-3"
             />
-            رفرش
+            ریفرش
           </Button>
           <div id="pdf" className="p-4" key={bookKey}>
             {bookUrl && <PdfViewer url={bookUrl} />}

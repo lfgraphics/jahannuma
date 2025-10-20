@@ -24,6 +24,8 @@ interface IntroFields {
   nazmen?: boolean;
   ashaar?: boolean;
   rubai?: boolean;
+  likes?: number;
+  id?: string;
   photo?: Array<{
     id: string;
     url: string;
@@ -76,6 +78,7 @@ async function fetchShaerData(nameParam: string): Promise<ShaerRecord | null> {
         "description",
         "enDescription",
         "hiDescription",
+        "likes",
       ].join(","),
     });
 
