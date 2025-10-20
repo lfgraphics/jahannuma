@@ -49,7 +49,7 @@ async function fetchShaerData(nameParam: string): Promise<ShaerRecord | null> {
   try {
     const decoded = decodeURIComponent(nameParam).replace(/-/g, " ").trim();
     const safe = escapeAirtableFormulaValue(decoded);
-    const filterByFormula = `({takhallus}='${safe}')`;
+    const filterByFormula = `OR({takhallus}='${safe}', {enTakhallus}='${safe}', {hiTakhallus}='${safe}')`;
 
     const searchParams = new URLSearchParams({
       pageSize: "1",
