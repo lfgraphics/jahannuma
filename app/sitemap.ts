@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://jahannuma.com' // Replace with your actual domain
+  const baseUrl = 'https://www.jahan-numa.org' // Replace with your actual domain
 
   // Define all the main routes from your app directory
   const routes = [
