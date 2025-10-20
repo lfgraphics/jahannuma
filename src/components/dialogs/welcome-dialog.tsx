@@ -3,10 +3,8 @@
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from '@/components/ui/dialog';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 const WELCOME_DIALOG_KEY = 'welcome-dialog-shown';
@@ -31,20 +29,14 @@ export default function WelcomeDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle className="text-center text-xl font-semibold">
-            خوش آمدید - Welcome
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-80 mx-auto">
+        <DialogTitle />
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative w-full h-64 rounded-lg overflow-hidden bg-gray-100">
-            <Image
+          <div className="relative w-80 h-80 rounded-lg overflow-hidden">
+            <img
               src="/assets/welcome.jpg"
               alt="Welcome"
-              fill
-              className="object-cover"
-              priority
+              className="object-fill w-full h-full"
               onError={(e) => {
                 console.error('Welcome image failed to load');
                 // Hide the image and show a placeholder

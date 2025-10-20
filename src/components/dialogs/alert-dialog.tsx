@@ -9,7 +9,8 @@ import {
 } from '@/components/ui/carousel';
 import {
   Dialog,
-  DialogContent
+  DialogContent,
+  DialogTitle
 } from '@/components/ui/dialog';
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -105,6 +106,7 @@ export default function AlertDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl mx-auto">
+        <DialogTitle />
         <div className="relative">
           {alerts.length === 1 ? (
             <AlertItem alert={alerts[0]} onClick={() => handleItemClick(alerts[0])} />
@@ -154,7 +156,7 @@ function AlertItem({ alert, onClick }: AlertItemProps) {
       className={`relative ${alert.url ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
       onClick={onClick}
     >
-      <div className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden">
+      <div className="relative w-80 h-80 rounded-lg overflow-hidden">
         <img
           src={alert.image}
           alt={alert.title || 'Alert'}
