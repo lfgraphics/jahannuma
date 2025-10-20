@@ -52,7 +52,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
       {insideBrowser && data && (
         <div className="poet-intro text-lg">
           {data.description &&
-            <div className="block mx-auto my-5 p-4 border-4 border-gray-500 bg-gray-300 text-black border-double relative shadow-lg">
+            <div className="block mx-auto my-5 p-4 border-4 border-white rounded-md bg-gray-300 text-black border-double relative shadow-lg">
               <div className="absolute -top-2 right-0">
                 <Bookmark width={24} fill="#F0D586" color="#984a02" />
               </div>

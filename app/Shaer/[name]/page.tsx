@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import ShaerComponent from "./component";
 
 interface IntroFields {
-  description: string;
+  description?: string;
+  enDescription?: string;
+  hiDescription?: string;
   takhallus: string;
   name?: string;
   dob?: string;
@@ -22,7 +24,20 @@ interface IntroFields {
   nazmen?: boolean;
   ashaar?: boolean;
   rubai?: boolean;
-  photo?: string | string[];
+  photo?: Array<{
+    id: string;
+    url: string;
+    filename: string;
+    size: number;
+    type: string;
+    width: number;
+    height: number;
+    thumbnails?: {
+      small: { url: string; width: number; height: number };
+      large: { url: string; width: number; height: number };
+      full: { url: string; width: number; height: number };
+    };
+  }>;
 }
 
 interface ShaerRecord {
@@ -108,30 +123,64 @@ export async function generateMetadata({
       };
     }
 
-    // Decode the name parameter to get poet name
-    const decoded = decodeURIComponent(nameParam).replace(/-/g, " ").trim();
-    const poetName = decoded || "نامعلوم شاعر";
-    const description = `${poetName} کی شاعری اور تخلیقات - جہاں نما`;
+    // Fetch poet data for enhanced metadata
+    const shaerData = await fetchShaerData(nameParam);
 
-    // Basic metadata without server-side fetch to avoid errors
-    return {
+    // Use actual poet data if available, otherwise fallback to decoded name
+    const poetName = shaerData?.fields?.takhallus ||
+      shaerData?.fields?.name ||
+      decodeURIComponent(nameParam).replace(/-/g, " ").trim() ||
+      "نامعلوم شاعر";
+
+    // Ensure description is always a string for metadata
+    const getStringDescription = (field?: string | string[]): string => {
+      if (Array.isArray(field)) {
+        return field.join(' ');
+      }
+      return field || '';
+    };
+
+    const description = shaerData?.fields?.description ||
+      shaerData?.fields?.enDescription ||
+      shaerData?.fields?.hiDescription ||
+      getStringDescription(shaerData?.fields?.tafseel) ||
+      `${poetName} کی شاعری اور تخلیقات - جہاں نما`;
+
+    // Get poet's image for social media sharing
+    const poetImage = shaerData?.fields?.photo && Array.isArray(shaerData.fields.photo) && shaerData.fields.photo.length > 0
+      ? shaerData.fields.photo[0]?.thumbnails?.large?.url || shaerData.fields.photo[0]?.url
+      : null;
+
+    const baseMetadata = {
       title: `${poetName} - جہاں نما`,
       description,
-      openGraph: {
-        title: `${poetName} - جہاں نما`,
-        description,
-        type: "profile",
-        locale: "ur_PK",
-        siteName: "جہاں نما",
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: `${poetName} - جہاں نما`,
-        description,
-      },
       alternates: {
         canonical: `/Shaer/${nameParam}`,
       },
+    };
+
+    // Enhanced Open Graph metadata with poet's image
+    const openGraphMetadata = {
+      title: `${poetName} - جہاں نما`,
+      description,
+      type: "profile" as const,
+      locale: "ur_PK",
+      siteName: "جہاں نما",
+      ...(poetImage && { images: [{ url: poetImage, alt: `${poetName} کی تصویر` }] }),
+    };
+
+    // Enhanced Twitter metadata with poet's image
+    const twitterMetadata = {
+      card: "summary_large_image" as const,
+      title: `${poetName} - جہاں نما`,
+      description,
+      ...(poetImage && { images: [poetImage] }),
+    };
+
+    return {
+      ...baseMetadata,
+      openGraph: openGraphMetadata,
+      twitter: twitterMetadata,
     };
   } catch (error) {
     console.error("Error generating metadata:", error);

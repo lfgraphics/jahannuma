@@ -13,7 +13,9 @@ import "./shaer.css";
 
 
 interface IntroFields {
-  description: string;
+  description?: string;
+  enDescription?: string;
+  hiDescription?: string;
   takhallus: string;
   name?: string;
   dob?: string;
@@ -31,6 +33,20 @@ interface IntroFields {
   nazmen?: boolean;
   ashaar?: boolean;
   rubai?: boolean;
+  photo?: Array<{
+    id: string;
+    url: string;
+    filename: string;
+    size: number;
+    type: string;
+    width: number;
+    height: number;
+    thumbnails?: {
+      small: { url: string; width: number; height: number };
+      large: { url: string; width: number; height: number };
+      full: { url: string; width: number; height: number };
+    };
+  }>;
 }
 
 interface ShaerRecord {
@@ -211,9 +227,6 @@ const ShaerComponent = ({
           </div>
         )}
       </div>
-      {/* <div className="description mt-4 mx-auto text-center text-lg">
-        {data.description || ""}
-      </div> */}
       {activeNav === "تعارف" && <Intro2 data={data as any} />}
       {activeNav === "غزلیں" && (
         <Ghazlen takhallus={data.takhallus as string} />
