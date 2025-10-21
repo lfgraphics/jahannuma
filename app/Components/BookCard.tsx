@@ -1,5 +1,7 @@
 "use client";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { createSlug } from "@/lib/airtable-utils";
+import { getLanguageFieldValue } from "@/lib/language-field-utils";
 import Link from "next/link";
 import React from "react";
 
@@ -15,15 +17,22 @@ interface BookAttachment {
 }
 interface BookFields {
   bookName?: string;
+  enBookName?: string;
+  hiBookName?: string;
   desc?: string | string[];
+  enDesc?: string | string[];
+  hiDesc?: string | string[];
+  writer?: string;
+  enWriter?: string;
+  hiWriter?: string;
   publishingDate?: string;
   book?: BookAttachment[];
-  id?: string; // Airtable record id in fields? (keeping original shape)
+  id?: string;
   [key: string]: any;
 }
 interface BookRecord {
   fields: BookFields;
-  id?: string; // Top-level Airtable record id
+  id?: string;
 }
 
 interface CardProps {
@@ -51,11 +60,18 @@ import useAuthGuard from "@/hooks/useAuthGuard";
 import { useLikeButton } from "@/hooks/useLikeButton";
 import { Heart } from "lucide-react";
 
-const Card: React.FC<CardProps> = ({ data, showLikeButton = false, showShareButton = true, baseId = "appXcBoNMGdIaSUyA", table = "E-Books", storageKey = "Books", onLikeChange, swrKey }) => {
+const Card: React.FC<CardProps> = ({ data, showLikeButton = false, showShareButton = true, baseId = require("@/lib/airtable-client-utils").getClientBaseId("EBOOKS"), table = "E-Books", storageKey = "Books", onLikeChange, swrKey }) => {
   const { fields } = data;
+  const { language } = useLanguage();
   const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
-  const { bookName, publishingDate, book, id: fieldId, desc, writer, slugId } = fields;
-  const recordId = fieldId || data.id; // prefer fields.id, fallback to record.id
+
+  // Get language-specific field values with fallback
+  const bookName = getLanguageFieldValue(fields, 'bookName', language);
+  const writer = getLanguageFieldValue(fields, 'writer', language);
+  const desc = getLanguageFieldValue(fields, 'desc', language);
+
+  const { publishingDate, book, id: fieldId, slugId } = fields;
+  const recordId = fieldId || data.id;
   const image = book?.[0]?.thumbnails?.large;
 
   // Use slugId if available, otherwise create slug from book name
@@ -76,27 +92,63 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, showShareButt
       })
     : null;
 
+  // Language-specific text
+  const getLanguageText = () => {
+    switch (language) {
+      case 'EN':
+        return {
+          bookFallback: "Book",
+          shareText: "Found this on Jahan Numa webpage\nVisit it here",
+          likeTitle: "Like",
+          likedTitle: "Liked",
+          publishedText: "Published:",
+          altText: "Book cover"
+        };
+      case 'HI':
+        return {
+          bookFallback: "पुस्तक",
+          shareText: "जहान नुमा वेबपेज पर मिला\nयहाँ देखें",
+          likeTitle: "पसंद करें",
+          likedTitle: "पसंदीदा",
+          publishedText: "प्रकाशित:",
+          altText: "पुस्तक का कवर"
+        };
+      default:
+        return {
+          bookFallback: "کتاب",
+          shareText: "Found this on Jahannuma webpage\nVisit it here",
+          likeTitle: "پسند کریں",
+          likedTitle: "پسندیدہ",
+          publishedText: "اشاعت:",
+          altText: "کتاب کا سرورق"
+        };
+    }
+  };
+
+  const langText = getLanguageText();
+  const routePrefix = language === 'UR' ? '' : `/${language}`;
+
   // Share functionality
   const handleShareClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       if (navigator.share) {
-        const title = bookName || "کتاب";
+        const title = bookName || langText.bookFallback;
         const text = `${title}${writer ? ` - ${writer}` : ""}\n${Array.isArray(desc) ? desc.join(" ") : desc || ""}`;
-        const shareUrl = `${window.location.origin}/E-Books/${bookSlug}/${recordId}`;
+        const shareUrl = `${window.location.origin}${routePrefix}/E-Books/${bookSlug}/${recordId}`;
 
         navigator
           .share({
             title,
-            text: `${text}\n\nFound this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
+            text: `${text}\n\n${langText.shareText}\n${shareUrl}`,
             url: shareUrl,
           })
           .then(() => console.log("Successful share"))
           .catch((error) => console.log("Error sharing", error));
       } else {
         // Fallback: copy to clipboard
-        const shareUrl = `${window.location.origin}/E-Books/${bookSlug}/${recordId}`;
+        const shareUrl = `${window.location.origin}${routePrefix}/E-Books/${bookSlug}/${recordId}`;
         navigator.clipboard.writeText(shareUrl).then(() => {
           console.log("URL copied to clipboard");
         });
@@ -109,50 +161,41 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, showShareButt
   return (
     <div className="rounded overflow-hidden shadow-lg mx-auto border border-border bg-background text-foreground w-[180px]">
       <div className="relative bg-cover bg-center w-[180px] h-[260px]">
-        <Link href={{ pathname: `/E-Books/${bookSlug}/${recordId}` }} className="block w-full h-full">
+        <Link href={{ pathname: `${routePrefix}/E-Books/${bookSlug}/${recordId}` }} className="block w-full h-full">
           {image?.url && (
             <img
               className="h-full w-full object-cover"
               src={image.url}
               height={image.height}
               width={image.width}
-              alt={bookName || "Book cover"}
+              alt={bookName || langText.altText}
               loading="lazy"
             />
           )}
         </Link>
-        <div className="absolute top-0 right-0 flex gap-1">
+        <div className="absolute top-0 left-0 flex gap-1">
           {likeEnabled && like && (
             <button
               className={`px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 ${like.isHydratingLikes ? "text-gray-600" : (like.isLiked ? "text-red-600" : "text-gray-600")}`}
               onClick={async (e) => { e.preventDefault(); e.stopPropagation(); if (!requireAuth("like")) return; await like.handleLikeClick(); }}
               disabled={like.isHydratingLikes || like.isDisabled}
               aria-disabled={like.isHydratingLikes || like.isDisabled}
-              title={like.isHydratingLikes ? "" : (like.isLiked ? "پسندیدہ" : "پسند کریں")}
+              title={like.isHydratingLikes ? "" : (like.isLiked ? langText.likedTitle : langText.likeTitle)}
             >
               <Heart className="inline" fill="currentColor" size={16} />
               <span className="text-xs text-foreground">{like.likesCount}</span>
             </button>
           )}
-          {/* {showShareButton && (
-            <button
-              className="px-2 py-1 rounded-md rounded-t-none bg-background/40 backdrop-blur-sm shadow transition-colors duration-300 flex items-center gap-1 text-gray-600 hover:text-blue-600"
-              onClick={handleShareClick}
-              title="شیئر کریں"
-            >
-              <Share2 className="inline" size={16} />
-            </button>
-          )} */}
         </div>
       </div>
       <div className="px-3 py-2">
-        <Link href={{ pathname: `/E-Books/${bookSlug}/${recordId}` }}>
-          <div className="font-medium text-primary dark:text-secondary truncate">{bookName} <span className="text-muted-foreground">:{writer}</span></div>
+        <Link href={{ pathname: `${routePrefix}/E-Books/${bookSlug}/${recordId}` }}>
+          <div className="font-medium text-primary dark:text-secondary truncate">{bookName} <span className="text-muted-foreground">: {writer}</span></div>
         </Link>
         <div className="text-xs text-muted-foreground line-clamp-2">{Array.isArray(desc) ? desc.join(" ") : desc}</div>
         <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
           <span>
-            اشاعت: {formatDate(publishingDate).split("/")[2] || formatDate(publishingDate).split("/")[0] || publishingDate}
+            {langText.publishedText} {formatDate(publishingDate).split("/")[2] || formatDate(publishingDate).split("/")[0] || publishingDate}
           </span>
         </div>
       </div>

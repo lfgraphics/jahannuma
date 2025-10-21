@@ -1,131 +1,242 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import * as data from "../Ghazlen/data";
-import { Download, Share2 } from "lucide-react";
-import Loader from "./Loader";
+import CommentSection from "@/app/Components/CommentSection";
+import DataCard from "@/app/Components/DataCard";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useShareAction } from "@/hooks/useShareAction";
-import DynamicDownloadHandler from "@/app/Components/Download";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableMutation } from "@/hooks/useAirtableMutation";
 import useAuthGuard from "@/hooks/useAuthGuard";
-import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { useCommentSystem } from "@/hooks/useCommentSystem";
+import { getLanguageFieldValue } from "@/lib/language-field-utils";
+import { shareRecordWithCount } from "@/lib/social-utils";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import Loader from "../../Components/Loader";
 
 interface Shaer {
-  shaer: string;
-  sherHead: string[];
-  wholeSher: string[];
+  fields: {
+    sher: string[];
+    shaer: string;
+    ghazalHead: string[];
+    ghazal: string[];
+    unwan: string[];
+    likes: number;
+    comments: number;
+    shares: number;
+    id: string;
+    // Language-specific fields
+    enShaer?: string;
+    hiShaer?: string;
+    enGhazalHead?: string[];
+    hiGhazalHead?: string[];
+    enGhazal?: string[];
+    hiGhazal?: string[];
+    enUnwan?: string[];
+    hiUnwan?: string[];
+  };
+  id: string;
+  createdTime: string;
 }
 
-const EnduRandcard: React.FC<{}> = () => {
-  const dataItems: Shaer[] = data.getAllShaers();
-  const randomIndex = dataItems.length > 0 ? Math.floor(Math.random() * dataItems.length) : 0;
-  const randomData = dataItems.length > 0 ? dataItems[randomIndex] : undefined;
 
+
+const RandCard: React.FC<{}> = () => {
   const { language } = useLanguage();
-  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
-  const [downloadData, setDownloadData] = useState<{
-    id: string;
-    fields: { shaer?: string; ghazalHead?: string[] };
-  } | null>(null);
 
-  const handleDownload = (shaerData: Shaer) => {
-    if (!requireAuth("download")) return;
-    setDownloadData({
-      id: `rand-${shaerData.shaer}`,
-      fields: { shaer: shaerData.shaer, ghazalHead: shaerData.sherHead },
-    });
-  };
+  const { getClientBaseId } = require("@/lib/airtable-client-utils");
+  // Fetch Ashaar list via SWR and randomly pick one; caching ensures instant loads on revisit
+  const { records, isLoading } = useAirtableList<Shaer>(getClientBaseId("ASHAAR"), "Ashaar", {
+    pageSize: 50,
+  });
+  const loading = isLoading;
+  const randomIndexRef = useRef<number | null>(null);
 
-  const share = useShareAction({ section: "EN", title: "Random sher", textLines: [], url: "" });
-  const handleShareClick = async (shaerData: Shaer, id: string): Promise<void> => {
-    try {
-      const origin = typeof window !== "undefined" ? window.location.origin : "";
-      const url = `${origin}/EN#${id}`;
-      const title = shaerData.shaer;
-      const textLines = [...shaerData.sherHead];
-      await share.handleShare({ url, title, textLines });
-    } catch (error) {
-      console.error("Error sharing:", error);
-    }
-  };
-  const [insideBrowser, setInsideBrowser] = useState(false);
+  // Comment drawer state
+  const [selectedCommentId, setSelectedCommentId] = React.useState<
+    string | null
+  >(null);
+  const {
+    comments,
+    isLoading: commentLoading,
+    submitComment,
+    setRecordId,
+  } = useCommentSystem(getClientBaseId("ASHAAR"), "Ashaar");
+  const [newComment, setNewComment] = useState("");
+  const { requireAuth } = useAuthGuard();
 
+  // keep the same random item until the dataset changes
   useEffect(() => {
-    if (typeof window !== undefined) {
-      // Code is running in a browser
-      setInsideBrowser(true);
-    } else {
-      // Code is running on the server
-      setInsideBrowser(false);
+    if (records && records.length > 0 && randomIndexRef.current === null) {
+      randomIndexRef.current = Math.floor(Math.random() * records.length);
     }
-  }, []);
+    if (
+      records &&
+      randomIndexRef.current !== null &&
+      randomIndexRef.current >= records.length
+    ) {
+      // dataset shrank; re-roll
+      randomIndexRef.current = Math.floor(Math.random() * records.length);
+    }
+  }, [records]);
+
+  const randomItem = useMemo(() => {
+    if (!records || records.length === 0)
+      return undefined as unknown as Shaer | undefined;
+    const idx = randomIndexRef.current ?? 0;
+    const rec = records[idx];
+
+    // Get language-specific field values with fallback
+    const shaer = getLanguageFieldValue(rec.fields, 'shaer', language) || rec.fields.shaer;
+    const ghazalHead = getLanguageFieldValue(rec.fields, 'ghazalHead', language) ||
+      getLanguageFieldValue(rec.fields, 'sher', language) ||
+      rec.fields.ghazalHead || rec.fields.sher;
+    const ghazal = getLanguageFieldValue(rec.fields, 'ghazal', language) ||
+      getLanguageFieldValue(rec.fields, 'body', language) ||
+      rec.fields.ghazal;
+    const unwan = getLanguageFieldValue(rec.fields, 'unwan', language) || rec.fields.unwan;
+
+    // normalize to match component expectations
+    const normalizedGhazal = Array.isArray(ghazal) ? ghazal :
+      (typeof ghazal === 'string' ?
+        ghazal.replace(/\r\n?/g, "\n").split("\n") :
+        rec.fields.ghazal ?? []);
+
+    const normalizedGhazalHead = Array.isArray(ghazalHead) ? ghazalHead :
+      (typeof ghazalHead === 'string' ?
+        ghazalHead.replace(/\r\n?/g, "\n").split("\n") :
+        rec.fields.ghazalHead ?? []);
+
+    return {
+      ...rec,
+      fields: {
+        ...rec.fields,
+        shaer,
+        ghazal: normalizedGhazal,
+        ghazalHead: normalizedGhazalHead,
+        unwan
+      },
+    } as Shaer;
+  }, [records, language]);
+
+  // Mutations aligned to Ashaar table for likes/shares
+  const { updateRecord: updateAshaar } = useAirtableMutation(getClientBaseId("ASHAAR"), "Ashaar");
+  const [openanaween, setOpenanaween] = useState<string | null>(null);
+
+  const toggleanaween = (cardId: string | null) => {
+    setOpenanaween((prev) => (prev === cardId ? null : cardId));
+  };
+
+  const visitSher = () => {
+    // window.location.href = `/EN/Ghazlen/${randomItem?.fields.id}`;
+  };
+
+  const fetchComments = async (dataId: string) => {
+    setRecordId(dataId);
+  };
+
+  const openComments = (dataId: string) => {
+    toggleanaween(null);
+    setSelectedCommentId(dataId);
+    fetchComments(dataId);
+  };
+
+  const handleShareClick = async (
+    shaerData: Shaer
+  ): Promise<void> => {
+    toggleanaween(null);
+    await shareRecordWithCount(
+      {
+        section: "Ashaar",
+        id: shaerData.id,
+        title: shaerData.fields.shaer,
+        textLines: shaerData.fields.ghazalHead ?? [],
+        fallbackSlugText:
+          (shaerData.fields.ghazalHead || [])[0] ||
+          (shaerData.fields.unwan || [])[0] ||
+          "",
+        language,
+      },
+      {
+        onShared: async () => {
+          try {
+            const updatedShares = (shaerData.fields.shares ?? 0) + 1;
+            await updateAshaar([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+          } catch (error) {
+            console.error("Error updating shares:", error);
+          }
+        },
+      }
+    );
+  };
+
+  const closeComments = () => {
+    setSelectedCommentId(null);
+    setRecordId(null);
+  };
+
+
+
+  if (loading || !randomItem) return <Loader />;
+
+  const randomSherTitle = { EN: "A Selected Verse", UR: "ایک منتخب شعر", HI: "एक चुना हुआ शेर" };
 
   return (
     <div className="justify-center flex flex-col items-center m-4">
-      <h4
-        className="text-xl m-4 font-semibold text-[#984A02] tracking-[5px]"
-        // style={{ letterSpacing: "5px" }}
-      >
-        Random sher
-      </h4>
-      {!insideBrowser && <Loader></Loader>}
-  {insideBrowser && randomData && (
-        <div
-          id={"sherCard"}
-          className="bg-white p-4 rounded-sm w-[95vw] justify-center flex flex-col items-center"
-        >
-          <h2
-            className="text-black text-2xl font-bold mb-2"
-            style={{ lineHeight: "normal" }}
-          >
-            {randomData.shaer}
-          </h2>
-          {randomData.sherHead.map((line, index) => (
-            <p
-              key={index}
-              className="text-black text-center"
-              style={{ lineHeight: "normal" }}
-            >
-              {line}
-            </p>
-          ))}
-          <div className="felx text-center">
-            {/* Your buttons and actions here */}
-            <div className="flex flex-row items-center icons gap-3">
-              <button
-                className="m-3 flex gap-2 items-center"
-                onClick={() => randomData && handleShareClick(randomData, "sherCard")}
-              >
-                <Share2 color="#984A02" />
-                <p className="pb-[11px]">Share this</p>
-              </button>
-              <button
-                className="m-3 flex gap-2 items-center"
-                onClick={() => randomData && handleDownload(randomData)}
-              >
-                <Download color="#984A02" />
-                <p className="pb-[11px]">Download this</p>
-              </button>
-              {/* <button
-                className="m-3 text-[20px] flex gap-2 items-center"
-                onClick={() => handleDownload("sherCard")}
-              >
-                <ArrowDown
-                  style={{ color: "#984A02" }}
-                />
-              </button> */}
-            </div>
-          </div>
+      <h4 className="text-2xl my-4">{randomSherTitle[language]}</h4>
+      {loading && <Loader></Loader>}
+      {!loading && (
+        <div className="relative">
+          <img
+            src="https://jahan-numa.org/carousel/jnd.jpeg"
+            className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.09] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none h-[220px]"
+            draggable="false"
+          />
+          <DataCard
+            page="rand"
+            download={true}
+            key={randomItem.id}
+            shaerData={randomItem}
+            index={0}
+            handleCardClick={visitSher}
+            baseId={getClientBaseId("ASHAAR")}
+            table="Ashaar"
+            storageKey="Ashaar"
+            toggleanaween={toggleanaween}
+            openanaween={openanaween}
+            handleShareClick={handleShareClick}
+            openComments={openComments}
+            onLikeChange={() => {
+              // Analytics integration can be added here in the future
+            }}
+          />
         </div>
       )}
-      {downloadData && (
-        <DynamicDownloadHandler
-          data={downloadData}
-          onCancel={() => setDownloadData(null)}
+      {selectedCommentId && (
+        <CommentSection
+          dataId={selectedCommentId}
+          comments={comments as any}
+          onCommentSubmit={async (dataId) => {
+            if (!requireAuth("comment")) return;
+            if (!newComment) return;
+            try {
+              await submitComment({ recordId: dataId, content: newComment });
+              setNewComment("");
+              try {
+                const currentComments = randomItem?.fields?.comments ?? 0;
+                await updateAshaar([{ id: dataId, fields: { comments: currentComments + 1 } }]);
+              } catch (err) {
+                console.error("Error updating comment count:", err);
+              }
+            } catch (error) {
+              console.error("Error submitting comment:", error);
+            }
+          }}
+          commentLoading={commentLoading}
+          newComment={newComment}
+          onNewCommentChange={setNewComment}
+          onCloseComments={closeComments}
         />
       )}
-      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "download"} />
     </div>
   );
 };
 
-export default EnduRandcard;
+export default RandCard;

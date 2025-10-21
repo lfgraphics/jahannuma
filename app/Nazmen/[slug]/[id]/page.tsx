@@ -11,7 +11,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-const BASE_ID = "app5Y2OsuDgpXeQdz";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const BASE_ID = getClientBaseId("NAZMEN");
 const TABLE = "nazmen";
 
 export default function Page() {

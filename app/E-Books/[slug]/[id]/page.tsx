@@ -58,7 +58,7 @@ export default function Page() {
     isLoading,
     error,
   } = useAirtableRecord<{ fields: BookRecordFields }>(
-    "appXcBoNMGdIaSUyA",
+    require("@/lib/airtable-client-utils").getClientBaseId("EBOOKS"),
     "E-Books",
     id,
     { ttl: TTL.fast }
@@ -66,7 +66,7 @@ export default function Page() {
 
   // Like functionality - after record is available
   const like = useLikeButton({
-    baseId: "appXcBoNMGdIaSUyA",
+    baseId: require("@/lib/airtable-client-utils").getClientBaseId("EBOOKS"),
     table: "E-Books",
     storageKey: "Books",
     recordId: id || "",
@@ -254,7 +254,6 @@ export default function Page() {
                     >
                       <Heart className="w-5 h-5" fill="currentColor" />
                       <span>{like.likesCount}</span>
-                      <span className="text-sm">{like.isLiked ? "پسندیدہ" : "پسند"}</span>
                     </button>
 
                     <button
@@ -263,7 +262,6 @@ export default function Page() {
                       title="شیئر کریں"
                     >
                       <Share2 className="w-5 h-5" />
-                      <span className="text-sm">شیئر</span>
                     </button>
                   </div>
 

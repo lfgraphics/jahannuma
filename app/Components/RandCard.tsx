@@ -186,7 +186,7 @@ const RandCard: React.FC<{}> = () => {
             shaerData={randomItem}
             index={0}
             handleCardClick={visitSher}
-            baseId="appeI2xzzyvUN5bR7"
+            baseId={require("@/lib/airtable-client-utils").getClientBaseId("ASHAAR")}
             table="Ashaar"
             storageKey="Ashaar"
             toggleanaween={toggleanaween}

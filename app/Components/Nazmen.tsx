@@ -6,7 +6,8 @@ import { useShareAction } from "@/hooks/useShareAction";
 import { formatNazmenRecord } from "@/lib/airtable-utils";
 import { useMemo } from "react";
 
-const BASE_ID = "app5Y2OsuDgpXeQdz";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const BASE_ID = getClientBaseId("NAZMEN");
 const TABLE = "nazmen";
 
 export default function Nazmen() {

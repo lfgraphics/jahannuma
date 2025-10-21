@@ -16,6 +16,8 @@ import { useRubaiData } from "@/hooks/useRubaiData";
 import { useShareAction } from "@/hooks/useShareAction";
 import type { Rubai } from "../types";
 
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+
 interface ApiResponse {
   records: Rubai[];
   offset: string | null;
@@ -196,7 +198,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     index,
   }) => {
     const like = useLikeButton({
-      baseId: "appIewyeCIcAD4Y11",
+      baseId: getClientBaseId("RUBAI"),
       table: "rubai",
       storageKey: "Rubai",
       recordId: item.id,
@@ -226,7 +228,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     _index: number
   ): Promise<void> => {
     await share.handleShare({
-      baseId: "appIewyeCIcAD4Y11",
+      baseId: getClientBaseId("RUBAI"),
       table: "rubai",
       recordId: shaerData.id,
       title: shaerData.fields.shaer,

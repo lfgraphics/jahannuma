@@ -1,10 +1,10 @@
 "use client";
+import type { AirtableRecord } from "@/app/types";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { ADS_TABLE } from "@/lib/airtable-constants";
 import Link from "next/link";
 import { useMemo } from "react";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { ADS_BASE, ADS_TABLE } from "@/lib/airtable-constants";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import type { AirtableRecord } from "@/app/types";
 
 interface AdRecord {
   url?: string;
@@ -47,7 +47,8 @@ const fallbackAdsData = [
 ];
 
 const Ads: React.FC = () => {
-  const { records, isLoading, error } = useAirtableList<AirtableRecord<AdRecord>>(ADS_BASE, ADS_TABLE, { pageSize: 30 });
+  const { getClientBaseId } = require("@/lib/airtable-client-utils");
+  const { records, isLoading, error } = useAirtableList<AirtableRecord<AdRecord>>(getClientBaseId("ADS"), ADS_TABLE, { pageSize: 30 });
 
   const adsData = useMemo(() => {
     // If there's an error or no records, use fallback data

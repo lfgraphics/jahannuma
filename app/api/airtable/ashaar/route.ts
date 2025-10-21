@@ -9,6 +9,7 @@ import {
   listAshaarRecords,
 } from "@/lib/airtable";
 import { errors, ok } from "@/lib/api-response";
+import { getMultilingualFieldsString } from "@/lib/multilingual-field-constants";
 import { isValidFilterFormula, isValidPageSize } from "@/utils/validators";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
@@ -41,14 +42,18 @@ export async function GET(request: NextRequest) {
         })
       : undefined;
 
+    // Use multilingual fields if no specific fields are requested
+    const fieldsToUse = fields || getMultilingualFieldsString('ashaar');
+
     const result = await listAshaarRecords({
       pageSize,
       offset,
       filterByFormula,
       search,
-      fields,
+      fields: fieldsToUse,
       sort: sortArray,
       view,
+      validateFields: true, // Enable field validation
     });
 
     // Format records for consistent API output

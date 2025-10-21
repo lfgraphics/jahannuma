@@ -19,17 +19,18 @@ import type {
 import "./tabs.css";
 
 // Airtable base/table constants
-const ASHAAR_BASE = "appeI2xzzyvUN5bR7";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const ASHAAR_BASE = getClientBaseId("ASHAAR");
 const ASHAAR_TABLE = "Ashaar";
-const GHAZLEN_BASE = "appvzkf6nX376pZy6";
+const GHAZLEN_BASE = getClientBaseId("GHAZLEN");
 const GHAZLEN_TABLE = "Ghazlen";
-const NAZMEN_BASE = "app5Y2OsuDgpXeQdz";
+const NAZMEN_BASE = getClientBaseId("NAZMEN");
 const NAZMEN_TABLE = "nazmen";
-const BOOKS_BASE = "appXcBoNMGdIaSUyA";
+const BOOKS_BASE = getClientBaseId("EBOOKS");
 const BOOKS_TABLE = "E-Books";
-const SHAER_BASE = "appgWv81tu4RT3uRB";
+const SHAER_BASE = getClientBaseId("SHAER");
 const SHAER_TABLE = "Intro";
-const RUBAI_BASE = "appIewyeCIcAD4Y11";
+const RUBAI_BASE = getClientBaseId("RUBAI");
 const RUBAI_TABLE = "rubai";
 
 function buildIdsFilter(ids: string[] | undefined): string | undefined {
@@ -115,11 +116,11 @@ export default function FavoritesPage() {
   const [openanaween, setOpenanaween] = useState<string | null>(null);
 
   const { updateRecord: updateNazmen } = useAirtableMutation(
-    "app5Y2OsuDgpXeQdz",
+    getClientBaseId("NAZMEN"),
     "nazmen"
   );
   const { updateRecord: updateAshaar } = useAirtableMutation(
-    "appeI2xzzyvUN5bR7",
+    getClientBaseId("ASHAAR"),
     "Ashaar"
   );
 

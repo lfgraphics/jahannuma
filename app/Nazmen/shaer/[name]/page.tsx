@@ -18,7 +18,8 @@ import CommentSection from "../../../Components/CommentSection";
 import DataCard from "../../../Components/DataCard";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 
-const BASE_ID = "app5Y2OsuDgpXeQdz";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const BASE_ID = getClientBaseId("NAZMEN");
 const TABLE = "nazmen";
 const COMMENTS_BASE = NAZMEN_COMMENTS_BASE;
 const COMMENTS_TABLE_NAME = COMMENTS_TABLE;

@@ -2,15 +2,15 @@ import { type EBooksType } from "@/hooks/useEbooksData";
 import { generateCollectionPageSEO, generateSEOBreadcrumbs, SEOContentItem } from "@/lib/seo/comprehensive-seo";
 import { generatePerformanceOptimizedMetadata, generateResourcePreloadConfig } from "@/lib/seo/performance-optimization";
 import { fetchList } from "@/lib/universal-data-fetcher";
+import { getBaseIdForTable } from "@/src/lib/airtable";
 import { Metadata } from "next";
 import Page from "./Component";
 import EBooksErrorBoundary from "./ErrorBoundary";
 
 // Server-side data fetching
 async function getEbooksData(): Promise<EBooksType[]> {
-  try {
-    const response = await fetchList<{ records: EBooksType[] }>(
-      "appXcBoNMGdIaSUyA", // Base ID
+  try {const response = await fetchList<{ records: EBooksType[] }>(
+      getBaseIdForTable("E-Books"), // Base ID
       "E-Books", // Table name
       {
         pageSize: 30,

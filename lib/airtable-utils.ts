@@ -53,9 +53,7 @@ export function formatAshaarRecord(
     id: baseId,
     slugId: slug,
     airtableId: rec.id,
-    ghazalHead: Array.isArray(f.ghazalHead)
-      ? f.ghazalHead
-      : f.sher
+    ghazalHead: f.sher
       ? String(f.sher).split("\n")
       : [],
     ghazal: Array.isArray(f.ghazal)
@@ -68,6 +66,17 @@ export function formatAshaarRecord(
       : f.unwan
       ? String(f.unwan).split("\n")
       : [],
+    // Include multilingual fields
+    enSher: f.enSher,
+    enBody: f.enBody,
+    enUnwan: f.enUnwan,
+    enShaer: f.enShaer,
+    enTakhallus: f.enTakhallus,
+    hiSher: f.hiSher,
+    hiBody: f.hiBody,
+    hiUnwan: f.hiUnwan,
+    hiShaer: f.hiShaer,
+    hiTakhallus: f.hiTakhallus,
   };
   return { ...rec, fields: formatted };
 }
@@ -77,14 +86,14 @@ export function formatGhazlenRecord(
 ): AirtableRecord<GhazlenRecord> {
   const f = rec.fields as Record<string, any>;
 
-  // Generate slug from ghazal head and record ID
+  // Generate slug from ghazal content and record ID
   const baseId = f.id || rec.id;
-  const ghazalHeadText = Array.isArray(f.ghazalHead)
-    ? f.ghazalHead[0]
-    : f.ghazalHead
-    ? String(f.ghazalHead).split("\n")[0]
+  const ghazalText = Array.isArray(f.ghazal)
+    ? f.ghazal[0]
+    : f.ghazal
+      ? String(f.ghazal).split("\n")[0]
     : "";
-  const slug = createSlug(ghazalHeadText || f.shaer || "");
+  const slug = createSlug(ghazalText || f.shaer || "");
 
   const formatted: GhazlenRecord = {
     ghazal: Array.isArray(f.ghazal)
@@ -92,10 +101,8 @@ export function formatGhazlenRecord(
       : f.ghazal
       ? String(f.ghazal).split("\n")
       : [],
-    ghazalHead: Array.isArray(f.ghazalHead)
-      ? f.ghazalHead
-      : f.ghazalHead
-      ? String(f.ghazalHead).split("\n")
+    ghazalHead: f.ghazal
+      ? String(f.ghazal).split("\n")
       : [],
     unwan: Array.isArray(f.unwan)
       ? f.unwan
@@ -109,6 +116,15 @@ export function formatGhazlenRecord(
     id: baseId, // Keep original ID
     slugId: slug, // Use slug for navigation
     airtableId: rec.id,
+    // Include multilingual fields
+    enGhazal: f.enGhazal,
+    enUnwan: f.enUnwan,
+    enShaer: f.enShaer,
+    enTakhallus: f.enTakhallus,
+    hiGhazal: f.hiGhazal,
+    hiUnwan: f.hiUnwan,
+    hiShaer: f.hiShaer,
+    hiTakhallus: f.hiTakhallus,
   };
   return { ...rec, fields: formatted };
 }
@@ -153,6 +169,15 @@ export function formatNazmenRecord(
       : f.unwan
       ? String(f.unwan).split("\n")
       : [],
+    // Include multilingual fields
+    enNazm: f.enNazm,
+    enUnwan: f.enUnwan,
+    enShaer: f.enShaer,
+    enTakhallus: f.enTakhallus,
+    hiNazm: f.hiNazm,
+    hiUnwan: f.hiUnwan,
+    hiShaer: f.hiShaer,
+    hiTakhallus: f.hiTakhallus,
   };
   return { ...rec, fields: formatted };
 }
@@ -172,6 +197,45 @@ export function formatBookRecord(
     id: baseId, // Keep original ID
     slugId: slug, // Use slug for navigation
     airtableId: rec.id,
+  };
+
+  return { ...rec, fields: formatted };
+}
+
+// Add Rubai record formatter
+export function formatRubaiRecord(
+  rec: AirtableRecord<any>
+): AirtableRecord<any> {
+  const f = rec.fields as Record<string, any>;
+
+  // Generate slug from rubai content and record ID
+  const baseId = f.id || rec.id;
+  const rubaiText = Array.isArray(f.body)
+    ? f.body[0]
+    : f.body
+      ? String(f.body).split("\n")[0]
+      : "";
+  const slug = createSlug(rubaiText || f.unwan || f.shaer || "");
+
+  const formatted = {
+    body: f.body,
+    unwan: f.unwan,
+    shaer: f.shaer,
+    likes: f.likes ?? 0,
+    shares: f.shares ?? 0,
+    comments: f.comments ?? 0,
+    id: baseId,
+    slugId: slug,
+    airtableId: rec.id,
+    // Include multilingual fields
+    enBody: f.enBody,
+    enUnwan: f.enUnwan,
+    enShaer: f.enShaer,
+    enTakhallus: f.enTakhallus,
+    hiBody: f.hiBody,
+    hiUnwan: f.hiUnwan,
+    hiShaer: f.hiShaer,
+    hiTakhallus: f.hiTakhallus,
   };
 
   return { ...rec, fields: formatted };

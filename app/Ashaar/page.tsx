@@ -1,6 +1,7 @@
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
 import { fetchList } from "@/lib/universal-data-fetcher";
+import { getBaseIdForTable } from "@/src/lib/airtable";
 import { Metadata } from "next";
 import Ashaar from "./Component";
 import AshaarErrorBoundary from "./ErrorBoundary";
@@ -10,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   try {
     // Fetch some sample data for dynamic metadata
     const ashaarData = await fetchList<any>(
-      "appeI2xzzyvUN5bR7", // Ashaar base ID
+      getBaseIdForTable("Ashaar"), // Ashaar base ID
       "Ashaar",
       { pageSize: 5 },
       {

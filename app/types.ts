@@ -48,6 +48,18 @@ export interface Rubai {
     comments: number;
     shares: number;
     id: string;
+    // English fields
+    enShaer?: string;
+    enUnwan?: string;
+    enBody?: string;
+    enDescription?: string;
+    enTakhallus?: string;
+    // Hindi fields
+    hiShaer?: string;
+    hiUnwan?: string;
+    hiBody?: string;
+    hiDescription?: string;
+    hiTakhallus?: string;
   };
   id: string;
   createdTime: string;
@@ -63,6 +75,20 @@ export interface AshaarRecord extends WithCounts {
   ghazalHead?: string[];
   ghazal?: string[];
   anaween?: string[];
+  // English fields
+  enSher?: string;
+  enBody?: string;
+  enUnwan?: string;
+  enShaer?: string;
+  enDescription?: string;
+  enTakhallus?: string;
+  // Hindi fields
+  hiSher?: string;
+  hiBody?: string;
+  hiUnwan?: string;
+  hiShaer?: string;
+  hiDescription?: string;
+  hiTakhallus?: string;
 }
 
 export interface AshaarShaerRecord extends WithCounts {
@@ -90,6 +116,18 @@ export interface NazmenRecord extends WithCounts {
   // Derived
   ghazalLines?: string[];
   anaween?: string[];
+  // English fields
+  enNazm?: string;
+  enUnwan?: string;
+  enShaer?: string;
+  enDescription?: string;
+  enTakhallus?: string;
+  // Hindi fields
+  hiNazm?: string;
+  hiUnwan?: string;
+  hiShaer?: string;
+  hiDescription?: string;
+  hiTakhallus?: string;
 }
 
 // Ghazlen domain types
@@ -98,6 +136,20 @@ export interface GhazlenRecord extends WithCounts {
   ghazalHead: string[] | string;
   unwan: string[] | string;
   shaer: string;
+  // English fields
+  enGhazal?: string;
+  enGhazalHead?: string;
+  enUnwan?: string;
+  enShaer?: string;
+  enDescription?: string;
+  enTakhallus?: string;
+  // Hindi fields
+  hiGhazal?: string;
+  hiGhazalHead?: string;
+  hiUnwan?: string;
+  hiShaer?: string;
+  hiDescription?: string;
+  hiTakhallus?: string;
 }
 
 export interface GhazlenMozuRecord extends WithCounts {

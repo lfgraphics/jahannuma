@@ -297,7 +297,9 @@ export class AirtableServerClient {
    */
   async testConnection(baseId?: string): Promise<boolean> {
     try {
-      const testBaseId = baseId || process.env.AIRTABLE_BASE_ID || 'appeI2xzzyvUN5bR7';
+      // Import BASE_IDS dynamically to avoid circular dependencies
+      const { BASE_IDS } = await import('../src/lib/airtable/airtable-constants');
+      const testBaseId = baseId || process.env.AIRTABLE_BASE_ID || BASE_IDS.ASHAAR;
       
       // Try to fetch base metadata (this is a lightweight operation)
       const url = `https://api.airtable.com/v0/meta/bases/${testBaseId}/tables`;

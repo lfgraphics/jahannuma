@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useAirtableList } from "@/hooks/useAirtableList";
+import { useEffect, useState } from "react";
 import Loader from "./Loader";
 import "./quiz.css";
-import { useAirtableList } from "@/hooks/useAirtableList";
 
 interface QuizRecordFields {
   date?: string;
@@ -29,8 +29,9 @@ const Quiz = () => {
 
   // Derive today's normalized key in UTC (YYYY-MM-DD)
   const todayKey = new Date().toISOString().split("T")[0];
+  const { getClientBaseId } = require("@/lib/airtable-client-utils");
   const { records, isLoading } = useAirtableList<QuizRecord>(
-    "appX2cOtbO23MjpGI",
+    "appX2cOtbO23MjpGI", // Quiz base - not in our centralized config yet
     "Quiz",
     { pageSize: 50 }
   );

@@ -2,7 +2,7 @@
 import "aos/dist/aos.css";
 import React, { useState } from "react";
 import RubaiCard from "../../Components/RubaiCard";
-import ComponentsLoader from "../../Components/SkeletonLoader";
+import ComponentsLoader from "./ComponentsLoader";
 // icons were handled inside child components; no direct icon usage here
 import type { AirtableRecord, Rubai as RubaiType } from "@/app/types";
 import useAuthGuard from "@/hooks/useAuthGuard";
@@ -15,7 +15,8 @@ interface Props {
   takhallus: string;
 }
 
-const RUBAI_BASE = "appIewyeCIcAD4Y11";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const RUBAI_BASE = getClientBaseId("RUBAI");
 const RUBAI_TABLE = "rubai";
 // comment system is not wired on this page; constants removed
 

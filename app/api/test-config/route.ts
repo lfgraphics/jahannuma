@@ -1,5 +1,6 @@
-import { getAirtableConfig } from "@/lib/airtable";
 import { errors, ok } from "@/lib/api-response";
+import { getAirtableConfig } from "@/src/lib/airtable/airtable-client";
+import { BASE_IDS, validateAllBaseIds } from "@/src/lib/airtable/airtable-constants";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -7,20 +8,35 @@ export async function GET(request: NextRequest) {
     console.log("Testing Airtable config...");
     console.log("Environment variables:", {
       AIRTABLE_API_KEY: process.env.AIRTABLE_API_KEY ? "Set" : "Not set",
-      AIRTABLE_BASE_ID: process.env.AIRTABLE_BASE_ID ? "Set" : "Not set",
+      NEXT_PUBLIC_Api_Token: process.env.NEXT_PUBLIC_Api_Token ? "Set" : "Not set",
     });
 
-    const config = getAirtableConfig("Ashaar");
-    console.log("Config retrieved successfully:", {
-      apiKey: config.apiKey ? "Set" : "Not set",
-      baseId: config.baseId,
+    // Test centralized base ID validation
+    const baseIdValidation = validateAllBaseIds();
+    console.log("Base ID validation:", baseIdValidation);
+
+    // Test config for different content types
+    const ashaarConfig = getAirtableConfig("Ashaar");
+    const ghazlenConfig = getAirtableConfig("Ghazlen");
+    const alertsConfig = getAirtableConfig("Alerts");
+
+    console.log("Configs retrieved successfully:", {
+      ashaar: { apiKey: !!ashaarConfig.apiKey, baseId: ashaarConfig.baseId },
+      ghazlen: { apiKey: !!ghazlenConfig.apiKey, baseId: ghazlenConfig.baseId },
+      alerts: { apiKey: !!alertsConfig.apiKey, baseId: alertsConfig.baseId },
     });
 
     return ok({
       message: "Airtable config successful",
       configExists: true,
-      apiKeySet: !!config.apiKey,
-      baseIdSet: !!config.baseId,
+      apiKeySet: !!ashaarConfig.apiKey,
+      baseIdValidation,
+      baseIds: {
+        ashaar: ashaarConfig.baseId,
+        ghazlen: ghazlenConfig.baseId,
+        alerts: alertsConfig.baseId,
+        totalConfigured: Object.keys(BASE_IDS).length
+      },
     });
   } catch (error) {
     console.error("Config test error:", error);

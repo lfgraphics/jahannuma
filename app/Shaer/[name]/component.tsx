@@ -147,7 +147,7 @@ const ShaerComponent = ({
         currentTab={activeNav}
         recordId={initialData?.id}
         showLikeButton={true}
-        baseId="appgWv81tu4RT3uRB"
+        baseId={require("@/lib/airtable-client-utils").getClientBaseId("SHAER")}
         table="Intro"
         storageKey="Shura"
         onLikeChange={({ id, liked, likes }) => {

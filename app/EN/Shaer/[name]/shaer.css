@@ -1,0 +1,25 @@
+/* Shaer component styles for English version */
+.inner-navs .nav-item {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.inner-navs .nav-item:hover {
+  background-color: rgba(152, 74, 2, 0.1);
+}
+
+.inner-navs .nav-item.active {
+  background-color: #984A02;
+  color: white;
+}
+
+.inner-navs .nav-item a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.inner-navs .nav-item.active a {
+  color: white;
+}

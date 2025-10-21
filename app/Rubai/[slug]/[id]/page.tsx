@@ -20,7 +20,8 @@ type RubaiFields = {
   id?: string;
 };
 
-const BASE_ID = "appIewyeCIcAD4Y11";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const BASE_ID = getClientBaseId("RUBAI");
 const TABLE = "rubai";
 
 export default function Page() {

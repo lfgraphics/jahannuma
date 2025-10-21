@@ -4,6 +4,7 @@
  */
 
 import { errors, ok } from "@/lib/api-response";
+import { getMultilingualFieldsString } from "@/lib/multilingual-field-constants";
 import {
   getAirtableApiKey,
   getBaseIdForTable,
@@ -64,13 +65,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Add fields parameter
-    if (fields) {
-      const fieldArray = fields.split(",");
-      fieldArray.forEach((field) => {
-        airtableUrl.searchParams.append("fields[]", field.trim());
-      });
-    }
+    // Add fields parameter - use multilingual fields if no specific fields requested
+    const fieldsToUse = fields || getMultilingualFieldsString('shaer');
+    const fieldArray = fieldsToUse.split(",");
+    fieldArray.forEach((field) => {
+      airtableUrl.searchParams.append("fields[]", field.trim());
+    });
 
     // Fetch from Airtable
     const response = await fetch(airtableUrl.toString(), {
@@ -93,9 +93,31 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
+    // Format records to include multilingual fields
+    const formattedRecords = (data.records || []).map((record: any) => {
+      const f = record.fields as Record<string, any>;
+      const baseId = f.id || record.id;
+
+      return {
+        ...record,
+        fields: {
+          ...f,
+          id: baseId,
+          airtableId: record.id,
+          // Include multilingual fields
+          enName: f.enName,
+          enTakhallus: f.enTakhallus,
+          enLocation: f.enLocation,
+          hiName: f.hiName,
+          hiTakhallus: f.hiTakhallus,
+          hiLocation: f.hiLocation,
+        }
+      };
+    });
+
     // Format the response to match the expected structure
     const result = {
-      records: data.records || [],
+      records: formattedRecords,
       offset: data.offset || null,
       hasMore: !!data.offset,
     };

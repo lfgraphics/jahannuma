@@ -17,7 +17,8 @@ import CommentSection from "../../../Components/CommentSection";
 import RubaiCard from "../../../Components/RubaiCard";
 import SkeletonLoader from "../../../Components/SkeletonLoader";
 
-const RUBAI_BASE = "appIewyeCIcAD4Y11";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const RUBAI_BASE = getClientBaseId("RUBAI");
 const RUBAI_TABLE = "rubai";
 const COMMENTS_BASE = RUBAI_COMMENTS_BASE;
 const COMMENTS_TABLE_NAME = COMMENTS_TABLE;
@@ -47,7 +48,7 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
     pageSize: 30,
   });
 
-  const { updateRecord } = useAirtableMutation("appIewyeCIcAD4Y11", "Rubai");
+  const { updateRecord } = useAirtableMutation(getClientBaseId("RUBAI"), "Rubai");
   const { language } = useLanguage();
 
   const handleLikeChange = (args: { id: string; liked: boolean; likes: number }) => {
@@ -56,7 +57,7 @@ const Page = ({ params }: { params: Promise<{ name: string }> }) => {
 
   const CardItem: React.FC<{ item: Rubai; index: number }> = ({ item, index }) => {
     const like = useLikeButton({
-      baseId: "appIewyeCIcAD4Y11",
+      baseId: getClientBaseId("RUBAI"),
       table: "rubai",
       storageKey: "Rubai",
       recordId: item.id,

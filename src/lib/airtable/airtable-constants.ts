@@ -3,19 +3,41 @@
  * This file should be the single source of truth for all Airtable-related constants.
  */
 
+// === Base ID Type Definition ===
+export type AirtableBaseId = `app${string}`;
+
+// === Base ID Validation ===
+export function validateBaseId(baseId: string): baseId is AirtableBaseId {
+  return /^app[A-Za-z0-9]{14}$/.test(baseId);
+}
+
+export function assertValidBaseId(baseId: string): asserts baseId is AirtableBaseId {
+  if (!validateBaseId(baseId)) {
+    throw new Error(`Invalid Airtable base ID format: ${baseId}. Expected format: app + 14 alphanumeric characters`);
+  }
+}
+
 // === Content Base IDs ===
 export const BASE_IDS = {
-  ASHAAR: "appeI2xzzyvUN5bR7",
-  GHAZLEN: "appvzkf6nX376pZy6", 
-  NAZMEN: "app5Y2OsuDgpXeQdz",
-  RUBAI: "appIewyeCIcAD4Y11",
-  EBOOKS: "appXcBoNMGdIaSUyA",
-  SHAER: "appgWv81tu4RT3uRB",
+  // Content bases
+  ASHAAR: "appeI2xzzyvUN5bR7" as AirtableBaseId,
+  GHAZLEN: "appvzkf6nX376pZy6" as AirtableBaseId,
+  NAZMEN: "app5Y2OsuDgpXeQdz" as AirtableBaseId,
+  RUBAI: "appIewyeCIcAD4Y11" as AirtableBaseId,
+  EBOOKS: "appXcBoNMGdIaSUyA" as AirtableBaseId,
+  SHAER: "appgWv81tu4RT3uRB" as AirtableBaseId,
+
+  // Updated base IDs for new content types
+  ALERTS: "appGgMoaFSOzkabKa" as AirtableBaseId,
+  DID_YOU_KNOW: "appUGtSnctOMVuXyl" as AirtableBaseId,
+  ADS: "appwLkmH0V7Pm8GKM" as AirtableBaseId,
+  CAROUSEL: "appT9X45McOIakTx2" as AirtableBaseId,
+
   // Comment bases for each content type
-  ASHAAR_COMMENTS: "appkb5lm483FiRD54",
-  GHAZLEN_COMMENTS: "appzB656cMxO0QotZ", 
-  NAZMEN_COMMENTS: "appjF9QvJeKAM9c9F",
-  RUBAI_COMMENTS: "appseIUI98pdLBT1K",
+  ASHAAR_COMMENTS: "appkb5lm483FiRD54" as AirtableBaseId,
+  GHAZLEN_COMMENTS: "appzB656cMxO0QotZ" as AirtableBaseId,
+  NAZMEN_COMMENTS: "appjF9QvJeKAM9c9F" as AirtableBaseId,
+  RUBAI_COMMENTS: "appseIUI98pdLBT1K" as AirtableBaseId,
 } as const;
 
 // === Fallback for legacy code ===
@@ -31,6 +53,9 @@ export const TABLES = {
   EBOOKS: "E-Books",
   BLOGS: "Blogs links and data",
   ADS: "Ads",
+  ALERTS: "Alerts",
+  DID_YOU_KNOW: "Did You Know",
+  CAROUSEL: "Carousel",
   COMMENTS: "Comments",
 } as const;
 
@@ -43,6 +68,10 @@ export const TABLE_BASE_MAPPING = {
   "E-Books": BASE_IDS.EBOOKS,
   "Shaer": BASE_IDS.SHAER,
   "Intro": BASE_IDS.SHAER, // Intro table is in the Shaer base
+  "Ads": BASE_IDS.ADS,
+  "Alerts": BASE_IDS.ALERTS,
+  "Did You Know": BASE_IDS.DID_YOU_KNOW,
+  "Carousel": BASE_IDS.CAROUSEL,
   // Comments are handled separately since they depend on content type
 } as const;
 
@@ -159,5 +188,74 @@ export const SORTS = {
   // Add other sorts only for fields that exist in your Airtable base
 } as const;
 
+// === Centralized Base ID Access Patterns ===
+
+/**
+ * Get base ID for a given table name with validation
+ */
+export function getBaseIdForTable(tableName: string): AirtableBaseId {
+  const baseId = TABLE_BASE_MAPPING[tableName as keyof typeof TABLE_BASE_MAPPING];
+  if (!baseId) {
+    throw new Error(`No base ID found for table: ${tableName}. Available tables: ${Object.keys(TABLE_BASE_MAPPING).join(', ')}`);
+  }
+  assertValidBaseId(baseId);
+  return baseId;
+}
+
+/**
+ * Get base ID for content type with validation
+ */
+export function getBaseIdForContentType(contentType: string): AirtableBaseId {
+  const upperContentType = contentType.toUpperCase() as keyof typeof BASE_IDS;
+  const baseId = BASE_IDS[upperContentType];
+  if (!baseId) {
+    throw new Error(`No base ID found for content type: ${contentType}. Available types: ${Object.keys(BASE_IDS).join(', ')}`);
+  }
+  assertValidBaseId(baseId);
+  return baseId;
+}
+
+/**
+ * Get comment base ID for a content type
+ */
+export function getCommentBaseId(contentType: string): AirtableBaseId {
+  const baseId = COMMENT_BASE_MAPPING[contentType as keyof typeof COMMENT_BASE_MAPPING];
+  if (!baseId) {
+    throw new Error(`No comment base ID found for content type: ${contentType}. Available types: ${Object.keys(COMMENT_BASE_MAPPING).join(', ')}`);
+  }
+  assertValidBaseId(baseId);
+  return baseId;
+}
+
+/**
+ * Validate all base IDs at startup
+ */
+export function validateAllBaseIds(): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // Validate all base IDs in BASE_IDS
+  for (const [key, baseId] of Object.entries(BASE_IDS)) {
+    try {
+      assertValidBaseId(baseId);
+    } catch (error) {
+      errors.push(`${key}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ * Get all available base IDs
+ */
+export function getAllBaseIds(): Record<string, AirtableBaseId> {
+  return { ...BASE_IDS };
+}
+
 // === Table Type Mapping ===
 export type TableName = (typeof TABLES)[keyof typeof TABLES];
+export type BaseIdKey = keyof typeof BASE_IDS;
+export type ContentType = Lowercase<BaseIdKey>;

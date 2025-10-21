@@ -74,7 +74,7 @@ const HorizontalBooks = () => {
                 <Card
                   data={item}
                   showLikeButton
-                  baseId="appXcBoNMGdIaSUyA"
+                  baseId={require("@/lib/airtable-client-utils").getClientBaseId("EBOOKS")}
                   table="E-Books"
                   storageKey="Books"
                 />

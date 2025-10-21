@@ -83,7 +83,8 @@ const fetcher = async (url: string) => {
 
 const Carousel: React.FC = () => {
   const size = useWindowSize();
-  const BASE_ID = "app1eVOGD6PdjD3vS";
+  const { getClientBaseId } = require("@/lib/airtable-client-utils");
+  const BASE_ID = getClientBaseId("CAROUSEL");
   const TABLE_NAME = "Main Carousel";
   const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
 

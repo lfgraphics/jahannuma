@@ -1,14 +1,15 @@
 "use client";
 import type { AirtableRecord } from "@/app/types";
 import React, { useEffect, useMemo, useState } from "react";
-import Card from "../../Components/BookCard";
+import Card from "../BookCard";
 import ComponentsLoader from "./ComponentsLoader";
 
 interface Props {
   takhallus: string;
 }
 
-const BASE_ID = "appXcBoNMGdIaSUyA";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const BASE_ID = getClientBaseId("EBOOKS");
 const TABLE = "E-Books";
 
 const EBooks: React.FC<Props> = ({ takhallus }) => {

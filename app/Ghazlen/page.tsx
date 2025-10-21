@@ -2,6 +2,7 @@ import { getBuildSafeFetcher } from "@/lib/build-safe-fallbacks";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
 import { fetchList } from "@/lib/universal-data-fetcher";
+import { getBaseIdForTable } from "@/src/lib/airtable";
 import { Metadata } from "next";
 import Ghazlen from "./Component";
 import GhazlenErrorBoundary from "./ErrorBoundary";
@@ -11,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   try {
     // Fetch some sample data for dynamic metadata
     const ghazlenData = await fetchList<any>(
-      "appvzkf6nX376pZy6", // Ghazlen base ID
+      getBaseIdForTable("Ghazlen"), // Ghazlen base ID
       "Ghazlen",
       { pageSize: 5 },
       { 
@@ -79,7 +80,7 @@ const GhazlenPage = async () => {
   try {
     // Fetch initial data during SSR
     const ghazlenResponse = await fetchList<any>(
-      "appvzkf6nX376pZy6", // Ghazlen base ID
+      getBaseIdForTable("Ghazlen"), // Ghazlen base ID
       "Ghazlen", 
       { pageSize: 30 },
       { 

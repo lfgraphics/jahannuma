@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { BASE_IDS } from '../../../src/lib/airtable/airtable-constants';
 
-const AIRTABLE_BASE_ID = 'app1eVOGD6PdjD3vS';
+const AIRTABLE_BASE_ID = BASE_IDS.ALERTS;
 const AIRTABLE_TABLE_NAME = 'alert ad';
 
 export async function GET() {

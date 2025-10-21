@@ -1,292 +1,166 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import * as data from "./data";
-import { filterDataBySearch } from "./data"; // Adjust the import path accordingly
+import { getBuildSafeFetcher } from "@/lib/build-safe-fallbacks";
+import { generatePageMetadata } from "@/lib/seo/metadata";
+import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
+import { fetchList } from "@/lib/universal-data-fetcher";
+import { getBaseIdForTable } from "@/src/lib/airtable";
+import { Metadata } from "next";
+import GhazlenComponent from "./Component";
+import GhazlenErrorBoundary from "./ErrorBoundary";
 
-import { Download, Share, X } from "lucide-react";
-import Image from "next/image";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useShareAction } from "@/hooks/useShareAction";
-import DynamicDownloadHandler from "@/app/Components/Download";
-import useAuthGuard from "@/hooks/useAuthGuard";
-import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+// Generate dynamic metadata with server-side data for English
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    // Fetch some sample data for dynamic metadata
+    const ghazlenData = await fetchList<any>(
+      getBaseIdForTable("Ghazlen"), // Ghazlen base ID
+      "Ghazlen",
+      { pageSize: 5 },
+      {
+        cache: true,
+        fallback: null,
+        throwOnError: false
+      }
+    );
 
-interface Shaer {
-  shaer: string;
-  sherHead: string[];
-  wholeSher: string[];
-  tag: string[];
+    const dynamicKeywords = [
+      "ghazals",
+      "english ghazal",
+      "urdu poetry in english",
+      "ghazlen",
+      "poetry collection",
+    ];
+
+    // Add poet names from fetched data to keywords if available
+    if (ghazlenData?.records) {
+      const poetNames = ghazlenData.records
+        .map((record: any) => record.fields?.enShaer || record.fields?.shaer)
+        .filter(Boolean)
+        .slice(0, 3); // Add up to 3 poet names
+      dynamicKeywords.push(...poetNames);
+    }
+
+    return generatePageMetadata({
+      title: "Ghazals - English Poetry Collection",
+      description:
+        "Discover beautiful Ghazals from renowned poets in English. Experience classical and contemporary ghazal poetry with interactive features.",
+      keywords: dynamicKeywords,
+      url: "/EN/Ghazlen",
+      image: "/metaImages/ghazlen.jpg",
+      language: "en",
+      alternateLanguages: {
+        ur: "https://jahan-numa.org/Ghazlen",
+        hi: "https://jahan-numa.org/HI/Ghazlen",
+      },
+    });
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+
+    // Fallback metadata if data fetching fails
+    return generatePageMetadata({
+      title: "Ghazals - English Poetry Collection",
+      description:
+        "Discover beautiful Ghazals from renowned poets in English. Experience classical and contemporary ghazal poetry with interactive features.",
+      keywords: ["ghazals", "english ghazal", "urdu poetry in english", "ghazlen", "poetry collection"],
+      url: "/EN/Ghazlen",
+      image: "/metaImages/ghazlen.jpg",
+      language: "en",
+      alternateLanguages: {
+        ur: "https://jahan-numa.org/Ghazlen",
+        hi: "https://jahan-numa.org/HI/Ghazlen",
+      },
+    });
+  }
 }
 
-const Ashaar: React.FC<{}> = () => {
-  const [searchText, setSearchText] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("");
-  const [dataItems, setDataItems] = useState<Shaer[]>([]);
-  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
-  const [downloadData, setDownloadData] = useState<{
-    id: string;
-    fields: { shaer?: string; ghazalHead?: string[] };
-  } | null>(null);
-  const { language } = useLanguage();
+// Server component with SSR data for English language
+const GhazlenPage = async () => {
+  let initialData = null;
+  let error = null;
 
-  useEffect(() => {
-    // This effect runs when the component mounts
-    const shuffledData = shuffleArray(data.getAllShaers());
-    setDataItems(shuffledData);
-  }, []);
+  try {
+    // Fetch initial data during SSR
+    const ghazlenResponse = await fetchList<any>(
+      getBaseIdForTable("Ghazlen"), // Ghazlen base ID
+      "Ghazlen",
+      { pageSize: 30 },
+      {
+        cache: true,
+        revalidate: 300000, // 5 minutes
+        fallback: null,
+        throwOnError: false,
+        debug: process.env.NODE_ENV === 'development'
+      }
+    );
 
-  function shuffleArray(array: Shaer[]) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = array[i];
-      array[i] = array[j]!;
-      array[j] = temp!;
+    if (ghazlenResponse?.records) {
+      initialData = ghazlenResponse;
     }
-    return array;
+  } catch (fetchError) {
+    console.error("Error fetching initial Ghazlen data:", fetchError);
+    error = fetchError;
+
+    // Try to get fallback data
+    try {
+      // Use build safe fetcher for fallbacks
+      getBuildSafeFetcher();
+
+      // Create empty fallback data structure
+      initialData = { records: [], offset: undefined };
+    } catch (fallbackError) {
+      console.error("Error getting fallback data:", fallbackError);
+    }
   }
 
-  // Fetch the data and assign it to the 'data' prop
+  // Generate structured data for SEO
+  const websiteStructuredData = generateWebsiteStructuredData({
+    name: "Jahannuma - Ghazals in English",
+    description: "Collection of beautiful ghazals and poetry in English",
+    url: "https://jahan-numa.org",
+    searchUrl: "https://jahan-numa.org/EN/Ghazlen",
+    language: "en",
+  });
 
-  const [selectedCard, setSelectedCard] = useState<Shaer | null>(null);
-
-  // Get all unique tags from the data
-  const allTags = data.getAllUniqueTags();
-
-  // Function to handle search input change
-  const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value.toLowerCase();
-    let xMark = document.getElementById("searchClear");
-    value === ""
-      ? xMark?.classList.add("hidden")
-      : xMark?.classList.remove("hidden");
-    setSearchText(value);
-
-    // Call the filterDataBySearch function to filter the data
-    const filteredData = filterDataBySearch(value);
-    setDataItems(filteredData);
+  // Create poetry-specific structured data
+  const poetryStructuredData = {
+    "@type": "CreativeWork",
+    "@id": "https://jahan-numa.org/EN/Ghazlen",
+    "name": "English Ghazal Collection",
+    "description": "A comprehensive collection of ghazals from classical and contemporary poets in English",
+    "genre": "Poetry",
+    "inLanguage": "en",
+    "author": {
+      "@type": "Organization",
+      "name": "Jahannuma",
+      "url": "https://jahan-numa.org"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Jahannuma",
+      "url": "https://jahan-numa.org"
+    }
   };
 
-  // Function to clear the search input
-  const clearSearch = () => {
-    let input = document.getElementById("searchBox") as HTMLInputElement;
-    let xMark = document.getElementById("searchClear");
-    input.value = "";
-    xMark?.classList.add("hidden");
+  // Create structured data for SEO
+  const structuredDataGraph = [websiteStructuredData, poetryStructuredData];
 
-    // Clear the searched data and show all data again
-    setSearchText(""); // Clear the searchText state
-    setDataItems(data.getAllShaers()); // Restore the original data
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": structuredDataGraph,
   };
-
-  // Function to check if a Shaer matches the selected filter and search text
-  const isShaerMatch = (shaerData: Shaer) => {
-    return (
-      (selectedFilter === "" || shaerData.tag.includes(selectedFilter)) &&
-      (shaerData.shaer.toLowerCase().includes(searchText) ||
-        shaerData.sherHead.some((line) =>
-          line.toLowerCase().includes(searchText)
-        ) ||
-        shaerData.wholeSher.some((line) =>
-          line.toLowerCase().includes(searchText)
-        ) ||
-        shaerData.tag.some((tag) => tag.toLowerCase().includes(searchText)))
-    );
-  };
-
-  const share = useShareAction({ section: "Ghazlen", title: "" });
-  const handleShareClick = async (shaerData: Shaer, id: string) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const url = `${origin}/EN/Ghazlen#${id}`;
-    await share.handleShare({ title: shaerData.shaer, textLines: shaerData.sherHead, url });
-  };
-
-  // Function to animate modal opening
-  const handleCardClick = (shaerData: Shaer): void => {
-    setSelectedCard(shaerData);
-  };
-
-  const handleCloseModal = (): void => {
-    setSelectedCard(null);
-  };
-
-  const handleDownload = (shaerData: Shaer) => {
-    if (!requireAuth("download")) return;
-    setDownloadData({
-      id: `ghazlen-${shaerData.shaer}`,
-      fields: { shaer: shaerData.shaer, ghazalHead: shaerData.sherHead },
-    });
-  };
-
-  const toggleFilter = () => {
-    document.getElementById("filtersListBox")?.classList.toggle("max-h-0");
-  };
-
-  const filterData = (tag: string) => {
-    setSelectedFilter(tag);
-  };
-
-  useEffect(() => {
-    // no-op: localStorage favorites removed in favor of Clerk metadata elsewhere
-  }, [dataItems]);
 
   return (
     <div>
-      <div className="flex flex-row w-screen bg-background border-b p-3 justify-between items-center relative">
-        <div
-          onClick={toggleFilter}
-          className="cursor-pointer filter-btn flex-[20%] flex justify-center text-primary"
-        >
-          {/* <Filter></Filter> */}
-        </div>
-        <div className="filter-btn flex-[90%] text-center justify-center flex">
-          <div className="flex justify-center basis-[95%] h-auto">
-            <input
-              type="text"
-              placeholder="Search what you want"
-              className="text-foreground border border-border focus:outline-none focus:border-r-0 border-r-0 p-2 w-64 bg-background"
-              id="searchBox"
-              onKeyUp={handleSearchKeyUp}
-            />
-            <div
-              className="justify-center bg-background h-[100%] pr-3 items-center flex w-11 border border-l-0 border-border"
-              onClick={clearSearch}
-            >
-              <Image
-                id="searchClear"
-                src="/icons/x.svg"
-                alt="x icon"
-                width="20"
-                height="20"
-                className="hidden text-primary"
-              ></Image>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        id="filtersListBox"
-        className="flex flex-col w-[max] max-h-0 overflow-hidden bg-background absolute transition-all left-8 shadow-md border-t-0 z-50"
-      >
-        <ul className="p-2 text-foreground select-none" onClick={toggleFilter}>
-          <li
-            className={`border-b-2 m-2 cursor-pointer ${
-              selectedFilter === "" ? "font-bold text-primary" : ""
-            }`}
-            onClick={() => filterData("")}
-          >
-            All
-          </li>
-          {allTags.map((tag) => (
-            <li
-              key={tag}
-              className={`border-b-2 m-2 cursor-pointer ${
-                tag === selectedFilter ? "font-bold text-primary" : ""
-              }`}
-              onClick={() => filterData(tag)}
-            >
-              {tag}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div
-        dir="rtl"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
-      >
-        {dataItems.map((shaerData, index) => {
-          if (isShaerMatch(shaerData)) {
-            return (
-              <div
-                key={index}
-                id={`card${index}`}
-                className="bg-background p-4 rounded-sm border-b relative flex flex-col justify-between"
-              >
-                <h2 className="text-foreground text-2xl font-bold mb-4">
-                  {shaerData.shaer}
-                </h2>
-                {/* Display a snippet of the ghazal data here */}
-                {shaerData.sherHead.map((lin, index) => (
-                  <p
-                    style={{ lineHeight: "normal" }}
-                    key={index}
-                    className="text-foreground line-normal"
-                  >
-                    {lin}
-                  </p>
-                ))}
-                <div className="felx text-center icons">
-                  <button
-                    className="m-3"
-                    onClick={() => handleShareClick(shaerData, `card${index}`)}
-                  >
-                    <Share className="text-primary" />
-                  </button>
-                  <button
-                    className="m-3"
-                    onClick={() => handleDownload(shaerData)}
-                  >
-                    <Download className="text-primary" />
-                  </button>
-
-                  <button
-                    className="text-primary font-semibold m-3"
-                    onClick={() => handleCardClick(shaerData)}
-                  >
-                    View More
-                  </button>
-                </div>
-              </div>
-            );
-          } else {
-            return null; // Skip rendering this Shaer
-          }
-        })}
-  </div>
-  {/* Share no longer requires login */}
-
-      {selectedCard && (
-        // <div className="justify-center w-max h-max">
-        <div
-          onClick={handleCloseModal}
-          id="modal"
-          className="bg-black bg-opacity-50 h-[100vh] w-[100vw] fixed top-0 z-50 overflow-hidden"
-        >
-          <div
-            style={{ lineHeight: "normal" }}
-            dir="rtl"
-            className="opacity-100 fixed bottom-0 left-0 right-0 bg-background p-4 transition-all ease-in-out min-h-[50vh] max-h-[70vh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0"
-          >
-            <button
-              className="absolute bottom-12 left-5 z-50"
-              onClick={handleCloseModal}
-            >
-              <X className="text-primary text-2xl" />
-            </button>
-            <h2 className="text-foreground font-2xl font-bold p-1 border-b-2">
-              {selectedCard.shaer}
-            </h2>
-            {selectedCard.wholeSher.map((line, index) => (
-              <p
-                style={{ lineHeight: "normal" }}
-                key={index}
-                className="text-foreground"
-              >
-                {line}
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {downloadData && (
-        <DynamicDownloadHandler
-          data={downloadData}
-          onCancel={() => setDownloadData(null)}
-        />
-      )}
-      <LoginRequiredDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} actionType={pendingAction || "download"} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData),
+        }}
+      />
+      <GhazlenErrorBoundary>
+        <GhazlenComponent initialData={initialData} language="EN" />
+      </GhazlenErrorBoundary>
     </div>
   );
 };
 
-export default Ashaar;
+export default GhazlenPage;

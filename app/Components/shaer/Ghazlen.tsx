@@ -89,7 +89,7 @@ const Ghazlen: React.FC<Props> = ({ takhallus }) => {
             shaerData={rec as any}
             index={index}
             download={false}
-            baseId="appvzkf6nX376pZy6"
+            baseId={require("@/lib/airtable-client-utils").getClientBaseId("GHAZLEN")}
             table="Ghazlen"
             storageKey="Ghazlen"
             toggleanaween={toggleanaween}

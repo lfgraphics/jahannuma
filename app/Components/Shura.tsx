@@ -1,13 +1,13 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
-import Card from "./shaer/Profilecard";
-import SkeletonLoader from "./SkeletonLoader";
 import { useAirtableList } from "@/hooks/useAirtableList";
-import { escapeAirtableFormulaValue } from "@/lib/utils";
 import { TTL } from "@/lib/airtable-fetcher";
-import { House, Search, X } from "lucide-react";
+import { escapeAirtableFormulaValue } from "@/lib/utils";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { House, Search, X } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import SkeletonLoader from "./SkeletonLoader";
+import Card from "./shaer/Profilecard";
 
 type Photo = {
   thumbnails?: { full?: { url?: string; height?: number; width?: number } };
@@ -55,8 +55,9 @@ export default function Shura() {
     return `OR( FIND('${safe}', LOWER({takhallus})), FIND('${safe}', LOWER({name})), FIND('${safe}', LOWER({dob})), FIND('${safe}', LOWER({location})), FIND('${safe}', LOWER({tafseel})), FIND('${safe}', LOWER({searchKeys})), FIND('${safe}', LOWER({enTakhallus})), FIND('${safe}', LOWER({hiTakhallus})), FIND('${safe}', LOWER({enName})), FIND('${safe}', LOWER({hiName})), FIND('${safe}', LOWER({enLocation})), FIND('${safe}', LOWER({hiLocation})) )`;
   }, [searchText]);
 
+  const { getClientBaseId } = require("@/lib/airtable-client-utils");
   const { records, isLoading, hasMore, loadMore } = useAirtableList<IntroRecord>(
-    "appgWv81tu4RT3uRB",
+    getClientBaseId("SHAER"),
     "Intro",
     { pageSize: 30, filterByFormula: filterFormula },
     { debounceMs: 1200, ttl: TTL.list }

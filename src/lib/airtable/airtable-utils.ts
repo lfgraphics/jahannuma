@@ -162,6 +162,11 @@ export function formatBookRecord(
     id: baseId,
     slugId: slug,
     airtableId: rec.id,
+    // Include multilingual fields
+    enBookName: f.enBookName,
+    enWriter: f.enWriter,
+    hiBookName: f.hiBookName,
+    hiWriter: f.hiWriter,
   };
 
   return { ...rec, fields: formatted };
@@ -188,6 +193,15 @@ export function formatRubaiRecord(
     likes: Number(f.likes || 0),
     comments: Number(f.comments || 0),
     shares: Number(f.shares || 0),
+    // Include multilingual fields
+    enBody: f.enBody,
+    enUnwan: f.enUnwan,
+    enShaer: f.enShaer,
+    enTakhallus: f.enTakhallus,
+    hiBody: f.hiBody,
+    hiUnwan: f.hiUnwan,
+    hiShaer: f.hiShaer,
+    hiTakhallus: f.hiTakhallus,
   };
 
   return { ...rec, fields: formatted };

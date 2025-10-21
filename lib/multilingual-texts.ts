@@ -8,7 +8,7 @@ export interface TranslatedText {
   HI: string;
 }
 
-export type UISection = "buttons" | "messages" | "placeholders" | "confirmations";
+export type UISection = "buttons" | "messages" | "placeholders" | "confirmations" | "labels";
 
 // Main navigation entries (mirrors Navbar pages pattern)
 export const navPages: Array<TranslatedText & { EN: string }> = [
@@ -67,6 +67,10 @@ export const uiTexts = {
   placeholders: {
     search: { EN: "Search...", UR: "تلاش کریں...", HI: "खोजें..." },
     comment: { EN: "Write a comment...", UR: "تبصرہ لکھیں...", HI: "टिप्पणी लिखें..." },
+  },
+  labels: {
+    didYouKnow: { EN: "DID YOU KNOW?", UR: "کیا آپ جانتے ہیں؟", HI: "क्या आप जानते हैं?" },
+    seeMore: { EN: "See More", UR: "مزید دیکھیں", HI: "और देखें" },
   },
   confirmations: {
     delete: {

@@ -2,6 +2,7 @@ import { getBuildSafeFallback } from "@/lib/build-safe-fallbacks";
 import { generatePoetryMetadata } from "@/lib/seo/metadata";
 import { generatePoetryStructuredData } from "@/lib/seo/structured-data";
 import { fetchList } from "@/lib/universal-data-fetcher";
+import { getBaseIdForTable } from "@/src/lib/airtable";
 import type { Rubai } from "../types";
 import RubaiComponent from "./Component";
 import ErrorBoundary from "./ErrorBoundary";
@@ -11,7 +12,7 @@ export async function generateMetadata() {
   try {
     // Fetch sample data for metadata generation
     const data = await fetchList<{ records: Rubai[] }>(
-      "appIewyeCIcAD4Y11",
+      getBaseIdForTable("Rubai"),
       "rubai",
       { pageSize: 1 },
       { 
@@ -50,7 +51,7 @@ const RubaiPage = async () => {
   try {
     // Fetch initial data for SSR
     initialData = await fetchList<{ records: Rubai[] }>(
-      "appIewyeCIcAD4Y11",
+      getBaseIdForTable("Rubai"),
       "rubai",
       { pageSize: 30 },
       { 

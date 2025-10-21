@@ -57,7 +57,8 @@ const Page: React.FC<PageProps> = ({ initialData = [] }) => {
   const isInitialLoading = isLoading && (!records || records.length === 0);
   const isLoadingMore = isValidating && !isLoading && records && records.length > 0;
 
-  const { updateRecord: updateBooks } = useAirtableMutation("appXcBoNMGdIaSUyA", "E-Books");
+  const { getClientBaseId } = require("@/lib/airtable-client-utils");
+  const { updateRecord: updateBooks } = useAirtableMutation(getClientBaseId("EBOOKS"), "E-Books");
 
   const formattedRecords: EBooksType[] = useMemo(() => {
     // Use initial data if client-side records are not yet available
@@ -279,7 +280,7 @@ const Page: React.FC<PageProps> = ({ initialData = [] }) => {
                 <Card
                   data={item}
                   showLikeButton
-                  baseId="appXcBoNMGdIaSUyA"
+                  baseId={getClientBaseId("EBOOKS")}
                   table="E-Books"
                   storageKey="Books"
                   onLikeChange={({ id, liked, likes }) => {

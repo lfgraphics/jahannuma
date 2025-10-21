@@ -2,6 +2,7 @@ import { getBuildSafeFetcher } from "@/lib/build-safe-fallbacks";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
 import { fetchList } from "@/lib/universal-data-fetcher";
+import { getBaseIdForTable } from "@/src/lib/airtable";
 import { Metadata } from "next";
 import Nazmen from "./Component";
 import NazmenErrorBoundary from "./ErrorBoundary";
@@ -11,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   try {
     // Fetch some sample data for dynamic metadata
     const nazmenData = await fetchList<any>(
-      "app5Y2OsuDgpXeQdz", // Nazmen base ID
+      getBaseIdForTable("Nazmen"), // Nazmen base ID
       "nazmen",
       { pageSize: 5 },
       { 
@@ -79,7 +80,7 @@ const NazmenPage = async () => {
   try {
     // Fetch initial data during SSR
     const nazmenResponse = await fetchList<any>(
-      "app5Y2OsuDgpXeQdz", // Nazmen base ID
+      getBaseIdForTable("Nazmen"), // Nazmen base ID
       "nazmen", 
       { pageSize: 30 },
       { 

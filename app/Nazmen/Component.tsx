@@ -392,7 +392,7 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
                   shaerData={shaerData}
                   index={index}
                   handleCardClick={handleCardClick}
-                  baseId="app5Y2OsuDgpXeQdz"
+                  baseId={require("@/lib/airtable-client-utils").getClientBaseId("NAZMEN")}
                   table="nazmen"
                   storageKey="Nazmen"
                   toggleanaween={toggleanaween}

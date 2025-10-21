@@ -6,7 +6,8 @@ import { useShareAction } from "@/hooks/useShareAction";
 import { formatAshaarRecord } from "@/lib/airtable-utils";
 import { useMemo } from "react";
 
-const BASE_ID = "appeI2xzzyvUN5bR7";
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const BASE_ID = getClientBaseId("ASHAAR");
 const TABLE = "Ashaar";
 
 export default function Ashaar() {

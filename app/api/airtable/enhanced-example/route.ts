@@ -26,6 +26,7 @@ import {
   withRetry
 } from "@/lib/error-handling";
 import { getUniversalFetcher } from "@/lib/universal-data-fetcher";
+import { getBaseIdForTable } from "@/src/lib/airtable";
 import { NextRequest } from "next/server";
 
 // Validation rules for this endpoint
@@ -89,9 +90,12 @@ async function handleGET(validatedData: any, request: NextRequest) {
     // Use universal data fetcher
     const universalFetcher = getUniversalFetcher();
 
+    // Get centralized base ID configuration
+    const baseId = getBaseIdForTable("Ashaar");
+
     const fetchParams = {
       kind: 'list' as const,
-      baseId: process.env.AIRTABLE_BASE_ID!,
+      baseId,
       table: 'Ashaar',
       params: {
         pageSize,
@@ -186,11 +190,14 @@ async function handlePOST(request: NextRequest) {
     // Use universal data fetcher for creation
     const universalFetcher = getUniversalFetcher();
 
+    // Get centralized base ID configuration
+    const baseId = getBaseIdForTable("Ashaar");
+
     // This would need to be implemented in the universal fetcher
     // For now, we'll use the existing pattern but with enhanced error handling
     const createParams = {
       kind: 'create' as const,
-      baseId: process.env.AIRTABLE_BASE_ID!,
+      baseId,
       table: 'Ashaar',
       fields
     };
@@ -199,7 +206,7 @@ async function handlePOST(request: NextRequest) {
       async () => {
         // This is a placeholder - the actual implementation would use
         // the universal fetcher's create method when implemented
-        const response = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Ashaar`, {
+        const response = await fetch(`https://api.airtable.com/v0/${baseId}/Ashaar`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,

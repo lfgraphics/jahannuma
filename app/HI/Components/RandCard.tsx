@@ -1,13 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import * as data from "../Ghazlen/data";
-import { Download, Share2 } from "lucide-react";
-import Loader from "./Loader";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useShareAction } from "@/hooks/useShareAction";
 import DynamicDownloadHandler from "@/app/Components/Download";
-import useAuthGuard from "@/hooks/useAuthGuard";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useGhazlenData } from "@/hooks/useGhazlenData";
+import { useShareAction } from "@/hooks/useShareAction";
+import { getLanguageFieldValue } from "@/lib/language-field-utils";
+import { Download, Share2 } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import Loader from "../../Components/Loader";
 
 interface Shaer {
   shaer: string;
@@ -16,9 +17,32 @@ interface Shaer {
 }
 
 const RandCard: React.FC<{}> = () => {
-  const dataItems: Shaer[] = data.getAllShaers();
-  const randomIndex = dataItems.length > 0 ? Math.floor(Math.random() * dataItems.length) : 0;
-  const randomData = dataItems.length > 0 ? dataItems[randomIndex] : undefined;
+  // Use real API data instead of mock data
+  const { records, isLoading } = useGhazlenData(
+    { pageSize: 10 }, // Get a small sample for random selection
+    { debounceMs: 300 }
+  );
+
+  // Transform and select random data with language-aware field selection
+  const randomData = useMemo(() => {
+    if (!records || records.length === 0) return undefined;
+
+    const randomIndex = Math.floor(Math.random() * records.length);
+    const record = records[randomIndex];
+
+    if (!record) return undefined;
+
+    // Use Hindi fields if available, fallback to default fields
+    const shaerName = getLanguageFieldValue(record.fields, 'shaer', 'HI') || record.fields.shaer;
+    const ghazalHead = getLanguageFieldValue(record.fields, 'ghazalHead', 'HI') || record.fields.ghazalHead;
+    const ghazal = getLanguageFieldValue(record.fields, 'ghazal', 'HI') || record.fields.ghazal;
+
+    return {
+      shaer: shaerName || '',
+      sherHead: Array.isArray(ghazalHead) ? ghazalHead : [ghazalHead].filter(Boolean),
+      wholeSher: String(ghazal || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+    };
+  }, [records]);
 
   const { language } = useLanguage();
   const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
@@ -65,8 +89,8 @@ const RandCard: React.FC<{}> = () => {
       >
         Random sher
       </h4>
-      {!insideBrowser && <Loader></Loader>}
-  {insideBrowser && randomData && (
+      {(isLoading || !insideBrowser) && <Loader></Loader>}
+      {insideBrowser && !isLoading && randomData && (
         <div
           id={"sherCard"}
           className="bg-white p-4 rounded-sm w-[95vw] justify-center flex flex-col items-center"
