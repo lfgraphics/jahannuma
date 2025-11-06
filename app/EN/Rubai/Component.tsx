@@ -1,13 +1,12 @@
 "use client";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useLikeButton } from "@/hooks/useLikeButton";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { House, Search, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import CommentSection from "../../Components/CommentSection";
-import RubaiCard from "../../Components/RubaiCard";
-import SkeletonLoader from "../../Components/SkeletonLoader";
+import CommentSection from "../Components/CommentSection";
+import RubaiCard from "../Components/RubaiCard";
+import SkeletonLoader from "../Components/SkeletonLoader";
 
 import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { useCommentSystem } from "@/hooks/social/useCommentSystem";
@@ -15,9 +14,7 @@ import useAuthGuard from "@/hooks/useAuthGuard";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useRubaiData } from "@/hooks/useRubaiData";
 import { useShareAction } from "@/hooks/useShareAction";
-import { getEnhancedLanguageFieldValue } from "@/lib/language-field-utils";
-import { uiTexts } from "@/lib/multilingual-texts";
-import type { Rubai } from "../../types";
+import type { Rubai } from "../types";
 
 const { getClientBaseId } = require("@/lib/airtable-client-utils");
 
@@ -35,13 +32,11 @@ interface Comment {
 interface RubaiComponentProps {
   initialData?: string | null;
   fallbackData?: any;
-  language: "EN";
 }
 
-const RubaiComponent: React.FC<RubaiComponentProps> = ({
-  initialData,
-  fallbackData,
-  language
+const RubaiComponent: React.FC<RubaiComponentProps> = ({ 
+  initialData, 
+  fallbackData 
 }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
@@ -50,7 +45,6 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
   const debouncedSearchText = useDebouncedValue(searchText, 300);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [initialDataItems, setInitialdDataItems] = useState<Rubai[]>([]);
-
   // Comment system
   const [newComment, setNewComment] = useState("");
   const {
@@ -62,15 +56,6 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
   const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } =
     useAuthGuard();
   const share = useShareAction({ section: "Rubai", title: "" });
-  const { language: contextLanguage, setLanguage } = useLanguage();
-
-  // Set language context to English
-  useEffect(() => {
-    if (contextLanguage !== "EN") {
-      setLanguage("EN");
-    }
-  }, [contextLanguage, setLanguage]);
-
   // notifications handled by global Sonner Toaster
   useEffect(() => {
     AOS.init({
@@ -80,7 +65,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     });
   });
 
-  //function to scroll to the top
+  //function ot scroll to the top
   function scrollToTop() {
     if (typeof window !== "undefined") {
       window.scrollTo({
@@ -89,7 +74,6 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       });
     }
   }
-
   // Parse initial data from server
   const hydratedInitialData = useMemo(() => {
     if (initialData) {
@@ -103,25 +87,25 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     return fallbackData;
   }, [initialData, fallbackData]);
 
-  // Build filter formula and use new Rubai data hook with English fields
+  // Build filter formula and use new Rubai data hook
   const filterFormula = useMemo(() => {
     const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     const escaped = q.replace(/'/g, "\\'");
-    // Priority order: English fields first, then fallback to Urdu fields
-    return `OR( FIND('${escaped}', LOWER({enShaer})), FIND('${escaped}', LOWER({shaer})), FIND('${escaped}', LOWER({enBody})), FIND('${escaped}', LOWER({body})), FIND('${escaped}', LOWER({enUnwan})), FIND('${escaped}', LOWER({unwan})) )`;
+    // Priority order: shaer (poet name), then body, unwan
+    return `OR( FIND('${escaped}', LOWER({shaer})), FIND('${escaped}', LOWER({body})), FIND('${escaped}', LOWER({unwan})) )`;
   }, [debouncedSearchText]);
 
-  const {
-    records,
-    isLoading,
-    hasMore,
+  const { 
+    records, 
+    isLoading, 
+    hasMore, 
     loadMore,
     isLoadingMore,
-    optimisticUpdate
+    optimisticUpdate 
   } = useRubaiData(
     { pageSize: 30, filterByFormula: filterFormula },
-    {
+    { 
       debounceMs: 300,
       initialData: hydratedInitialData
     }
@@ -129,32 +113,12 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
 
   const { updateRecord: updateRubai } = useAirtableMutation("rubai");
 
-  // Sort by search relevance when there's a search query with enhanced language-aware field selection
+  // Sort by search relevance when there's a search query
   const dataItems = useMemo(() => {
-    let sortedData = (records || []).map((record: Rubai) => {
-      // Use enhanced language-aware field selection for English with proper fallback
-      const shaerName = getEnhancedLanguageFieldValue(record.fields, 'shaer', 'EN', 'rubai') || record.fields.shaer;
-      const body = getEnhancedLanguageFieldValue(record.fields, 'body', 'EN', 'rubai') || record.fields.body;
-      const unwan = getEnhancedLanguageFieldValue(record.fields, 'unwan', 'EN', 'rubai') || record.fields.unwan;
-      const description = getEnhancedLanguageFieldValue(record.fields, 'description', 'EN', 'rubai') || record.fields.enDescription;
-      const takhallus = getEnhancedLanguageFieldValue(record.fields, 'takhallus', 'EN', 'rubai') || record.fields.enTakhallus;
-
-      return {
-        ...record,
-        fields: {
-          ...record.fields,
-          shaer: shaerName,
-          body: body,
-          unwan: unwan,
-          description,
-          takhallus,
-        },
-      };
-    });
-
+    let sortedData = records || [];
     if (debouncedSearchText.trim()) {
       const query = debouncedSearchText.trim().toLowerCase();
-      sortedData = sortedData.slice().sort((a: Rubai, b: Rubai) => {
+      sortedData = (records || []).slice().sort((a: Rubai, b: Rubai) => {
         const aShaer = (a.fields.shaer || "").toLowerCase();
         const aBody = (a.fields.body || "").toLowerCase();
         const aUnwan = (a.fields.unwan || "").toLowerCase();
@@ -191,12 +155,10 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       console.error("Error loading more Rubai:", error);
     }
   };
-
   const searchQuery = () => {
     if (typeof window !== "undefined") setScrolledPosition(window.scrollY);
   };
-
-  //search keyup handling
+  //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
     let xMark = document.getElementById("searchClear");
@@ -209,8 +171,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       : sMark?.classList.remove("hidden");
     setSearchText(value);
   };
-
-  //clear search box handling
+  //clear search box handeling
   const clearSearch = () => {
     let input = document.getElementById("searchBox") as HTMLInputElement;
     let xMark = document.getElementById("searchClear");
@@ -222,7 +183,6 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
   };
-
   // Update local list on like change (for instant UI feedback)
   const handleLikeChange = (args: {
     id: string;
@@ -262,8 +222,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       />
     );
   };
-
-  //handling share via centralized hook
+  //handeling share via centralized hook
   const handleShareClick = async (
     shaerData: Rubai,
     _index: number
@@ -283,11 +242,12 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     });
   };
 
+  // Removed localStorage highlighting; modern likes handled via Clerk metadata
+
   // showing the current made comment in comment box
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
-
   const handleCommentSubmit = async (dataId: string) => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
@@ -314,18 +274,15 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       // toast handled inside hook
     }
   };
-
   const openComments = (dataId: string) => {
     setSelectedCommentId(dataId);
     setRecordId(dataId); // This will trigger comment fetching
   };
-
   const closeComments = () => {
     setSelectedCommentId(null);
     setRecordId(null);
   };
-
-  // resetting search
+  // reseting search
   const resetSearch = () => {
     searchText && clearSearch();
     if (typeof window !== "undefined") {
@@ -340,21 +297,26 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
 
   return (
     <div>
+      {/* Toast handled globally by Sonner Toaster; share no longer requires login */}
+      {/* Removed legacy name dialog; comments rely on authenticated user */}
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
-          <div className="flex justify-center items-center basis-[100%] h-auto pt-1">
+          <div
+            dir="rtl"
+            className="flex justify-center items-center basis-[100%] h-auto pt-1"
+          >
             <House
               color="#984A02"
-              className="mr-3 cursor-pointer"
+              className="ml-3 cursor-pointer"
               size={30}
               onClick={() => {
-                window.location.href = "/EN";
+                window.location.href = "/";
               }}
             />
             <input
               type="text"
-              placeholder={uiTexts.placeholders.search.EN}
-              className="text-foreground border border-foreground focus:outline-none focus:border-r-0 border-r-0 p-1 w-64 leading-7 bg-transparent"
+              placeholder="لکھ کر تلاش کریں"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -366,7 +328,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
                 }
               }}
             />
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-l-0 border-r-0 border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
               <X
                 color="#984A02"
                 size={24}
@@ -375,7 +337,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
                 className="hidden text-[#984A02] cursor-pointer"
               />
             </div>
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-r border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
               <Search
                 color="#984A02"
                 size={24}
@@ -390,21 +352,23 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       {isLoading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          {uiTexts.messages.noData.EN}
+          سرچ میں کچھ نہیں ملا
         </div>
       )}
       {initialDataItems.length > 0 && (
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
+          // disabled={!searchText}
         >
-          Reset Search
+          تلاش ریسیٹ کریں
         </button>
       )}
       {!isLoading && (
         <section>
           <div
             id="section"
+            dir="rtl"
             className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky mt-6`}
           >
             {dataItems.map((data: Rubai, index: number) => (
@@ -420,16 +384,18 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {isLoadingMore
-                    ? uiTexts.messages.loading.EN
+                    ? "لوڈ ہو رہا ہے۔۔۔"
                     : !hasMore
-                      ? "No more rubai available"
-                      : uiTexts.buttons.loadMore.EN + " Rubai"}
+                    ? "مزید رباعی نہیں ہیں"
+                    : "مزید رباعی لوڈ کریں"}
                 </button>
               </div>
             )}
           </div>
         </section>
       )}
+      {/* //commetcard */}
+      {/* Removed external close button as it's included in the Drawer component */}
       {selectedCommentId && (
         <CommentSection
           dataId={selectedCommentId}

@@ -26,7 +26,7 @@ class NazmenErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("EN Nazmen Error Boundary caught an error:", error, errorInfo);
+    console.error("Nazmen Error Boundary caught an error:", error, errorInfo);
   }
 
   retry = () => {
@@ -44,16 +44,16 @@ class NazmenErrorBoundary extends React.Component<
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
           <div className="max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-red-600 mb-4">
-              Something went wrong
+              خرابی ہوئی ہے
             </h2>
             <p className="text-gray-600 mb-6">
-              There was a problem loading the poems. Please try again.
+              نظموں کو لوڈ کرنے میں مسئلہ ہوا ہے۔ براہ کرم دوبارہ کوشش کریں۔
             </p>
             <button
               onClick={this.retry}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Try Again
+              دوبارہ کوشش کریں
             </button>
             {process.env.NODE_ENV === "development" && this.state.error && (
               <details className="mt-4 text-left">

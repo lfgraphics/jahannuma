@@ -12,16 +12,16 @@
 // Base field sets for each content type (based on actual Airtable schema)
 export const BASE_FIELDS = {
   ashaar: [
-    'shaer', 'sher', 'body', 'unwan', 'likes', 'comments', 'shares', 'id'
+    'shaer', 'sher', 'body', 'unwan', 'ref', 'likes', 'comments', 'shares', 'id'
   ],
   ghazlen: [
-    'shaer', 'ghazalHead', 'ghazal', 'unwan', 'likes', 'comments', 'shares', 'id'
+    'shaer', 'ghazalHead', 'ghazal', 'unwan', 'ref', 'likes', 'comments', 'shares', 'id'
   ],
   nazmen: [
-    'shaer', 'nazm', 'unwan', 'paband', 'displayLine', 'likes', 'comments', 'shares', 'id'
+    'shaer', 'nazm', 'unwan', 'paband', 'displayLine', 'ref', 'likes', 'comments', 'shares', 'id'
   ],
   rubai: [
-    'shaer', 'body', 'unwan', 'likes', 'comments', 'shares', 'id'
+    'shaer', 'body', 'unwan', 'ref', 'likes', 'comments', 'shares', 'id'
   ],
   shaer: [
     'takhallus', 'name', 'location', 'tafseel', 'photo', 'likes', 'id'
@@ -34,16 +34,16 @@ export const BASE_FIELDS = {
 // English field mappings (based on actual Airtable schema)
 export const ENGLISH_FIELDS = {
   ashaar: [
-    'enShaer', 'enSher', 'enBody', 'enUnwan'
+    'enShaer', 'enSher', 'enBody', 'enUnwan', 'enRef'
   ],
   ghazlen: [
-    'enShaer', 'enGhazalHead', 'enGhazal', 'enUnwan'
+    'enShaer', 'enGhazalHead', 'enGhazal', 'enUnwan', 'enRef'
   ],
   nazmen: [
-    'enShaer', 'enNazm', 'enUnwan', 'enDisplayLine'
+    'enShaer', 'enNazm', 'enUnwan', 'enDisplayLine', 'enRef'
   ],
   rubai: [
-    'enShaer', 'enBody'
+    'enShaer', 'enBody', 'enRef'
   ],
   shaer: [
     'enTakhallus', 'enName', 'enLocation', 'enTafseel'
@@ -56,16 +56,16 @@ export const ENGLISH_FIELDS = {
 // Hindi field mappings (based on actual Airtable schema)
 export const HINDI_FIELDS = {
   ashaar: [
-    'hiShaer', 'hiSher', 'hiBody', 'hiUnwan'
+    'hiShaer', 'hiSher', 'hiBody', 'hiUnwan', 'hiRef'
   ],
   ghazlen: [
-    'hiShaer', 'hiGhazalHead', 'hiGhazal', 'hiUnwan'
+    'hiShaer', 'hiGhazalHead', 'hiGhazal', 'hiUnwan', 'hiRef'
   ],
   nazmen: [
-    'hiShaer', 'hiNazm', 'hiUnwan', 'hiDisplayLine'
+    'hiShaer', 'hiNazm', 'hiUnwan', 'hiDisplayLine', 'hiRef'
   ],
   rubai: [
-    'hiShaer', 'hiBody'
+    'hiShaer', 'hiBody', 'hiRef'
   ],
   shaer: [
     'hiTakhallus', 'hiName', 'hiLocation', 'hiTafseel'

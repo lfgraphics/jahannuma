@@ -17,6 +17,7 @@ export interface PageMetadataParams {
   section?: string;
   language?: "en" | "ur" | "hi";
   alternateLanguages?: Record<string, string>;
+  wordCount?: number;
 }
 
 export interface SiteConfig {

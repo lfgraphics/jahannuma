@@ -1,8 +1,4 @@
 "use client";
-import LoginRequiredDialog from "@/components/ui/login-required-dialog";
-import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { XCircle } from "lucide-react";
-import React from "react";
 import {
   Drawer,
   DrawerClose,
@@ -11,7 +7,11 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from "../../components/ui/drawer";
+} from "@/components/ui/drawer";
+import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { XCircle } from "lucide-react";
+import React from "react";
 
 interface Comment {
   dataId: string | null;

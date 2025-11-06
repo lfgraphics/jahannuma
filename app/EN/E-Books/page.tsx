@@ -1,5 +1,4 @@
 import { type EBooksType } from "@/hooks/useEbooksData";
-import { getLanguageFieldValue } from "@/lib/language-field-utils";
 import { generateCollectionPageSEO, generateSEOBreadcrumbs, SEOContentItem } from "@/lib/seo/comprehensive-seo";
 import { generatePerformanceOptimizedMetadata, generateResourcePreloadConfig } from "@/lib/seo/performance-optimization";
 import { fetchList } from "@/lib/universal-data-fetcher";
@@ -36,21 +35,21 @@ async function getEbooksData(): Promise<EBooksType[]> {
 export async function generateMetadata(): Promise<Metadata> {
   const ebooks = await getEbooksData();
 
-  // Convert to SEO format with English field preference
+  // Convert to SEO format
   const seoItems: SEOContentItem[] = ebooks.slice(0, 10).map(book => ({
     id: book.id,
-    title: getLanguageFieldValue(book.fields, 'bookName', 'EN', ['EN', 'UR', 'HI']) || "Untitled",
-    author: getLanguageFieldValue(book.fields, 'writer', 'EN', ['EN', 'UR', 'HI']) || "Unknown Author",
-    excerpt: getLanguageFieldValue(book.fields, 'desc', 'EN', ['EN', 'UR', 'HI']),
+    title: book.fields.bookName || book.fields.enBookName || book.fields.hiBookName || "Untitled",
+    author: book.fields.writer || book.fields.enWriter || book.fields.hiWriter || "Unknown Author",
+    excerpt: book.fields.desc || book.fields.enDesc || book.fields.hiDesc,
     datePublished: book.fields.publishingDate,
     image: book.fields.book?.[0]?.thumbnails?.large?.url,
-    url: `/EN/E-Books/${book.id}`,
+    url: `/E-Books/${book.id}`,
   }));
 
-  // Get featured authors with English preference
+  // Get featured authors
   const featuredAuthors = [...new Set(
     ebooks
-      .map(book => getLanguageFieldValue(book.fields, 'writer', 'EN', ['EN', 'UR', 'HI']))
+      .map(book => book.fields.writer || book.fields.enWriter || book.fields.hiWriter)
       .filter(Boolean)
       .slice(0, 5)
   )];
@@ -58,13 +57,13 @@ export async function generateMetadata(): Promise<Metadata> {
   // Generate breadcrumbs
   const breadcrumbs = generateSEOBreadcrumbs({
     contentType: "ebooks",
-    language: "en",
+    language: "ur",
   });
 
   // Generate comprehensive SEO
   const { metadata: baseMetadata } = await generateCollectionPageSEO({
     contentType: "ebooks",
-    language: "en",
+    language: "ur",
     items: seoItems,
     totalCount: ebooks.length,
     featuredAuthors,
@@ -79,11 +78,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 
   return generatePerformanceOptimizedMetadata({
-    baseMetadata: {
-      ...baseMetadata,
-      title: "E-Books - Jahan Numa",
-      description: "Digital library of poetry and literature books in English",
-    },
+    baseMetadata,
     criticalResources,
     enableDNSPrefetch: true,
   });
@@ -93,21 +88,21 @@ const EBooksPage = async () => {
   // Fetch data on server-side
   const initialData = await getEbooksData();
 
-  // Convert to SEO format for structured data with English preference
+  // Convert to SEO format for structured data
   const seoItems: SEOContentItem[] = initialData.slice(0, 10).map(book => ({
     id: book.id,
-    title: getLanguageFieldValue(book.fields, 'bookName', 'EN', ['EN', 'UR', 'HI']) || "Untitled",
-    author: getLanguageFieldValue(book.fields, 'writer', 'EN', ['EN', 'UR', 'HI']) || "Unknown Author",
-    excerpt: getLanguageFieldValue(book.fields, 'desc', 'EN', ['EN', 'UR', 'HI']),
+    title: book.fields.bookName || book.fields.enBookName || book.fields.hiBookName || "Untitled",
+    author: book.fields.writer || book.fields.enWriter || book.fields.hiWriter || "Unknown Author",
+    excerpt: book.fields.desc || book.fields.enDesc || book.fields.hiDesc,
     datePublished: book.fields.publishingDate,
     image: book.fields.book?.[0]?.thumbnails?.large?.url,
-    url: `/EN/E-Books/${book.id}`,
+    url: `/E-Books/${book.id}`,
   }));
 
-  // Get featured authors with English preference
+  // Get featured authors
   const featuredAuthors = [...new Set(
     initialData
-      .map(book => getLanguageFieldValue(book.fields, 'writer', 'EN', ['EN', 'UR', 'HI']))
+      .map(book => book.fields.writer || book.fields.enWriter || book.fields.hiWriter)
       .filter(Boolean)
       .slice(0, 5)
   )];
@@ -115,13 +110,13 @@ const EBooksPage = async () => {
   // Generate breadcrumbs
   const breadcrumbs = generateSEOBreadcrumbs({
     contentType: "ebooks",
-    language: "en",
+    language: "ur",
   });
 
   // Generate comprehensive structured data
   const { structuredData } = await generateCollectionPageSEO({
     contentType: "ebooks",
-    language: "en",
+    language: "ur",
     items: seoItems,
     totalCount: initialData.length,
     featuredAuthors,

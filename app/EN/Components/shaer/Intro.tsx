@@ -1,9 +1,9 @@
-import { splitMultilingualText } from "@/lib/multilingual-text-formatter";
+import React, { useEffect, useState } from "react";
+import ComponentsLoader from "./ComponentsLoader";
+// aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Bookmark } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import ComponentsLoader from "../../../Components/shaer/ComponentsLoader";
 
 interface IntroProps {
   data: {
@@ -27,7 +27,6 @@ interface IntroProps {
 
 const Intro2: React.FC<IntroProps> = ({ data }) => {
   const [insideBrowser, setInsideBrowser] = useState(false);
-
   useEffect(() => {
     AOS.init({
       offset: 50,
@@ -35,18 +34,18 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
       duration: 300,
     });
   }, []);
-
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Code is running in a browser
       setInsideBrowser(true);
     } else {
+      // Code is running on the server
       setInsideBrowser(false);
     }
   }, []);
-
   return (
     <div
-      dir="ltr"
+      dir="rtl"
       className="container flex flex-col justify-center p-5 pt-0 md:px-36 lg:px-36 dark:bg-[#2d2d2f]"
     >
       {!data && <ComponentsLoader />}
@@ -54,11 +53,11 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
         <div className="poet-intro text-lg">
           {data.description &&
             <div className="block mx-auto my-5 p-4 border-4 border-white rounded-md bg-gray-300 text-black border-double relative shadow-lg">
-              <div className="absolute -top-2 left-0">
+              <div className="absolute -top-2 right-0">
                 <Bookmark width={24} fill="#F0D586" color="#984a02" />
               </div>
               <ul>
-                {splitMultilingualText(data.description).map((line, index) => (
+                {data?.description?.split("\n").map((line, index) => (
                   <li data-aos="fade-up" key={index}>
                     {line}
                   </li>
@@ -68,7 +67,7 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
           }
           <ul>
             <p>
-              {splitMultilingualText(data.tafseel).map((line, index) => (
+              {data.tafseel?.split("\n").map((line, index) => (
                 <li data-aos="fade-up" className="my-2" key={index}>
                   {line}
                 </li>

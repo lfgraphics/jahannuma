@@ -1,0 +1,71 @@
+/* Themed toast styles */
+#tostBox {
+    position: absolute;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 20px;
+    bottom: 30px;
+}
+
+.toast-container {
+    position: fixed;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+.toast {
+    position: relative;
+    width: 370px;
+    height: 80px;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    font-weight: 500;
+    margin: 15px 0;
+    box-shadow: 0 0 20px hsl(var(--shadow) / 0.5);
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    animation: showtoast 0.5s linear forwards;
+}
+
+@keyframes showtoast {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+}
+
+.hide { animation: hidetoast 0.5s linear forwards; }
+
+@keyframes hidetoast {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(100%); }
+}
+
+.toast i {
+    margin: 0 20px;
+    font-size: 35px;
+    color: hsl(var(--primary));
+}
+
+.toast::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 5px;
+    background: hsl(var(--success));
+    border-radius: 0 0 8px 8px;
+    animation: anim 6s linear forwards;
+}
+
+@keyframes anim {
+    100% {
+        width: 0;
+        background: hsl(var(--destructive));
+    }
+}

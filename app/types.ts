@@ -48,6 +48,10 @@ export interface Rubai {
     comments: number;
     shares: number;
     id: string;
+    // Reference fields
+    ref?: string;
+    enRef?: string;
+    hiRef?: string;
     // English fields
     enShaer?: string;
     enUnwan?: string;
@@ -65,12 +69,42 @@ export interface Rubai {
   createdTime: string;
 }
 
+// Rubai domain types
+export interface RubaiRecord extends WithCounts {
+  shaer: string;
+  unwan: string;
+  body: string;
+  rubaiHead?: string | string[];
+  // Reference fields
+  ref?: string;
+  enRef?: string;
+  hiRef?: string;
+  // English fields
+  enShaer?: string;
+  enUnwan?: string;
+  enBody?: string;
+  enRubaiHead?: string;
+  enDescription?: string;
+  enTakhallus?: string;
+  // Hindi fields
+  hiShaer?: string;
+  hiUnwan?: string;
+  hiBody?: string;
+  hiRubaiHead?: string;
+  hiDescription?: string;
+  hiTakhallus?: string;
+}
+
 // Ashaar domain types
 export interface AshaarRecord extends WithCounts {
   sher: string; // heading, newline separated
   body: string; // ghazal body, newline separated
   unwan: string; // newline separated titles
   shaer: string;
+  // Reference fields
+  ref?: string;
+  enRef?: string;
+  hiRef?: string;
   // Derived helpers
   ghazalHead?: string[];
   ghazal?: string[];
@@ -110,20 +144,27 @@ export interface AshaarMozuRecord extends WithCounts {
 // Nazmen domain types
 export interface NazmenRecord extends WithCounts {
   nazm: string;
+  nazmHead?: string | string[];
   unwan: string;
   shaer: string;
   paband: boolean;
+  // Reference fields
+  ref?: string;
+  enRef?: string;
+  hiRef?: string;
   // Derived
   ghazalLines?: string[];
   anaween?: string[];
   // English fields
   enNazm?: string;
+  enNazmHead?: string;
   enUnwan?: string;
   enShaer?: string;
   enDescription?: string;
   enTakhallus?: string;
   // Hindi fields
   hiNazm?: string;
+  hiNazmHead?: string;
   hiUnwan?: string;
   hiShaer?: string;
   hiDescription?: string;
@@ -136,6 +177,10 @@ export interface GhazlenRecord extends WithCounts {
   ghazalHead: string[] | string;
   unwan: string[] | string;
   shaer: string;
+  // Reference fields
+  ref?: string;
+  enRef?: string;
+  hiRef?: string;
   // English fields
   enGhazal?: string;
   enGhazalHead?: string;

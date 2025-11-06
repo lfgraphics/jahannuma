@@ -5,17 +5,15 @@ import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useGhazlenData } from "@/hooks/useGhazlenData";
-import { getEnhancedLanguageFieldValue } from "@/lib/language-field-utils";
-import { uiTexts } from "@/lib/multilingual-texts";
 import { shareRecordWithCount } from "@/lib/social-utils";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { House, Search, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import CommentSection from "../../Components/CommentSection";
-import DataCard from "../../Components/DataCard";
-import SkeletonLoader from "../../Components/SkeletonLoader";
+import CommentSection from "../Components/CommentSection";
+import DataCard from "../Components/DataCard";
+import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
@@ -28,32 +26,47 @@ interface Shaer {
     comments: number;
     shares: number;
     id: string;
-    // English fields
-    enShaer?: string;
-    enGhazalHead?: string[];
-    enGhazal?: string[];
-    enUnwan?: string[];
   };
   id: string;
   createdTime: string;
 }
+interface ApiResponse {
+  records: any[];
+  offset: string | null;
+}
+interface Pagination {
+  offset: string | null;
+  pageSize: number;
+}
+interface Comment {
+  dataId: string | null;
+  commentorName: string | null;
+  timestamp: string;
+  comment: string;
+}
 
 interface GhazlenProps {
   initialData?: any[];
-  language: "EN";
 }
 
-const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }) => {
+const Ghazlen: React.FC<GhazlenProps> = ({ initialData = [] }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
+  const [voffset, setOffset] = useState<string | null>("");
+  const [pagination, setPagination] = useState<Pagination>({
+    offset: null,
+    pageSize: 30,
+  });
+  const [dataOffset, setDataOffset] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebouncedValue(searchText, 300);
   const [showIcons, setShowIcons] = useState(false);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
-  const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
-  const [openanaween, setOpenanaween] = useState<string | null>(null);
 
+  const [initialDataItems, setInitialdDataItems] = useState<Shaer[]>([]);
+
+  const [openanaween, setOpenanaween] = useState<string | null>(null);
   // Comment system
   const [newComment, setNewComment] = useState("");
   const {
@@ -63,15 +76,8 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
     setRecordId,
   } = useCommentSystem({ contentType: "ghazlen" });
   const { requireAuth } = useAuthGuard();
-  const { language: contextLanguage, setLanguage } = useLanguage();
-
-  // Set language context to English
-  useEffect(() => {
-    if (contextLanguage !== "EN") {
-      setLanguage("EN");
-    }
-  }, [contextLanguage, setLanguage]);
-
+  const { language } = useLanguage();
+  // toast via sonner
   useEffect(() => {
     AOS.init({
       offset: 50,
@@ -88,8 +94,7 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
     if (msgtype === "error") return toast.error(message);
     return toast.warning(message);
   };
-
-  //function to scroll to the top
+  //function ot scroll to the top
   function scrollToTop() {
     if (typeof window !== "undefined") {
       window.scrollTo({
@@ -98,15 +103,14 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
       });
     }
   }
-
-  // Build filter formula via SWR hook - prioritize shaer (poet name) with English fields
+  // Build filter formula via SWR hook - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
     const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     // sanitize to avoid Airtable formula injection: escape backslashes and single quotes
     const safeQ = q.replace(/\\/g, "\\\\").replace(/'/g, "''");
-    // Priority order: English fields first, then fallback to Urdu fields
-    return `OR( FIND('${safeQ}', LOWER({enShaer})), FIND('${safeQ}', LOWER({shaer})), FIND('${safeQ}', LOWER({enGhazalHead})), FIND('${safeQ}', LOWER({ghazalHead})), FIND('${safeQ}', LOWER({enGhazal})), FIND('${safeQ}', LOWER({ghazal})), FIND('${safeQ}', LOWER({enUnwan})), FIND('${safeQ}', LOWER({unwan})) )`;
+    // Priority order: shaer (poet name), then ghazalHead, ghazal, unwan
+    return `OR( FIND('${safeQ}', LOWER({shaer})), FIND('${safeQ}', LOWER({ghazalHead})), FIND('${safeQ}', LOWER({ghazal})), FIND('${safeQ}', LOWER({unwan})) )`;
   }, [debouncedSearchText]);
 
   const { records, isLoading, hasMore, loadMore, isLoadingMore, optimisticUpdate } = useGhazlenData(
@@ -115,34 +119,20 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
   );
 
   const { updateRecord: updateGhazlen } = useAirtableMutation("ghazlen");
+  // Removed deprecated createGhazlenComment; handled by useCommentSystem
 
-  // Format records and sort by search relevance with enhanced language-aware field selection
+  // Format records and sort by search relevance
   const formattedRecords: Shaer[] = useMemo(() => {
-    const formatted = (records || []).map((record: any) => {
-      // Use enhanced language-aware field selection for English with proper fallback
-      const shaerName = getEnhancedLanguageFieldValue(record.fields, 'shaer', 'EN', 'ghazlen') || record.fields.shaer;
-      const ghazalHead = getEnhancedLanguageFieldValue(record.fields, 'ghazalHead', 'EN', 'ghazlen') || record.fields.ghazalHead;
-      const ghazal = getEnhancedLanguageFieldValue(record.fields, 'ghazal', 'EN', 'ghazlen') || record.fields.ghazal;
-      const unwan = getEnhancedLanguageFieldValue(record.fields, 'unwan', 'EN', 'ghazlen') || record.fields.unwan;
-      const description = getEnhancedLanguageFieldValue(record.fields, 'description', 'EN', 'ghazlen') || record.fields.enDescription;
-      const takhallus = getEnhancedLanguageFieldValue(record.fields, 'takhallus', 'EN', 'ghazlen') || record.fields.enTakhallus;
-
-      return {
-        ...record,
-        fields: {
-          ...record.fields,
-          shaer: shaerName,
-          description,
-          takhallus,
-          ghazalHead: Array.isArray(ghazalHead) ? ghazalHead : [ghazalHead].filter(Boolean),
-          ghazal: String(ghazal || "")
-            .replace(/\r\n?/g, "\n")
-            .split("\n")
-            .filter(Boolean),
-          unwan: Array.isArray(unwan) ? unwan : [unwan].filter(Boolean),
-        },
-      };
-    });
+    const formatted = (records || []).map((record: any) => ({
+      ...record,
+      fields: {
+        ...record.fields,
+        ghazal: String(record.fields?.ghazal || "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter(Boolean),
+      },
+    }));
 
     // Sort by search relevance when there's a search query
     if (debouncedSearchText.trim()) {
@@ -195,6 +185,9 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
   const loading = isLoading;
   const noMoreData = !hasMore;
 
+  // Remove the problematic useEffect that causes infinite re-renders
+  // Use the formattedRecords directly instead of copying to state
+
   const handleLoadMore = async () => {
     try {
       await loadMore();
@@ -202,20 +195,17 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
       console.error("Error loading more data:", error);
     }
   };
-
   const searchQuery = () => {
     // filterFormula derives from searchText
     if (typeof window !== "undefined") setScrolledPosition(window.scrollY);
   };
-
   // search input change handling (state-driven visibility)
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
     setSearchText(value);
     setShowIcons(value.trim() !== "");
   };
-
-  //clear search box handling
+  //clear search box handeling
   const clearSearch = () => {
     let input = document.getElementById("searchBox") as HTMLInputElement;
     let xMark = document.getElementById("searchClear");
@@ -227,8 +217,8 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
   };
-
-  //handling share
+  // Likes handled inside DataCard; legacy no-op removed
+  //handeling sahre
   const handleShareClick = async (
     shaerData: Shaer,
     index: number
@@ -244,7 +234,7 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
           (shaerData.fields.ghazalHead || [])[0] ||
           (shaerData.fields.unwan || [])[0] ||
           "",
-        language: "EN",
+        language,
       },
       {
         onShared: async () => {
@@ -269,7 +259,6 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
       }
     );
   };
-
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
     let xMark = document.getElementById("searchClear");
@@ -282,22 +271,22 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
       : sMark?.classList.remove("hidden");
     setSearchText(value);
   };
-
   //opening and closing ghazal
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
   };
+  // Removed latestDataRef as it's no longer needed
 
+  // Removed legacy localStorage-driven heart coloring; like state is owned by card
   //toggling anaween box
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-
   // showing the current made comment in comment box
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
-
+  // Removed incrementComments helper as we're using optimistic updates
   const handleCommentSubmit = async (dataId: string) => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
@@ -324,20 +313,19 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
       // errors are toasted inside hook
     }
   };
-
   const openComments = (dataId: string) => {
     toggleanaween(null);
     setSelectedCommentId(dataId);
     setRecordId(dataId); // This will trigger comment fetching
+    // setIsModleOpen(true);
   };
-
   const closeComments = () => {
     setSelectedCommentId(null);
     setRecordId(null);
   };
-
-  // resetting search
+  // reseting  search
   const resetSearch = () => {
+    setDataOffset(pagination.offset);
     searchText && clearSearch();
     // Clear the search text which will trigger the hook to reload data
     setSearchText("");
@@ -353,21 +341,26 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
 
   return (
     <div>
+      {/* Sonner Toaster is global; no local toast container */}
+      {/* Removed legacy name dialog; comments rely on authenticated user */}
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
-          <div className="flex justify-center items-center basis-[100%] h-auto pt-1">
+          <div
+            dir="rtl"
+            className="flex justify-center items-center basis-[100%] h-auto pt-1"
+          >
             <House
               color="#984A02"
-              className="mr-3 cursor-pointer"
+              className="ml-3 cursor-pointer"
               size={30}
               onClick={() => {
-                window.location.href = "/EN";
+                window.location.href = "/";
               }}
             />
             <input
               type="text"
-              placeholder={uiTexts.placeholders.search.EN}
-              className="text-foreground border border-foreground focus:outline-none focus:border-r-0 border-r-0 p-1 w-64 leading-7 bg-transparent"
+              placeholder="لکھ کر تلاش کریں"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -379,7 +372,7 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
                 }
               }}
             />
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-l-0 border-r-0 border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
               <X
                 color="#984A02"
                 size={24}
@@ -388,7 +381,7 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
                 className="hidden text-[#984A02] cursor-pointer"
               />
             </div>
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-r border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
               <Search
                 color="#984A02"
                 size={24}
@@ -403,21 +396,23 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          {uiTexts.messages.noData.EN}
+          سرچ میں کچھ نہیں ملا
         </div>
       )}
       {initialDataItems.length > 0 && (
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
+          // disabled={!searchText}
         >
-          Reset Search
+          تلاش ریسیٹ کریں
         </button>
       )}
       {!loading && (
         <section>
           <div
             id="section"
+            dir="rtl"
             className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky m-3`}
           >
             {dataItems.map((shaerData, index) => (
@@ -429,7 +424,7 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
                   shaerData={shaerData}
                   index={index}
                   handleCardClick={handleCardClick}
-                  baseId={require("@/lib/airtable-client-utils").getClientBaseId("GHAZLEN")}
+                  baseId="appvzkf6nX376pZy6"
                   table="Ghazlen"
                   storageKey="Ghazlen"
                   toggleanaween={toggleanaween}
@@ -437,7 +432,7 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
                   handleShareClick={handleShareClick}
                   openComments={openComments}
                   onLikeChange={({ id, liked, likes }) => {
-                    // Analytics integration can be added here in the future
+                    // placeholder analytics
                   }}
                 />
               </div>
@@ -450,10 +445,10 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {isLoadingMore
-                    ? uiTexts.messages.loading.EN
+                    ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                      ? "No more ghazals available"
-                      : uiTexts.buttons.loadMore.EN + " Ghazals"}
+                      ? "مزید غزلیں نہیں ہیں"
+                      : "مزید غزلیں لوڈ کریں"}
                 </button>
               </div>
             )}
@@ -476,4 +471,4 @@ const GhazlenComponent: React.FC<GhazlenProps> = ({ initialData = [], language }
   );
 };
 
-export default GhazlenComponent;
+export default Ghazlen;

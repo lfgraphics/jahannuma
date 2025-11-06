@@ -124,68 +124,6 @@ const nextConfig: NextConfig = {
 
   // Trailing slash handling
   trailingSlash: false,
-
-  // Bundle analyzer configuration
-  ...(process.env.ANALYZE === 'true' && {
-    webpack: (config: any, { isServer }: { isServer: boolean }) => {
-      if (!isServer) {
-        // Only analyze client-side bundles
-        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-        config.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'static',
-            reportFilename: '../bundle-analysis/client.html',
-            openAnalyzer: false,
-          })
-        );
-      } else {
-        // Analyze server-side bundles separately
-        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-        config.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'static',
-            reportFilename: '../bundle-analysis/server.html',
-            openAnalyzer: false,
-          })
-        );
-      }
-
-      // Optimize chunks
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          ...config.optimization.splitChunks,
-          cacheGroups: {
-            ...config.optimization.splitChunks.cacheGroups,
-            // Separate vendor chunks
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-              priority: 10,
-            },
-            // Separate common chunks
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              priority: 5,
-              reuseExistingChunk: true,
-            },
-            // Separate data fetching utilities
-            dataFetching: {
-              test: /[\\/](lib|hooks)[\\/].*\.(ts|tsx|js|jsx)$/,
-              name: 'data-fetching',
-              chunks: 'all',
-              priority: 8,
-            },
-          },
-        },
-      };
-
-      return config;
-    },
-  }),
 };
 
 export default nextConfig;

@@ -4,10 +4,10 @@ import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
 import { fetchList } from "@/lib/universal-data-fetcher";
 import { getBaseIdForTable } from "@/src/lib/airtable";
 import { Metadata } from "next";
-import NazmenComponent from "./Component";
+import Nazmen from "./Component";
 import NazmenErrorBoundary from "./ErrorBoundary";
 
-// Generate dynamic metadata with server-side data for English
+// Generate dynamic metadata with server-side data
 export async function generateMetadata(): Promise<Metadata> {
   try {
     // Fetch some sample data for dynamic metadata
@@ -15,64 +15,64 @@ export async function generateMetadata(): Promise<Metadata> {
       getBaseIdForTable("Nazmen"), // Nazmen base ID
       "nazmen",
       { pageSize: 5 },
-      {
-        cache: true,
+      { 
+        cache: true, 
         fallback: null,
-        throwOnError: false
+        throwOnError: false 
       }
     );
 
     const dynamicKeywords = [
-      "poems",
-      "english poetry",
-      "urdu poetry in english",
+      "نظمیں",
+      "اردو نظم", 
+      "poetry",
+      "urdu nazm",
       "nazmen",
-      "poetry collection",
     ];
 
     // Add poet names from fetched data to keywords if available
     if (nazmenData?.records) {
       const poetNames = nazmenData.records
-        .map((record: any) => record.fields?.enShaer || record.fields?.shaer)
+        .map((record: any) => record.fields?.shaer)
         .filter(Boolean)
         .slice(0, 3); // Add up to 3 poet names
       dynamicKeywords.push(...poetNames);
     }
 
     return generatePageMetadata({
-      title: "Nazmen - English Poetry Collection",
+      title: "Nazmen - نظمیں",
       description:
-        "Explore beautiful Nazmen (poems) from renowned poets in English. Discover timeless verses in literature with likes, comments and sharing features.",
+        "Explore beautiful Nazmen (Urdu poems) from renowned poets. Discover timeless verses in Urdu literature with likes, comments and sharing features.",
       keywords: dynamicKeywords,
-      url: "/EN/Nazmen",
+      url: "/Nazmen",
       image: "/metaImages/nazme.jpg",
-      language: "en",
+      language: "ur",
       alternateLanguages: {
-        ur: "https://jahan-numa.org/Nazmen",
+        en: "https://jahan-numa.org/EN/Nazmen",
         hi: "https://jahan-numa.org/HI/Nazmen",
       },
     });
   } catch (error) {
     console.error("Error generating metadata:", error);
-
+    
     // Fallback metadata if data fetching fails
     return generatePageMetadata({
-      title: "Nazmen - English Poetry Collection",
+      title: "Nazmen - نظمیں",
       description:
-        "Explore beautiful Nazmen (poems) from renowned poets in English. Discover timeless verses in literature with likes, comments and sharing features.",
-      keywords: ["poems", "english poetry", "urdu poetry in english", "nazmen", "poetry collection"],
-      url: "/EN/Nazmen",
+        "Explore beautiful Nazmen (Urdu poems) from renowned poets. Discover timeless verses in Urdu literature with likes, comments and sharing features.",
+      keywords: ["نظمیں", "اردو نظم", "poetry", "urdu nazm", "nazmen"],
+      url: "/Nazmen",
       image: "/metaImages/nazme.jpg",
-      language: "en",
+      language: "ur",
       alternateLanguages: {
-        ur: "https://jahan-numa.org/Nazmen",
+        en: "https://jahan-numa.org/EN/Nazmen",
         hi: "https://jahan-numa.org/HI/Nazmen",
       },
     });
   }
 }
 
-// Server component with SSR data for English language
+// Server component with SSR data
 const NazmenPage = async () => {
   let initialData = null;
   let error = null;
@@ -81,9 +81,9 @@ const NazmenPage = async () => {
     // Fetch initial data during SSR
     const nazmenResponse = await fetchList<any>(
       getBaseIdForTable("Nazmen"), // Nazmen base ID
-      "nazmen",
+      "nazmen", 
       { pageSize: 30 },
-      {
+      { 
         cache: true,
         revalidate: 300000, // 5 minutes
         fallback: null,
@@ -98,12 +98,12 @@ const NazmenPage = async () => {
   } catch (fetchError) {
     console.error("Error fetching initial Nazmen data:", fetchError);
     error = fetchError;
-
+    
     // Try to get fallback data
     try {
       // Use build safe fetcher for fallbacks
       getBuildSafeFetcher();
-
+      
       // Create empty fallback data structure
       initialData = { records: [], offset: undefined };
     } catch (fallbackError) {
@@ -113,11 +113,11 @@ const NazmenPage = async () => {
 
   // Generate structured data for SEO
   const websiteStructuredData = generateWebsiteStructuredData({
-    name: "Jahannuma - Nazmen in English",
-    description: "Collection of beautiful poetry and nazmen in English",
+    name: "Jahannuma - Nazmen",
+    description: "Collection of beautiful Urdu poetry and nazmen",
     url: "https://jahan-numa.org",
-    searchUrl: "https://jahan-numa.org/EN/Nazmen",
-    language: "en",
+    searchUrl: "https://jahan-numa.org/Nazmen",
+    language: "ur",
   });
 
   // Create structured data for SEO
@@ -137,7 +137,7 @@ const NazmenPage = async () => {
         }}
       />
       <NazmenErrorBoundary>
-        <NazmenComponent initialData={initialData} language="EN" />
+        <Nazmen initialData={initialData} />
       </NazmenErrorBoundary>
     </div>
   );

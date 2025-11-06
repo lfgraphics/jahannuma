@@ -1,31 +1,53 @@
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
+import { fetchList } from "@/lib/universal-data-fetcher";
+import { getBaseIdForTable } from "@/src/lib/airtable";
 import { Metadata } from "next";
-import AshaarComponent from "./Component";
+import Ashaar from "./Component";
 import AshaarErrorBoundary from "./ErrorBoundary";
 
-// Generate dynamic metadata with server-side data for English
+// Generate dynamic metadata with server-side data
 export async function generateMetadata(): Promise<Metadata> {
   try {
+    // Fetch some sample data for dynamic metadata
+    const ashaarData = await fetchList<any>(
+      getBaseIdForTable("Ashaar"), // Ashaar base ID
+      "Ashaar",
+      { pageSize: 5 },
+      {
+        cache: true,
+        fallback: null,
+        throwOnError: false
+      }
+    );
+
     const dynamicKeywords = [
-      "ashaar",
+      "اشعار",
+      "اردو شاعری",
+      "poetry",
       "urdu poetry",
-      "english urdu poetry",
-      "poetry couplets",
-      "urdu literature",
-      "urdu shayari",
+      "ashaar",
     ];
 
+    // Add poet names from fetched data to keywords if available
+    if (ashaarData?.records) {
+      const poetNames = ashaarData.records
+        .map((record: any) => record.fields?.shaer)
+        .filter(Boolean)
+        .slice(0, 3); // Add up to 3 poet names
+      dynamicKeywords.push(...poetNames);
+    }
+
     return generatePageMetadata({
-      title: "Ashaar - Poetry Couplets",
+      title: "Ashaar - اشعار",
       description:
         "Explore beautiful Ashaar (poetry couplets) from renowned poets. Discover timeless verses in Urdu literature with likes, comments and sharing features.",
       keywords: dynamicKeywords,
-      url: "/EN/Ashaar",
+      url: "/Ashaar",
       image: "/metaImages/ashaar.jpg",
-      language: "en",
+      language: "ur",
       alternateLanguages: {
-        ur: "https://jahan-numa.org/Ashaar",
+        en: "https://jahan-numa.org/EN/Ashaar",
         hi: "https://jahan-numa.org/HI/Ashaar",
       },
     });
@@ -34,15 +56,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
     // Fallback metadata if data fetching fails
     return generatePageMetadata({
-      title: "Ashaar - Poetry Couplets",
+      title: "Ashaar - اشعار",
       description:
         "Explore beautiful Ashaar (poetry couplets) from renowned poets. Discover timeless verses in Urdu literature with likes, comments and sharing features.",
-      keywords: ["ashaar", "urdu poetry", "poetry couplets", "urdu literature"],
-      url: "/EN/Ashaar",
+      keywords: ["اشعار", "اردو شاعری", "poetry", "urdu poetry", "ashaar"],
+      url: "/Ashaar",
       image: "/metaImages/ashaar.jpg",
-      language: "en",
+      language: "ur",
       alternateLanguages: {
-        ur: "https://jahan-numa.org/Ashaar",
+        en: "https://jahan-numa.org/EN/Ashaar",
         hi: "https://jahan-numa.org/HI/Ashaar",
       },
     });
@@ -53,13 +75,16 @@ export async function generateMetadata(): Promise<Metadata> {
 const AshaarPage = async () => {
   let initialData = null;
 
+// For now, let's disable server-side fetching to test client-side only
+// This will help us identify if the issue is with server-side or client-side fetching
+
   // Generate structured data for SEO
   const websiteStructuredData = generateWebsiteStructuredData({
     name: "Jahannuma - Ashaar",
-    description: "Collection of beautiful Urdu poetry and ashaar in English",
-    url: "https://jahan-numa.org/EN",
-    searchUrl: "https://jahan-numa.org/EN/Ashaar",
-    language: "en",
+    description: "Collection of beautiful Urdu poetry and ashaar",
+    url: "https://jahan-numa.org",
+    searchUrl: "https://jahan-numa.org/Ashaar",
+    language: "ur",
   });
 
   // Create structured data for SEO
@@ -79,7 +104,7 @@ const AshaarPage = async () => {
         }}
       />
       <AshaarErrorBoundary>
-        <AshaarComponent initialData={initialData} />
+        <Ashaar initialData={initialData} />
       </AshaarErrorBoundary>
     </div>
   );

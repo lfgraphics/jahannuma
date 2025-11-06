@@ -1,19 +1,21 @@
 "use client";
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { toPng } from 'html-to-image';
-import { Baseline, ImagePlus, PaintBucket, Plus, Settings2 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "../../components/ui/dialog";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../components/ui/accordion";
-import { Button } from "../../components/ui/button";
-import PromptDialog from "../../components/ui/prompt-dialog";
-import useAuthGuard from "@/hooks/useAuthGuard";
+} from "@/components/ui/dialog";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { toPng } from 'html-to-image';
+import { Baseline, ImagePlus, PaintBucket, Plus, Settings2 } from "lucide-react";
+import React, { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import PromptDialog from "../../components/ui/prompt-dialog";
 
 // Use the unified domain type
 // Accept a minimal shaer-like shape to avoid strict coupling
@@ -24,9 +26,6 @@ type MinimalDownloadData = {
     ghazalHead?: string | string[];
   };
 };
-import { toast } from "sonner";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { getButtonText } from "@/lib/multilingual-texts";
 
 // Define the DynamicDownloadHandler component
 const DynamicDownloadHandler: React.FC<{
@@ -187,23 +186,23 @@ const DynamicDownloadHandler: React.FC<{
               <Accordion dir="rtl" type="single" collapsible className="w-full mb-4">
                 <AccordionItem value="tweaks">
                   <AccordionTrigger dir="rtl" className="px-3">
-                    <span className="flex gap-2 items-center justify-between">مزید ترمیمی <Settings2 className="h-4 w-4" /></span>
+                    <span className="flex gap-2 items-center justify-between">ترمیم <Settings2 className="h-4 w-4" /></span>
                   </AccordionTrigger>
                   <AccordionContent className="border-t">
                     <div className="flex max-w-full overflow-x-auto flex-row h-[110px] gap-2 flex-wrap p-3">
-                      <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                      <div onClick={() => toast.info("Coming Soon!\nجلد آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                         <Baseline />
                         <p className="text-xs">خط کا رنگ تبدیل کریں</p>
                       </div>
-                      <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                      <div onClick={() => toast.info("Coming Soon!\nجلد آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                         <PaintBucket />
                         <p className="text-xs">پسِ منظر کا رنگ تبدیل کریں</p>
                       </div>
-                      <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                      <div onClick={() => toast.info("Coming Soon!\nجلد آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                         <ImagePlus />
-                        <p className="text-xs">اپنی تصویل اپلوڈ کریں</p>
+                        <p className="text-xs">اپنی تصویر اپلوڈ کریں</p>
                       </div>
-                      <div onClick={() => toast.info("Coming Soon!\nجلد ہی آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                      <div onClick={() => toast.info("Coming Soon!\nجلد آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                         <Plus />
                       </div>
                     </div>

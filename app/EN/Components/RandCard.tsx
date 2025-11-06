@@ -1,123 +1,158 @@
 "use client";
-import CommentSection from "@/app/Components/CommentSection";
-import DataCard from "@/app/Components/DataCard";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAirtableList } from "@/hooks/useAirtableList";
-import { useAirtableMutation } from "@/hooks/useAirtableMutation";
+import { useAirtableList } from "@/hooks/airtable/useAirtableList";
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
+import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
-import { useCommentSystem } from "@/hooks/useCommentSystem";
-import { getLanguageFieldValue } from "@/lib/language-field-utils";
 import { shareRecordWithCount } from "@/lib/social-utils";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import Loader from "../../Components/Loader";
+import { Harmattan } from 'next/font/google';
+import React, { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import CommentSection from "./CommentSection";
+import DataCard from "./DataCard";
+import Loader from "./Loader";
+
+const harmattan = Harmattan({
+  subsets: ['arabic'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-harmattan',
+  display: 'swap',
+});
 
 interface Shaer {
   fields: {
     sher: string[];
     shaer: string;
+    enShaer: string;
     ghazalHead: string[];
     ghazal: string[];
+    enGhazal: string[];
     unwan: string[];
+    enUnwan: string[];
     likes: number;
     comments: number;
     shares: number;
     id: string;
-    // Language-specific fields
-    enShaer?: string;
-    hiShaer?: string;
-    enGhazalHead?: string[];
-    hiGhazalHead?: string[];
-    enGhazal?: string[];
-    hiGhazal?: string[];
-    enUnwan?: string[];
-    hiUnwan?: string[];
   };
   id: string;
   createdTime: string;
 }
 
-
+// Local comment shape used by comment list/state for this component
+interface Comment {
+  dataId: string;
+  commentorName: string | null;
+  timestamp: string;
+  comment: string;
+}
 
 const RandCard: React.FC<{}> = () => {
-  const { language } = useLanguage();
-
-  const { getClientBaseId } = require("@/lib/airtable-client-utils");
   // Fetch Ashaar list via SWR and randomly pick one; caching ensures instant loads on revisit
-  const { records, isLoading } = useAirtableList<Shaer>(getClientBaseId("ASHAAR"), "Ashaar", {
+  const { records, isLoading } = useAirtableList<Shaer>("ashaar", {
     pageSize: 50,
   });
   const loading = isLoading;
   const randomIndexRef = useRef<number | null>(null);
-
   // Comment drawer state
-  const [selectedCommentId, setSelectedCommentId] = React.useState<
-    string | null
-  >(null);
+  const [selectedCommentId, setSelectedCommentId] = React.useState<string | null>(null);
   const {
     comments,
     isLoading: commentLoading,
     submitComment,
     setRecordId,
-  } = useCommentSystem(getClientBaseId("ASHAAR"), "Ashaar");
+  } = useCommentSystem({ contentType: "ashaar" });
   const [newComment, setNewComment] = useState("");
   const { requireAuth } = useAuthGuard();
+  const { language } = useLanguage();
+  // likes are now handled inside DataCard via useLikeButton
+  // toast via sonner
 
-  // keep the same random item until the dataset changes
+  //function ot show toast
+  const showToast = (
+    msgtype: "success" | "error" | "invalid",
+    message: string
+  ) => {
+    if (msgtype === "success") return toast.success(message);
+    if (msgtype === "error") return toast.error(message);
+    return toast.warning(message);
+  };
+
+  // keep the same random item until the dataset changes, persist across page navigation
   useEffect(() => {
-    if (records && records.length > 0 && randomIndexRef.current === null) {
-      randomIndexRef.current = Math.floor(Math.random() * records.length);
+    if (records && records.length > 0) {
+      // Try to get persisted random index from sessionStorage
+      const persistedIndex = sessionStorage.getItem('randCard_selectedIndex');
+      const persistedRecordsLength = sessionStorage.getItem('randCard_recordsLength');
+
+      if (
+        persistedIndex !== null &&
+        persistedRecordsLength !== null &&
+        parseInt(persistedRecordsLength) === records.length &&
+        randomIndexRef.current === null
+      ) {
+        // Use persisted index if dataset hasn't changed
+        randomIndexRef.current = parseInt(persistedIndex);
+      } else if (randomIndexRef.current === null) {
+        // Generate new random index
+        randomIndexRef.current = Math.floor(Math.random() * records.length);
+        // Persist the selection
+        sessionStorage.setItem('randCard_selectedIndex', randomIndexRef.current.toString());
+        sessionStorage.setItem('randCard_recordsLength', records.length.toString());
+      }
     }
+
     if (
       records &&
       randomIndexRef.current !== null &&
       randomIndexRef.current >= records.length
     ) {
-      // dataset shrank; re-roll
+      // dataset shrank; re-roll and update persistence
       randomIndexRef.current = Math.floor(Math.random() * records.length);
+      sessionStorage.setItem('randCard_selectedIndex', randomIndexRef.current.toString());
+      sessionStorage.setItem('randCard_recordsLength', records.length.toString());
     }
   }, [records]);
 
-  const randomItem = useMemo(() => {
-    if (!records || records.length === 0)
-      return undefined as unknown as Shaer | undefined;
+  const [randomItem, setRandomItem] = useState<Shaer | undefined>()
+
+  // Clear persistence when component unmounts (optional - for fresh selection on app restart)
+  useEffect(() => {
+    return () => {
+      // Uncomment the lines below if you want fresh selection on app restart
+      // sessionStorage.removeItem('randCard_selectedIndex');
+      // sessionStorage.removeItem('randCard_recordsLength');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!records || records.length === 0) {
+      setRandomItem(undefined);
+      return;
+    }
+
     const idx = randomIndexRef.current ?? 0;
     const rec = records[idx];
 
-    // Get language-specific field values with fallback
-    const shaer = getLanguageFieldValue(rec.fields, 'shaer', language) || rec.fields.shaer;
-    const ghazalHead = getLanguageFieldValue(rec.fields, 'ghazalHead', language) ||
-      getLanguageFieldValue(rec.fields, 'sher', language) ||
-      rec.fields.ghazalHead || rec.fields.sher;
-    const ghazal = getLanguageFieldValue(rec.fields, 'ghazal', language) ||
-      getLanguageFieldValue(rec.fields, 'body', language) ||
-      rec.fields.ghazal;
-    const unwan = getLanguageFieldValue(rec.fields, 'unwan', language) || rec.fields.unwan;
-
     // normalize to match component expectations
-    const normalizedGhazal = Array.isArray(ghazal) ? ghazal :
-      (typeof ghazal === 'string' ?
-        ghazal.replace(/\r\n?/g, "\n").split("\n") :
-        rec.fields.ghazal ?? []);
+    const ghazal = (rec as any)?.fields?.enBody
+      ? String((rec as any).fields.enBody)
+        .replace(/\r\n?/g, "\n")
+        .split("\n")
+      : (rec as any)?.fields?.enGhazal ?? [];
+    const ghazalHead = (rec as any)?.fields?.enSher
+      ? String((rec as any).fields.enSher)
+        .replace(/\r\n?/g, "\n")
+        .split("\n")
+      : (rec as any)?.fields?.enGhazalHead ?? [];
 
-    const normalizedGhazalHead = Array.isArray(ghazalHead) ? ghazalHead :
-      (typeof ghazalHead === 'string' ?
-        ghazalHead.replace(/\r\n?/g, "\n").split("\n") :
-        rec.fields.ghazalHead ?? []);
-
-    return {
+    setRandomItem({
       ...rec,
-      fields: {
-        ...rec.fields,
-        shaer,
-        ghazal: normalizedGhazal,
-        ghazalHead: normalizedGhazalHead,
-        unwan
-      },
-    } as Shaer;
-  }, [records, language]);
+      fields: { ...(rec as any).fields, ghazal, ghazalHead },
+    });
+  }, [records]);
 
   // Mutations aligned to Ashaar table for likes/shares
-  const { updateRecord: updateAshaar } = useAirtableMutation(getClientBaseId("ASHAAR"), "Ashaar");
+  const { updateRecord: updateAshaar } = useAirtableMutation("ashaar");
   const [openanaween, setOpenanaween] = useState<string | null>(null);
 
   const toggleanaween = (cardId: string | null) => {
@@ -125,9 +160,8 @@ const RandCard: React.FC<{}> = () => {
   };
 
   const visitSher = () => {
-    // window.location.href = `/EN/Ghazlen/${randomItem?.fields.id}`;
+    // window.location.href = `/Ghazlen/${randomItem?.fields.id}`;
   };
-
   const fetchComments = async (dataId: string) => {
     setRecordId(dataId);
   };
@@ -139,14 +173,15 @@ const RandCard: React.FC<{}> = () => {
   };
 
   const handleShareClick = async (
-    shaerData: Shaer
+    shaerData: Shaer,
+    index: number
   ): Promise<void> => {
     toggleanaween(null);
     await shareRecordWithCount(
       {
         section: "Ashaar",
         id: shaerData.id,
-        title: shaerData.fields.shaer,
+        title: shaerData.fields.enShaer,
         textLines: shaerData.fields.ghazalHead ?? [],
         fallbackSlugText:
           (shaerData.fields.ghazalHead || [])[0] ||
@@ -158,7 +193,7 @@ const RandCard: React.FC<{}> = () => {
         onShared: async () => {
           try {
             const updatedShares = (shaerData.fields.shares ?? 0) + 1;
-            await updateAshaar([{ id: shaerData.id, fields: { shares: updatedShares } }]);
+            await updateAshaar(shaerData.id, { shares: updatedShares });
           } catch (error) {
             console.error("Error updating shares:", error);
           }
@@ -172,18 +207,19 @@ const RandCard: React.FC<{}> = () => {
     setRecordId(null);
   };
 
-
+  const handleCardClick = (shaerData: Shaer) => {
+    toggleanaween(null);
+  };
 
   if (loading || !randomItem) return <Loader />;
 
-  const randomSherTitle = { EN: "A Selected Verse", UR: "ایک منتخب شعر", HI: "एक चुना हुआ शेर" };
-
   return (
-    <div className="justify-center flex flex-col items-center m-4">
-      <h4 className="text-2xl my-4">{randomSherTitle[language]}</h4>
-      {loading && <Loader></Loader>}
+    <div className={`justify-center flex flex-col items-center m-4 ${harmattan.variable}`}>
+      <h4 className="text-2xl my-4">Chosen Sher</h4>
+      {loading && <Loader></Loader>} {/* Show loader while fetching */}
       {!loading && (
         <div className="relative">
+          {/* <div className="bg-white absolute left-0 top-0 bg-opacity-10 w-screen h-[300px] z-auto"></div> */}
           <img
             src="https://jahan-numa.org/carousel/jnd.jpeg"
             className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.09] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none h-[220px]"
@@ -196,7 +232,7 @@ const RandCard: React.FC<{}> = () => {
             shaerData={randomItem}
             index={0}
             handleCardClick={visitSher}
-            baseId={getClientBaseId("ASHAAR")}
+            baseId={require("@/lib/airtable-client-utils").getClientBaseId("ASHAAR")}
             table="Ashaar"
             storageKey="Ashaar"
             toggleanaween={toggleanaween}
@@ -204,7 +240,7 @@ const RandCard: React.FC<{}> = () => {
             handleShareClick={handleShareClick}
             openComments={openComments}
             onLikeChange={() => {
-              // Analytics integration can be added here in the future
+              // placeholder analytics
             }}
           />
         </div>
@@ -217,11 +253,13 @@ const RandCard: React.FC<{}> = () => {
             if (!requireAuth("comment")) return;
             if (!newComment) return;
             try {
-              await submitComment({ recordId: dataId, content: newComment });
+              // submitComment expects the comment string; recordId is already set via setRecordId when opening comments
+              await submitComment(newComment);
               setNewComment("");
+              // Update comments count on Ashaar
               try {
                 const currentComments = randomItem?.fields?.comments ?? 0;
-                await updateAshaar([{ id: dataId, fields: { comments: currentComments + 1 } }]);
+                await updateAshaar(dataId, { comments: currentComments + 1 });
               } catch (err) {
                 console.error("Error updating comment count:", err);
               }
@@ -238,5 +276,4 @@ const RandCard: React.FC<{}> = () => {
     </div>
   );
 };
-
 export default RandCard;

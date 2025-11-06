@@ -53,19 +53,23 @@ export function formatAshaarRecord(
     id: baseId,
     slugId: slug,
     airtableId: rec.id,
+    // Reference fields
+    ref: f.ref,
+    enRef: f.enRef,
+    hiRef: f.hiRef,
     ghazalHead: f.sher
       ? String(f.sher).split("\n")
       : [],
     ghazal: Array.isArray(f.ghazal)
       ? f.ghazal
       : f.body
-      ? String(f.body).split("\n")
-      : [],
+        ? String(f.body).split("\n")
+        : [],
     anaween: Array.isArray(f.anaween)
       ? f.anaween
       : f.unwan
-      ? String(f.unwan).split("\n")
-      : [],
+        ? String(f.unwan).split("\n")
+        : [],
     // Include multilingual fields
     enSher: f.enSher,
     enBody: f.enBody,
@@ -92,23 +96,23 @@ export function formatGhazlenRecord(
     ? f.ghazal[0]
     : f.ghazal
       ? String(f.ghazal).split("\n")[0]
-    : "";
+      : "";
   const slug = createSlug(ghazalText || f.shaer || "");
 
   const formatted: GhazlenRecord = {
     ghazal: Array.isArray(f.ghazal)
       ? f.ghazal
       : f.ghazal
-      ? String(f.ghazal).split("\n")
-      : [],
-    ghazalHead: f.ghazal
-      ? String(f.ghazal).split("\n")
+        ? String(f.ghazal)
+        : [],
+    ghazalHead: f.ghazalHead
+      ? String(f.ghazalHead)
       : [],
     unwan: Array.isArray(f.unwan)
       ? f.unwan
       : f.unwan
-      ? String(f.unwan).split("\n")
-      : [],
+        ? String(f.unwan).split("\n")
+        : [],
     shaer: f.shaer,
     likes: f.likes ?? 0,
     shares: f.shares ?? 0,
@@ -116,6 +120,10 @@ export function formatGhazlenRecord(
     id: baseId, // Keep original ID
     slugId: slug, // Use slug for navigation
     airtableId: rec.id,
+    // Reference fields
+    ref: f.ref,
+    enRef: f.enRef,
+    hiRef: f.hiRef,
     // Include multilingual fields
     enGhazal: f.enGhazal,
     enUnwan: f.enUnwan,
@@ -139,13 +147,13 @@ export function formatNazmenRecord(
   const nazmTitle = Array.isArray(f.ghazalLines)
     ? f.ghazalLines[0]
     : f.nazm
-    ? String(f.nazm).split("\n")[0]
-    : "";
+      ? String(f.nazm).split("\n")[0]
+      : "";
   const unwanText = Array.isArray(f.anaween)
     ? f.anaween[0]
     : f.unwan
-    ? String(f.unwan).split("\n")[0]
-    : "";
+      ? String(f.unwan).split("\n")[0]
+      : "";
   const slug = createSlug(nazmTitle || unwanText || f.shaer || "");
 
   const formatted: NazmenRecord = {
@@ -159,16 +167,20 @@ export function formatNazmenRecord(
     id: baseId, // Keep original ID
     slugId: slug, // Use slug for navigation
     airtableId: rec.id,
+    // Reference fields
+    ref: f.ref,
+    enRef: f.enRef,
+    hiRef: f.hiRef,
     ghazalLines: Array.isArray(f.ghazalLines)
       ? f.ghazalLines
       : f.nazm
-      ? String(f.nazm).split("\n")
-      : [],
+        ? String(f.nazm).split("\n")
+        : [],
     anaween: Array.isArray(f.anaween)
       ? f.anaween
       : f.unwan
-      ? String(f.unwan).split("\n")
-      : [],
+        ? String(f.unwan).split("\n")
+        : [],
     // Include multilingual fields
     enNazm: f.enNazm,
     enUnwan: f.enUnwan,
@@ -227,6 +239,10 @@ export function formatRubaiRecord(
     id: baseId,
     slugId: slug,
     airtableId: rec.id,
+    // Reference fields
+    ref: f.ref,
+    enRef: f.enRef,
+    hiRef: f.hiRef,
     // Include multilingual fields
     enBody: f.enBody,
     enUnwan: f.enUnwan,
@@ -266,6 +282,34 @@ export const prepareShareUpdate = (current: number | undefined) => ({
 export const prepareCommentUpdate = (current: number | undefined) => ({
   comments: (current ?? 0) + 1,
 });
+
+// Reference field helpers
+export function getReferenceText(
+  record: { ref?: string; enRef?: string; hiRef?: string },
+  language: "UR" | "EN" | "HI" = "UR"
+): string | undefined {
+  switch (language) {
+    case "EN":
+      return record.enRef || record.ref;
+    case "HI":
+      return record.hiRef || record.ref;
+    case "UR":
+    default:
+      return record.ref;
+  }
+}
+
+export function getMakhazText(language: "UR" | "EN" | "HI" = "UR"): string {
+  switch (language) {
+    case "EN":
+      return "Reference";
+    case "HI":
+      return "माख़ज़";
+    case "UR":
+    default:
+      return "مآخذ";
+  }
+}
 
 // Error + toast helpers
 export function handleAirtableError(error: any) {

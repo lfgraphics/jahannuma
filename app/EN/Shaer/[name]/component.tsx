@@ -1,16 +1,16 @@
 "use client";
-import Ashaar from "@/app/EN/Components/shaer/Ashaar";
-import EBkooks from "@/app/EN/Components/shaer/EBooks";
-import Ghazlen from "@/app/EN/Components/shaer/Ghazlen";
-import Intro2 from "@/app/EN/Components/shaer/Intro";
-import Intro from "@/app/EN/Components/shaer/IntroPhoto";
-import Nazmen from "@/app/EN/Components/shaer/Nazmen";
-import Rubai from "@/app/EN/Components/shaer/Rubai";
-import { getEnhancedLanguageFieldValue } from "@/lib/language-field-utils";
+import Ashaar from "@/app/Components/shaer/Ashaar";
+import EBkooks from "@/app/Components/shaer/EBooks";
+import Ghazlen from "@/app/Components/shaer/Ghazlen";
+import Intro2 from "@/app/Components/shaer/Intro";
+import Intro from "@/app/Components/shaer/IntroPhoto";
+import Nazmen from "@/app/Components/shaer/Nazmen";
+import Rubai from "@/app/Components/shaer/Rubai";
 import React, { useEffect, useMemo, useState } from "react";
 import "./shaer.css";
 
 // Using simple custom nav instead of shadcn Tabs
+
 
 interface IntroFields {
   description?: string;
@@ -71,26 +71,21 @@ const ShaerComponent = ({
     setIsClient(true);
   }, []);
 
-  // Use server-side data with language-aware field selection for English
+  // Use server-side data directly, no need for client-side fetching
   const data: IntroFields = useMemo(() => {
     const rec = initialData?.fields || {};
-
-    // Normalize text fields with English preference
+    // Normalize text fields:
+    // - tafseel MUST be a single string for consumers (Intro/IntroPhoto) that call string methods
+    // - other multi-value fields can stay arrays (split later in UI as needed)
     const toStringMultiline = (v?: string | string[]) =>
       Array.isArray(v) ? v.join("\n") : String(v ?? "");
     const toLines = (v?: string | string[]) =>
       typeof v === "string"
         ? v.replace(/\r\n?/g, "\n").split("\n").filter(Boolean)
         : (v as string[] | undefined);
-
     return {
       ...rec,
-      // Use enhanced English fields with fallback
-      takhallus: getEnhancedLanguageFieldValue(rec, 'takhallus', 'EN', 'shaer', ['EN', 'UR', 'HI']) || rec.takhallus,
-      name: getEnhancedLanguageFieldValue(rec, 'name', 'EN', 'shaer', ['EN', 'UR', 'HI']) || rec.name,
-      location: getEnhancedLanguageFieldValue(rec, 'location', 'EN', 'shaer', ['EN', 'UR', 'HI']) || rec.location,
-      description: getEnhancedLanguageFieldValue(rec, 'description', 'EN', 'shaer', ['EN', 'UR', 'HI']) || rec.description,
-      tafseel: toStringMultiline(getEnhancedLanguageFieldValue(rec, 'tafseel', 'EN', 'shaer', ['EN', 'UR', 'HI']) || rec.tafseel),
+      tafseel: toStringMultiline(rec.tafseel),
       searchKeys: toLines(rec.searchKeys),
       enTakhallus: toLines(rec.enTakhallus),
       hiTakhallus: toLines(rec.hiTakhallus),
@@ -103,13 +98,13 @@ const ShaerComponent = ({
     } as IntroFields;
   }, [initialData]);
 
-  // Active tab handling with English labels
+  // Active tab handling
   const [activeNav, setActiveNav] = useState<string>("");
   useEffect(() => {
     const initializeActiveNav = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const tab = urlParams.get("tab");
-      setActiveNav(tab || "Introduction");
+      setActiveNav(tab || "تعارف");
     };
     initializeActiveNav();
     window.addEventListener("popstate", initializeActiveNav);
@@ -137,16 +132,16 @@ const ShaerComponent = ({
   // Show loading state during hydration to prevent hook mismatch
   if (!isClient) {
     return (
-      <div dir="ltr" className="container mx-auto flex flex-col">
+      <div dir="rtl" className="container mx-auto flex flex-col">
         <div className="h-screen flex items-center justify-center">
-          <div className="text-lg">Loading...</div>
+          <div className="text-lg">لوڈ ہو رہا ہے...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div dir="ltr" className="container mx-auto flex flex-col">
+    <div dir="rtl" className="container mx-auto flex flex-col">
       <Intro
         data={data as any}
         currentTab={activeNav}
@@ -161,100 +156,110 @@ const ShaerComponent = ({
       />
       <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 border-b-2 self-center pb-0 px-4 pt-4 text-xl">
         <div
-          className={`nav-item ${activeNav === "Introduction" ? "active" : ""
+          className={`nav-item ${activeNav === "تعارف" ? "active" : ""
             } min-w-[40px] text-center transition-all ease-in-out duration-500`}
         >
           <a
-            href={`/EN/Shaer/${nameParam}?tab=${encodeURIComponent("Introduction")}`}
-            onClick={handleLinkClick("Introduction")}
+            href={`/Shaer/${nameParam}?tab=${encodeURIComponent("تعارف")}`}
+            onClick={handleLinkClick("تعارف")}
           >
-            Introduction
+            تعارف
           </a>
         </div>
         {data.ghazlen && (
           <div
-            className={`nav-item ${activeNav === "Ghazals" ? "active" : ""
+            className={`nav-item ${activeNav === "غزلیں" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/EN/Shaer/${nameParam}?tab=${encodeURIComponent("Ghazals")}`}
-              onClick={handleLinkClick("Ghazals")}
+              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
+                "غزلیں"
+              )}`}
+              onClick={handleLinkClick("غزلیں")}
             >
-              Ghazals
+              غزلیں
             </a>
           </div>
         )}
         {data.nazmen && (
           <div
-            className={`nav-item ${activeNav === "Poems" ? "active" : ""
+            className={`nav-item ${activeNav === "نظمیں" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/EN/Shaer/${nameParam}?tab=${encodeURIComponent("Poems")}`}
-              onClick={handleLinkClick("Poems")}
+              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
+                "نظمیں"
+              )}`}
+              onClick={handleLinkClick("نظمیں")}
             >
-              Poems
+              نظمیں
             </a>
           </div>
         )}
         {data.ashaar && (
           <div
-            className={`nav-item ${activeNav === "Couplets" ? "active" : ""
+            className={`nav-item ${activeNav === "اشعار" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/EN/Shaer/${nameParam}?tab=${encodeURIComponent("Couplets")}`}
-              onClick={handleLinkClick("Couplets")}
+              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
+                "اشعار"
+              )}`}
+              onClick={handleLinkClick("اشعار")}
             >
-              Couplets
+              اشعار
             </a>
           </div>
         )}
         {data.eBooks && (
           <div
-            className={`nav-item ${activeNav === "E-Books" ? "active" : ""
+            className={`nav-item ${activeNav === "ئی - بکس" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/EN/Shaer/${nameParam}?tab=${encodeURIComponent("E-Books")}`}
-              onClick={handleLinkClick("E-Books")}
+              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
+                "ئی - بکس"
+              )}`}
+              onClick={handleLinkClick("ئی - بکس")}
             >
-              E-Books
+              ای-بکس
             </a>
           </div>
         )}
         {data.rubai && (
           <div
-            className={`nav-item ${activeNav === "Quatrains" ? "active" : ""
+            className={`nav-item ${activeNav === "رباعی" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/EN/Shaer/${nameParam}?tab=${encodeURIComponent("Quatrains")}`}
-              onClick={handleLinkClick("Quatrains")}
+              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
+                "رباعی"
+              )}`}
+              onClick={handleLinkClick("رباعی")}
             >
-              Quatrains
+              رباعی
             </a>
           </div>
         )}
       </div>
-      {activeNav === "Introduction" && <Intro2 data={data as any} />}
-      {activeNav === "Ghazals" && (
+      {activeNav === "تعارف" && <Intro2 data={data as any} />}
+      {activeNav === "غزلیں" && (
         <Ghazlen takhallus={data.takhallus as string} />
       )}
-      {activeNav === "Poems" && (
+      {activeNav === "نظمیں" && (
         <Nazmen takhallus={data.takhallus as string} />
       )}
-      {activeNav === "Couplets" && (
+      {activeNav === "اشعار" && (
         <Ashaar takhallus={data.takhallus as string} />
       )}
-      {activeNav === "E-Books" && (
+      {activeNav === "ئی - بکس" && (
         <EBkooks takhallus={data.takhallus as string} />
       )}
-      {activeNav === "Quatrains" && (
+      {activeNav === "رباعی" && (
         <Rubai takhallus={data.takhallus as string} />
       )}
     </div>
-  )
+  );
 };
 
 export default ShaerComponent;

@@ -18,6 +18,9 @@ type RubaiFields = {
   comments?: number;
   shares?: number;
   id?: string;
+  ref?: string;
+  enRef?: string;
+  hiRef?: string;
 };
 
 const { getClientBaseId } = require("@/lib/airtable-client-utils");
@@ -59,7 +62,7 @@ export default function Page() {
       ) : (
         <div className="p-4 mt-3 w-full md:w-[400px]">
           <div className="text-center text-2xl">
-          <p>{data?.unwan}</p>
+                <p>{data?.unwan}</p>
           </div>
           <div className="ghazalHead mb-3 text-primary">
             <Link href={`/Shaer/${encodeURIComponent(String(data?.shaer ?? "").replace(/\s+/g, "-"))}`}>
@@ -77,6 +80,12 @@ export default function Page() {
               </p>
             ))}
           </div>
+              {data?.ref && (
+                <div className="reference mb-4 text-right border-r-4 border-gray-400 pr-3" data-aos="fade-up">
+                  <h3 className="text-gray-500 text-sm mb-1">مآخذ:</h3>
+                  <p className="text-gray-700 text-sm">{data.ref}</p>
+                </div>
+              )}
           <div className="mazeed flex justify-around" data-aos="fade-up">
             <button
               onClick={visitRubai}

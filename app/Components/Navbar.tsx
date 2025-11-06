@@ -65,12 +65,12 @@ const Navbar: React.FC = () => {
       if (stripped === "") stripped = "/";
       const newHref = language === "UR" ? stripped : (stripped === "/" ? `/${language}` : `/${language}${stripped}`);
       setRedirectHref(newHref);
-      try { router.push(newHref); } catch { }
+      try { router.replace(newHref); } catch { }
     }
   }, [language, router]);
 
   return (
-    <div className="fixed w-full z-50 top-0 font-noto-nastaliq">
+    <div className="fixed w-full z-50 top-0">
       <header className="bg-secondary text-primary shadow-none sticky top-0">
         <div className="container mx-auto px-2 sm:px-4 flex items-center gap-2">
           {/* Hamburger (mobile) */}

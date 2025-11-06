@@ -1,21 +1,24 @@
 "use client";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
-import { useCommentSystem } from "@/hooks/social/useCommentSystem";
-import { useAshaarData } from "@/hooks/useAshaarData";
-import useAuthGuard from "@/hooks/useAuthGuard";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { getEnhancedLanguageFieldValue } from "@/lib/language-field-utils";
-import { shareRecordWithCount } from "@/lib/social-utils";
-import { escapeAirtableFormulaValue } from "@/lib/utils";
+import React, { useEffect, useMemo, useState } from "react";
+// FontAwesome removed; using Lucide icons instead
+import { toast } from "sonner";
+import CommentSection from "../Components/CommentSection";
+import DataCard from "../Components/DataCard";
+import SkeletonLoader from "../Components/SkeletonLoader";
+// aos for cards animation
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { House, Search, X } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import CommentSection from "../../Components/CommentSection";
-import DataCard from "../../Components/DataCard";
-import SkeletonLoader from "../../Components/SkeletonLoader";
+// Removed deprecated Dialog UI imports
+import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
+import { useAshaarData } from "@/hooks/useAshaarData";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { escapeAirtableFormulaValue } from "@/lib/utils";
+// createSlug no longer needed here; using centralized share helper
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useCommentSystem } from "@/hooks/social/useCommentSystem";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { shareRecordWithCount } from "@/lib/social-utils";
 
 interface Shaer {
   fields: {
@@ -32,24 +35,37 @@ interface Shaer {
   id: string;
   createdTime: string;
 }
+interface ApiResponse {
+  records: any[];
+  offset: string | null;
+}
+interface Comment {
+  dataId: string | null;
+  commentorName: string | null;
+  timestamp: string;
+  comment: string;
+}
 
 interface AshaarProps {
   initialData?: any;
 }
 
-const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
+const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
+  // Removed modal state; comments use a Drawer inside CommentSection
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebouncedValue(searchText, 300);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
 
   const [openanaween, setOpenanaween] = useState<string | null>(null);
+  // Comment system
   const [newComment, setNewComment] = useState("");
   const { comments, isLoading: commentLoading, submitComment, setRecordId } = useCommentSystem({ contentType: "ashaar" });
   const { requireAuth } = useAuthGuard();
   const { language } = useLanguage();
+  // toast via sonner (global Toaster is mounted in providers.tsx)
 
   useEffect(() => {
     AOS.init({
@@ -58,7 +74,7 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
       duration: 300,
     });
   }, []);
-
+  // simple toast wrapper
   const showToast = (
     msgtype: "success" | "error" | "invalid",
     message: string
@@ -68,23 +84,13 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
     return toast.warning(message);
   };
 
-  // Build filter formula for language-aware search
+  // Build filter formula used by SWR hook - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
     const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     const safe = escapeAirtableFormulaValue(q);
-
-    // Search in both English and default fields with language awareness
-    return `OR( 
-      FIND('${safe}', LOWER({shaer})), 
-      FIND('${safe}', LOWER({enShaer})), 
-      FIND('${safe}', LOWER({sher})), 
-      FIND('${safe}', LOWER({enSher})), 
-      FIND('${safe}', LOWER({body})), 
-      FIND('${safe}', LOWER({enBody})), 
-      FIND('${safe}', LOWER({unwan})), 
-      FIND('${safe}', LOWER({enUnwan})) 
-    )`;
+    // Priority order: shaer (poet name), then sher, body, unwan
+    return `OR( FIND('${safe}', LOWER({shaer})), FIND('${safe}', LOWER({sher})), FIND('${safe}', LOWER({body})), FIND('${safe}', LOWER({unwan})) )`;
   }, [debouncedSearchText]);
 
   const { records, isLoading, isValidating, hasMore, loadMore, mutate, optimisticUpdate, isLoadingMore } = useAshaarData(
@@ -92,38 +98,23 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
     { debounceMs: 300, initialData }
   );
 
+  // Differentiate between initial loading and loading more data
   const isInitialLoading = isLoading && (!records || records.length === 0);
 
   const { updateRecord: updateAshaar } = useAirtableMutation("ashaar");
+  // Removed deprecated createAshaarComment; comment creation uses useCommentSystem
 
-  // Format records with enhanced language-aware field selection
+  // Format records and sort by search relevance
   const formattedRecords: Shaer[] = useMemo(() => {
-    const formatted = (records || []).map((record: any) => {
-      const fields = record.fields;
-
-      // Use enhanced language field transformation for English with proper fallback
-      const shaer = getEnhancedLanguageFieldValue(fields, 'shaer', 'EN', 'ashaar') || fields.shaer || '';
-      const sher = getEnhancedLanguageFieldValue(fields, 'sher', 'EN', 'ashaar') || fields.sher || '';
-      const body = getEnhancedLanguageFieldValue(fields, 'body', 'EN', 'ashaar') || fields.body || '';
-      const unwan = getEnhancedLanguageFieldValue(fields, 'unwan', 'EN', 'ashaar') || fields.unwan || '';
-      const description = getEnhancedLanguageFieldValue(fields, 'description', 'EN', 'ashaar') || fields.description || '';
-      const takhallus = getEnhancedLanguageFieldValue(fields, 'takhallus', 'EN', 'ashaar') || fields.takhallus || '';
-
-      return {
-        ...record,
-        fields: {
-          ...fields,
-          shaer,
-          sher,
-          body,
-          description,
-          takhallus,
-          unwan: String(unwan).replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
-          ghazal: String(body).replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
-          ghazalHead: String(sher).replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
-        },
-      };
-    });
+    const formatted = (records || []).map((record: any) => ({
+      ...record,
+      fields: {
+        ...record.fields,
+        ghazal: String(record.fields?.body || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazalHead: String(record.fields?.sher || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        unwan: String(record.fields?.unwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+      },
+    }));
 
     // Sort by search relevance when there's a search query
     if (debouncedSearchText.trim()) {
@@ -139,6 +130,7 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
         const bBody = (b.fields.body || '').toLowerCase();
         const bUnwan = (Array.isArray(b.fields.unwan) ? b.fields.unwan.join(' ') : String(b.fields.unwan || '')).toLowerCase();
 
+        // Priority scoring: shaer=4, sher=3, body=2, unwan=1
         const getScore = (shaer: string, sher: string, body: string, unwan: string) => {
           if (shaer.includes(query)) return 4;
           if (sher.includes(query)) return 3;
@@ -150,6 +142,7 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
         const scoreA = getScore(aShaer, aSher, aBody, aUnwan);
         const scoreB = getScore(bShaer, bSher, bBody, bUnwan);
 
+        // Higher score first, then alphabetical by shaer name
         if (scoreA !== scoreB) {
           return scoreB - scoreA;
         }
@@ -164,6 +157,7 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
   const loading = isInitialLoading;
   const noMoreData = !hasMore;
 
+  // fetching more data by load more data button
   const handleLoadMore = async () => {
     try {
       await loadMore();
@@ -171,13 +165,13 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
       console.error("Error loading more data:", error);
     }
   };
-
+  // re-run when search clicked
   const searchQuery = () => {
     if (typeof window !== "undefined") {
       setScrolledPosition(window.scrollY);
     }
   };
-
+  //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
     let xMark = document.getElementById("searchClear");
@@ -190,7 +184,7 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
       : sMark?.classList.remove("hidden");
     setSearchText(value);
   };
-
+  //clear search box handeling
   const clearSearch = () => {
     let input = document.getElementById("searchBox") as HTMLInputElement;
     let xMark = document.getElementById("searchClear");
@@ -199,9 +193,11 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
     input.value ? (input.value = "") : null;
     xMark?.classList.add("hidden");
     sMark?.classList.add("hidden");
-    setSearchText("");
+    // Clear the searched data and show all data again
+    setSearchText(""); // Clear the searchText state
   };
-
+  // Likes handled within DataCard; legacy no-op removed
+  // handle share via centralized helper; increment only on confirmed OS share
   const handleShareClick = async (shaerData: Shaer, index: number): Promise<void> => {
     toggleanaween(null);
     await shareRecordWithCount(
@@ -217,12 +213,16 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
         onShared: async () => {
           try {
             const updatedShares = (shaerData.fields.shares ?? 0) + 1;
+
+            // Optimistically update the UI first
             optimisticUpdate.updateRecord(shaerData.id, { shares: updatedShares });
 
+            // Then persist to server
             try {
               await updateAshaar(shaerData.id, { shares: updatedShares });
             } catch (error) {
               console.error("Error updating shares:", error);
+              // Revert optimistic update on failure
               optimisticUpdate.revert();
             }
           } catch (error) {
@@ -232,53 +232,55 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
       }
     );
   };
-
+  // Opening card currently just collapses any open 'anaween'; modal removed
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
   };
 
+  // Removed legacy localStorage-driven heart coloring; like state is owned by card
+  //toggling anaween box
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
-
   const handleCommentSubmit = async (dataId: string) => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
     try {
-      setRecordId(dataId);
+      setRecordId(dataId); // Set the record ID first
       await submitComment(newComment);
+      // Optimistically bump the comments count
       const current = dataItems.find((i) => i.id === dataId);
       const nextCount = ((current?.fields.comments) || 0) + 1;
 
+      // Update UI optimistically
       optimisticUpdate.updateRecord(dataId, { comments: nextCount });
       setNewComment("");
 
+      // Persist comments count; rollback the optimistic update if it fails
       try {
         await updateAshaar(dataId, { comments: nextCount });
       } catch (err) {
         console.error("Error updating comment count:", err);
+        // Revert the optimistic update
         optimisticUpdate.updateRecord(dataId, { comments: Math.max(0, nextCount - 1) });
       }
     } catch (e) {
       // errors are toasted inside hook
     }
   };
-
   const openComments = (dataId: string) => {
     toggleanaween(null);
     setSelectedCommentId(dataId);
-    setRecordId(dataId);
+    setRecordId(dataId); // This will trigger comment fetching
+    // setIsModleOpen(true);
   };
-
   const closeComments = () => {
     setSelectedCommentId(null);
     setRecordId(null);
   };
-
   const resetSearch = () => {
     searchText && clearSearch();
     if (typeof window !== "undefined") {
@@ -292,21 +294,27 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
 
   return (
     <div>
+      {/* Sonner Toaster is global; no per-page toast container needed */}
+      {/* Removed legacy name dialog; comments rely on authenticated user */}
+      {/* top-[118px] */}
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] justify-center text-center flex">
-          <div className="flex basis-[100%] justify-center items-center h-auto pt-1">
+          <div
+            dir="rtl"
+            className="flex basis-[100%] justify-center items-center h-auto pt-1"
+          >
             <House
               color="#984A02"
-              className="mr-3"
+              className="ml-3"
               size={30}
               onClick={() => {
-                window.location.href = "/EN";
+                window.location.href = "/";
               }}
             />
             <input
               type="text"
-              placeholder="Search poetry..."
-              className="text-foreground border border-foreground focus:outline-none focus:border-r-0 border-r-0 p-1 w-64 leading-7 bg-transparent"
+              placeholder="لکھ کر تلاش کریں"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -342,7 +350,7 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
       {loading && <SkeletonLoader />}
       {debouncedSearchText && dataItems.length === 0 && !loading && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          No results found
+          سرچ میں کچھ نہیں ملا
         </div>
       )}
       {debouncedSearchText && (
@@ -350,13 +358,14 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
         >
-          Reset Search
+          تلاش ریسیٹ کریں
         </button>
       )}
       {!loading && (
         <section>
           <div
             id="section"
+            dir="rtl"
             className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky mt-6`}
           >
             {dataItems.map((shaerData, index) => (
@@ -368,7 +377,7 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
                   shaerData={shaerData}
                   index={index}
                   handleCardClick={handleCardClick}
-                  baseId={require("@/lib/airtable-client-utils").getClientBaseId("ASHAAR")}
+                  baseId="appeI2xzzyvUN5bR7"
                   table="Ashaar"
                   storageKey="Ashaar"
                   toggleanaween={toggleanaween}
@@ -376,7 +385,8 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
                   handleShareClick={handleShareClick}
                   openComments={openComments}
                   onLikeChange={({ id, liked, likes }) => {
-                    // Analytics integration can be added here in the future
+                    // placeholder analytics hook
+                    // console.info("Ashaar like changed", { id, liked, likes });
                   }}
                 />
               </div>
@@ -389,10 +399,10 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {isLoadingMore
-                    ? "Loading..."
+                    ? "لوڈ ہو رہا ہے۔۔۔"
                     : noMoreData
-                      ? "No more poetry"
-                      : "Load More Poetry"}
+                      ? "مزید اشعار نہیں ہیں"
+                      : "مزید اشعار لوڈ کریں"}
                 </button>
               </div>
             )}
@@ -414,4 +424,4 @@ const AshaarComponent: React.FC<AshaarProps> = ({ initialData }) => {
   );
 };
 
-export default AshaarComponent;
+export default Ashaar;

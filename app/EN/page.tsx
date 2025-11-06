@@ -4,20 +4,25 @@ import {
   generateWebsiteStructuredData
 } from "@/lib/seo/structured-data";
 import { Metadata } from "next";
-import Ads from "../Components/Ads";
-import Branches from "../Components/Branches";
-import Carousel from "../Components/Carosel";
-import DoYouKnow from "../Components/doyoouknow/DoYouKnow";
+import Ads from "./Components/Ads";
+import Branches from "./Components/Branches";
+import Carousel from "./Components/Carosel";
+import HorizontalBooks from "./Components/HorizontalBooks";
+import HorizontalShura from "./Components/HorizontalShura";
+import InstallPWAButton from "./Components/InstallAppBtn";
+import Mutala from "./Components/Mutala";
+import Quiz from "./Components/Quiz";
 import RandCard from "./Components/RandCard";
+import DoYouKnow from "./Components/doyoouknow/DoYouKnow";
 
-// Helper function to fetch from API routes with language awareness
+// Helper function to fetch from API routes
 async function fetchFromAPI(
   endpoint: string,
   params: Record<string, string> = {}
 ) {
   try {
-    // Add language parameter for EN
-    const searchParams = new URLSearchParams({ ...params, lang: 'EN' });
+    // Simple relative URL for server-side fetching
+    const searchParams = new URLSearchParams(params);
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NODE_ENV === 'development'
@@ -55,7 +60,7 @@ async function getHomePageData() {
     const [ashaarData, ghazlenData, bookData] = await Promise.allSettled([
       fetchFromAPI("ashaar", { maxRecords: "3" }),
       fetchFromAPI("ghazlen", { maxRecords: "3" }),
-      fetchFromAPI("ebooks", { maxRecords: "3" }),
+      fetchFromAPI("ebooks", { maxRecords: "3" }), // Use ebooks instead of books
     ]);
 
     return {
@@ -76,7 +81,7 @@ async function getHomePageData() {
   }
 }
 
-// Generate dynamic metadata for English home page
+// Generate dynamic metadata for home page
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getHomePageData();
 
@@ -89,25 +94,26 @@ export async function generateMetadata(): Promise<Metadata> {
     .slice(0, 5);
 
   const dynamicKeywords = [
+    "اردو نظمیں",
+    "اردو شاعری",
     "urdu poetry",
-    "urdu literature",
-    "english urdu poetry",
-    "urdu ghazal",
-    "urdu nazm",
-    "jahannuma",
     "urdu shayari",
+    "urdu literature",
+    "urdu ghazal",
+    "jahannuma",
+    "جہاں نما",
     ...poetNames,
   ];
 
   return generatePageMetadata({
     title:
-      "Jahannuma - Treasury of Urdu Literature and Poetry",
+      "جہاں نما - اردو ادب اور شاعری کا خزانہ | Jahannuma - Treasury of Urdu Literature",
     description:
-      "Explore the rich world of Urdu literature with beautiful poetry, ghazals, nazms, and literary works. Discover classical and contemporary Urdu poets and their masterpieces in English.",
+      "Explore the rich world of Urdu literature with beautiful poetry, ghazals, nazms, and literary works. Discover classical and contemporary Urdu poets and their masterpieces.",
     keywords: dynamicKeywords,
-    url: "/EN",
+    url: "/",
     image: "/metaImages/logo.png",
-    language: "en",
+    language: "ur",
     alternateLanguages: {
       ur: "https://jahan-numa.org/",
       hi: "https://jahan-numa.org/HI",
@@ -120,9 +126,9 @@ export default async function Home() {
 
   // Generate comprehensive structured data for homepage
   const websiteStructuredData = generateWebsiteStructuredData({
-    name: "Jahannuma - Treasury of Urdu Literature",
+    name: "Jahannuma - جہاں نما",
     description:
-      "Comprehensive collection of Urdu poetry, literature, and cultural content in English",
+      "Comprehensive collection of Urdu poetry, literature, and cultural content",
     url: "https://jahan-numa.org/EN",
     searchUrl: "https://jahan-numa.org/EN/search",
     language: "en",
@@ -139,12 +145,12 @@ export default async function Home() {
   const featuredCollections = [
     {
       "@type": "CreativeWork",
-      "@id": "https://jahan-numa.org/EN/Ashaar#collection",
+      "@id": "https://jahan-numa.org/Ashaar#collection",
       "name": "Ashaar Collection",
       "description": "Beautiful poetry couplets from renowned Urdu poets",
-      "url": "https://jahan-numa.org/EN/Ashaar",
+      "url": "https://jahan-numa.org/Ashaar",
       "genre": "Poetry",
-      "inLanguage": "en",
+      "inLanguage": "ur",
       "author": {
         "@type": "Organization",
         "name": "Jahannuma"
@@ -152,12 +158,12 @@ export default async function Home() {
     },
     {
       "@type": "CreativeWork",
-      "@id": "https://jahan-numa.org/EN/Ghazlen#collection",
+      "@id": "https://jahan-numa.org/Ghazlen#collection",
       "name": "Ghazlen Collection",
       "description": "Classical and contemporary Urdu ghazals",
-      "url": "https://jahan-numa.org/EN/Ghazlen",
+      "url": "https://jahan-numa.org/Ghazlen",
       "genre": "Poetry",
-      "inLanguage": "en",
+      "inLanguage": "ur",
       "author": {
         "@type": "Organization",
         "name": "Jahannuma"
@@ -165,12 +171,12 @@ export default async function Home() {
     },
     {
       "@type": "Book",
-      "@id": "https://jahan-numa.org/EN/E-Books#collection",
+      "@id": "https://jahan-numa.org/E-Books#collection",
       "name": "Digital Library",
       "description": "Collection of Urdu literature and poetry books",
-      "url": "https://jahan-numa.org/EN/E-Books",
+      "url": "https://jahan-numa.org/E-Books",
       "genre": ["Literature", "Poetry"],
-      "inLanguage": "en",
+      "inLanguage": "ur",
       "publisher": {
         "@type": "Organization",
         "name": "Jahannuma"
@@ -186,7 +192,7 @@ export default async function Home() {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://jahan-numa.org/EN"
+        "item": "https://jahan-numa.org"
       }
     ]
   };
@@ -240,11 +246,18 @@ export default async function Home() {
           __html: JSON.stringify(structuredData),
         }}
       />
-      <div className="bg-background text-foreground">
+      <div>
         <Carousel />
         <RandCard />
+        <HorizontalShura />
+        <HorizontalBooks />
         <Branches />
+        <div className="w-full flex justify-center my-3">
+          <InstallPWAButton />
+        </div>
+        <Quiz />
         <Ads />
+        <Mutala />
         <DoYouKnow />
       </div>
     </>

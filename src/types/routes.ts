@@ -31,3 +31,36 @@ export interface ShaerPageParams {
   /** The poet's name or URL slug */
   name: string;
 }
+
+/**
+ * Parameters for Ghazlen dynamic routes.
+ * Used by pages like /ghazlen/[slug]/[id].
+ */
+export interface GhazlenPageParams {
+  /** The record ID or URL slug */
+  id: string;
+  /** Optional SEO-friendly slug */
+  slug?: string;
+}
+
+/**
+ * Parameters for Nazmen dynamic routes.
+ * Used by pages like /nazmen/[slug]/[id].
+ */
+export interface NazmenPageParams {
+  /** The record ID or URL slug */
+  id: string;
+  /** Optional SEO-friendly slug */
+  slug?: string;
+}
+
+/**
+ * Parameters for Rubai dynamic routes.
+ * Used by pages like /rubai/[slug]/[id].
+ */
+export interface RubaiPageParams {
+  /** The record ID or URL slug */
+  id: string;
+  /** Optional SEO-friendly slug */
+  slug?: string;
+}

@@ -1,4 +1,3 @@
-import { getEnhancedLanguageFieldValue } from "@/lib/language-field-utils";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -122,19 +121,19 @@ export async function generateMetadata({
 
     if (!nameParam) {
       return {
-        title: "Poet - Jahan Numa",
-        description: "Treasury of Poetry",
+        title: "شاعر - جہاں نما",
+        description: "اردو شاعری کا خزانہ",
       };
     }
 
     // Fetch poet data for enhanced metadata
     const shaerData = await fetchShaerData(nameParam);
 
-    // Use enhanced English fields with fallback to other languages
-    const poetName = (shaerData?.fields ? getEnhancedLanguageFieldValue(shaerData.fields, 'takhallus', 'EN', 'shaer', ['EN', 'UR', 'HI']) : null) ||
-      (shaerData?.fields ? getEnhancedLanguageFieldValue(shaerData.fields, 'name', 'EN', 'shaer', ['EN', 'UR', 'HI']) : null) ||
+    // Use actual poet data if available, otherwise fallback to decoded name
+    const poetName = shaerData?.fields?.takhallus ||
+      shaerData?.fields?.name ||
       decodeURIComponent(nameParam).replace(/-/g, " ").trim() ||
-      "Unknown Poet";
+      "نامعلوم شاعر";
 
     // Ensure description is always a string for metadata
     const getStringDescription = (field?: string | string[]): string => {
@@ -144,9 +143,11 @@ export async function generateMetadata({
       return field || '';
     };
 
-    const description = (shaerData?.fields ? getEnhancedLanguageFieldValue(shaerData.fields, 'description', 'EN', 'shaer', ['EN', 'UR', 'HI']) : null) ||
+    const description = shaerData?.fields?.description ||
+      shaerData?.fields?.enDescription ||
+      shaerData?.fields?.hiDescription ||
       getStringDescription(shaerData?.fields?.tafseel) ||
-      `${poetName}'s poetry and works - Jahan Numa`;
+      `${poetName} کی شاعری اور تخلیقات - جہاں نما`;
 
     // Get poet's image for social media sharing
     const poetImage = shaerData?.fields?.photo && Array.isArray(shaerData.fields.photo) && shaerData.fields.photo.length > 0
@@ -154,27 +155,27 @@ export async function generateMetadata({
       : null;
 
     const baseMetadata = {
-      title: `${poetName} - Jahan Numa`,
+      title: `${poetName} - جہاں نما`,
       description,
       alternates: {
-        canonical: `/EN/Shaer/${nameParam}`,
+        canonical: `/Shaer/${nameParam}`,
       },
     };
 
     // Enhanced Open Graph metadata with poet's image
     const openGraphMetadata = {
-      title: `${poetName} - Jahan Numa`,
+      title: `${poetName} - جہاں نما`,
       description,
       type: "profile" as const,
-      locale: "en_US",
-      siteName: "Jahan Numa",
-      ...(poetImage && { images: [{ url: poetImage, alt: `${poetName}'s photo` }] }),
+      locale: "ur_PK",
+      siteName: "جہاں نما",
+      ...(poetImage && { images: [{ url: poetImage, alt: `${poetName} کی تصویر` }] }),
     };
 
     // Enhanced Twitter metadata with poet's image
     const twitterMetadata = {
       card: "summary_large_image" as const,
-      title: `${poetName} - Jahan Numa`,
+      title: `${poetName} - جہاں نما`,
       description,
       ...(poetImage && { images: [poetImage] }),
     };
@@ -187,8 +188,8 @@ export async function generateMetadata({
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Poet - Jahan Numa",
-      description: "Treasury of Poetry",
+      title: "شاعر - جہاں نما",
+      description: "اردو شاعری کا خزانہ",
     };
   }
 }
@@ -216,7 +217,7 @@ export default async function Page({
     // Pass the server-fetched data to the client component
     return <ShaerComponent params={resolvedParams} initialData={shaerData} />;
   } catch (error) {
-    console.error("Error in EN Shaer page:", error);
+    console.error("Error in Shaer page:", error);
     notFound();
   }
 }

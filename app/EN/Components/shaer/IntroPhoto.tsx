@@ -1,9 +1,9 @@
-import Loader from "@/app/Components/Loader";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useLikeButton } from "@/hooks/useLikeButton";
 import { CalendarDays, Heart, MapPin, Share2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import Loader from "../Loader";
 
 interface IntroProps {
   data: {
@@ -45,8 +45,8 @@ interface IntroProps {
     ashaar?: boolean;
     eBooks?: boolean;
   } | null;
-  currentTab?: string;
-  recordId?: string;
+  currentTab?: string; // currently selected tab label for sharing (?tab=...)
+  recordId?: string; // Airtable record ID for like functionality
   showLikeButton?: boolean;
   baseId?: string;
   table?: string;
@@ -80,12 +80,12 @@ const Intro: React.FC<IntroProps> = ({
       onChange: onLikeChange,
     })
     : null;
-
   const handleShareClick = () => {
     try {
       if (navigator.share) {
-        const title = data?.takhallus || "Poet Profile";
-        const text = (data?.tafseel || "").trim();
+        const title = data?.takhallus || "Default Title"; // Replace 'Default Title' with your desired default title
+        const text = (data?.tafseel || "").trim(); // Keep multiple lines
+        // Build a fully human-readable URL (decoded path and query value)
         const origin = window.location.origin;
         const decodedPath = decodeURI(window.location.pathname);
         const currentParams = new URLSearchParams(window.location.search);
@@ -95,7 +95,7 @@ const Intro: React.FC<IntroProps> = ({
         navigator
           .share({
             text: `${title}\n\n${text !== "" ? `${text}\n` : ""
-              }Found this on Jahan Numa webpage\nVisit it here\n${shareUrl}`,
+              }Found this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
             url: shareUrl,
           })
           .then(() => console.log("Successful share"))
@@ -104,14 +104,17 @@ const Intro: React.FC<IntroProps> = ({
         console.log("Web Share API is not supported.");
       }
     } catch (error) {
+      // Handle any errors that may occur when using the Web Share API
       console.error("Error sharing:", error);
     }
   };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Code is running in a browser
       setInsideBrowser(true);
     } else {
+      // Code is running on the server
       setInsideBrowser(false);
     }
   }, []);
@@ -121,7 +124,7 @@ const Intro: React.FC<IntroProps> = ({
       {!data && <Loader />}
       {data && (
         <div
-          dir="ltr"
+          dir="rtl"
           className="container mx-auto flex flex-col justify-center "
         >
           <div
@@ -129,7 +132,8 @@ const Intro: React.FC<IntroProps> = ({
             className="bg-cover bg-center h-32 lg:h-52 w-full"
           >
             <div
-              dir="ltr"
+              dir="rtl"
+              // style={{ filter: "backGroundBlur(10px)" }}
               className="h-full w-full bg-black/70 backdrop-blur-[1px] flex items-center justify-center gap-2"
             >
               <div className="photo lg:h-32 h-24 md:h-28 lg:w-32 w-24 md:w-28 rounded-full overflow-clip border-[#984a0291] border-4 ">
@@ -140,11 +144,11 @@ const Intro: React.FC<IntroProps> = ({
                   data.photo[0]?.thumbnails?.large ? (
                   <img
                     alt={`${data.photo[0]?.filename ?? "poet"}`}
-                    src={`${data.photo[0]?.thumbnails?.large?.url ?? "/poets/nodp.jpg"
-                      }`}
+                      src={`${data.photo[0]?.thumbnails?.large?.url ?? "/poets/nodp.jpg"
+                        }`}
                     height={data.photo[0]?.thumbnails?.large?.height ?? 150}
                     width={data.photo[0]?.thumbnails?.large?.width ?? 150}
-                  />
+                  ></img>
                 ) : (
                   <img
                     className="object-cover object-center"
@@ -152,25 +156,25 @@ const Intro: React.FC<IntroProps> = ({
                     height={150}
                     width={150}
                     alt="Poet's Photo"
-                  />
+                  ></img>
                 )}
               </div>
-              <div className="mini_intro ml-5 text-white ">
+              <div className="mini_intro mr-5 text-white ">
                 <p className="text-4xl">{data?.takhallus}</p>
                 <p className="mt-3 flex gap-2 items-baseline">
-                  <span className="icon mr-2">
+                  <span className="icon ml-2">
                     <CalendarDays color="white" size={16} />
                   </span>
                   {data?.dob && data.dob}
                 </p>
                 <p className="flex gap-2 items-baseline">
-                  <span className="icon mr-2">
+                  <span className="icon ml-2">
                     <MapPin color="white" size={16} />
                   </span>
                   {data?.location}
                 </p>
               </div>
-              <span className="mx-3 text-white font-bold">|</span>
+              <span className="mx-3 text-white font-bold">|</span>{" "}
               <div className="flex items-center gap-4">
                 {likeEnabled && like && (
                   <button
@@ -183,7 +187,7 @@ const Intro: React.FC<IntroProps> = ({
                     }}
                     disabled={like.isDisabled}
                     aria-disabled={like.isDisabled}
-                    title={like.isLiked ? "Liked" : "Like"}
+                    title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
                   >
                     <Heart className="text-2xl" fill="currentColor" size={24} />
                     <span className="text-sm">{like.likesCount}</span>

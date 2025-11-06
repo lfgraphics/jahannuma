@@ -55,6 +55,7 @@ const Page: React.FC = () => {
   const rec = records?.[0];
   const formatted = useMemo(() => (rec ? formatGhazlenRecord(rec) : undefined), [rec]);
   const data = formatted?.fields as GhazlenRecord | undefined;
+  console.log('data: ', data)
 
   // Improved loading and error state logic
   const hasError = !!error;
@@ -100,174 +101,174 @@ const Page: React.FC = () => {
         return;
       }
 
-    // Read computed colors from the element so the capture matches the current theme exactly
-    const cs = window.getComputedStyle(mainElement);
-    const computedBg = cs.backgroundColor || "#ffffff";
-    const computedFg = cs.color || "#000000";
+      // Read computed colors from the element so the capture matches the current theme exactly
+      const cs = window.getComputedStyle(mainElement);
+      const computedBg = cs.backgroundColor || "#ffffff";
+      const computedFg = cs.color || "#000000";
 
-    // Helper: parse rgb/rgba/hsl/hsla strings to [r,g,b] in 0..255
-    const parseToRgb = (input: string): [number, number, number] => {
-      try {
-        // Quick path for rgb/rgba
-        const mRgb = input.match(/rgba?\(([^)]+)\)/i);
-        if (mRgb) {
-          const parts = mRgb[1].split(",").map((s) => s.trim());
-          const r = Math.max(0, Math.min(255, parseFloat(parts[0])));
-          const g = Math.max(0, Math.min(255, parseFloat(parts[1])));
-          const b = Math.max(0, Math.min(255, parseFloat(parts[2])));
-          return [r, g, b];
-        }
-        // hsl/hsla: hsl(0 0% 100%) or hsl(0, 0%, 100%) variants
-        const mHsl = input.match(/hsla?\(([^)]+)\)/i);
-        if (mHsl) {
-          const raw = mHsl[1].replace(/,/g, " ").split(/\s+/).filter(Boolean);
-          const h = parseFloat(raw[0]) || 0;
-          const s = parseFloat((raw[1] || "0").replace("%", "")) / 100;
-          const l = parseFloat((raw[2] || "0").replace("%", "")) / 100;
-          // convert HSL to RGB
-          const c = (1 - Math.abs(2 * l - 1)) * s;
-          const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-          const m = l - c / 2;
-          let r1 = 0, g1 = 0, b1 = 0;
-          if (h < 60) { r1 = c; g1 = x; b1 = 0; }
-          else if (h < 120) { r1 = x; g1 = c; b1 = 0; }
-          else if (h < 180) { r1 = 0; g1 = c; b1 = x; }
-          else if (h < 240) { r1 = 0; g1 = x; b1 = c; }
-          else if (h < 300) { r1 = x; g1 = 0; b1 = c; }
-          else { r1 = c; g1 = 0; b1 = x; }
-          const r = Math.round((r1 + m) * 255);
-          const g = Math.round((g1 + m) * 255);
-          const b = Math.round((b1 + m) * 255);
-          return [r, g, b];
-        }
-      } catch { }
-      // Fallback default
-      return [255, 255, 255];
-    };
-
-    const [br, bgc, bb] = parseToRgb(computedBg);
-    const bgIsLight = (0.2126 * (br / 255) + 0.7152 * (bgc / 255) + 0.0722 * (bb / 255)) > 0.6;
-
-    // Ensure good contrast regardless of theme: temporary overlay while capturing
-    const overlay = document.createElement("div");
-    overlay.style.position = "absolute";
-    overlay.style.inset = "0";
-    overlay.style.background = computedBg; // force the computed background
-    overlay.style.opacity = "0"; // keep invisible so it doesn't cover text
-    overlay.style.zIndex = "-1"; // place behind content
-    overlay.setAttribute("aria-hidden", "true");
-    mainElement.style.position = mainElement.style.position || "relative";
-    mainElement.appendChild(overlay);
-
-    // Force inline colors on the container to avoid CSS variable resolution issues in html-to-image
-    const prevBg = mainElement.style.backgroundColor;
-    const prevColor = mainElement.style.color;
-    mainElement.style.backgroundColor = computedBg;
-    mainElement.style.color = computedFg;
-
-    try {
-      // High quality capture with html-to-image
-      const pixelRatio = 2; // upscale for sharper output
-      const dataUrl = await toJpeg(mainElement, {
-        cacheBust: true,
-        pixelRatio,
-        // No extra style overrides; we inlined resolved colors on the container instead
-        filter: (node: HTMLElement) => {
-          // Exclude elements explicitly hidden or marked decorative
-          const el = node as HTMLElement;
-          if (el && (el.classList?.contains("sr-only") || el.getAttribute?.("aria-hidden") === "true")) return false;
-          return true;
-        },
-      } as any);
-
-      // If a diagonal watermark is desired, draw it on a canvas over the image
-      const baseImage = new Image();
-      baseImage.crossOrigin = "anonymous";
-      const loaded = await new Promise<HTMLImageElement>((resolve, reject) => {
-        baseImage.onload = () => resolve(baseImage);
-        baseImage.onerror = (e) => reject(e);
-        baseImage.src = dataUrl;
-      });
-
-      const canvas = document.createElement("canvas");
-      canvas.width = loaded.naturalWidth;
-      canvas.height = loaded.naturalHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Canvas context not available");
-
-      ctx.drawImage(loaded, 0, 0);
-
-      const watermarkText = "jahan-numa.org";
-      const fontSize = Math.max(16, Math.floor(canvas.width / 40));
-      // Resolve muted-foreground color for better visibility in dark mode
-      const resolveMutedColor = (alpha: number) => {
+      // Helper: parse rgb/rgba/hsl/hsla strings to [r,g,b] in 0..255
+      const parseToRgb = (input: string): [number, number, number] => {
         try {
-          const tmp = document.createElement("span");
-          tmp.style.position = "absolute";
-          tmp.style.visibility = "hidden";
-          // Try rgb(var(--muted-foreground)) first (Tailwind v4 tokens)
-          tmp.style.color = "rgb(var(--muted-foreground))";
-          document.body.appendChild(tmp);
-          let c = window.getComputedStyle(tmp).color || "";
-          if (!c || c === "rgba(0, 0, 0, 0)") {
-            // Fallback to hsl(var(--muted-foreground))
-            tmp.style.color = "hsl(var(--muted-foreground))";
-            c = window.getComputedStyle(tmp).color || c;
+          // Quick path for rgb/rgba
+          const mRgb = input.match(/rgba?\(([^)]+)\)/i);
+          if (mRgb) {
+            const parts = mRgb[1].split(",").map((s) => s.trim());
+            const r = Math.max(0, Math.min(255, parseFloat(parts[0])));
+            const g = Math.max(0, Math.min(255, parseFloat(parts[1])));
+            const b = Math.max(0, Math.min(255, parseFloat(parts[2])));
+            return [r, g, b];
           }
-          tmp.remove();
-          const [r, g, b] = parseToRgb(c);
-          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        } catch {
-          // Fallback to computed text color with requested alpha
-          const [r, g, b] = parseToRgb(computedFg);
-          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        }
+          // hsl/hsla: hsl(0 0% 100%) or hsl(0, 0%, 100%) variants
+          const mHsl = input.match(/hsla?\(([^)]+)\)/i);
+          if (mHsl) {
+            const raw = mHsl[1].replace(/,/g, " ").split(/\s+/).filter(Boolean);
+            const h = parseFloat(raw[0]) || 0;
+            const s = parseFloat((raw[1] || "0").replace("%", "")) / 100;
+            const l = parseFloat((raw[2] || "0").replace("%", "")) / 100;
+            // convert HSL to RGB
+            const c = (1 - Math.abs(2 * l - 1)) * s;
+            const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+            const m = l - c / 2;
+            let r1 = 0, g1 = 0, b1 = 0;
+            if (h < 60) { r1 = c; g1 = x; b1 = 0; }
+            else if (h < 120) { r1 = x; g1 = c; b1 = 0; }
+            else if (h < 180) { r1 = 0; g1 = c; b1 = x; }
+            else if (h < 240) { r1 = 0; g1 = x; b1 = c; }
+            else if (h < 300) { r1 = x; g1 = 0; b1 = c; }
+            else { r1 = c; g1 = 0; b1 = x; }
+            const r = Math.round((r1 + m) * 255);
+            const g = Math.round((g1 + m) * 255);
+            const b = Math.round((b1 + m) * 255);
+            return [r, g, b];
+          }
+        } catch { }
+        // Fallback default
+        return [255, 255, 255];
       };
-      // 60% opacity for watermark in dark mode; keep prior 0.18 in light mode
-      const wmFillStyle = bgIsLight ? `rgba(0,0,0,0.18)` : resolveMutedColor(0.6);
-      const angle = (-30 * Math.PI) / 180; // radians
-      const diagonal = Math.sqrt(canvas.width ** 2 + canvas.height ** 2);
-      const baseStep = Math.max(150, Math.floor(canvas.width / 5));
-      // Reduce density by 30% => increase spacing by 30%
-      const step = Math.floor(baseStep * 1.3);
 
-      ctx.save();
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate(angle);
-  ctx.font = `${fontSize}px Arial`;
-  ctx.fillStyle = wmFillStyle;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+      const [br, bgc, bb] = parseToRgb(computedBg);
+      const bgIsLight = (0.2126 * (br / 255) + 0.7152 * (bgc / 255) + 0.0722 * (bb / 255)) > 0.6;
 
-      for (let x = -diagonal; x < diagonal; x += step) {
-        for (let y = -diagonal; y < diagonal; y += step) {
-          ctx.fillText(watermarkText, x, y);
+      // Ensure good contrast regardless of theme: temporary overlay while capturing
+      const overlay = document.createElement("div");
+      overlay.style.position = "absolute";
+      overlay.style.inset = "0";
+      overlay.style.background = computedBg; // force the computed background
+      overlay.style.opacity = "0"; // keep invisible so it doesn't cover text
+      overlay.style.zIndex = "-1"; // place behind content
+      overlay.setAttribute("aria-hidden", "true");
+      mainElement.style.position = mainElement.style.position || "relative";
+      mainElement.appendChild(overlay);
+
+      // Force inline colors on the container to avoid CSS variable resolution issues in html-to-image
+      const prevBg = mainElement.style.backgroundColor;
+      const prevColor = mainElement.style.color;
+      mainElement.style.backgroundColor = computedBg;
+      mainElement.style.color = computedFg;
+
+      try {
+        // High quality capture with html-to-image
+        const pixelRatio = 2; // upscale for sharper output
+        const dataUrl = await toJpeg(mainElement, {
+          cacheBust: true,
+          pixelRatio,
+          // No extra style overrides; we inlined resolved colors on the container instead
+          filter: (node: HTMLElement) => {
+            // Exclude elements explicitly hidden or marked decorative
+            const el = node as HTMLElement;
+            if (el && (el.classList?.contains("sr-only") || el.getAttribute?.("aria-hidden") === "true")) return false;
+            return true;
+          },
+        } as any);
+
+        // If a diagonal watermark is desired, draw it on a canvas over the image
+        const baseImage = new Image();
+        baseImage.crossOrigin = "anonymous";
+        const loaded = await new Promise<HTMLImageElement>((resolve, reject) => {
+          baseImage.onload = () => resolve(baseImage);
+          baseImage.onerror = (e) => reject(e);
+          baseImage.src = dataUrl;
+        });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = loaded.naturalWidth;
+        canvas.height = loaded.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas context not available");
+
+        ctx.drawImage(loaded, 0, 0);
+
+        const watermarkText = "jahan-numa.org";
+        const fontSize = Math.max(16, Math.floor(canvas.width / 40));
+        // Resolve muted-foreground color for better visibility in dark mode
+        const resolveMutedColor = (alpha: number) => {
+          try {
+            const tmp = document.createElement("span");
+            tmp.style.position = "absolute";
+            tmp.style.visibility = "hidden";
+            // Try rgb(var(--muted-foreground)) first (Tailwind v4 tokens)
+            tmp.style.color = "rgb(var(--muted-foreground))";
+            document.body.appendChild(tmp);
+            let c = window.getComputedStyle(tmp).color || "";
+            if (!c || c === "rgba(0, 0, 0, 0)") {
+              // Fallback to hsl(var(--muted-foreground))
+              tmp.style.color = "hsl(var(--muted-foreground))";
+              c = window.getComputedStyle(tmp).color || c;
+            }
+            tmp.remove();
+            const [r, g, b] = parseToRgb(c);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+          } catch {
+            // Fallback to computed text color with requested alpha
+            const [r, g, b] = parseToRgb(computedFg);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+          }
+        };
+        // 60% opacity for watermark in dark mode; keep prior 0.18 in light mode
+        const wmFillStyle = bgIsLight ? `rgba(0,0,0,0.18)` : resolveMutedColor(0.6);
+        const angle = (-30 * Math.PI) / 180; // radians
+        const diagonal = Math.sqrt(canvas.width ** 2 + canvas.height ** 2);
+        const baseStep = Math.max(150, Math.floor(canvas.width / 5));
+        // Reduce density by 30% => increase spacing by 30%
+        const step = Math.floor(baseStep * 1.3);
+
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(angle);
+        ctx.font = `${fontSize}px Arial`;
+        ctx.fillStyle = wmFillStyle;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (let x = -diagonal; x < diagonal; x += step) {
+          for (let y = -diagonal; y < diagonal; y += step) {
+            ctx.fillText(watermarkText, x, y);
+          }
         }
-      }
-      ctx.restore();
+        ctx.restore();
 
-      const finalUrl = canvas.toDataURL("image/jpeg");
-      const a = document.createElement("a");
-      document.body.appendChild(a);
-      const base = sanitizeFilename((Array.isArray(data?.ghazalHead) ? data?.ghazalHead[0] : String(data?.ghazalHead ?? "")) || "ghazal");
-      a.download = `${base}.jpeg`;
-      a.href = finalUrl;
-      a.target = "_blank";
-      a.click();
-      a.remove();
-    } catch (error) {
-      console.error("Failed to generate and download image:", error);
-      toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
-    } finally {
-      // Restore hidden elements and cleanup
-      const elementsToHide = document.querySelectorAll<HTMLElement>(".ghazalHead, .unwan");
-      elementsToHide.forEach((el) => (el.style.visibility = "visible"));
-      if (overlay?.parentNode) overlay.parentNode.removeChild(overlay);
-      // Restore inline styles
-      if (mainElement) {
-        mainElement.style.backgroundColor = prevBg;
-        mainElement.style.color = prevColor;
-      }
+        const finalUrl = canvas.toDataURL("image/jpeg");
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        const base = sanitizeFilename((Array.isArray(data?.ghazalHead) ? data?.ghazalHead[0] : String(data?.ghazalHead ?? "")) || "ghazal");
+        a.download = `${base}.jpeg`;
+        a.href = finalUrl;
+        a.target = "_blank";
+        a.click();
+        a.remove();
+      } catch (error) {
+        console.error("Failed to generate and download image:", error);
+        toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
+      } finally {
+        // Restore hidden elements and cleanup
+        const elementsToHide = document.querySelectorAll<HTMLElement>(".ghazalHead, .unwan");
+        elementsToHide.forEach((el) => (el.style.visibility = "visible"));
+        if (overlay?.parentNode) overlay.parentNode.removeChild(overlay);
+        // Restore inline styles
+        if (mainElement) {
+          mainElement.style.backgroundColor = prevBg;
+          mainElement.style.color = prevColor;
+        }
       }
     } catch (error) {
       console.error("Failed to generate and download image:", error);
@@ -335,7 +336,7 @@ const Page: React.FC = () => {
         ) : (
           <div id="main" ref={mainRef} className="p-4 mt-3 relative bg-background text-foreground">
             <div className={`ghazalHead text-2xl text-foreground text-center leading-[3rem]`}>
-                {(Array.isArray(data?.ghazalHead) ? data?.ghazalHead : String(data?.ghazalHead ?? "").split("\n"))?.map((line, index) => (
+                    {(Array.isArray(data?.ghazalHead) ? data?.ghazalHead : String(data?.ghazalHead ?? "").split("\n")[0].split(','))?.map((line, index) => (
                 <h2 key={index} className="text-foreground">
                   {line}
                 </h2>
@@ -370,6 +371,12 @@ const Page: React.FC = () => {
                 </Link>
               ))}
             </div>
+                  {data?.ref && (
+                    <div className="reference mb-4 text-right border-r-4 border-gray-400 pr-3" data-aos="fade-up">
+                      <h3 className="text-gray-500 text-sm mb-1">مآخذ:</h3>
+                      <p className="text-gray-700 text-sm">{data.ref}</p>
+                    </div>
+                  )}
           </div>
         )}
         {!isLoading && hasData && (

@@ -5,8 +5,6 @@ import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNazmenData } from "@/hooks/useNazmenData";
-import { getEnhancedLanguageFieldValue } from "@/lib/language-field-utils";
-import { uiTexts } from "@/lib/multilingual-texts";
 import { shareRecordWithCount } from "@/lib/social-utils";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 import AOS from "aos";
@@ -14,9 +12,9 @@ import "aos/dist/aos.css";
 import { House, Search, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import CommentSection from "../../Components/CommentSection";
-import DataCard from "../../Components/DataCard";
-import SkeletonLoader from "../../Components/SkeletonLoader";
+import CommentSection from "../Components/CommentSection";
+import DataCard from "../Components/DataCard";
+import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface Shaer {
   fields: {
@@ -29,11 +27,6 @@ interface Shaer {
     comments: number;
     shares: number;
     id: string;
-    // English fields
-    enShaer?: string;
-    enDisplayLine?: string[];
-    enNazm?: string[];
-    enUnwan?: string[];
   };
   id: string;
   createdTime: string;
@@ -41,10 +34,9 @@ interface Shaer {
 
 interface NazmenProps {
   initialData?: any;
-  language: "EN";
 }
 
-const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
+const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
   >(null);
@@ -56,7 +48,6 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
   const debouncedSearchText = useDebouncedValue(searchText, 300);
   const [scrolledPosition, setScrolledPosition] = useState<number>();
   const [openanaween, setOpenanaween] = useState<string | null>(null);
-
   // Comment system
   const [newComment, setNewComment] = useState("");
   const {
@@ -66,14 +57,7 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
     setRecordId,
   } = useCommentSystem({ contentType: "nazmen" });
   const { requireAuth } = useAuthGuard();
-  const { language: contextLanguage, setLanguage } = useLanguage();
-
-  // Set language context to English
-  useEffect(() => {
-    if (contextLanguage !== "EN") {
-      setLanguage("EN");
-    }
-  }, [contextLanguage, setLanguage]);
+  const { language } = useLanguage();
 
   useEffect(() => {
     AOS.init({
@@ -83,29 +67,29 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
     });
   }, []);
 
-  // List records with SWR and filter - prioritize shaer (poet name) with English fields
+  // List records with SWR and filter - prioritize shaer (poet name)
   const filterFormula = useMemo(() => {
     const q = debouncedSearchText.trim().toLowerCase();
     if (!q) return undefined;
     const escapedQ = escapeAirtableFormulaValue(q);
-    // Priority order: English fields first, then fallback to Urdu fields
-    return `OR( FIND('${escapedQ}', LOWER({enShaer})), FIND('${escapedQ}', LOWER({shaer})), FIND('${escapedQ}', LOWER({enDisplayLine})), FIND('${escapedQ}', LOWER({displayLine})), FIND('${escapedQ}', LOWER({enNazm})), FIND('${escapedQ}', LOWER({nazm})), FIND('${escapedQ}', LOWER({enUnwan})), FIND('${escapedQ}', LOWER({unwan})) )`;
+    // Priority order: shaer (poet name), then displayLine, nazm, unwan
+    return `OR( FIND('${escapedQ}', LOWER({shaer})), FIND('${escapedQ}', LOWER({displayLine})), FIND('${escapedQ}', LOWER({nazm})), FIND('${escapedQ}', LOWER({unwan})) )`;
   }, [debouncedSearchText]);
 
-  const {
-    records,
-    isLoading,
-    hasMore,
+  const { 
+    records, 
+    isLoading, 
+    hasMore, 
     loadMore,
     isLoadingMore,
-    optimisticUpdate
+    optimisticUpdate 
   } = useNazmenData(
-    {
-      pageSize: 30,
+    { 
+      pageSize: 30, 
       filterByFormula: filterFormula,
-      search: debouncedSearchText
+      search: debouncedSearchText 
     },
-    {
+    { 
       debounceMs: 300,
       initialData: initialData
     }
@@ -113,37 +97,24 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
   const { updateRecord: updateNazmen } = useAirtableMutation("nazmen");
 
   const formattedRecords: Shaer[] = useMemo(() => {
-    const formatted = (records || []).map((record: any) => {
-      // Use enhanced language-aware field selection for English with proper fallback
-      const shaerName = getEnhancedLanguageFieldValue(record.fields, 'shaer', 'EN', 'nazmen') || record.fields.shaer;
-      const displayLine = getEnhancedLanguageFieldValue(record.fields, 'displayLine', 'EN', 'nazmen') || record.fields.displayLine;
-      const nazm = getEnhancedLanguageFieldValue(record.fields, 'nazm', 'EN', 'nazmen') || record.fields.nazm;
-      const unwan = getEnhancedLanguageFieldValue(record.fields, 'unwan', 'EN', 'nazmen') || record.fields.unwan;
-      const description = getEnhancedLanguageFieldValue(record.fields, 'description', 'EN', 'nazmen') || record.fields.enDescription;
-      const takhallus = getEnhancedLanguageFieldValue(record.fields, 'takhallus', 'EN', 'nazmen') || record.fields.enTakhallus;
-
-      return {
-        ...record,
-        fields: {
-          ...record.fields,
-          shaer: shaerName,
-          description,
-          takhallus,
-          ghazal: String(nazm || "")
-            .replace(/\r\n?/g, "\n")
-            .split("\n")
-            .filter(Boolean),
-          ghazalHead: String(displayLine || "")
-            .replace(/\r\n?/g, "\n")
-            .split("\n")
-            .filter(Boolean),
-          unwan: String(unwan || "")
-            .replace(/\r\n?/g, "\n")
-            .split("\n")
-            .filter(Boolean),
-        },
-      };
-    });
+    const formatted = (records || []).map((record: any) => ({
+      ...record,
+      fields: {
+        ...record.fields,
+        ghazal: String(record.fields?.nazm || "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter(Boolean),
+        ghazalHead: String(record.fields?.ghazalLines?.[0] || "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter(Boolean),
+        unwan: String(record.fields?.unwan || "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter(Boolean),
+      },
+    }));
 
     // Sort by search relevance when there's a search query
     if (debouncedSearchText.trim()) {
@@ -196,17 +167,15 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
       await loadMore();
     } catch (error) {
       console.error("Error loading more data:", error);
-      toast.error("Error loading more data");
+      toast.error("مزید ڈیٹا لوڈ کرنے میں خرابی");
     }
   };
-
   const searchQuery = () => {
     if (typeof window !== "undefined") {
       setScrolledPosition(window.scrollY);
     }
   };
-
-  //search keyup handling
+  //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
     let xMark = document.getElementById("searchClear");
@@ -219,8 +188,7 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
       : sMark?.classList.remove("hidden");
     setSearchText(value);
   };
-
-  //clear search box handling
+  //clear search box handeling
   const clearSearch = () => {
     let input = document.getElementById("searchBox") as HTMLInputElement;
     let xMark = document.getElementById("searchClear");
@@ -232,8 +200,8 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
   };
-
-  //handling share
+  // Likes handled inside DataCard; legacy no-op removed
+  //handeling sahre
   const handleShareClick = async (
     shaerData: Shaer,
     index: number
@@ -249,7 +217,7 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
           (shaerData.fields.ghazalHead?.[0]) ||
           (shaerData.fields.unwan?.[0]) ||
           "",
-        language: "EN",
+        language,
       },
       {
         onShared: async () => {
@@ -263,13 +231,12 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
             console.error("Error updating shares:", error);
             // Revert optimistic update on error
             optimisticUpdate.revert();
-            toast.error("Error sharing");
+            toast.error("شیئر کرنے میں خرابی");
           }
         },
       }
     );
   };
-
   // Opening card now uses shadcn Drawer instead of manual modal/GSAP
   const handleCardClick = (shaerData: Shaer): void => {
     toggleanaween(null);
@@ -283,15 +250,15 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
     });
   };
 
+  // Removed legacy localStorage-driven heart coloring; like state is owned by card
   //toggling anaween box
   const toggleanaween = (cardId: string | null) => {
     setOpenanaween((prev) => (prev === cardId ? null : cardId));
   };
-
+  // removed legacy name dialog and manual fetchComments
   const handleNewCommentChange = (comment: string) => {
     setNewComment(comment);
   };
-
   const handleCommentSubmit = async (dataId: string) => {
     if (!requireAuth("comment")) return;
     if (!newComment) return;
@@ -299,36 +266,34 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
       setRecordId(dataId); // Set the record ID first
       await submitComment(newComment);
       setNewComment("");
-
+      
       // Optimistic update for comments
       const currentRecord = formattedRecords.find((i) => i.id === dataId);
       const nextCommentCount = (currentRecord?.fields.comments || 0) + 1;
       optimisticUpdate.updateRecord(dataId, { comments: nextCommentCount });
-
+      
       try {
         await updateNazmen(dataId, { comments: nextCommentCount });
       } catch (error) {
         // Rollback optimistic update on failure
         optimisticUpdate.revert();
         console.error("Error updating comments on the server:", error);
-        toast.error("Error updating comment");
+        toast.error("کمنٹ اپ ڈیٹ کرنے میں خرابی");
       }
     } catch (error) {
       // toast handled inside hook
     }
   };
-
   const openComments = (dataId: string) => {
     toggleanaween(null);
     setSelectedCommentId(dataId);
     setRecordId(dataId); // This will trigger comment fetching
+    // setIsModleOpen(true);
   };
-
   const closeComments = () => {
     setSelectedCommentId(null);
     setRecordId(null);
   };
-
   const resetSearch = () => {
     searchText && clearSearch();
     if (typeof window !== "undefined") {
@@ -342,21 +307,26 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
 
   return (
     <div>
+      {/* Sonner Toaster is provided globally in providers.tsx */}
+      {/* Removed legacy name dialog; comments rely on authenticated user */}
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
-          <div className="flex justify-center items-center basis-[100%] h-auto pt-1">
+          <div
+            dir="rtl"
+            className="flex justify-center items-center basis-[100%] h-auto pt-1"
+          >
             <House
               color="#984A02"
-              className="mr-3 cursor-pointer"
+              className="ml-3 cursor-pointer"
               size={30}
               onClick={() => {
-                window.location.href = "/EN";
+                window.location.href = "/";
               }}
             />
             <input
               type="text"
-              placeholder={uiTexts.placeholders.search.EN}
-              className="text-foreground border border-foreground focus:outline-none focus:border-r-0 border-r-0 p-1 w-64 leading-7 bg-transparent"
+              placeholder="لکھ کر تلاش کریں"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -368,7 +338,7 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
                 }
               }}
             />
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-l-0 border-r-0 border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
               <X
                 color="#984A02"
                 size={24}
@@ -377,7 +347,7 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
                 className="hidden text-[#984A02] cursor-pointer"
               />
             </div>
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-r border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
               <Search
                 color="#984A02"
                 size={24}
@@ -392,7 +362,7 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
       {isLoading && <SkeletonLoader />}
       {debouncedSearchText && formattedRecords.length === 0 && !isLoading && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          {uiTexts.messages.noData.EN}
+          سرچ میں کچھ نہیں ملا
         </div>
       )}
       {debouncedSearchText && (
@@ -400,13 +370,14 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
         >
-          Reset Search
+          تلاش ریسیٹ کریں
         </button>
       )}
       {!isLoading && (
         <section>
           <div
             id="section"
+            dir="rtl"
             className={`
               grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:pt-4`}
           >
@@ -443,16 +414,18 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {isLoadingMore
-                    ? uiTexts.messages.loading.EN
+                    ? "لوڈ ہو رہا ہے۔۔۔"
                     : !hasMore
-                      ? "No more poems available"
-                      : uiTexts.buttons.loadMore.EN + " Poems"}
+                    ? "مزید نظمیں نہیں ہیں"
+                    : "اور نظمیں لوڈ کریں"}
                 </button>
               </div>
             )}
           </div>
         </section>
       )}
+      {/* //commetcard */}
+      {/* Removed external close button as it's included in the Drawer component */}
       {selectedCommentId && (
         <CommentSection
           dataId={selectedCommentId}
@@ -468,4 +441,4 @@ const NazmenComponent: React.FC<NazmenProps> = ({ initialData, language }) => {
   );
 };
 
-export default NazmenComponent;
+export default Nazmen;

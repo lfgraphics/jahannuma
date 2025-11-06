@@ -121,6 +121,12 @@ export default function Page() {
               </Link>
             ))}
           </div>
+                  {fields?.ref && (
+                    <div className="reference mb-4 text-right border-r-4 border-gray-400 pr-3" data-aos="fade-up">
+                      <h3 className="text-gray-500 text-sm mb-1">مآخذ:</h3>
+                      <p className="text-gray-700 text-sm">{fields.ref}</p>
+                    </div>
+                  )}
           <div className="mazeed flex justify-around" data-aos="fade-up">
             <button onClick={visitGhazlen} className="bg-white text-[#984A02] border active:bg-[#984a02ac] active:text-white border-[#984A02] px-4 py-2 rounded-md">
               مزید اشعار

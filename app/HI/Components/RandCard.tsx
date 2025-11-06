@@ -7,7 +7,7 @@ import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { getLanguageFieldValue } from "@/lib/language-field-utils";
 import { Download, Share2 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Loader from "../../Components/Loader";
 
 interface Shaer {
@@ -19,29 +19,38 @@ interface Shaer {
 const RandCard: React.FC<{}> = () => {
   // Use real API data instead of mock data
   const { records, isLoading } = useGhazlenData(
-    { pageSize: 10 }, // Get a small sample for random selection
+    { pageSize: 50 }, // Get a larger sample for better random selection
     { debounceMs: 300 }
   );
 
-  // Transform and select random data with language-aware field selection
-  const randomData = useMemo(() => {
-    if (!records || records.length === 0) return undefined;
+  // Transform and select random data with language-aware field selection - no memoization for fresh data
+  const [randomData, setRandomData] = useState<Shaer | undefined>();
 
+  useEffect(() => {
+    if (!records || records.length === 0) {
+      setRandomData(undefined);
+      return;
+    }
+
+  // Generate fresh random index on each data change
     const randomIndex = Math.floor(Math.random() * records.length);
     const record = records[randomIndex];
 
-    if (!record) return undefined;
+    if (!record) {
+      setRandomData(undefined);
+      return;
+    }
 
     // Use Hindi fields if available, fallback to default fields
     const shaerName = getLanguageFieldValue(record.fields, 'shaer', 'HI') || record.fields.shaer;
     const ghazalHead = getLanguageFieldValue(record.fields, 'ghazalHead', 'HI') || record.fields.ghazalHead;
     const ghazal = getLanguageFieldValue(record.fields, 'ghazal', 'HI') || record.fields.ghazal;
 
-    return {
+    setRandomData({
       shaer: shaerName || '',
       sherHead: Array.isArray(ghazalHead) ? ghazalHead : [ghazalHead].filter(Boolean),
       wholeSher: String(ghazal || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
-    };
+    });
   }, [records]);
 
   const { language } = useLanguage();
@@ -87,7 +96,7 @@ const RandCard: React.FC<{}> = () => {
         className="text-xl m-4 font-semibold text-[#984A02] tracking-[5px]"
         // style={{ letterSpacing: "5px" }}
       >
-        Random sher
+        चुना हुआ शेर
       </h4>
       {(isLoading || !insideBrowser) && <Loader></Loader>}
       {insideBrowser && !isLoading && randomData && (
@@ -118,14 +127,14 @@ const RandCard: React.FC<{}> = () => {
                 onClick={() => randomData && handleShareClick(randomData, "sherCard")}
               >
                 <Share2 color="#984A02" />
-                <p className="pb-[11px]">Share this</p>
+                <p className="pb-[11px]">साझा करें</p>
               </button>
               <button
                 className="m-3 flex gap-2 items-center"
                 onClick={() => randomData && handleDownload(randomData)}
               >
                 <Download color="#984A02" />
-                <p className="pb-[11px]">Download this</p>
+                <p className="pb-[11px]">डाउनलोड करें</p>
               </button>
               {/* <button
                 className="m-3 text-[20px] flex gap-2 items-center"

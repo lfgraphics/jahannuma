@@ -1,11 +1,9 @@
 "use client";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { uiTexts } from "@/lib/multilingual-texts";
 import Aos from "aos";
 import "aos/dist/aos.css";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import SkeletonLoader from "../../Components/SkeletonLoader";
+import SkeletonLoader from "../Components/SkeletonLoader";
 
 interface BloggerPostList {
   kind: string;
@@ -22,7 +20,7 @@ interface BloggerPost {
   url: string;
   selfLink: string;
   title: string;
-  content: string;
+  content: string; // You can adjust this based on your needs
   author: BloggerAuthor;
   replies: BloggerReplies;
 }
@@ -53,7 +51,6 @@ interface Pagination {
 }
 
 const Content = () => {
-  const { language } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [moreloading, setMoreLoading] = useState(true);
   const [dataItems, setDataItems] = useState<BloggerPost[]>([]);
@@ -72,7 +69,7 @@ const Content = () => {
     });
   });
 
-  //function to scroll to the top
+  //function ot scroll to the top
   function scrollToTop() {
     if (typeof window !== undefined) {
       window.scrollTo({
@@ -100,18 +97,18 @@ const Content = () => {
         setLoading(false);
         setMoreLoading(false);
       }
-      // formatting result to match the mock data type for ease of development
+      // formating result to match the mock data type for ease of development
       if (!offset) {
         setDataItems(items);
       }
 
       !offset && scrollToTop();
-      // setting pagination depending on the response
+      // seting pagination depending on the response
       setPagination({
         nextPageToken: result.nextPageToken,
         maxResults: 50,
       });
-      // setting the loading state to false to show the data
+      // seting the loading state to false to show the data
       setLoading(false);
       setMoreLoading(false);
     } catch (error) {
@@ -120,13 +117,11 @@ const Content = () => {
       setMoreLoading(false);
     }
   };
-
   // fetching more data by load more data button
   const handleLoadMore = () => {
     setMoreLoading(true);
     fetchData(pagination.nextPageToken);
   };
-
   // Fetch the initial set of items
   useEffect(() => {
     fetchData(null);
@@ -144,34 +139,20 @@ const Content = () => {
     return null;
   }
 
-  const blogTitle = {
-    EN: "Blogs",
-    UR: "بلاگ",
-    HI: "ब्लॉग्स"
-  };
-
-  const loadingText = uiTexts.messages.loading[language];
-  const loadMoreText = uiTexts.buttons.loadMore[language];
-  const noMoreText = {
-    EN: "No more blogs available",
-    UR: "مزید بلاگز دستیاب نہیں ہیں",
-    HI: "कोई और ब्लॉग उपलब्ध नहीं है"
-  };
-
   return (
     <div>
       {loading && <SkeletonLoader />}
-      <h1 className="text-center text-4xl my-6">{blogTitle[language]}</h1>
+      <h1 className="text-center text-4xl my-6">بلاگ</h1>
       {!loading && (
         <section>
           <div
             id="section"
-            dir={language === "UR" ? "rtl" : "ltr"}
+            dir="rtl"
             className="grid grid-cols-2 md:items-start md:grid md:grid-cols-3 lg:grid-cols-4 gap-3 m-3"
           >
             {dataItems.map((cardData, index) => (
               <div dir="ltr" key={index} data-aos="fade-up">
-                <Link href={`/EN/Blogs/${cardData.id}`}>
+                <Link href={`/Blogs/${cardData.id}`}>
                   <div className="cardBody w-max border-gray-600 border overflow-hidden rounded-md">
                     {(() => {
                       const src = getFirstImageSrcFromContent(cardData.content);
@@ -180,7 +161,7 @@ const Content = () => {
                       return (
                         <img
                           src={sizedSrc}
-                          alt={`blog image ${cardData.id}`}
+                          alt={`blog iamge ${cardData.id}`}
                           className="object-cover h-auto sm:h-48 w-[180px]"
                         />
                       );
@@ -201,10 +182,10 @@ const Content = () => {
                 className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
               >
                 {moreloading
-                  ? loadingText
+                  ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                    ? noMoreText[language]
-                    : loadMoreText}
+                    ? "مزید ویڈیوز نہیں ہیں"
+                    : "مزید ویڈیوز لوڈ کریں"}
               </button>
             </div>
           )}

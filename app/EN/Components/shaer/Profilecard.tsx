@@ -1,9 +1,7 @@
 "use client";
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
-import { useLanguage } from "@/contexts/LanguageContext";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useLikeButton } from "@/hooks/useLikeButton";
-import { getLanguageFieldValue } from "@/lib/language-field-utils";
 import { Heart } from "lucide-react";
 import Link from "next/link";
 
@@ -33,24 +31,13 @@ const Card = ({
   onLikeChange,
 }: CardProps) => {
   const { fields, id: recordId } = data;
-  const { language } = useLanguage();
-
-  // Get language-aware field values with fallback
-  const takhallus = getLanguageFieldValue(fields, 'takhallus', language, ['EN', 'UR', 'HI']) as string | undefined;
-  const name = getLanguageFieldValue(fields, 'name', language, ['EN', 'UR', 'HI']) as string | undefined;
-
-  const slugId = fields?.slugId as string | undefined;
+  const takhallus = fields?.enTakhallus as string;
   const photo = fields?.photo as Photo[] | undefined;
 
   const img = photo?.[0]?.thumbnails?.full as
     | { url?: string; height?: number; width?: number }
     | undefined;
-
-  // Use the display name for URL generation
-  const displayName = (takhallus || name || "").replace(" ", "-");
-
-  // Use slugId if available, otherwise create slug from takhallus/name and record ID
-  // const shaerSlug = slugId || (takhallus ? `${createSlug(takhallus)}` : recordId);
+  const name = (takhallus || "")?.replace(" ", "-");
 
   const likeEnabled = !!(showLikeButton && (fields?.id || recordId));
   const { requireAuth, showLoginDialog, setShowLoginDialog } = useAuthGuard();
@@ -71,7 +58,7 @@ const Card = ({
     <div className="w-[180px] h-52 rounded overflow-hidden shadow-[#00000080] shadow-md mx-auto my-1 bg-background text-foreground">
       <div className="relative h-full">
         <Link
-          href={{ pathname: `/EN/Shaer/${(displayName || "").replace(/\s+/g, "-")}` }}
+          href={{ pathname: `/EN/Shaer/${(name || "")?.replace(/\s+/g, "-")}` }}
           className="block h-full"
         >
           {img?.url ? (
@@ -84,9 +71,9 @@ const Card = ({
             />
           ) : (
             <img
-              className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-center"
               src={"/poets/nodp.jpg"}
-              height={208}
+                height={208}
               width={180}
               alt="Poet's Photo"
             />
@@ -104,7 +91,7 @@ const Card = ({
               }}
               disabled={like.isDisabled}
               aria-disabled={like.isDisabled}
-              title={like.isLiked ? "Liked" : "Like"}
+              title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
             >
               <Heart className="inline" fill="currentColor" size={16} />
               <span className="text-xs text-foreground">{like.likesCount}</span>
@@ -121,7 +108,7 @@ const Card = ({
           style={{ WebkitBackdropFilter: "blur(4px)" }}
         >
           <span className="text-sm font-medium leading-tight break-words max-w-full">
-            {takhallus || name}
+            {takhallus}
           </span>
         </div>
       </div>

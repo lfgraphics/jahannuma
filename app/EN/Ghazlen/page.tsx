@@ -4,10 +4,10 @@ import { generateWebsiteStructuredData } from "@/lib/seo/structured-data";
 import { fetchList } from "@/lib/universal-data-fetcher";
 import { getBaseIdForTable } from "@/src/lib/airtable";
 import { Metadata } from "next";
-import GhazlenComponent from "./Component";
+import Ghazlen from "./Component";
 import GhazlenErrorBoundary from "./ErrorBoundary";
 
-// Generate dynamic metadata with server-side data for English
+// Generate dynamic metadata with server-side data
 export async function generateMetadata(): Promise<Metadata> {
   try {
     // Fetch some sample data for dynamic metadata
@@ -15,64 +15,64 @@ export async function generateMetadata(): Promise<Metadata> {
       getBaseIdForTable("Ghazlen"), // Ghazlen base ID
       "Ghazlen",
       { pageSize: 5 },
-      {
-        cache: true,
+      { 
+        cache: true, 
         fallback: null,
-        throwOnError: false
+        throwOnError: false 
       }
     );
 
     const dynamicKeywords = [
-      "ghazals",
-      "english ghazal",
-      "urdu poetry in english",
+      "غزلیں",
+      "اردو غزل",
+      "ghazal",
+      "urdu ghazal",
       "ghazlen",
-      "poetry collection",
     ];
 
     // Add poet names from fetched data to keywords if available
     if (ghazlenData?.records) {
       const poetNames = ghazlenData.records
-        .map((record: any) => record.fields?.enShaer || record.fields?.shaer)
+        .map((record: any) => record.fields?.shaer)
         .filter(Boolean)
         .slice(0, 3); // Add up to 3 poet names
       dynamicKeywords.push(...poetNames);
     }
 
     return generatePageMetadata({
-      title: "Ghazals - English Poetry Collection",
+      title: "Ghazlen - غزلیں",
       description:
-        "Discover beautiful Ghazals from renowned poets in English. Experience classical and contemporary ghazal poetry with interactive features.",
+        "Discover beautiful Ghazals from renowned Urdu poets. Experience classical and contemporary ghazal poetry with interactive features.",
       keywords: dynamicKeywords,
-      url: "/EN/Ghazlen",
+      url: "/Ghazlen",
       image: "/metaImages/ghazlen.jpg",
-      language: "en",
+      language: "ur",
       alternateLanguages: {
-        ur: "https://jahan-numa.org/Ghazlen",
+        en: "https://jahan-numa.org/EN/Ghazlen",
         hi: "https://jahan-numa.org/HI/Ghazlen",
       },
     });
   } catch (error) {
     console.error("Error generating metadata:", error);
-
+    
     // Fallback metadata if data fetching fails
     return generatePageMetadata({
-      title: "Ghazals - English Poetry Collection",
+      title: "Ghazlen - غزلیں",
       description:
-        "Discover beautiful Ghazals from renowned poets in English. Experience classical and contemporary ghazal poetry with interactive features.",
-      keywords: ["ghazals", "english ghazal", "urdu poetry in english", "ghazlen", "poetry collection"],
-      url: "/EN/Ghazlen",
+        "Discover beautiful Ghazals from renowned Urdu poets. Experience classical and contemporary ghazal poetry with interactive features.",
+      keywords: ["غزلیں", "اردو غزل", "ghazal", "urdu ghazal", "ghazlen"],
+      url: "/Ghazlen",
       image: "/metaImages/ghazlen.jpg",
-      language: "en",
+      language: "ur",
       alternateLanguages: {
-        ur: "https://jahan-numa.org/Ghazlen",
+        en: "https://jahan-numa.org/EN/Ghazlen",
         hi: "https://jahan-numa.org/HI/Ghazlen",
       },
     });
   }
 }
 
-// Server component with SSR data for English language
+// Server component with SSR data
 const GhazlenPage = async () => {
   let initialData = null;
   let error = null;
@@ -81,9 +81,9 @@ const GhazlenPage = async () => {
     // Fetch initial data during SSR
     const ghazlenResponse = await fetchList<any>(
       getBaseIdForTable("Ghazlen"), // Ghazlen base ID
-      "Ghazlen",
+      "Ghazlen", 
       { pageSize: 30 },
-      {
+      { 
         cache: true,
         revalidate: 300000, // 5 minutes
         fallback: null,
@@ -98,12 +98,12 @@ const GhazlenPage = async () => {
   } catch (fetchError) {
     console.error("Error fetching initial Ghazlen data:", fetchError);
     error = fetchError;
-
+    
     // Try to get fallback data
     try {
       // Use build safe fetcher for fallbacks
       getBuildSafeFetcher();
-
+      
       // Create empty fallback data structure
       initialData = { records: [], offset: undefined };
     } catch (fallbackError) {
@@ -113,28 +113,28 @@ const GhazlenPage = async () => {
 
   // Generate structured data for SEO
   const websiteStructuredData = generateWebsiteStructuredData({
-    name: "Jahannuma - Ghazals in English",
-    description: "Collection of beautiful ghazals and poetry in English",
+    name: "Jahannuma - Ghazlen",
+    description: "Collection of beautiful Urdu ghazals and poetry",
     url: "https://jahan-numa.org",
-    searchUrl: "https://jahan-numa.org/EN/Ghazlen",
-    language: "en",
+    searchUrl: "https://jahan-numa.org/Ghazlen",
+    language: "ur",
   });
 
   // Create poetry-specific structured data
   const poetryStructuredData = {
     "@type": "CreativeWork",
-    "@id": "https://jahan-numa.org/EN/Ghazlen",
-    "name": "English Ghazal Collection",
-    "description": "A comprehensive collection of ghazals from classical and contemporary poets in English",
+    "@id": "https://jahan-numa.org/Ghazlen",
+    "name": "Ghazlen Collection",
+    "description": "A comprehensive collection of Urdu ghazals from classical and contemporary poets",
     "genre": "Poetry",
-    "inLanguage": "en",
+    "inLanguage": "ur",
     "author": {
       "@type": "Organization",
       "name": "Jahannuma",
       "url": "https://jahan-numa.org"
     },
     "publisher": {
-      "@type": "Organization",
+      "@type": "Organization", 
       "name": "Jahannuma",
       "url": "https://jahan-numa.org"
     }
@@ -157,7 +157,7 @@ const GhazlenPage = async () => {
         }}
       />
       <GhazlenErrorBoundary>
-        <GhazlenComponent initialData={initialData} language="EN" />
+        <Ghazlen initialData={initialData} />
       </GhazlenErrorBoundary>
     </div>
   );

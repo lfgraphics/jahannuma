@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 interface Mutalah {
   fields: {
     date: Date;
@@ -9,6 +9,9 @@ interface Mutalah {
     hawalaText: string;
     hawalaLink: string;
     writer: string;
+    unwan: string;
+    enUnwan: string;
+    hiUnwan: string;
     enWriter: string;
     hiWriter: string;
     enHeading: string;
@@ -71,11 +74,11 @@ const Mutala = () => {
   }, []);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col container mx-auto">
       {insideBroser && mutalaData !== undefined && (
         <>
           <h1 className="text-4xl text-center mt-7 mb-3 text-[#984A02]">
-            حاصلِ مطالعہ
+            {mutalaData?.fields?.unwan || "حاصلِ مطالعہ"}
           </h1>
           <h2 className="text-2xl text-center mb-2">
             {mutalaData?.fields?.heading}

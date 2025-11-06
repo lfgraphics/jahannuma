@@ -5,7 +5,7 @@ import { useAirtableMutation } from "@/hooks/airtable/useAirtableMutation";
 import { useCommentSystem } from "@/hooks/social/useCommentSystem";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { shareRecordWithCount } from "@/lib/social-utils";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import CommentSection from "./CommentSection";
 import DataCard from "./DataCard";
@@ -68,26 +68,25 @@ const RandCard: React.FC<{}> = () => {
     return toast.warning(message);
   };
 
-  // keep the same random item until the dataset changes
+  // Generate new random item on each render to avoid caching issues
   useEffect(() => {
-    if (records && records.length > 0 && randomIndexRef.current === null) {
-      randomIndexRef.current = Math.floor(Math.random() * records.length);
-    }
-    if (
-      records &&
-      randomIndexRef.current !== null &&
-      randomIndexRef.current >= records.length
-    ) {
-      // dataset shrank; re-roll
+    if (records && records.length > 0) {
+    // Always generate a new random index on each data fetch
       randomIndexRef.current = Math.floor(Math.random() * records.length);
     }
   }, [records]);
 
-  const randomItem = useMemo(() => {
-    if (!records || records.length === 0)
-      return undefined as unknown as Shaer | undefined;
+  const [randomItem, setRandomItem] = useState<Shaer | undefined>()
+
+  useEffect(() => {
+    if (!records || records.length === 0) {
+      setRandomItem(undefined);
+      return;
+    }
+
     const idx = randomIndexRef.current ?? 0;
     const rec = records[idx];
+
     // normalize to match component expectations
     const ghazal = (rec as any)?.fields?.body
       ? String((rec as any).fields.body)
@@ -99,10 +98,11 @@ const RandCard: React.FC<{}> = () => {
           .replace(/\r\n?/g, "\n")
           .split("\n")
       : (rec as any)?.fields?.ghazalHead ?? [];
-    return {
+
+    setRandomItem({
       ...rec,
       fields: { ...(rec as any).fields, ghazal, ghazalHead },
-    } as Shaer;
+    });
   }, [records]);
 
   // Mutations aligned to Ashaar table for likes/shares

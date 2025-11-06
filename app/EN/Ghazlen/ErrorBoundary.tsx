@@ -22,7 +22,7 @@ class GhazlenErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("EN Ghazlen Error Boundary caught an error:", error, errorInfo);
+    console.error("Ghazlen Error Boundary caught an error:", error, errorInfo);
   }
 
   retry = () => {
@@ -39,7 +39,7 @@ class GhazlenErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 }
 
-// Default error fallback component for English
+// Default error fallback component
 const DefaultErrorFallback: React.FC<{ error?: Error; retry?: () => void }> = ({ 
   error, 
   retry 
@@ -48,10 +48,10 @@ const DefaultErrorFallback: React.FC<{ error?: Error; retry?: () => void }> = ({
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
       <div className="max-w-md mx-auto">
         <h2 className="text-2xl font-bold text-red-600 mb-4">
-          Something went wrong
+          خرابی ہوئی ہے
         </h2>
-        <p className="text-gray-600 mb-6">
-          There was a problem loading the ghazals. Please try again.
+        <p className="text-gray-600 mb-6" dir="rtl">
+          غزلیں لوڈ کرنے میں مسئلہ ہوا ہے۔ براہ کرم دوبارہ کوشش کریں۔
         </p>
         {error && process.env.NODE_ENV === 'development' && (
           <details className="mb-4 text-left">
@@ -70,14 +70,14 @@ const DefaultErrorFallback: React.FC<{ error?: Error; retry?: () => void }> = ({
               onClick={retry}
               className="px-4 py-2 bg-[#984A02] text-white rounded hover:bg-[#7a3a02] transition-colors"
             >
-              Try Again
+              دوبارہ کوشش کریں
             </button>
           )}
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 border border-[#984A02] text-[#984A02] rounded hover:bg-[#984A02] hover:text-white transition-colors"
           >
-            Reload Page
+            صفحہ ریلوڈ کریں
           </button>
         </div>
       </div>

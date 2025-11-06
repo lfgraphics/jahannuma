@@ -175,16 +175,16 @@ export const ALL_TRANSLATABLE_FIELDS = [
  */
 export const CONTENT_TYPE_FIELDS = {
   ashaar: [
-    'sher', 'body', 'unwan', 'shaer', 'takhallus', 'sherHead', 'wholeSher'
+    'sher', 'body', 'unwan', 'shaer', 'takhallus', 'sherHead', 'wholeSher', 'ref'
   ],
   ghazlen: [
-    'ghazal', 'unwan', 'shaer', 'takhallus'
+    'ghazal', 'unwan', 'shaer', 'takhallus', 'ref'
   ],
   nazmen: [
-    'nazm', 'unwan', 'shaer', 'takhallus', 'paband'
+    'nazm', 'unwan', 'shaer', 'takhallus', 'paband', 'ref'
   ],
   rubai: [
-    'body', 'unwan', 'shaer', 'takhallus'
+    'body', 'unwan', 'shaer', 'takhallus', 'ref'
   ],
   shaer: [
     'name', 'takhallus', 'location'

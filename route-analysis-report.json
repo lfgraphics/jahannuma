@@ -1,0 +1,603 @@
+{
+  "timestamp": "2025-10-21T08:40:13.376Z",
+  "summary": {
+    "totalMissingEN": 23,
+    "totalMissingHI": 23,
+    "highPriorityEN": 11,
+    "highPriorityHI": 11
+  },
+  "missingRoutes": {
+    "EN": [
+      {
+        "route": "Ashaar/Ashaar/mozu",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Ashaar/Ashaar/shaer",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Ashaar/Ashaar/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "bazmehindi/bazmehindi/[id]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "id",
+        "priority": "high"
+      },
+      {
+        "route": "bazmeurdu/bazmeurdu/[id]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "id",
+        "priority": "high"
+      },
+      {
+        "route": "Blogs/Blogs/[id]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "id",
+        "priority": "high"
+      },
+      {
+        "route": "cancellation&refund",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "E-Books/E-Books/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "Favorites",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "high"
+      },
+      {
+        "route": "Founders",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "Ghazlen/Ghazlen/mozu",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Ghazlen/Ghazlen/shaer",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Ghazlen/Ghazlen/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "Interview",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "Nazmen/Nazmen/shaer",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Nazmen/Nazmen/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "privacypolicy",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "Rubai/Rubai/shaer",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Rubai/Rubai/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "shipping&delivery",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "sign-in",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "high"
+      },
+      {
+        "route": "sign-up",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "high"
+      },
+      {
+        "route": "terms&conditions",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      }
+    ],
+    "HI": [
+      {
+        "route": "Ashaar/Ashaar/mozu",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Ashaar/Ashaar/shaer",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Ashaar/Ashaar/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "bazmehindi/bazmehindi/[id]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "id",
+        "priority": "high"
+      },
+      {
+        "route": "bazmeurdu/bazmeurdu/[id]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "id",
+        "priority": "high"
+      },
+      {
+        "route": "Blogs/Blogs/[id]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "id",
+        "priority": "high"
+      },
+      {
+        "route": "cancellation&refund",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "E-Books/E-Books/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "Favorites",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "high"
+      },
+      {
+        "route": "Founders",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "Ghazlen/Ghazlen/mozu",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Ghazlen/Ghazlen/shaer",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Ghazlen/Ghazlen/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "Interview",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "Nazmen/Nazmen/shaer",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Nazmen/Nazmen/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "privacypolicy",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "Rubai/Rubai/shaer",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "low"
+      },
+      {
+        "route": "Rubai/Rubai/[slug]",
+        "type": "directory",
+        "isDynamic": true,
+        "hasPageFile": false,
+        "pattern": "slug",
+        "priority": "high"
+      },
+      {
+        "route": "shipping&delivery",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      },
+      {
+        "route": "sign-in",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "high"
+      },
+      {
+        "route": "sign-up",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "high"
+      },
+      {
+        "route": "terms&conditions",
+        "type": "directory",
+        "isDynamic": false,
+        "hasPageFile": false,
+        "pattern": "static",
+        "priority": "medium"
+      }
+    ]
+  },
+  "routePatterns": {
+    "dynamic": [
+      {
+        "pattern": "slug",
+        "examples": [
+          "Ashaar/Ashaar/[slug]",
+          "E-Books/E-Books/[slug]",
+          "Ghazlen/Ghazlen/[slug]",
+          "Nazmen/Nazmen/[slug]",
+          "Rubai/Rubai/[slug]"
+        ],
+        "description": "URL-friendly identifier for content items"
+      },
+      {
+        "pattern": "id",
+        "examples": [
+          "bazmehindi/bazmehindi/[id]",
+          "bazmeurdu/bazmeurdu/[id]",
+          "Blogs/Blogs/[id]"
+        ],
+        "description": "Unique identifier for specific records"
+      }
+    ],
+    "static": [
+      {
+        "route": "Ashaar/Ashaar/mozu",
+        "priority": "low"
+      },
+      {
+        "route": "Ashaar/Ashaar/shaer",
+        "priority": "low"
+      },
+      {
+        "route": "cancellation&refund",
+        "priority": "medium"
+      },
+      {
+        "route": "Favorites",
+        "priority": "high"
+      },
+      {
+        "route": "Founders",
+        "priority": "medium"
+      },
+      {
+        "route": "Ghazlen/Ghazlen/mozu",
+        "priority": "low"
+      },
+      {
+        "route": "Ghazlen/Ghazlen/shaer",
+        "priority": "low"
+      },
+      {
+        "route": "Interview",
+        "priority": "medium"
+      },
+      {
+        "route": "Nazmen/Nazmen/shaer",
+        "priority": "low"
+      },
+      {
+        "route": "privacypolicy",
+        "priority": "medium"
+      },
+      {
+        "route": "Rubai/Rubai/shaer",
+        "priority": "low"
+      },
+      {
+        "route": "shipping&delivery",
+        "priority": "medium"
+      },
+      {
+        "route": "sign-in",
+        "priority": "high"
+      },
+      {
+        "route": "sign-up",
+        "priority": "high"
+      },
+      {
+        "route": "terms&conditions",
+        "priority": "medium"
+      }
+    ],
+    "nested": [
+      {
+        "route": "Ashaar/Ashaar/mozu",
+        "depth": 2,
+        "isDynamic": false
+      },
+      {
+        "route": "Ashaar/Ashaar/shaer",
+        "depth": 2,
+        "isDynamic": false
+      },
+      {
+        "route": "Ashaar/Ashaar/[slug]",
+        "depth": 2,
+        "isDynamic": true
+      },
+      {
+        "route": "bazmehindi/bazmehindi/[id]",
+        "depth": 2,
+        "isDynamic": true
+      },
+      {
+        "route": "bazmeurdu/bazmeurdu/[id]",
+        "depth": 2,
+        "isDynamic": true
+      },
+      {
+        "route": "Blogs/Blogs/[id]",
+        "depth": 2,
+        "isDynamic": true
+      },
+      {
+        "route": "E-Books/E-Books/[slug]",
+        "depth": 2,
+        "isDynamic": true
+      },
+      {
+        "route": "Ghazlen/Ghazlen/mozu",
+        "depth": 2,
+        "isDynamic": false
+      },
+      {
+        "route": "Ghazlen/Ghazlen/shaer",
+        "depth": 2,
+        "isDynamic": false
+      },
+      {
+        "route": "Ghazlen/Ghazlen/[slug]",
+        "depth": 2,
+        "isDynamic": true
+      },
+      {
+        "route": "Nazmen/Nazmen/shaer",
+        "depth": 2,
+        "isDynamic": false
+      },
+      {
+        "route": "Nazmen/Nazmen/[slug]",
+        "depth": 2,
+        "isDynamic": true
+      },
+      {
+        "route": "Rubai/Rubai/shaer",
+        "depth": 2,
+        "isDynamic": false
+      },
+      {
+        "route": "Rubai/Rubai/[slug]",
+        "depth": 2,
+        "isDynamic": true
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "type": "critical",
+      "message": "11 high-priority routes missing in EN directory",
+      "routes": [
+        "Ashaar/Ashaar/[slug]",
+        "bazmehindi/bazmehindi/[id]",
+        "bazmeurdu/bazmeurdu/[id]",
+        "Blogs/Blogs/[id]",
+        "E-Books/E-Books/[slug]",
+        "Favorites",
+        "Ghazlen/Ghazlen/[slug]",
+        "Nazmen/Nazmen/[slug]",
+        "Rubai/Rubai/[slug]",
+        "sign-in",
+        "sign-up"
+      ]
+    },
+    {
+      "type": "critical",
+      "message": "11 high-priority routes missing in HI directory",
+      "routes": [
+        "Ashaar/Ashaar/[slug]",
+        "bazmehindi/bazmehindi/[id]",
+        "bazmeurdu/bazmeurdu/[id]",
+        "Blogs/Blogs/[id]",
+        "E-Books/E-Books/[slug]",
+        "Favorites",
+        "Ghazlen/Ghazlen/[slug]",
+        "Nazmen/Nazmen/[slug]",
+        "Rubai/Rubai/[slug]",
+        "sign-in",
+        "sign-up"
+      ]
+    },
+    {
+      "type": "implementation",
+      "message": "Implement dynamic route patterns consistently across languages",
+      "patterns": [
+        {
+          "pattern": "slug",
+          "examples": [
+            "Ashaar/Ashaar/[slug]",
+            "E-Books/E-Books/[slug]",
+            "Ghazlen/Ghazlen/[slug]",
+            "Nazmen/Nazmen/[slug]",
+            "Rubai/Rubai/[slug]"
+          ],
+          "description": "URL-friendly identifier for content items"
+        },
+        {
+          "pattern": "id",
+          "examples": [
+            "bazmehindi/bazmehindi/[id]",
+            "bazmeurdu/bazmeurdu/[id]",
+            "Blogs/Blogs/[id]"
+          ],
+          "description": "Unique identifier for specific records"
+        }
+      ]
+    }
+  ]
+}

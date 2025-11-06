@@ -3,11 +3,11 @@ import { generatePoetryMetadata } from "@/lib/seo/metadata";
 import { generatePoetryStructuredData } from "@/lib/seo/structured-data";
 import { fetchList } from "@/lib/universal-data-fetcher";
 import { getBaseIdForTable } from "@/src/lib/airtable";
-import type { Rubai } from "../../types";
+import type { Rubai } from "../types";
 import RubaiComponent from "./Component";
 import ErrorBoundary from "./ErrorBoundary";
 
-// Generate metadata for SEO - English version
+// Generate metadata for SEO
 export async function generateMetadata() {
   try {
     // Fetch sample data for metadata generation
@@ -15,28 +15,28 @@ export async function generateMetadata() {
       getBaseIdForTable("Rubai"),
       "rubai",
       { pageSize: 1 },
-      {
+      { 
         fallback: getBuildSafeFallback("rubai", "list"),
-        throwOnError: false
+        throwOnError: false 
       }
     );
 
     const sampleRubai = data?.records?.[0];
-
+    
     return generatePoetryMetadata({
       type: "rubai",
-      title: "Rubai - English Poetry Collection | Jahannuma",
-      author: sampleRubai?.fields?.enShaer || sampleRubai?.fields?.shaer || "Various Poets",
-      excerpt: "This page has rubai's of all young poets in English",
-      id: "rubai-collection-en",
+      title: "Rubai | Jahannuma",
+      author: sampleRubai?.fields?.shaer || "Various Poets",
+      excerpt: "This page has rubai's of all young shaers of Goraphur",
+      id: "rubai-collection",
     });
   } catch (error) {
     console.error("Error generating Rubai metadata:", error);
-
+    
     // Fallback metadata
     return {
-      title: "Rubai - English Poetry Collection | Jahannuma",
-      description: "This page has rubai's of all young poets in English",
+      title: "Rubai | Jahannuma",
+      description: "This page has rubai's of all young shaers of Goraphur",
       openGraph: {
         images: ["https://jahan-numa.org/metaImages/rubai.jpg"],
       },
@@ -54,9 +54,9 @@ const RubaiPage = async () => {
       getBaseIdForTable("Rubai"),
       "rubai",
       { pageSize: 30 },
-      {
+      { 
         fallback: getBuildSafeFallback("rubai", "list"),
-        throwOnError: false
+        throwOnError: false 
       }
     );
 
@@ -65,10 +65,10 @@ const RubaiPage = async () => {
       const sampleRubai = initialData.records[0];
       structuredData = generatePoetryStructuredData({
         type: "rubai",
-        title: sampleRubai.fields.enUnwan || sampleRubai.fields.unwan || "English Rubai Collection",
-        content: sampleRubai.fields.enBody || sampleRubai.fields.body,
-        author: sampleRubai.fields.enShaer || sampleRubai.fields.shaer,
-        url: "https://jahan-numa.org/EN/Rubai",
+        title: sampleRubai.fields.unwan || "Rubai Collection",
+        content: sampleRubai.fields.body,
+        author: sampleRubai.fields.shaer,
+        url: "https://jahan-numa.org/Rubai",
         datePublished: sampleRubai.createdTime,
       });
     }
@@ -90,11 +90,10 @@ const RubaiPage = async () => {
             dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
           />
         )}
-
-        <RubaiComponent
+        
+        <RubaiComponent 
           initialData={serializedData}
           fallbackData={getBuildSafeFallback("rubai", "list")}
-          language="EN"
         />
       </div>
     </ErrorBoundary>

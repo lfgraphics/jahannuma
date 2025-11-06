@@ -23,7 +23,7 @@ class RubaiErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("EN Rubai Error Boundary caught an error:", error, errorInfo);
+    console.error("Rubai Error Boundary caught an error:", error, errorInfo);
   }
 
   retry = () => {
@@ -43,10 +43,10 @@ class RubaiErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
             <div className="mb-6">
               <div className="text-6xl mb-4">⚠️</div>
               <h1 className="text-2xl font-bold text-foreground mb-2">
-                Something went wrong
+                خرابی ہوئی ہے
               </h1>
               <p className="text-muted-foreground mb-4">
-                There was a problem loading the rubai. Please try again.
+                رباعی لوڈ کرنے میں مسئلہ ہوا ہے۔ براہ کرم دوبارہ کوشش کریں۔
               </p>
             </div>
             
@@ -55,14 +55,14 @@ class RubaiErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
                 onClick={this.retry}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md transition-colors"
               >
-                Try Again
+                دوبارہ کوشش کریں
               </button>
               
               <button
-                onClick={() => window.location.href = "/EN"}
+                onClick={() => window.location.href = "/"}
                 className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 px-4 py-2 rounded-md transition-colors"
               >
-                Go to Home Page
+                ہوم پیج پر واپس جائیں
               </button>
             </div>
             

@@ -1,13 +1,11 @@
 "use client";
 import { House, Search, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import SkeletonLoader from "../../Components/SkeletonLoader";
+import SkeletonLoader from "../Components/SkeletonLoader";
 import Card from "../Components/shaer/Profilecard";
 // aos for cards animation
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useAirtableList } from "@/hooks/useAirtableList";
+import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { transformRecordsForContentType } from "@/lib/language-field-utils";
 import { escapeAirtableFormulaValue } from "@/lib/utils";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -65,7 +63,6 @@ interface FormattedRecord {
 const Page: React.FC<{}> = () => {
   const [data, setData] = useState<FormattedRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const { language } = useLanguage();
 
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebouncedValue(searchText, 300);
@@ -74,6 +71,7 @@ const Page: React.FC<{}> = () => {
     []
   );
   const [noMoreData, setNoMoreData] = useState(false);
+  // notifications handled by global Sonner Toaster
 
   useEffect(() => {
     AOS.init({
@@ -98,10 +96,12 @@ const Page: React.FC<{}> = () => {
     hasMore,
     loadMore,
     isValidating,
-  } = useAirtableList(require("@/lib/airtable-client-utils").getClientBaseId("SHAER"), "shaer", {
+  } = useAirtableList("shaer", {
     pageSize: 30,
     filterByFormula: filterFormula,
   });
+
+
 
   useEffect(() => {
     // format records to expected local shape and sort by search relevance
@@ -148,19 +148,11 @@ const Page: React.FC<{}> = () => {
       },
     }));
 
-    // Transform records for current language
-    const transformedRecords = transformRecordsForContentType(
-      formatted,
-      'shaer',
-      language,
-      ['UR', 'EN', 'HI']
-    );
-
     // Sort by search relevance when there's a search query
-    let sortedData = transformedRecords;
+    let sortedData = formatted;
     if (debouncedSearchText.trim()) {
       const query = debouncedSearchText.trim().toLowerCase();
-      sortedData = transformedRecords.sort((a, b) => {
+      sortedData = formatted.sort((a, b) => {
         const aTakhallus = (a.fields.takhallus || "").toLowerCase();
         const aEnTakhallus = (
           Array.isArray(a.fields.enTakhallus) ? a.fields.enTakhallus.join(" ") : String(a.fields.enTakhallus || "")
@@ -230,12 +222,13 @@ const Page: React.FC<{}> = () => {
     setData(sortedData);
     setLoading(isLoading);
     setNoMoreData(!hasMore);
-  }, [records, isLoading, hasMore, debouncedSearchText, language]);
+  }, [records, isLoading, hasMore, debouncedSearchText]);
+
+  // Removed legacy localStorage-based highlighting; likes are handled in Profilecard via Clerk
 
   const searchQuery = () => {
     // with debounced hook, updating searchText triggers re-fetch; nothing else needed
   };
-
   //search keyup handeling
   const handleSearchKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value.toLowerCase();
@@ -253,7 +246,6 @@ const Page: React.FC<{}> = () => {
     }
     setSearchText(value);
   };
-
   //clear search box handeling
   const clearSearch = () => {
     let input = document.getElementById("searchBox") as HTMLInputElement;
@@ -266,7 +258,6 @@ const Page: React.FC<{}> = () => {
     // Clear the searched data and show all data again
     setSearchText(""); // Clear the searchText state
   };
-
   const resetSearch = () => {
     searchText && clearSearch();
     setData(initialDataItems);
@@ -279,7 +270,6 @@ const Page: React.FC<{}> = () => {
     }
     setInitialdDataItems([]);
   };
-
   const handleLoadMore = async () => {
     try {
       await loadMore();
@@ -293,15 +283,16 @@ const Page: React.FC<{}> = () => {
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && data.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          No results found
+          سرچ میں کچھ نہیں ملا
         </div>
       )}
       {initialDataItems.length > 0 && (
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
+          // disabled={!searchText}
         >
-          Reset Search
+          تلاش ریسیٹ کریں
         </button>
       )}
       {!loading && (
@@ -309,18 +300,21 @@ const Page: React.FC<{}> = () => {
           <div className="flex flex-col gap-4">
             <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
               <div className="filter-btn basis-[75%] text-center flex">
-                <div className="flex justify-center items-center basis-[100%] h-auto pt-1">
+                <div
+                  dir="rtl"
+                  className="flex justify-center items-center basis-[100%] h-auto pt-1"
+                >
                   <House
                     color="#984A02"
                     className="ml-3 cursor-pointer"
                     size={30}
                     onClick={() => {
-                      window.location.href = "/EN";
+                      window.location.href = "/";
                     }}
                   />
                   <input
                     type="text"
-                    placeholder="Search poets..."
+                    placeholder="لکھ کر تلاش کریں"
                     className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
                     id="searchBox"
                     onKeyUp={(e) => {
@@ -356,7 +350,7 @@ const Page: React.FC<{}> = () => {
             </div>
             <div
               id="section"
-              dir="ltr"
+              dir="rtl"
               className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[110px] lg:top-[71px] m-3`}
             >
               {data.map((item, index) => (
@@ -374,10 +368,10 @@ const Page: React.FC<{}> = () => {
                 className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
               >
                 {isValidating
-                  ? "Loading..."
+                  ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                    ? "No more poets available"
-                    : "Load more poets"}
+                    ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
+                    : "مزید شعراء کی تفصیات لوڈ کریں"}
               </button>
             </div>
           )}

@@ -2,12 +2,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import CopyButton from "./CopyButton";
 
+// metadata for donation page
 export const metadata = {
-  title: "Donate | Jahannuma - Support Urdu Literature",
-  description: "Support Jahannuma's mission to preserve and promote Urdu literature and poetry. Your donation helps us maintain this digital library and cultural heritage for future generations.",
+  title: "Donate",
+  description: "Donate to Jahan Numa Foundation and support our mission.",
 };
 
-export default function Donate() {
+
+const page = () => {
   const textToCopy = `Account Holder Name: JAHANUMA ADBI SOCIETY` + `\n` +
     `Account Number: 12036382809` + `\n` +
     `IFSC Code: CNRB0002917` + `\n` +
@@ -44,4 +46,6 @@ export default function Donate() {
       </div>
     </div>
   );
-}
+};
+
+export default page;
