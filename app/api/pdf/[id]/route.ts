@@ -51,3 +51,44 @@ export async function GET(
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export async function HEAD(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await context.params;
+    const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT!);
+
+    const auth = new GoogleAuth({
+      credentials: serviceAccount,
+      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+    });
+
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
+
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${id}?fields=size,mimeType`,
+      { headers: { Authorization: `Bearer ${token.token}` } }
+    );
+
+    if (!res.ok) {
+      return NextResponse.json({ error: res.statusText }, { status: res.status });
+    }
+
+    const meta = await res.json();
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        "Content-Length": meta.size,
+        "Content-Type": meta.mimeType,
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=86400, s-maxage=86400"
+      },
+    });
+  } catch (e) {
+    console.error("HEAD error:", e);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
