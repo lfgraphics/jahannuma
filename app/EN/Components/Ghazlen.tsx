@@ -1,9 +1,9 @@
-import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, GhazlenRecord } from "@/app/types";
 import { useGhazlenData } from "@/hooks/useGhazlenData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { formatGhazlenRecord } from "@/lib/airtable-utils";
 import { useMemo } from "react";
+import DataCard from "./DataCard";
 
 export default function Ghazlen() {
   const { records, isLoading } = useGhazlenData(
@@ -17,7 +17,7 @@ export default function Ghazlen() {
 
   return (
     <div
-      dir="rtl"
+      dir="ltr"
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
     >
       {!isLoading &&
@@ -39,8 +39,8 @@ export default function Ghazlen() {
                 : String(r.fields.ghazalHead || "").split("\n");
               return share.handleShare({
                 recordId: r.id,
-                title: r.fields.shaer,
-                textLines: headArr,
+                title: r.fields.enShaer || r.fields.shaer,
+                textLines: r.fields.enGhazal ? (Array.isArray(r.fields.enGhazal) ? r.fields.enGhazal : String(r.fields.enGhazal || "").split("\n")) : headArr,
                 slugId: r.fields.slugId,
                 currentShares: r.fields.shares ?? 0,
               });

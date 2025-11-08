@@ -64,6 +64,22 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link
+                href={`/${language === "UR" ? "privacypolicy" : `${language}/privacypolicy`}`}
+                className="hover:underline"
+              >
+                {language === "UR" ? "پرائیویسی پالیسی" : language === "HI" ? "गोपनीयता नीति" : "Privacy Policy"}
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${language === "UR" ? "terms&conditions" : `${language}/terms&conditions`}`}
+                className="hover:underline"
+              >
+                {language === "UR" ? "شرائط و ضوابط" : language === "HI" ? "नियम और शर्तें" : "Terms & Conditions"}
+              </Link>
+            </li>
           </ul>
 
           <h6 className="text-xl font-semibold mt-8 mb-4">Follow Us</h6>
@@ -86,7 +102,7 @@ const Footer: React.FC = () => {
             >
               <Twitter className="h-5 w-5" />
             </a>
-            <a href="#" className="https://youtube.com/@jahannuma.">
+            <a href="https://www.youtube.com/@jahannuma." className="hover:text-primary">
               <YoutubeIcon className="h-5 w-5" />
             </a>
           </div>
@@ -98,7 +114,7 @@ const Footer: React.FC = () => {
         <p>&copy; 2024 JahanNuman. All Rights Reserved.</p>
         <br />
         <a href="https://www.codvista.com" target="_blank">
-          <p className="text-sm text-purple-700">Under Development by Cod Vista</p>
+          <p className="text-sm">Under Development by <span className="text-purple-700"> Cod Vista</span></p>
         </a>
       </div>
     </footer>

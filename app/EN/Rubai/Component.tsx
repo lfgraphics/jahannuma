@@ -34,9 +34,9 @@ interface RubaiComponentProps {
   fallbackData?: any;
 }
 
-const RubaiComponent: React.FC<RubaiComponentProps> = ({ 
-  initialData, 
-  fallbackData 
+const RubaiComponent: React.FC<RubaiComponentProps> = ({
+  initialData,
+  fallbackData
 }) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState<
     string | null
@@ -96,16 +96,16 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
     return `OR( FIND('${escaped}', LOWER({shaer})), FIND('${escaped}', LOWER({body})), FIND('${escaped}', LOWER({unwan})) )`;
   }, [debouncedSearchText]);
 
-  const { 
-    records, 
-    isLoading, 
-    hasMore, 
+  const {
+    records,
+    isLoading,
+    hasMore,
     loadMore,
     isLoadingMore,
-    optimisticUpdate 
+    optimisticUpdate
   } = useRubaiData(
     { pageSize: 30, filterByFormula: filterFormula },
-    { 
+    {
       debounceMs: 300,
       initialData: hydratedInitialData
     }
@@ -231,8 +231,8 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       baseId: getClientBaseId("RUBAI"),
       table: "rubai",
       recordId: shaerData.id,
-      title: shaerData.fields.shaer,
-      textLines: [String(shaerData.fields.body ?? "")],
+      title: (shaerData.fields as any).enShaer || shaerData.fields.shaer,
+      textLines: [(shaerData.fields as any).enBody || String(shaerData.fields.body ?? "")],
       // Use first non-empty line of body as slug text
       fallbackSlugText:
         String(shaerData.fields?.body ?? "")
@@ -302,7 +302,6 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
           <div
-            dir="rtl"
             className="flex justify-center items-center basis-[100%] h-auto pt-1"
           >
             <House
@@ -315,8 +314,8 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
             />
             <input
               type="text"
-              placeholder="لکھ کر تلاش کریں"
-              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
+              placeholder="Search by typing"
+              className="text-foreground border border-foreground focus:outline-none focus:border-r-0 border-r-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -337,7 +336,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
                 className="hidden text-[#984A02] cursor-pointer"
               />
             </div>
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-r border-foreground">
               <Search
                 color="#984A02"
                 size={24}
@@ -352,7 +351,7 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
       {isLoading && <SkeletonLoader />}
       {initialDataItems.length > 0 && dataItems.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          سرچ میں کچھ نہیں ملا
+          Nothing found in search
         </div>
       )}
       {initialDataItems.length > 0 && (
@@ -361,14 +360,14 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
           onClick={resetSearch}
           // disabled={!searchText}
         >
-          تلاش ریسیٹ کریں
+          Reset Search
         </button>
       )}
       {!isLoading && (
         <section>
           <div
             id="section"
-            dir="rtl"
+            dir="ltr"
             className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky mt-6`}
           >
             {dataItems.map((data: Rubai, index: number) => (
@@ -384,10 +383,10 @@ const RubaiComponent: React.FC<RubaiComponentProps> = ({
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {isLoadingMore
-                    ? "لوڈ ہو رہا ہے۔۔۔"
+                    ? "Loading..."
                     : !hasMore
-                    ? "مزید رباعی نہیں ہیں"
-                    : "مزید رباعی لوڈ کریں"}
+                      ? "No more rubai available"
+                      : "Load more rubai"}
                 </button>
               </div>
             )}

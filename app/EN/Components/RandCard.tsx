@@ -25,6 +25,7 @@ interface Shaer {
     shaer: string;
     enShaer: string;
     ghazalHead: string[];
+    enGhazalHead: string[];
     ghazal: string[];
     enGhazal: string[];
     unwan: string[];
@@ -132,15 +133,15 @@ const RandCard: React.FC<{}> = () => {
 
     const idx = randomIndexRef.current ?? 0;
     const rec = records[idx];
-
+    console.table(rec?.fields)
     // normalize to match component expectations
-    const ghazal = (rec as any)?.fields?.enBody
-      ? String((rec as any).fields.enBody)
+    const ghazal = (rec as any)?.fields?.enGhazalHead
+      ? String((rec as any).fields.enGhazalHead)
         .replace(/\r\n?/g, "\n")
         .split("\n")
-      : (rec as any)?.fields?.enGhazal ?? [];
-    const ghazalHead = (rec as any)?.fields?.enSher
-      ? String((rec as any).fields.enSher)
+      : (rec as any)?.fields?.enGhazalHead ?? [];
+    const ghazalHead = (rec as any)?.fields?.enGhazalHead
+      ? String((rec as any).fields.enGhazalHead)
         .replace(/\r\n?/g, "\n")
         .split("\n")
       : (rec as any)?.fields?.enGhazalHead ?? [];
@@ -182,7 +183,7 @@ const RandCard: React.FC<{}> = () => {
         section: "Ashaar",
         id: shaerData.id,
         title: shaerData.fields.enShaer,
-        textLines: shaerData.fields.ghazalHead ?? [],
+        textLines: shaerData.fields.enGhazalHead ?? [],
         fallbackSlugText:
           (shaerData.fields.ghazalHead || [])[0] ||
           (shaerData.fields.unwan || [])[0] ||
@@ -215,13 +216,13 @@ const RandCard: React.FC<{}> = () => {
 
   return (
     <div className={`justify-center flex flex-col items-center m-4 ${harmattan.variable}`}>
-      <h4 className="text-2xl my-4">Chosen Sher</h4>
+      <h4 className="text-2xl my-4">Muntakhab Sher</h4>
       {loading && <Loader></Loader>} {/* Show loader while fetching */}
       {!loading && (
         <div className="relative">
           {/* <div className="bg-white absolute left-0 top-0 bg-opacity-10 w-screen h-[300px] z-auto"></div> */}
           <img
-            src="https://jahan-numa.org/carousel/jnd.jpeg"
+            src="/carousel/jnd.jpeg"
             className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.09] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none h-[220px]"
             draggable="false"
           />

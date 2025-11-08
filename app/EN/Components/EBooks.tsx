@@ -13,7 +13,7 @@ export default function EBooks() {
   return (
     <div
       id="section"
-      dir="rtl"
+      dir="ltr"
       className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
     >
       {!isLoading &&

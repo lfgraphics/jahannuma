@@ -1,7 +1,7 @@
 // ShaerCard.tsx
-import React from "react";
 import { Heart, MessageSquare, Share2 } from "lucide-react";
 import Link from "next/link";
+import React from "react";
 import type { Rubai } from "../types";
 
 interface RubaiCardProps {
@@ -28,26 +28,26 @@ const RubaiCard: React.FC<RubaiCardProps> = ({
   return (
     <>
       <div
-        dir="rtl"
+        dir="ltr"
         key={index}
         id={`card${index}`}
         className={`${index % 2 === 1 ? 'bg-gray-50 dark:bg-[#2d2d2f]' : 'bg-background'} p-4 rounded-sm  relative flex flex-col items-center justify-between`}
       >
         <div className="unwan text-center text-[#984A02] text-2xl mb-2">
-          <p>{RubaiData.fields.unwan}</p>
+          <p>{(RubaiData.fields as any).enUnwan || RubaiData.fields.unwan}</p>
         </div>
         <div className="unwan flex flex-col w-[90%] justify-center mb-2">
-          {RubaiData?.fields?.body.split("\n").map((lin: any, index: number) => (
+          {((RubaiData.fields as any).enBody || RubaiData?.fields?.body).split("\n").map((lin: any, index: number) => (
             <p key={index} className="justif text-foreground text-xl">
               {lin}
             </p>
           ))}
         </div>
         <Link
-          href={{ pathname: `/Shaer/${encodeURIComponent((RubaiData.fields?.shaer || '').replace(/\s+/g, '-'))}`, query: { tab: "تعارف" } }}
+          href={{ pathname: `/EN/Shaer/${encodeURIComponent(((RubaiData.fields as any).enShaer || RubaiData.fields?.shaer || '').replace(/\s+/g, '-'))}`, query: { tab: "intro" } }}
           className="text-center"
         >
-          <h2 className="text-foreground text-lg mb-4">{RubaiData.fields?.shaer}</h2>
+          <h2 className="text-foreground text-lg mb-4">{(RubaiData.fields as any).enShaer || RubaiData.fields?.shaer}</h2>
         </Link>
         <div className="flex text-center icons">
           <button

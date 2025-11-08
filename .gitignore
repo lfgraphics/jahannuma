@@ -17,6 +17,7 @@
 /.next/
 /.kiro/
 /out/
+service-account.json
 
 # production
 /build

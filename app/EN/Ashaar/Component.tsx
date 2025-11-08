@@ -110,9 +110,9 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
       ...record,
       fields: {
         ...record.fields,
-        ghazal: String(record.fields?.body || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
-        ghazalHead: String(record.fields?.sher || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
-        unwan: String(record.fields?.unwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazal: String(record.fields?.enSher || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazalHead: String(record.fields?.enSher || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        unwan: String(record.fields?.enUnwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
       },
     }));
 
@@ -204,8 +204,8 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
       {
         section: "Ashaar",
         id: shaerData.id,
-        title: shaerData.fields.shaer,
-        textLines: shaerData.fields.ghazalHead ?? [],
+        title: (shaerData.fields as any).enShaer || shaerData.fields.shaer,
+        textLines: (shaerData.fields as any).enGhazal || (shaerData.fields.ghazalHead ?? []),
         fallbackSlugText: (shaerData.fields.ghazalHead || [])[0] || (shaerData.fields.unwan || [])[0] || "",
         language,
       },
@@ -296,16 +296,14 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
     <div>
       {/* Sonner Toaster is global; no per-page toast container needed */}
       {/* Removed legacy name dialog; comments rely on authenticated user */}
-      {/* top-[118px] */}
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
-        <div className="filter-btn basis-[75%] justify-center text-center flex">
+        <div className="filter-btn basis-[75%] text-center flex">
           <div
-            dir="rtl"
-            className="flex basis-[100%] justify-center items-center h-auto pt-1"
+            className="flex justify-center items-center basis-[100%] h-auto pt-1"
           >
             <House
               color="#984A02"
-              className="ml-3"
+              className="ml-3 cursor-pointer"
               size={30}
               onClick={() => {
                 window.location.href = "/";
@@ -313,8 +311,8 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
             />
             <input
               type="text"
-              placeholder="لکھ کر تلاش کریں"
-              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
+              placeholder="Search by typing"
+              className="text-foreground border border-foreground focus:outline-none focus:border-r-0 border-r-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -335,7 +333,7 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
                 className="hidden text-[#984A02] cursor-pointer"
               />
             </div>
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-r border-foreground">
               <Search
                 color="#984A02"
                 size={24}
@@ -350,7 +348,7 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
       {loading && <SkeletonLoader />}
       {debouncedSearchText && dataItems.length === 0 && !loading && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          سرچ میں کچھ نہیں ملا
+          Nothing found in search
         </div>
       )}
       {debouncedSearchText && (
@@ -358,14 +356,14 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
         >
-          تلاش ریسیٹ کریں
+          Reset Search
         </button>
       )}
       {!loading && (
         <section>
           <div
             id="section"
-            dir="rtl"
+            dir="ltr"
             className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky mt-6`}
           >
             {dataItems.map((shaerData, index) => (
@@ -399,10 +397,10 @@ const Ashaar: React.FC<AshaarProps> = ({ initialData }) => {
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {isLoadingMore
-                    ? "لوڈ ہو رہا ہے۔۔۔"
+                    ? "Loading..."
                     : noMoreData
-                      ? "مزید اشعار نہیں ہیں"
-                      : "مزید اشعار لوڈ کریں"}
+                      ? "No more ashaar available"
+                      : "Load more ashaar"}
                 </button>
               </div>
             )}

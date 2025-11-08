@@ -34,14 +34,26 @@ interface AirtableAttachment {
 
 interface BookRecordFields {
   bookName: string;
+  enBookName?: string;
+  hiBookName?: string;
   publishingDate: string;
   writer: string;
+  enWriter?: string;
+  hiWriter?: string;
   desc: string;
+  enDesc?: string;
+  hiDesc?: string;
   maloomat?: string;
+  enMaloomat?: string;
+  hiMaloomat?: string;
+  url?: string;
   download?: boolean;
   book: AirtableAttachment[];
   likes?: number;
+  comments?: number;
+  shares?: number;
   id?: string;
+  slugId?: string;
 }
 
 export default function Page() {
@@ -49,8 +61,7 @@ export default function Page() {
   const [bookKey, setBookKey] = useState<number | undefined>(undefined);
   const params = useParams<{ id: string }>();
   const id = params?.id;
-  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } =
-    useAuthGuard();
+  const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
 
   // use unified single-record hook when we have a stable recordId
   const {
@@ -169,16 +180,33 @@ export default function Page() {
 
   useEffect(() => {
     const fields = record?.fields;
-    if (fields?.book && fields.book.length > 0) {
-      const firstBook = fields.book[0];
-      const url = firstBook.url;
-      setBookUrl(url);
-    } else if (fields) {
-      console.error(
-        "No book data found in the record. please contact the organization"
-      );
+    if (!fields) return;
+
+    console.table({ fields })
+
+    let url: string | undefined;
+
+    // If there's a Google Drive URL in `url` field
+    if (fields.url?.includes("drive.google.com")) {
+      const idMatch = fields.url.match(/[-\w]{25,}/);
+      const fileId = idMatch?.[0];
+      if (fileId) {
+        url = `/api/pdf/${fileId}`;
+      }
     }
-  }, [record]);
+    // Otherwise use the attachment (Airtable) URL if exists
+    else if (fields.book && fields.book.length > 0) {
+      url = fields.book[0].url;
+    }
+
+    if (url) {
+      setBookUrl(url);
+    } else {
+      console.error("No valid book URL found for this record.");
+    }
+
+    console.log({ url })
+  }, [record, bookKey]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -305,7 +333,15 @@ export default function Page() {
             ریفرش
           </Button>
           <div id="pdf" className="p-4" key={bookKey}>
-            {bookUrl && <PdfViewer url={bookUrl} />}
+            {bookUrl &&
+              // <iframe
+              //   src={bookUrl}
+              //   width="100%"
+              //   height="100%"
+              //   style="border: none;"
+              // />
+              <PdfViewer url={bookUrl} />
+            }
           </div>
         </div>
       )}

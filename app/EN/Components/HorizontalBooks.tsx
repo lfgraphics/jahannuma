@@ -60,14 +60,14 @@ const HorizontalBooks = () => {
   const loading = isLoading;
   return (
     <div dir="ltr">
-      <h2 className="pt-6 text-center text-4xl">کتابیں</h2>
+      <h2 className="pt-6 text-center text-4xl">Books</h2>
       {loading && <Loader></Loader>}
       {!loading && (
         <div>
           <div
             id="section"
-            dir="rtl"
-            className="flex flex-row-reverse overflow-auto gap-4 pt-7 pb-4  px-6 items-center"
+            dir="ltr"
+            className="flex flex-row overflow-auto gap-4 pt-7 pb-4  px-6 items-center"
           >
             {data.map((item, index) => (
               <div className="relative" key={index}>
@@ -80,7 +80,7 @@ const HorizontalBooks = () => {
                 />
               </div>
             ))}
-            <Link className=" text-white text-4xl font-bold" href={"/E-Books"}>
+            <Link className=" text-white text-4xl font-bold" href={"/EN/E-Books"}>
               <ChevronRightCircle color="#984A02" size={36} />
             </Link>
           </div>

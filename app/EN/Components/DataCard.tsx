@@ -17,6 +17,10 @@ export type MinimalShaer = {
     shaer?: string;
     enShaer?: string;
     ghazalHead?: string | string[];
+    enGhazalHead?: string | string[];
+    enGhazal?: string | string[];
+    enSher?: string | string[];
+    unwan?: string | string[];
     enUnwan?: string | string[];
     likes?: number;
     comments?: number;
@@ -98,7 +102,8 @@ const DataCard = <T extends MinimalShaer>({
   const sd = shaerData as MinimalShaer;
 
   const ghazalHeadLines: string[] = useMemo(() => {
-    const head = sd?.fields?.ghazalHead;
+    // Prefer English fields, fallback to original
+    const head = sd?.fields?.enGhazalHead;
     if (!head) return [];
     if (Array.isArray(head)) return head.filter(Boolean);
     return head.split("\n").filter(Boolean);
@@ -106,7 +111,8 @@ const DataCard = <T extends MinimalShaer>({
 
   // Normalize unwan entries as array
   const unwanList: string[] = useMemo(() => {
-    const u = sd?.fields?.enUnwan;
+    // Prefer English fields, fallback to original
+    const u = (sd?.fields as any)?.enUnwan || (sd?.fields as any)?.unwan;
     if (!u) return [];
     if (Array.isArray(u)) return u.filter(Boolean);
     return u.split("\n").filter(Boolean);
@@ -185,7 +191,7 @@ const DataCard = <T extends MinimalShaer>({
               </p>
               <Link
                 href={{
-                  pathname: `/EN/Shaer/${(sd?.fields?.enShaer || "").replace(
+                  pathname: `/EN/Shaer/${((sd?.fields as any)?.enShaer || (sd?.fields as any)?.shaer || "").replace(
                     " ",
                     "-"
                   )}`,
@@ -195,7 +201,7 @@ const DataCard = <T extends MinimalShaer>({
                 }}
               >
                 <h2 className="text-foreground text-xl">
-                  {shaerData?.fields?.enShaer}
+                  {(shaerData?.fields as any)?.enShaer || (shaerData?.fields as any)?.shaer}
                 </h2>
               </Link>
             </div>
@@ -222,7 +228,7 @@ const DataCard = <T extends MinimalShaer>({
                       )}/${encodeURIComponent(shaerData?.id)}`,
                     }}
                   >
-                    Parhen...
+                    Read...
                   </Link>
                 </button>
                 <button
@@ -272,12 +278,12 @@ const DataCard = <T extends MinimalShaer>({
         >
           <Link
             href={{
-              pathname: `/EN/Shaer/${(sd?.fields?.enShaer || "").replace(" ", "-")}`,
+              pathname: `/EN/Shaer/${((sd?.fields as any)?.enShaer || (sd?.fields as any)?.shaer || "").replace(" ", "-")}`,
               query: { tab: "intro" },
             }}
           >
             <h2 className="text-foreground text-lg mb-4">
-              {shaerData?.fields?.enShaer}
+              {(shaerData?.fields as any)?.enShaer || (shaerData?.fields as any)?.shaer}
             </h2>
           </Link>
           <div className="unwan flex flex-col w-full items-center mb-2">
@@ -336,7 +342,7 @@ const DataCard = <T extends MinimalShaer>({
                 size={16}
               />
               <span className="flex items-center">
-                Mauzuaat:
+                Topics:
               </span>
               {page !== "rand" &&
                 (download ? (
@@ -387,7 +393,7 @@ const DataCard = <T extends MinimalShaer>({
                   </Link>
                 ))}
               <span className="cursor-auto">
-                {unwanList.length > 1 ? ` ، ${unwanList.length - 1} اور ` : ""}
+                {unwanList.length > 1 ? ` and ${unwanList.length - 1} more` : ""}
               </span>
             </button>
           </div>
@@ -436,7 +442,7 @@ const DataCard = <T extends MinimalShaer>({
                     )}/${encodeURIComponent(shaerData?.id)}`,
                   }}
                 >
-                  Ghazal Parhen
+                  Read Ghazal
                 </Link>
               ) : (
                 <Link
@@ -446,7 +452,7 @@ const DataCard = <T extends MinimalShaer>({
                     )}/${encodeURIComponent(shaerData?.id)}`,
                   }}
                 >
-                  Ghazal Parhen
+                    Read Ghazal
                 </Link>
               )}
             </button>

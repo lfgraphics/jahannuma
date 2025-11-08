@@ -76,20 +76,20 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
     return `OR( FIND('${escapedQ}', LOWER({shaer})), FIND('${escapedQ}', LOWER({displayLine})), FIND('${escapedQ}', LOWER({nazm})), FIND('${escapedQ}', LOWER({unwan})) )`;
   }, [debouncedSearchText]);
 
-  const { 
-    records, 
-    isLoading, 
-    hasMore, 
+  const {
+    records,
+    isLoading,
+    hasMore,
     loadMore,
     isLoadingMore,
-    optimisticUpdate 
+    optimisticUpdate
   } = useNazmenData(
-    { 
-      pageSize: 30, 
+    {
+      pageSize: 30,
       filterByFormula: filterFormula,
-      search: debouncedSearchText 
+      search: debouncedSearchText
     },
-    { 
+    {
       debounceMs: 300,
       initialData: initialData
     }
@@ -101,18 +101,21 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
       ...record,
       fields: {
         ...record.fields,
-        ghazal: String(record.fields?.nazm || "")
-          .replace(/\r\n?/g, "\n")
-          .split("\n")
-          .filter(Boolean),
-        ghazalHead: String(record.fields?.ghazalLines?.[0] || "")
-          .replace(/\r\n?/g, "\n")
-          .split("\n")
-          .filter(Boolean),
-        unwan: String(record.fields?.unwan || "")
-          .replace(/\r\n?/g, "\n")
-          .split("\n")
-          .filter(Boolean),
+        // Prefer English fields, fallback to original
+        ghazal: record.fields?.enNazm
+          ? String(record.fields.enNazm).replace(/\r\n?/g, "\n").split("\n").filter(Boolean)
+          : String(record.fields?.nazm || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        ghazalHead: record.fields?.enNazmHead
+          ? String(record.fields.enNazmHead).replace(/\r\n?/g, "\n").split("\n").filter(Boolean)
+          : String(record.fields?.ghazalLines?.[0] || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        unwan: record.fields?.enUnwan
+          ? String(record.fields.enUnwan).replace(/\r\n?/g, "\n").split("\n").filter(Boolean)
+          : String(record.fields?.unwan || "").replace(/\r\n?/g, "\n").split("\n").filter(Boolean),
+        // Keep both English and original shaer names
+        shaer: record.fields?.enShaer || record.fields?.shaer,
+        enShaer: record.fields?.enShaer,
+        enNazm: record.fields?.enNazm,
+        enUnwan: record.fields?.enUnwan,
       },
     }));
 
@@ -211,8 +214,8 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
       {
         section: "Nazmen",
         id: shaerData.id,
-        title: shaerData.fields.shaer,
-        textLines: shaerData.fields.ghazalHead || [],
+        title: (shaerData.fields as any).enShaer || shaerData.fields.shaer,
+        textLines: (shaerData.fields as any).enNazm ? String((shaerData.fields as any).enNazm).split("\n").filter(Boolean) : shaerData.fields.ghazalHead || [],
         fallbackSlugText:
           (shaerData.fields.ghazalHead?.[0]) ||
           (shaerData.fields.unwan?.[0]) ||
@@ -266,12 +269,12 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
       setRecordId(dataId); // Set the record ID first
       await submitComment(newComment);
       setNewComment("");
-      
+
       // Optimistic update for comments
       const currentRecord = formattedRecords.find((i) => i.id === dataId);
       const nextCommentCount = (currentRecord?.fields.comments || 0) + 1;
       optimisticUpdate.updateRecord(dataId, { comments: nextCommentCount });
-      
+
       try {
         await updateNazmen(dataId, { comments: nextCommentCount });
       } catch (error) {
@@ -312,7 +315,6 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
       <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
         <div className="filter-btn basis-[75%] text-center flex">
           <div
-            dir="rtl"
             className="flex justify-center items-center basis-[100%] h-auto pt-1"
           >
             <House
@@ -325,8 +327,8 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
             />
             <input
               type="text"
-              placeholder="لکھ کر تلاش کریں"
-              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
+              placeholder="Search by typing"
+              className="text-foreground border border-foreground focus:outline-none focus:border-r-0 border-r-0 p-1 w-64 leading-7 bg-transparent"
               id="searchBox"
               onKeyUp={(e) => {
                 handleSearchKeyUp(e);
@@ -347,7 +349,7 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
                 className="hidden text-[#984A02] cursor-pointer"
               />
             </div>
-            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-r border-foreground">
               <Search
                 color="#984A02"
                 size={24}
@@ -362,7 +364,7 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
       {isLoading && <SkeletonLoader />}
       {debouncedSearchText && formattedRecords.length === 0 && !isLoading && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          سرچ میں کچھ نہیں ملا
+          Nothing found in search
         </div>
       )}
       {debouncedSearchText && (
@@ -370,14 +372,14 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
         >
-          تلاش ریسیٹ کریں
+          Reset Search
         </button>
       )}
       {!isLoading && (
         <section>
           <div
             id="section"
-            dir="rtl"
+            dir="ltr"
             className={`
               grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:pt-4`}
           >
@@ -414,10 +416,10 @@ const Nazmen: React.FC<NazmenProps> = ({ initialData }) => {
                   className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
                 >
                   {isLoadingMore
-                    ? "لوڈ ہو رہا ہے۔۔۔"
+                    ? "Loading..."
                     : !hasMore
-                    ? "مزید نظمیں نہیں ہیں"
-                    : "اور نظمیں لوڈ کریں"}
+                      ? "No more nazms available"
+                      : "Load more nazms"}
                 </button>
               </div>
             )}

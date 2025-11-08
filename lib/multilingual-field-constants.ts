@@ -27,7 +27,7 @@ export const BASE_FIELDS = {
     'takhallus', 'name', 'location', 'tafseel', 'photo', 'likes', 'id'
   ],
   ebooks: [
-    'bookName', 'writer', 'publishingDate', 'maloomat', 'book', 'download', 'likes', 'id'
+    'bookName', 'writer', 'publishingDate', 'maloomat', 'book', 'download', 'url', 'likes', 'id'
   ]
 } as const;
 

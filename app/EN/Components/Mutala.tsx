@@ -90,9 +90,10 @@ const Mutala = () => {
             dir="ltr"
             className="flex w-full dark:text-foreground text-background bg-[#984A02] items-center justify-between px-7 pb-3 pt-4"
           >
+            مأخز
             {(mutalaData.fields.enHawalaLink || mutalaData.fields.hawalaLink) ? (
               <p>
-                Reference:{" "}
+                Makhaz:
                 <Link
                   href={{ pathname: mutalaData?.fields?.enHawalaLink || mutalaData?.fields?.hawalaLink }}
                   className="text-blue-200 underline ml-2"

@@ -106,12 +106,12 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, showShareButt
         };
       case 'HI':
         return {
-          bookFallback: "पुस्तक",
+          bookFallback: "किताब",
           shareText: "जहान नुमा वेबपेज पर मिला\nयहाँ देखें",
           likeTitle: "पसंद करें",
           likedTitle: "पसंदीदा",
-          publishedText: "प्रकाशित:",
-          altText: "पुस्तक का कवर"
+          publishedText: "इशाअत :",
+          altText: "किताब का कवर"
         };
       default:
         return {
@@ -161,7 +161,7 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, showShareButt
   return (
     <div className="rounded overflow-hidden shadow-lg mx-auto border border-border bg-background text-foreground w-[180px]">
       <div className="relative bg-cover bg-center w-[180px] h-[260px]">
-        <Link href={{ pathname: `${routePrefix}/E-Books/${bookSlug}/${recordId}` }} className="block w-full h-full">
+        <Link href={{ pathname: `/EN/${routePrefix}/E-Books/${bookSlug}/${recordId}` }} className="block w-full h-full">
           {image?.url && (
             <img
               className="h-full w-full object-cover"
@@ -189,7 +189,7 @@ const Card: React.FC<CardProps> = ({ data, showLikeButton = false, showShareButt
         </div>
       </div>
       <div className="px-3 py-2">
-        <Link href={{ pathname: `${routePrefix}/E-Books/${bookSlug}/${recordId}` }}>
+        <Link href={{ pathname: `/EN/${routePrefix}/E-Books/${bookSlug}/${recordId}` }}>
           <div className="font-medium text-primary dark:text-secondary truncate">{bookName} <span className="text-muted-foreground">: {writer}</span></div>
         </Link>
         <div className="text-xs text-muted-foreground line-clamp-2">{Array.isArray(desc) ? desc.join(" ") : desc}</div>

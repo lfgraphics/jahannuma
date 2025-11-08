@@ -59,6 +59,7 @@ async function fetchShaerData(nameParam: string): Promise<ShaerRecord | null> {
       fields: [
         "photo",
         "takhallus",
+        "enTakhallus",
         "ghazlen",
         "eBooks",
         "nazmen",
@@ -67,13 +68,14 @@ async function fetchShaerData(nameParam: string): Promise<ShaerRecord | null> {
         "name",
         "dob",
         "location",
+        "enLocation",
         "tafseel",
+        "enTafseel",
         "searchKeys",
         "enTakhallus",
         "hiTakhallus",
         "enName",
         "hiName",
-        "enLocation",
         "hiLocation",
         "description",
         "enDescription",
@@ -130,8 +132,8 @@ export async function generateMetadata({
     const shaerData = await fetchShaerData(nameParam);
 
     // Use actual poet data if available, otherwise fallback to decoded name
-    const poetName = shaerData?.fields?.takhallus ||
-      shaerData?.fields?.name ||
+    const poetName = shaerData?.fields?.enTakhallus ||
+      shaerData?.fields?.enName ||
       decodeURIComponent(nameParam).replace(/-/g, " ").trim() ||
       "نامعلوم شاعر";
 

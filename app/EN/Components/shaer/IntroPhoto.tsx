@@ -9,9 +9,11 @@ interface IntroProps {
   data: {
     name?: string;
     takhallus: string;
+    enTakhallus: string;
     dob?: string;
     description?: string;
     location?: string;
+    enLocation?: string;
     tafseel?: string;
     likes?: number;
     id?: string;
@@ -124,7 +126,6 @@ const Intro: React.FC<IntroProps> = ({
       {!data && <Loader />}
       {data && (
         <div
-          dir="rtl"
           className="container mx-auto flex flex-col justify-center "
         >
           <div
@@ -132,7 +133,6 @@ const Intro: React.FC<IntroProps> = ({
             className="bg-cover bg-center h-32 lg:h-52 w-full"
           >
             <div
-              dir="rtl"
               // style={{ filter: "backGroundBlur(10px)" }}
               className="h-full w-full bg-black/70 backdrop-blur-[1px] flex items-center justify-center gap-2"
             >
@@ -160,7 +160,7 @@ const Intro: React.FC<IntroProps> = ({
                 )}
               </div>
               <div className="mini_intro mr-5 text-white ">
-                <p className="text-4xl">{data?.takhallus}</p>
+                <p className="text-4xl">{data?.enTakhallus || data?.takhallus}</p>
                 <p className="mt-3 flex gap-2 items-baseline">
                   <span className="icon ml-2">
                     <CalendarDays color="white" size={16} />
@@ -171,7 +171,7 @@ const Intro: React.FC<IntroProps> = ({
                   <span className="icon ml-2">
                     <MapPin color="white" size={16} />
                   </span>
-                  {data?.location}
+                  {data.enLocation || data?.location}
                 </p>
               </div>
               <span className="mx-3 text-white font-bold">|</span>{" "}

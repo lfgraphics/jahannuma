@@ -73,9 +73,9 @@ export default function Page({ params }: { params: MozuPageParams }) {
             if (navigator.share) {
                 const target = (shaerData.fields as any).slugId ?? shaerData.id;
                 await navigator.share({
-                    title: shaerData.fields.shaer,
-                    text: (shaerData.fields.ghazalHead || []).join("\n") + `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `,
-                    url: `${window.location.origin}/Ashaar/${encodeURIComponent(target)}`,
+                    title: shaerData.fields.enShaer,
+                    text: (shaerData.fields.enGhazalHead || []).join("\n") + `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `,
+                    url: `${window.location.origin}/EN/Ashaar/${encodeURIComponent(target)}`,
                 });
                 const inc = 1;
                 const targetId = shaerData.id;
@@ -152,7 +152,7 @@ export default function Page({ params }: { params: MozuPageParams }) {
             {isLoading && <SkeletonLoader />}
             {!isLoading && (
                 <section>
-                    <div id="section" dir="rtl" className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}>
+                    <div id="section" className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3`}>
                         {dataItems.map((shaerData: AirtableRecord<AshaarRecord>, index: number) => (
                             <div data-aos="fade-up" key={shaerData.id}>
                                 <DataCard<AirtableRecord<AshaarRecord>>
@@ -179,7 +179,7 @@ export default function Page({ params }: { params: MozuPageParams }) {
 
             {selectedCard && (
                 <div onClick={handleCloseModal} id="modal" className="bg-black bg-opacity-50 backdrop-blur-[2px] h-[100vh] w-[100vw] fixed top-0 z-20 overflow-hidden pb-5">
-                    <div dir="rtl" className="opacity-100 fixed bottom-0 left-0 right-0   transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0">
+                    <div className="opacity-100 fixed bottom-0 left-0 right-0   transition-all ease-in-out min-h-[60svh] max-h-[70svh] overflow-y-scroll z-50 rounded-lg rounded-b-none w-[98%] mx-auto border-2 border-b-0">
                         <div className="p-4 pr-0 relative">
                             <button id="modlBtn" className="sticky top-4 right-7 z-50" onClick={handleCloseModal}>
                                 <XCircle className="text-gray-700 h-8 w-8 hover:text-[#984A02] transition-all duration-500 ease-in-out" />

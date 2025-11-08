@@ -31,13 +31,18 @@ const Card = ({
   onLikeChange,
 }: CardProps) => {
   const { fields, id: recordId } = data;
-  const takhallus = fields?.enTakhallus as string;
+  const takhallus = fields?.enTakhallus;
   const photo = fields?.photo as Photo[] | undefined;
 
   const img = photo?.[0]?.thumbnails?.full as
     | { url?: string; height?: number; width?: number }
     | undefined;
-  const name = (takhallus || "")?.replace(" ", "-");
+
+  // Safely handle takhallus which might be string, array, or undefined
+  const takhallus_str = Array.isArray(takhallus)
+    ? takhallus.join(" ")
+    : String(takhallus || "");
+  const name = takhallus_str.replace(/\s+/g, "-");
 
   const likeEnabled = !!(showLikeButton && (fields?.id || recordId));
   const { requireAuth, showLoginDialog, setShowLoginDialog } = useAuthGuard();
@@ -58,7 +63,7 @@ const Card = ({
     <div className="w-[180px] h-52 rounded overflow-hidden shadow-[#00000080] shadow-md mx-auto my-1 bg-background text-foreground">
       <div className="relative h-full">
         <Link
-          href={{ pathname: `/EN/Shaer/${(name || "")?.replace(/\s+/g, "-")}` }}
+          href={{ pathname: `/EN/Shaer/${name}` }}
           className="block h-full"
         >
           {img?.url ? (
@@ -108,7 +113,7 @@ const Card = ({
           style={{ WebkitBackdropFilter: "blur(4px)" }}
         >
           <span className="text-sm font-medium leading-tight break-words max-w-full">
-            {takhallus}
+            {takhallus_str}
           </span>
         </div>
       </div>

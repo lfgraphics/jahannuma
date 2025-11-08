@@ -1,10 +1,10 @@
 "use client";
-import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, AshaarRecord } from "@/app/types";
 import { useAirtableList } from "@/hooks/airtable/useAirtableList";
 import { useShareAction } from "@/hooks/useShareAction";
 import { formatAshaarRecord } from "@/lib/airtable-utils";
 import { useMemo } from "react";
+import DataCard from "./DataCard";
 
 const { getClientBaseId } = require("@/lib/airtable-client-utils");
 const BASE_ID = getClientBaseId("ASHAAR");
@@ -23,7 +23,7 @@ export default function Ashaar() {
 
   return (
     <div
-      dir="rtl"
+      dir="ltr"
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
     >
       {!isLoading &&
@@ -45,9 +45,9 @@ export default function Ashaar() {
                 baseId: BASE_ID,
                 table: TABLE,
                 recordId: (rec as AirtableRecord<AshaarRecord>).id,
-                title: (rec as AirtableRecord<AshaarRecord>).fields.shaer,
+                title: (rec as AirtableRecord<AshaarRecord>).fields.enShaer || (rec as AirtableRecord<AshaarRecord>).fields.shaer,
                 textLines:
-                  (rec as AirtableRecord<AshaarRecord>).fields.ghazalHead || [],
+                  (rec as AirtableRecord<AshaarRecord>).fields.enGhazal || (rec as AirtableRecord<AshaarRecord>).fields.ghazalHead || [],
                 slugId: (rec as AirtableRecord<AshaarRecord>).fields.slugId,
                 currentShares:
                   (rec as AirtableRecord<AshaarRecord>).fields.shares ?? 0,

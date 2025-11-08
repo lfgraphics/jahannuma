@@ -60,10 +60,18 @@ export function formatAshaarRecord(
     ghazalHead: f.sher
       ? String(f.sher).split("\n")
       : [],
+    enGhazalHead: f.enSher
+      ? String(f.enSher).split("\n")
+      : [],
     ghazal: Array.isArray(f.ghazal)
       ? f.ghazal
       : f.body
         ? String(f.body).split("\n")
+        : [],
+    enGhazal: Array.isArray(f.ghazal)
+      ? f.enGhazal
+      : f.enBody
+        ? String(f.enBody).split("\n")
         : [],
     anaween: Array.isArray(f.anaween)
       ? f.anaween
@@ -307,7 +315,7 @@ export function getMakhazText(language: "UR" | "EN" | "HI" = "UR"): string {
       return "माख़ज़";
     case "UR":
     default:
-      return "مآخذ";
+      return "مأخذ";
   }
 }
 

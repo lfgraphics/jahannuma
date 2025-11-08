@@ -107,7 +107,9 @@ export interface AshaarRecord extends WithCounts {
   hiRef?: string;
   // Derived helpers
   ghazalHead?: string[];
+  enGhazalHead?: string[];
   ghazal?: string[];
+  enGhazal?: string[];
   anaween?: string[];
   // English fields
   enSher?: string;

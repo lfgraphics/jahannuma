@@ -119,11 +119,11 @@ export default function Shura() {
     <>
       {isLoading && <SkeletonLoader />}
       {initialDataItems.length > 0 && data.length === 0 && (
-        <div className="block mx-auto text-center my-3 text-2xl">سرچ میں کچھ نہیں ملا</div>
+        <div className="block mx-auto text-center my-3 text-2xl">Nothing found in search</div>
       )}
       {initialDataItems.length > 0 && (
         <button className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md" onClick={clearSearch}>
-          تلاش ریسیٹ کریں
+          Reset Search
         </button>
       )}
       {!isLoading && (
@@ -135,7 +135,7 @@ export default function Shura() {
                   <House color="#984A02" className="ml-3 cursor-pointer" size={30} onClick={() => { if (typeof window !== 'undefined') window.location.href = "/"; }} />
                   <input
                     type="text"
-                    placeholder="لکھ کر تلاش کریں"
+                    placeholder="Search by typing"
                     className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
                     id="shuraSearchBox"
                     onKeyUp={(e) => handleSearchKeyUp(e)}
@@ -149,7 +149,7 @@ export default function Shura() {
                 </div>
               </div>
             </div>
-            <div id="section" dir="rtl" className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[128px] m-3`}>
+            <div id="section" dir="ltr" className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[128px] m-3`}>
               {data.map((item, index) => (
                 <div className="relative" key={index} data-aos="fade-up">
                   <Card data={item} />
@@ -160,7 +160,7 @@ export default function Shura() {
           {data.length > 0 && (
             <div className="flex justify-center text-lg m-5">
               <button onClick={handleLoadMore} disabled={noMoreData || moreLoading} className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer">
-                {moreLoading ? "لوڈ ہو رہا ہے۔۔۔" : noMoreData ? "مزید شعراء کی تفصیلات موجود نہیں ہیں" : "مزید شعراء کی تفصیات لوڈ کریں"}
+                {moreLoading ? "Loading..." : noMoreData ? "No more poets available" : "Load more poets"}
               </button>
             </div>
           )}

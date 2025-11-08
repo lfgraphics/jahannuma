@@ -80,7 +80,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         actionType="comment"
       />
       <DrawerContent
-        dir="rtl"
+        dir="ltr"
         className={`z-50 sm:max-w-[800px] mx-auto ${isInputFocused ? "max-h-[92dvh]" : "max-h-[65dvh]"
           }`}
       >
@@ -95,10 +95,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         {/* </div> */}
         <DrawerHeader className="pt-6 pb-2">
           <DrawerTitle className="text-foreground text-center">
-            تبصرے
+            Comments
           </DrawerTitle>
           <DrawerDescription className="text-muted-foreground text-center w-fit mx-auto">
-            اپنی رائے کا اظہار کریں
+            Share your thoughts
           </DrawerDescription>
         </DrawerHeader>
         {/* Use dvh so height reacts to mobile browser UI, and expand while typing so the composer stays visible */}
@@ -117,8 +117,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             <div className="pr-1">
               {comments?.length === 0 && !commentLoading && (
                 <div className="leading-normal text-muted-foreground">
-                  اب تک کوئی تبصرہ نہیں ہے
-                  <br /> اس پر تبصرہ کر کے آپ تبصرہ کرنے والے پہلے شخص بنیں
+                  No comments yet
+                  <br /> Be the first to comment on this
                 </div>
               )}
               {comments
@@ -148,7 +148,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           <DrawerFooter className="border-t border-border bg-background p-3">
             <div className="flex w-full gap-3 items-end">
               <textarea
-                placeholder="آپ کا تبصرہ۔۔۔"
+                placeholder="Your comment..."
                 value={newComment}
                 onKeyUp={(e) => {
                   if (
@@ -168,7 +168,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 onFocus={() => setIsInputFocused(true)}
                 onBlur={() => setIsInputFocused(false)}
                 onChange={(e) => onNewCommentChange(e.target.value)}
-                className="w-full h-[3rem] rounded-md border border-border bg-background text-foreground placeholder:text-muted-foreground p-2 focus:outline-none text-right"
+                className="w-full h-[3rem] rounded-md border border-border bg-background text-foreground placeholder:text-muted-foreground p-2 focus:outline-none text-left"
                 style={{
                   resize: "none",
                   maxHeight: "6em",
@@ -180,7 +180,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 onClick={handleCommentSubmit}
                 className="bg-[#984A02] h-11 text-white px-4 py-2 rounded disabled:bg-gray-500 disabled:cursor-not-allowed w-40"
               >
-                تبصرہ کریں
+                Comment
               </button>
             </div>
           </DrawerFooter>

@@ -150,7 +150,7 @@ export default function Page() {
           )}
           {(fields?.enRef || fields?.ref) && (
             <div className="reference mb-4 text-left border-l-4 border-gray-400 pl-3" data-aos="fade-up">
-              <h3 className="text-gray-500 text-sm mb-1">مآخذ:</h3>
+                      <h3 className="text-gray-500 text-sm mb-1">مأخذ:</h3>
               <p className="text-gray-700 text-sm">{fields.enRef || fields.ref}</p>
             </div>
           )}

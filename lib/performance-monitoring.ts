@@ -101,12 +101,6 @@ export class PerformanceMonitor {
     const level = this.getPerformanceLevel(metrics.duration, PERFORMANCE_THRESHOLDS.dataFetching);
     const logLevel = level === 'critical' ? 'error' : level === 'slow' ? 'warn' : 'info';
 
-    console[logLevel](`[DATA_FETCHING_PERFORMANCE] ${metrics.operation} took ${metrics.duration}ms`, {
-      ...metrics,
-      performanceLevel: level,
-      cacheStatus: metrics.cacheHit ? 'HIT' : 'MISS'
-    });
-
     // Alert on critical performance
     if (level === 'critical') {
       this.triggerAlert('DATA_FETCHING_SLOW', {

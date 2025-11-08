@@ -1,10 +1,10 @@
 "use client";
-import DataCard from "@/app/Components/DataCard";
 import type { AirtableRecord, NazmenRecord } from "@/app/types";
 import { useNazmenData } from "@/hooks/useNazmenData";
 import { useShareAction } from "@/hooks/useShareAction";
 import { formatNazmenRecord } from "@/lib/airtable-utils";
 import { useMemo } from "react";
+import DataCard from "./DataCard";
 
 const { getClientBaseId } = require("@/lib/airtable-client-utils");
 const BASE_ID = getClientBaseId("NAZMEN");
@@ -22,7 +22,7 @@ export default function Nazmen() {
 
   return (
     <div
-      dir="rtl"
+      dir="ltr"
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
     >
       {!isLoading &&
@@ -46,8 +46,8 @@ export default function Nazmen() {
                 baseId: BASE_ID,
                 table: TABLE,
                 recordId: r.id,
-                title: r.fields.shaer,
-                textLines: headArr,
+                title: r.fields.enShaer || r.fields.shaer,
+                textLines: r.fields.enNazm ? String(r.fields.enNazm || "").split("\n") : headArr,
                 slugId: r.fields.slugId,
                 currentShares: r.fields.shares ?? 0,
               });

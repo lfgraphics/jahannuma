@@ -109,36 +109,36 @@ const Page: React.FC<{}> = () => {
       ...record,
       fields: {
         ...record.fields,
-        tafseel: String(record.fields?.tafseel || "")
-          .replace(/\r\n?/g, "\n")
+        tafseel: String(record.fields?.enTafseel || "")
+          ?.replace(/\r\n?/g, "\n")
           .split("\n")
           .filter(Boolean),
         searchKeys: String(record.fields?.searchKeys || "")
-          .replace(/\r\n?/g, "\n")
+          ?.replace(/\r\n?/g, "\n")
           .split("\n")
           .filter(Boolean),
         enTakhallus: String(record.fields?.enTakhallus || "")
-          .replace(/\r\n?/g, "\n")
+          ?.replace(/\r\n?/g, "\n")
           .split("\n")
           .filter(Boolean),
         hiTakhallus: String(record.fields?.hiTakhallus || "")
-          .replace(/\r\n?/g, "\n")
+          ?.replace(/\r\n?/g, "\n")
           .split("\n")
           .filter(Boolean),
         enName: String(record.fields?.enName || "")
-          .replace(/\r\n?/g, "\n")
+          ?.replace(/\r\n?/g, "\n")
           .split("\n")
           .filter(Boolean),
         hiName: String(record.fields?.hiName || "")
-          .replace(/\r\n?/g, "\n")
+          ?.replace(/\r\n?/g, "\n")
           .split("\n")
           .filter(Boolean),
         enLocation: String(record.fields?.enLocation || "")
-          .replace(/\r\n?/g, "\n")
+          ?.replace(/\r\n?/g, "\n")
           .split("\n")
           .filter(Boolean),
         hiLocation: String(record.fields?.hiLocation || "")
-          .replace(/\r\n?/g, "\n")
+          ?.replace(/\r\n?/g, "\n")
           .split("\n")
           .filter(Boolean),
         ghazal: Boolean(record.fields?.ghazal),
@@ -283,7 +283,7 @@ const Page: React.FC<{}> = () => {
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && data.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
-          سرچ میں کچھ نہیں ملا
+          Nothing found in search
         </div>
       )}
       {initialDataItems.length > 0 && (
@@ -292,7 +292,7 @@ const Page: React.FC<{}> = () => {
           onClick={resetSearch}
           // disabled={!searchText}
         >
-          تلاش ریسیٹ کریں
+          Reset Search
         </button>
       )}
       {!loading && (
@@ -301,7 +301,6 @@ const Page: React.FC<{}> = () => {
             <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
               <div className="filter-btn basis-[75%] text-center flex">
                 <div
-                  dir="rtl"
                   className="flex justify-center items-center basis-[100%] h-auto pt-1"
                 >
                   <House
@@ -314,8 +313,8 @@ const Page: React.FC<{}> = () => {
                   />
                   <input
                     type="text"
-                    placeholder="لکھ کر تلاش کریں"
-                    className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
+                    placeholder="Search by typing"
+                    className="text-foreground border border-foreground focus:outline-none focus:border-r-0 border-r-0 p-1 w-64 leading-7 bg-transparent"
                     id="searchBox"
                     onKeyUp={(e) => {
                       handleSearchKeyUp(e);
@@ -336,7 +335,7 @@ const Page: React.FC<{}> = () => {
                       className="hidden text-[#984A02] cursor-pointer"
                     />
                   </div>
-                  <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+                  <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-r border-foreground">
                     <Search
                       color="#984A02"
                       size={24}
@@ -350,7 +349,6 @@ const Page: React.FC<{}> = () => {
             </div>
             <div
               id="section"
-              dir="rtl"
               className={`grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-1 sticky top-[110px] lg:top-[71px] m-3`}
             >
               {data.map((item, index) => (
@@ -368,10 +366,10 @@ const Page: React.FC<{}> = () => {
                 className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
               >
                 {isValidating
-                  ? "لوڈ ہو رہا ہے۔۔۔"
+                  ? "Loading..."
                   : noMoreData
-                    ? "مزید شعراء کی تفصیلات موجود نہیں ہیں"
-                    : "مزید شعراء کی تفصیات لوڈ کریں"}
+                    ? "No more poets available"
+                    : "Load more poets"}
               </button>
             </div>
           )}

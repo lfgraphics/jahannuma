@@ -146,7 +146,7 @@ const HorizontalShura = () => {
                 <Card data={item} />
               </div>
             ))}
-            <Link className=" text-white text-4xl font-bold" href={"/Shaer"}>
+            <Link className=" text-white text-4xl font-bold" href={"/EN/Shaer"}>
               <ChevronRightCircle color="#984A02" size={36} />
             </Link>
           </div>

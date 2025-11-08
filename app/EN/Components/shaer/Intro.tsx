@@ -45,7 +45,6 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
   }, []);
   return (
     <div
-      dir="rtl"
       className="container flex flex-col justify-center p-5 pt-0 md:px-36 lg:px-36 dark:bg-[#2d2d2f]"
     >
       {!data && <ComponentsLoader />}
