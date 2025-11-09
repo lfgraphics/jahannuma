@@ -14,7 +14,7 @@ export default function WelcomeDialog() {
 
   useEffect(() => {
     // Check if welcome dialog has been shown before
-    const hasBeenShown = localStorage.getItem(WELCOME_DIALOG_KEY);
+    const hasBeenShown = false //localStorage.getItem(WELCOME_DIALOG_KEY);
 
     if (!hasBeenShown) {
       setIsOpen(true);
@@ -24,7 +24,7 @@ export default function WelcomeDialog() {
   const handleClose = () => {
     setIsOpen(false);
     // Mark as shown so it doesn't appear again
-    localStorage.setItem(WELCOME_DIALOG_KEY, 'true');
+    // localStorage.setItem(WELCOME_DIALOG_KEY, 'true');
   };
 
   return (
