@@ -191,7 +191,8 @@ export default function Page() {
       const idMatch = fields.url.match(/[-\w]{25,}/);
       const fileId = idMatch?.[0];
       if (fileId) {
-        url = `/api/pdf/${fileId}`;
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+        url = `${backendUrl}/${fileId}`;
       }
     }
     // Otherwise use the attachment (Airtable) URL if exists
