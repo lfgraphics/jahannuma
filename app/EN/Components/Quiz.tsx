@@ -7,10 +7,15 @@ import "./quiz.css";
 interface QuizRecordFields {
   date?: string;
   question?: string;
+  enQuestion?: string;
   opt1?: string;
   opt2?: string;
   opt3?: string;
   opt4?: string;
+  enOpt1?: string;
+  enOpt2?: string;
+  enOpt3?: string;
+  enOpt4?: string;
   ans?: number;
   [key: string]: any; // Allow extra Airtable fields
 }
@@ -29,7 +34,6 @@ const Quiz = () => {
 
   // Derive today's normalized key in UTC (YYYY-MM-DD)
   const todayKey = new Date().toISOString().split("T")[0];
-  const { getClientBaseId } = require("@/lib/airtable-client-utils");
   const { records, isLoading } = useAirtableList<QuizRecord>(
     "appX2cOtbO23MjpGI", // Quiz base - not in our centralized config yet
     "Quiz",
@@ -102,7 +106,7 @@ const Quiz = () => {
 
   const handleOptionSelect = (index: number) => {
     if (selectedOption === null) {
-      const isConfirmed = window.confirm("کیا آپ کا جواب لاک کیا جائے؟");
+      const isConfirmed = window.confirm("Kya aap ke jawab ko lock kiya jaae?");
       if (isConfirmed) {
         setSelectedOption(index + 1);
         if (index + 1 === ans) {
@@ -132,12 +136,12 @@ const Quiz = () => {
           {insideBrowser && quizData !== undefined && (
             <>
               <h2 className="text-4xl font-semibold text-center pb-4 text-primary">
-                جہاں نما کوئز
+                Jahan Numa Quiz
               </h2>
               <h2 className="text-2xl text-center">
-                {quizData.fields?.question}
+                {quizData.fields?.enQuestion}
               </h2>
-              {["opt1", "opt2", "opt3", "opt4"].map((opt, index) => (
+              {["enOpt1", "enOpt2", "enOpt3", "enOpt4"].map((opt, index) => (
                 <div key={opt} className="text-center flex flex-col gap-6">
                   <button
                     id={`ans${index}`}

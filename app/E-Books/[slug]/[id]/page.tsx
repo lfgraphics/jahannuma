@@ -206,7 +206,6 @@ export default function Page() {
       console.error("No valid book URL found for this record.");
     }
 
-    console.log({ url })
   }, [record, bookKey]);
 
   const formatDate = (dateString: string) => {

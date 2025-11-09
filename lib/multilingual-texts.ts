@@ -12,8 +12,8 @@ export type UISection = "buttons" | "messages" | "placeholders" | "confirmations
 
 // Main navigation entries (mirrors Navbar pages pattern)
 export const navPages: Array<TranslatedText & { EN: string }> = [
-  { EN: "Shaer", UR: "شعراء", HI: "शेयर" },
-  { EN: "Ashaar", UR: "اشعار", HI: "अशार" },
+  { EN: "Shaer", UR: "شعراء", HI: "शाएर" },
+  { EN: "Ashaar", UR: "اشعار", HI: "अशआर" },
   { EN: "Rubai", UR: "رباعی", HI: "रुबाई" },
   { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
   { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
@@ -41,18 +41,18 @@ export const uiTexts = {
   },
   messages: {
     loading: { EN: "Loading...", UR: "لوڈ ہو رہا ہے...", HI: "लोड हो रहा है..." },
-    error: { EN: "Something went wrong", UR: "کچھ غلط ہوا", HI: "कुछ गलत हुआ" },
+    error: { EN: "Something went wrong", UR: "کچھ غلط ہوا", HI: "कुछ गड़बड़ी हई है" },
     success: { EN: "Success!", UR: "کامیاب!", HI: "सफल!" },
     noData: { EN: "No data found", UR: "کوئی ڈیٹا نہیں ملا", HI: "कोई डेटा नहीं मिला" },
     copied: { EN: "Copied to clipboard", UR: "کاپی ہو گیا", HI: "क्लिपबोर्ड में कॉपी किया" },
-    loginRequired: { EN: "Login Required", UR: "لاگ ان ضروری", HI: "लॉगिन आवश्यक" },
+    loginRequired: { EN: "Login Required", UR: "لاگ ان ضروری", HI: "लॉगिन ज़रूरी है" },
     loginToDownload: { EN: "Please login to download", UR: "برائے کرم ڈاؤن لوڈ کے لیے لاگ ان کریں", HI: "डाउनलोड के लिए कृपया लॉगिन करें" },
     loginToLike: { EN: "Please login to like", UR: "برائے کرم پسند کے لیے لاگ ان کریں", HI: "पसंद करने के लिए कृपया लॉगिन करें" },
     loginToComment: { EN: "Please login to comment", UR: "برائے کرم تبصرہ کے لیے لاگ ان کریں", HI: "टिप्पणी करने के लिए कृपया लॉगिन करें" },
     commentSubmitted: { EN: "Comment submitted successfully", UR: "تبصرہ کامیابی سے جمع کر دیا گیا", HI: "टिप्पणी सफलतापूर्वक सबमिट की गई" },
     commentFailed: { EN: "Failed to submit comment", UR: "تبصرہ جمع کرنے میں ناکام", HI: "टिप्पणी सबमिट करने में विफल" },
     commentProcessing: { EN: "Submitting comment...", UR: "تبصرہ جمع کیا جا رہا ہے...", HI: "टिप्पणी सबमिट की जा रही है..." },
-    likeProcessing: { EN: "Processing...", UR: "عمل جاری ہے...", HI: "प्रसंस्करण..." },
+    likeProcessing: { EN: "Processing...", UR: "عمل جاری ہے...", HI: "प्रोसेसिंग..." },
     likeAdded: { EN: "Added to favorites!", UR: "پسندیدہ میں شامل کر دیا گیا!", HI: "पसंदीदा में जोड़ा गया!" },
     likeRemoved: { EN: "Removed from favorites!", UR: "پسندیدہ سے ہٹا دیا گیا!", HI: "पसंदीदा से हटाया गया!" },
     authRequired: { EN: "Please sign in to continue", UR: "جاری رکھنے کے لیے لاگ ان کریں", HI: "जारी रखने के लिए साइन इन करें" },

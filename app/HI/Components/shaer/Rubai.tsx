@@ -1,0 +1,118 @@
+"use client";
+import "aos/dist/aos.css";
+import React, { useState } from "react";
+import RubaiCard from "../../Components/RubaiCard";
+import ComponentsLoader from "./ComponentsLoader";
+// icons were handled inside child components; no direct icon usage here
+import type { AirtableRecord, Rubai as RubaiType } from "@/app/types";
+import useAuthGuard from "@/hooks/useAuthGuard";
+import { useLikeButton } from "@/hooks/useLikeButton";
+import { useRubaiData } from "@/hooks/useRubaiData";
+import { useShareAction } from "@/hooks/useShareAction";
+import { buildShaerFilter } from "@/lib/airtable-utils";
+
+interface Props {
+  takhallus: string;
+}
+
+const { getClientBaseId } = require("@/lib/airtable-client-utils");
+const RUBAI_BASE = getClientBaseId("RUBAI");
+const RUBAI_TABLE = "rubai";
+// comment system is not wired on this page; constants removed
+
+const Rubai: React.FC<Props> = ({ takhallus }) => {
+  const [selectedCommentId, setSelectedCommentId] = useState<string | null>(
+    null
+  );
+
+  const { records: dataItems, isLoading, optimisticUpdate } = useRubaiData({
+    filterByFormula: buildShaerFilter(takhallus),
+    pageSize: 30,
+  });
+
+  const { requireAuth } = useAuthGuard();
+  const share = useShareAction({
+    section: "Rubai",
+    title: "",
+    baseId: RUBAI_BASE,
+    table: RUBAI_TABLE,
+  });
+  // Handle like changes with optimistic updates
+  const handleLikeChange = (args: { id: string; liked: boolean; likes: number }) => {
+    optimisticUpdate.updateRecord(args.id, { likes: args.likes });
+  };
+
+  const CardItem: React.FC<{
+    rec: AirtableRecord<RubaiType>;
+    index: number;
+  }> = ({ rec, index }) => {
+    const like = useLikeButton({
+      baseId: RUBAI_BASE,
+      table: RUBAI_TABLE,
+      storageKey: "Rubai",
+      recordId: rec.id,
+      currentLikes: (rec as any).fields?.likes ?? 0,
+      onChange: handleLikeChange,
+    });
+    const onHeart = async (_e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!requireAuth("like")) return;
+      await like.handleLikeClick();
+    };
+    return (
+      <RubaiCard
+        RubaiData={rec as any}
+        index={index}
+        handleShareClick={handleShareClick}
+        handleHeartClick={onHeart}
+        openComments={openComments}
+        isLiking={like.isDisabled}
+        isLiked={like.isLiked}
+        likesCount={like.likesCount}
+      />
+    );
+  };
+
+  const openComments = (dataId: string) => {
+    setSelectedCommentId(dataId);
+  };
+
+  const handleShareClick = async (item: RubaiType, _index: number) => {
+    await share.handleShare({
+      recordId: item.id,
+      title: item.fields?.shaer,
+      textLines: [String(item.fields?.body ?? "")],
+      fallbackSlugText:
+        String(item.fields?.body ?? "")
+          .split("\n")
+          .find((l) => l.trim().length > 0) ?? "",
+      currentShares: (item as any).fields?.shares ?? 0,
+    });
+  };
+
+  return (
+    <>
+      {/* Share no longer requires login */}
+      {isLoading && <ComponentsLoader />}
+      {!isLoading && (
+        <div
+          id="section"
+          dir="rtl"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
+        >
+          {dataItems.length === 0 && (
+            <div className="col-span-full h-[30vh] grid place-items-center text-muted-foreground">
+              کوئی مواد نہیں ملا
+            </div>
+          )}
+          {dataItems.map((item: AirtableRecord<RubaiType>, index: number) => (
+            <div className="relative" key={item.id}>
+              <CardItem rec={item as any} index={index} />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
+export default Rubai;

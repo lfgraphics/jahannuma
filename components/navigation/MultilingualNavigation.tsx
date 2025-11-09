@@ -178,10 +178,10 @@ export function generateFooterNavigation(language: Language): NavigationItem[] {
   };
 
   return [
-    {
-      label: footerLabels.about[language.toLowerCase() as keyof typeof footerLabels.about],
-      href: `${baseUrl}/About_site`,
-    },
+    // {
+    //   label: footerLabels.about[language.toLowerCase() as keyof typeof footerLabels.about],
+    //   href: `${baseUrl}/About_site`,
+    // },
     {
       label: footerLabels.founders[language.toLowerCase() as keyof typeof footerLabels.founders],
       href: `${baseUrl}/Founders`,

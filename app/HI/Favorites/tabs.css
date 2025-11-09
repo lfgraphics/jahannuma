@@ -1,0 +1,13 @@
+/* Reuse the same simple tab style as Shaer page */
+.nav-item {
+    cursor: pointer;
+    transition: all 0.5s ease-in-out;
+}
+
+.nav-item.active::after {
+    content: '';
+    display: block;
+    border-bottom: 3px solid var(--color-primary, hsl(var(--primary)));
+    margin-top: 5px;
+    transition: all 0.5s ease-in-out;
+}

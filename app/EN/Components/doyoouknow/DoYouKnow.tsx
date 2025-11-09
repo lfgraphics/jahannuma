@@ -39,14 +39,14 @@ const getFallbackCardsData = (language: string) => {
   switch (language) {
     case 'EN':
       return [
-        {
-          unwan: "About Ustaad",
-          content: `The word 'Ustaad' entered the Urdu language from Persian. Its journey began with the religious Zoroastrian book Awista, which was in the ancient Iranian language and had very few people who understood it. The person who understood Awista was known as 'Awista-wed'. The word 'wed' is still used for 'Hakim (wise)', or 'Daanaa (learned)'. Gradually, the word first became 'Awista-wid', and then morphed into 'Ustaad'. Originally, the word was used only for those who understood religious texts, but later became an appellation for everyone who taught and tutored. Nowadays, a master of an art or a skill is referred to as Ustaad, too. The word has become an inseparable part of the names of the virtuosos of Indian classical music. Today, in everyday speech, the word has taken a new meaning; being artful has come to be known as Ustaadi dikhaana. Endearingly, friends too address each other as Ustaad these days. In Indian films, characters of all sorts are depicted as Ustads, and films named 'Ustadon ke Ustad', 'Do Ustad', and 'Ustadi, Ustad Ki' are also found.`,
-          img: "/logo.png",
-          link: `${routePrefix}/About_site`,
-          bgGradient: "linear-gradient(45deg, orange, green)",
-          id: "fallback-1",
-        },
+        // {
+        //   unwan: "About Ustaad",
+        //   content: `The word 'Ustaad' entered the Urdu language from Persian. Its journey began with the religious Zoroastrian book Awista, which was in the ancient Iranian language and had very few people who understood it. The person who understood Awista was known as 'Awista-wed'. The word 'wed' is still used for 'Hakim (wise)', or 'Daanaa (learned)'. Gradually, the word first became 'Awista-wid', and then morphed into 'Ustaad'. Originally, the word was used only for those who understood religious texts, but later became an appellation for everyone who taught and tutored. Nowadays, a master of an art or a skill is referred to as Ustaad, too. The word has become an inseparable part of the names of the virtuosos of Indian classical music. Today, in everyday speech, the word has taken a new meaning; being artful has come to be known as Ustaadi dikhaana. Endearingly, friends too address each other as Ustaad these days. In Indian films, characters of all sorts are depicted as Ustads, and films named 'Ustadon ke Ustad', 'Do Ustad', and 'Ustadi, Ustad Ki' are also found.`,
+        //   img: "/logo.png",
+        //   link: `${routePrefix}/About_site`,
+        //   bgGradient: "linear-gradient(45deg, orange, green)",
+        //   id: "fallback-1",
+        // },
         {
           unwan: "History of Ghazal",
           content: `The ghazal has a rich history in Urdu literature. It originated from Persian poetry and found its place in Urdu, where great poets elevated it to new heights. The ghazal typically consists of rhyming couplets and expresses themes of love, loss, and longing.`,
@@ -66,14 +66,14 @@ const getFallbackCardsData = (language: string) => {
       ];
     case 'HI':
       return [
-        {
-          unwan: "उस्ताद के बारे में",
-          content: `'उस्ताद' शब्द फारसी से उर्दू भाषा में आया। इसकी यात्रा धार्मिक जरथुस्त्री पुस्तक अविस्ता से शुरू हुई, जो प्राचीन ईरानी भाषा में थी और बहुत कम लोग इसे समझते थे। अविस्ता को समझने वाले व्यक्ति को 'अविस्ता-वेद' कहा जाता था। 'वेद' शब्द अभी भी 'हकीम (बुद्धिमान)' या 'दाना (विद्वान)' के लिए प्रयोग किया जाता है।`,
-          img: "/logo.png",
-          link: `${routePrefix}/About_site`,
-          bgGradient: "linear-gradient(45deg, orange, green)",
-          id: "fallback-1",
-        },
+        // {
+        //   unwan: "उस्ताद के बारे में",
+        //   content: `'उस्ताद' शब्द फारसी से उर्दू भाषा में आया। इसकी यात्रा धार्मिक जरथुस्त्री पुस्तक अविस्ता से शुरू हुई, जो प्राचीन ईरानी भाषा में थी और बहुत कम लोग इसे समझते थे। अविस्ता को समझने वाले व्यक्ति को 'अविस्ता-वेद' कहा जाता था। 'वेद' शब्द अभी भी 'हकीम (बुद्धिमान)' या 'दाना (विद्वान)' के लिए प्रयोग किया जाता है।`,
+        //   img: "/logo.png",
+        //   link: `${routePrefix}/About_site`,
+        //   bgGradient: "linear-gradient(45deg, orange, green)",
+        //   id: "fallback-1",
+        // },
         {
           unwan: "ग़ज़ल का इतिहास",
           content: `उर्दू साहित्य में ग़ज़ल का एक समृद्ध इतिहास है। यह फारसी कविता से उत्पन्न हुई और उर्दू में अपना स्थान बनाया, जहाँ महान कवियों ने इसे नई ऊंचाइयों तक पहुंचाया। ग़ज़ल आमतौर पर तुकबंदी वाले शेरों से मिलकर बनती है।`,
@@ -93,14 +93,14 @@ const getFallbackCardsData = (language: string) => {
       ];
     default:
       return [
-        {
-          unwan: "استاد کے بارے میں",
-          content: `'استاد' کا لفظ فارسی سے اردو زبان میں آیا۔ اس کا سفر مذہبی زرتشتی کتاب اوستا سے شروع ہوا، جو قدیم ایرانی زبان میں تھی اور بہت کم لوگ اسے سمجھتے تھے۔ اوستا کو سمجھنے والے کو 'اوستا-وید' کہا جاتا تھا۔`,
-          img: "/logo.png",
-          link: `${routePrefix}/About_site`,
-          bgGradient: "linear-gradient(45deg, orange, green)",
-          id: "fallback-1",
-        },
+        // {
+        //   unwan: "استاد کے بارے میں",
+        //   content: `'استاد' کا لفظ فارسی سے اردو زبان میں آیا۔ اس کا سفر مذہبی زرتشتی کتاب اوستا سے شروع ہوا، جو قدیم ایرانی زبان میں تھی اور بہت کم لوگ اسے سمجھتے تھے۔ اوستا کو سمجھنے والے کو 'اوستا-وید' کہا جاتا تھا۔`,
+        //   img: "/logo.png",
+        //   link: `${routePrefix}/About_site`,
+        //   bgGradient: "linear-gradient(45deg, orange, green)",
+        //   id: "fallback-1",
+        // },
         {
           unwan: "غزل کی تاریخ",
           content: `اردو ادب میں غزل کی تاریخ بہت پرانی ہے۔ غزل فارسی سے اردو میں آئی اور یہاں اپنا مقام بنایا۔ اردو کے عظیم شعراء نے غزل کو نئی بلندیوں تک پہنچایا۔`,

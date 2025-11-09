@@ -1,0 +1,40 @@
+/* Updated to use theme variables */
+.quiz {
+    padding: 20px; /* fixed invalid syntax */
+}
+
+.quiz h2 {
+    font-size: 25px;
+}
+
+.btn {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-weight: 500;
+    width: 100%;
+    border: 1px solid hsl(var(--border));
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.btn:hover:not([disabled]) {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+.btn:disabled {
+    cursor: no-drop;
+    opacity: .5;
+}
+.correct {
+    background-color: hsl(var(--success) / 0.2);
+    border: 1px solid hsl(var(--success));
+    color: hsl(var(--success-foreground));
+}
+.incorrect {
+    background-color: hsl(var(--destructive) / 0.2);
+    border: 1px solid hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+}

@@ -120,13 +120,13 @@ export async function POST(request: Request) {
           'Authorization': `Bearer ${apiToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          fields: {
-            url: url || title || '', // Use title as url if no url provided
-            photo: [{ url: image }], // Airtable attachment format
-            showTill,
-          }
-        }),
+        // body: JSON.stringify({
+        //   fields: {
+        //     url: url || title || '', // Use title as url if no url provided
+        //     photo: [{ url: image }], // Airtable attachment format
+        //     showTill,
+        //   }
+        // }),
       }
     );
 

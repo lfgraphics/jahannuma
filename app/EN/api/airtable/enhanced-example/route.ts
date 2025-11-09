@@ -212,7 +212,7 @@ async function handlePOST(request: NextRequest) {
             'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ fields })
+          // body: JSON.stringify({ fields })
         });
 
         if (!response.ok) {

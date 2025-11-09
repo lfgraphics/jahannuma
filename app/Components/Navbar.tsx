@@ -109,7 +109,7 @@ const Navbar: React.FC = () => {
                   <div>
                     <h3 className="font-bold text-black">More</h3>
                     <nav className="flex flex-col space-y-2">
-                      {["About_site", "About_owner", "Contact", "Programs"].map((item) => {
+                      {["Contact", "Programs"].map((item) => {
                         const active = isActive(item);
                         return (
                           <Link key={item} href={{ pathname: `/${language == "UR" ? item : language + "/" + item}` }} className={`${active ? "text-accent-blue" : "text-primary"} hover:text-accent-blue`}>

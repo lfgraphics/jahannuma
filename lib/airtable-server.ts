@@ -77,7 +77,7 @@ export class AirtableServerClient {
     
     // Record endpoint
     if (key.kind === 'record') {
-      return `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(table)}/${key.recordId}`;
+      return `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(table)}`;
     }
     
     // List endpoint
