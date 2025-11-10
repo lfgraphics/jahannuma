@@ -1,6 +1,9 @@
 "use client";
 import React from "react";
 import { useForm, ValidationError } from "@formspree/react";
+import { Checkbox } from "@/src/components/ui/checkbox";
+import Link from "next/dist/client/link";
+import { Label } from "@/components/ui/label";
 // import { useForm } from "@formspree/react";
 interface LangProps {
   language: string;
@@ -11,7 +14,7 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
   const [state, handleSubmit] = useForm("mvgplola");
   const fields = {
     name: { EN: "Name", UR: "نام", HI: "नाम" },
-    mobile: { EN: "Contact Numebr", UR: "رابطہ نمبر", HI: "मोबाइल नंबर" },
+    mobile: { EN: "Contact Number", UR: "رابطہ نمبر", HI: "मोबाइल नंबर" },
     email: { EN: "E-mail", UR: "ای - میل", HI: "ई-मेल" },
     comment: { EN: "Message", UR: "پیغام", HI: "संदेश" },
     heading: {
@@ -36,6 +39,16 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
       UR: "ارر آ گیا براہ کرم اپنی تفصیلات دبارا جانچ لیں",
       HI: "एरर आ गया बराहे करम अपनी तफ़सीलात दुबारा जांच लें",
     },
+    privacyPolicy: {
+      EN: "I HAVE READ AND I AGREE TO JAHAN NUMA'S",
+      UR: "جہاں نما کی پرائیویسی پالیسی پڑھ لی ہے اور میں اس سے متفق ہوں",
+      HI: "मैंन े जहाँ नुमा की गोपनीयता नीति पढ ़ ली है और इसस े सहमत हूँ",
+    },
+    privacylink: {
+      EN: "Privacy Policy",
+      UR: "پرائیویسی پالیسی",
+      HI: "गोपनीयता नीति",
+    },
   };
   return (
     <form
@@ -48,9 +61,8 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
       </h2>
       {state.succeeded ? (
         <p
-          className={`text-green-700 mb-4 ${
-            language === "UR" ? "text-right" : "text-left"
-          }`}
+          className={`text-green-700 mb-4 ${language === "UR" ? "text-right" : "text-left"
+            }`}
         >
           {fields.successMsg[language as Language]}
         </p>
@@ -124,19 +136,35 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
               errors={state.errors}
             />
           </div>
+          <div className="flex gap-2 items-center align-middle">
+            <Checkbox
+              id="terms"
+              name="terms"
+              // className="border p-2 rounded-md w-full"
+              required
+            />
+            <Label htmlFor="terms" className="text-sm text-muted-foreground flex gap-1">
+              {fields.privacyPolicy[language as Language]}<Link
+                href="/privacypolicy"
+                className="text-blue-500 hover:underline"
+              >
+                {fields.privacylink[language as Language]}
+              </Link>
+            </Label>
+          </div>
           <div className="flex gap-2 my-4">
             <button
               type="reset"
               disabled={state.submitting}
               className="bg-gray-500 p-2 rounded-md hover:bg-blue-700 w-full text-white"
             >
-            {fields.clear[language as Language]}
+              {fields.clear[language as Language]}
             </button>
             <button
               type="submit"
               disabled={state.submitting}
               className="bg-blue-500 p-2 rounded-md hover:bg-blue-700 w-full text-white"
-              >
+            >
               {fields.submit[language as Language]}
             </button>
           </div>

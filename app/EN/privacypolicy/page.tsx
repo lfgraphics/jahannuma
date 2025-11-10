@@ -6,7 +6,7 @@ const PrivacyPolicyPage = () => {
 
       <div className="prose prose-lg max-w-none space-y-6">
         <p className="text-lg leading-relaxed">
-          Jahan Numa (hereinafter referred to as "we", "our platform" or "website") is committed to protecting the privacy and personal information of our users. This policy explains how we collect, use and protect your information.
+          Jahan Numa our platform is committed to protecting the privacy and personal information of our users. This policy explains how we collect, use and protect your information.
         </p>
 
         <section className="mb-8">
@@ -168,6 +168,7 @@ const PrivacyPolicyPage = () => {
             <li>In case of change, the new policy will be published on the website and its date will be recorded.</li>
           </ul>
         </section>
+        <p>Any kind of legal action will only take place in the courts of Gorakhpur.</p>
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+import { Link } from "lucide-react"
 
 const PrivacyPolicyPage = () => {
   return (
@@ -6,7 +7,7 @@ const PrivacyPolicyPage = () => {
 
       <div className="prose prose-lg max-w-none text-right space-y-6">
         <p className="text-lg leading-relaxed">
-          جہاں نما (آگے "ہم"، "ہمارا پلیٹ فارم" یا "ویب سائٹ" کہا جائے گا) اپنے صارفین کی پرائیویسی اور ذاتی معلومات کے تحفظ کے لیے پرعزم ہے۔ یہ پالیسی بیان کرتی ہے کہ ہم آپ کی معلومات کیسے جمع کرتے ہیں، استعمال کرتے ہیں اور محفوظ رکھتے ہیں۔
+          جہاں نما - "ہمارا پلیٹ فارم" اپنے صارفین کی پرائیویسی اور ذاتی معلومات کے تحفظ کے لیے پرعزم ہے۔ یہ پالیسی بیان کرتی ہے کہ ہم آپ کی معلومات کیسے جمع کرتے ہیں، استعمال کرتے ہیں اور محفوظ رکھتے ہیں۔
         </p>
 
         <section className="mb-8">
@@ -82,10 +83,10 @@ const PrivacyPolicyPage = () => {
           <p>
             اگر آپ کے ذہن میں پرائیویسی سے متعلق کوئی سوالات یا خدشات ہوں تو براہ کرم ہم سے رابطہ کریں:
           </p>
-          <p className="mt-2">📧 jahannuma1.7@gmail.com</p>
+          <Link className="mt-2">📧 jahannuma1.7@gmail.com</Link>
         </section>
 
-        <hr className="my-8" />
+        <div className="w-full my-8 h-1 bg-foreground" />
 
         <section className="mb-8">
           <h1 className="text-3xl font-semibold mb-6 text-center">جہاں نما ہمارا پلیٹ فارم: مواد کی قانونی و اخلاقی ذمے داری پالیسی</h1>
@@ -168,6 +169,7 @@ const PrivacyPolicyPage = () => {
             <li>تبدیلی کی صورت میں نئی پالیسی ویب سائٹ پر شائع کی جائے گی اور اس کی تاریخ درج ہوگی۔</li>
           </ul>
         </section>
+        <p>کسی بھی طرح کی قانونی کارروائی صرف گورکھپور کی عدالت میں ہوگی۔</p>
       </div>
     </div>
   )
