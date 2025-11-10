@@ -106,7 +106,7 @@ const Navbar: React.FC = () => {
                       <li><InstallPWAButton /></li>
                     </ul>
                   </div>
-                  <div>
+                  <div className="hidden">
                     <h3 className="font-bold text-black">More</h3>
                     <nav className="flex flex-col space-y-2">
                       {["Contact", "Programs"].map((item) => {
@@ -171,7 +171,9 @@ const Navbar: React.FC = () => {
                 <SelectItem value="HI">हिंदी</SelectItem>
               </SelectContent>
             </Select>
-            <Search className="h-6 w-6 text-primary" />
+            <Link href={language === "UR" ? `/search` : `/${language}/search`}>
+              <Search className="h-6 w-6 text-primary" />
+            </Link>
             <ModeToggle />
             <SignedOut>
               <Link href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }} className="text-primary underline text-sm">

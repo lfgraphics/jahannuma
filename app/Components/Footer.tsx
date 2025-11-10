@@ -72,14 +72,14 @@ const Footer: React.FC = () => {
                 {language === "UR" ? "پرائیویسی پالیسی" : language === "HI" ? "गोपनीयता नीति" : "Privacy Policy"}
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 href={`/${language === "UR" ? "terms&conditions" : `${language}/terms&conditions`}`}
                 className="hover:underline"
               >
                 {language === "UR" ? "شرائط و ضوابط" : language === "HI" ? "नियम और शर्तें" : "Terms & Conditions"}
               </Link>
-            </li>
+            </li> */}
           </ul>
 
           <h6 className="text-xl font-semibold mt-8 mb-4">Follow Us</h6>
