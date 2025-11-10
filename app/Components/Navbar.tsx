@@ -122,7 +122,7 @@ const Navbar: React.FC = () => {
                 </div>
 
                 {/* Auth CTA inside sheet */}
-                <div className="flex flex-col items-center gap-3 mt-2 p-4 border-t border-border w-full">
+                <div className="flex flex-col items-center gap-3 mt-2 p-4 border-border w-full">
                   <SignedOut>
                     <div className="flex gap-2">
                       <Link href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }}>
@@ -200,7 +200,9 @@ const Navbar: React.FC = () => {
                 <SelectItem value="HI">HI</SelectItem>
               </SelectContent>
             </Select>
-            <Search className="h-5 w-5 text-primary" />
+            <Link href={language === "UR" ? `/search` : `/${language}/search`}>
+              <Search className="h-6 w-6 text-primary" />
+            </Link>
             <ModeToggle />
             <SignedOut>
               <Link href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }} className="text-primary underline text-xs">
