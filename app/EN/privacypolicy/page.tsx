@@ -1,3 +1,4 @@
+import Link from "next/link"
 
 const PrivacyPolicyPage = () => {
   return (
@@ -82,7 +83,7 @@ const PrivacyPolicyPage = () => {
           <p>
             If you have any questions or concerns about privacy, please contact us:
           </p>
-          <p className="mt-2">📧 jahannuma1.7@gmail.com</p>
+          <Link className="mt-2" href="mailto:jahannuma1.7@gmail.com">📧 jahannuma1.7@gmail.com</Link>
         </section>
 
         <hr className="my-8" />
@@ -151,7 +152,7 @@ const PrivacyPolicyPage = () => {
           <p className="mb-4">
             If any person or organization believes that their creation has been published on "Jahan Numa" without permission, they can contact us:
           </p>
-          <p className="mb-4">📩 Email: jahannuma1.7@gmail.com</p>
+          <p className="mb-4">📩 Email: <Link href="mailto:jahannuma1.7@gmail.com">jahannuma1.7@gmail.com</Link></p>
           <p className="mb-4">The complaint must include the following information:</p>
           <ol className="list-decimal list-inside space-y-2 ml-6">
             <li>Clear evidence or link of the relevant creation,</li>

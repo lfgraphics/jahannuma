@@ -42,7 +42,7 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
     privacyPolicy: {
       EN: "I HAVE READ AND I AGREE TO JAHAN NUMA'S",
       UR: "جہاں نما کی پرائیویسی پالیسی پڑھ لی ہے اور میں اس سے متفق ہوں",
-      HI: "मैंन े जहाँ नुमा की गोपनीयता नीति पढ ़ ली है और इसस े सहमत हूँ",
+      HI: "मैंने जहाँ नुमा की गोपनीयता नीति पढ़ ली है और इससे सहमत हूँ",
     },
     privacylink: {
       EN: "Privacy Policy",

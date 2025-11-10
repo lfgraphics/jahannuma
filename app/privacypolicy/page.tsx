@@ -1,4 +1,4 @@
-import { Link } from "lucide-react"
+import Link from "next/link"
 
 const PrivacyPolicyPage = () => {
   return (
@@ -83,7 +83,7 @@ const PrivacyPolicyPage = () => {
           <p>
             اگر آپ کے ذہن میں پرائیویسی سے متعلق کوئی سوالات یا خدشات ہوں تو براہ کرم ہم سے رابطہ کریں:
           </p>
-          <Link className="mt-2">📧 jahannuma1.7@gmail.com</Link>
+          <Link className="mt-2" href="mailto:jahannuma1.7@gmail.com">📧 jahannuma1.7@gmail.com</Link>
         </section>
 
         <div className="w-full my-8 h-1 bg-foreground" />
@@ -152,7 +152,7 @@ const PrivacyPolicyPage = () => {
           <p className="mb-4">
             اگر کوئی شخص یا ادارہ سمجھتا ہے کہ اس کی تخلیق "جہاں نما" پر بغیر اجازت شائع کی گئی ہے تو وہ ہم سے رابطہ کر سکتا ہے:
           </p>
-          <p className="mb-4">📩 Email: jahannuma1.7@gmail.com</p>
+          <p className="mb-4">📩 Email: <Link href="mailto:jahannuma1.7@gmail.com">jahannuma1.7@gmail.com</Link></p>
           <p className="mb-4">شکایت کے ساتھ درج ذیل معلومات لازمی ہوں:</p>
           <ol className="list-decimal list-inside space-y-2 mr-6">
             <li>متعلقہ تخلیق کا واضح ثبوت یا لنک،</li>
