@@ -156,9 +156,9 @@ const Content = () => {
                 >
                   <div className="cardBody border-gray-600 border overflow-hidden rounded-md hover:border-2">
                     <Image
-                      src={cardData.snippet.thumbnails.maxres.url}
-                      width={cardData.snippet.thumbnails.maxres.width}
-                      height={cardData.snippet.thumbnails.maxres.height}
+                      src={cardData.snippet.thumbnails.maxres?.url}
+                      width={cardData.snippet.thumbnails.maxres?.width}
+                      height={cardData.snippet.thumbnails.maxres?.height}
                       alt={`Thumbnail${cardData.snippet.position}`}
                     ></Image>
                     <div className="text-lg text-center p-2 line-clamp-2">

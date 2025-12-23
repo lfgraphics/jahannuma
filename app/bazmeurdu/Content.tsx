@@ -149,16 +149,16 @@ const Content = () => {
             dir="rtl"
             className="flex flex-col items-start justify-center md:grid lg:grid md:grid-cols-2 lg:grid-cols-3 gap-3 m-3"
           >
-            {dataItems.map((cardData, index) => (
+            {dataItems?.map((cardData, index) => (
               <div dir="ltr" key={index} data-aos="fade-up">
                 <Link
                   href={`/bazmeurdu/${cardData.snippet.resourceId.videoId}`}
                 >
                   <div className="cardBody border-gray-600 border overflow-hidden rounded-md hover:border-2">
                     <Image
-                      src={cardData.snippet.thumbnails.maxres.url}
-                      width={cardData.snippet.thumbnails.maxres.width}
-                      height={cardData.snippet.thumbnails.maxres.height}
+                      src={cardData.snippet.thumbnails.maxres?.url}
+                      width={cardData.snippet.thumbnails.maxres?.width}
+                      height={cardData.snippet.thumbnails.maxres?.height}
                       alt={`Thumbnail${cardData.snippet.position}`}
                     ></Image>
                     <div className="text-lg text-center p-2 line-clamp-2">
@@ -179,8 +179,8 @@ const Content = () => {
                 {moreloading
                   ? "لوڈ ہو رہا ہے۔۔۔"
                   : noMoreData
-                  ? "مزید ویڈیوز نہیں ہیں"
-                  : "مزید ویڈیوز لوڈ کریں"}
+                    ? "مزید ویڈیوز نہیں ہیں"
+                    : "مزید ویڈیوز لوڈ کریں"}
               </button>
             </div>
           )}
