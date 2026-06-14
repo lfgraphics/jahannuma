@@ -11,6 +11,7 @@ import {
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import useAuthGuard from "@/hooks/useAuthGuard";
+import { getLanguageFieldValue } from "@/lib/language-field-utils";
 import { toPng } from 'html-to-image';
 import { Baseline, ImagePlus, PaintBucket, Plus, Settings2 } from "lucide-react";
 import React, { useMemo, useRef, useState } from "react";
@@ -23,7 +24,11 @@ type MinimalDownloadData = {
   id: string;
   fields?: {
     shaer?: string;
+    enShaer?: string;
+    hiShaer?: string;
     ghazalHead?: string | string[];
+    enGhazalHead?: string | string[];
+    hiGhazalHead?: string | string[];
   };
 };
 
@@ -32,19 +37,91 @@ const DynamicDownloadHandler: React.FC<{
   data: MinimalDownloadData;
   onCancel: () => void;
 }> = ({ data, onCancel }) => {
-  // This component assumes the parent gated rendering with requireAuth("download").
+  const { language } = useLanguage();
+  const isRTL = language === "UR";
+  const localizedShaer = useMemo(
+    () => getLanguageFieldValue<string>(data.fields ?? {}, "shaer", language) ?? "",
+    [data.fields, language]
+  );
   const ghazalHeadLines = useMemo(() => {
-    const head = data.fields?.ghazalHead;
+    const head = getLanguageFieldValue<string | string[]>(
+      data.fields ?? {},
+      "ghazalHead",
+      language
+    );
     if (!head) return [] as string[];
     if (Array.isArray(head)) return head.filter(Boolean);
-    return head.split("\n").filter(Boolean);
-  }, [data]);
-  const { language } = useLanguage();
+    return head.split("\n").map((line) => line.trim()).filter(Boolean);
+  }, [data.fields, language]);
+  const copy = useMemo(() => {
+    switch (language) {
+      case "EN":
+        return {
+          defaultFileName: "poetry",
+          title: "Download Image",
+          description: "Choose a background and save the quote image.",
+          siteLabel: "Jahannuma",
+          selectBackground: "Choose a background image",
+          tweaks: "Customize",
+          changeFontColor: "Change text color",
+          changeBackgroundColor: "Change background color",
+          uploadImage: "Upload your own image",
+          comingSoon: "Coming soon",
+          download: "Download",
+          cancel: "Cancel",
+          fileNameTitle: "File name",
+          fileNameDescription: "Enter a file name without extension.",
+          fileNamePlaceholder: "For example: poetry",
+          save: "Save",
+          downloadError: "Something went wrong while downloading the image.",
+        };
+      case "HI":
+        return {
+          defaultFileName: "kavita",
+          title: "तस्वीर डाउनलोड करें",
+          description: "पसंदीदा पृष्ठभूमि चुनें और तस्वीर सहेजें।",
+          siteLabel: "जहाँ नुमा",
+          selectBackground: "पृष्ठभूमि तस्वीर चुनें",
+          tweaks: "संपादन",
+          changeFontColor: "लिखावट का रंग बदलें",
+          changeBackgroundColor: "पृष्ठभूमि का रंग बदलें",
+          uploadImage: "अपनी तस्वीर अपलोड करें",
+          comingSoon: "जल्द आ रहा है",
+          download: "डाउनलोड करें",
+          cancel: "रद्द करें",
+          fileNameTitle: "फाइल का नाम",
+          fileNameDescription: "बिना एक्सटेंशन के फाइल का नाम लिखें।",
+          fileNamePlaceholder: "जैसे: kavita",
+          save: "सहेजें",
+          downloadError: "तस्वीर डाउनलोड करते समय गड़बड़ी हुई।",
+        };
+      default:
+        return {
+          defaultFileName: "poetry",
+          title: "تصویر ڈاؤنلوڈ",
+          description: "پس منظر منتخب کریں اور تصویر محفوظ کریں",
+          siteLabel: "جہاں نما",
+          selectBackground: "پس منظر تصویر منتخب کریں",
+          tweaks: "ترمیم",
+          changeFontColor: "خط کا رنگ تبدیل کریں",
+          changeBackgroundColor: "پسِ منظر کا رنگ تبدیل کریں",
+          uploadImage: "اپنی تصویر اپلوڈ کریں",
+          comingSoon: "جلد آ رہا ہے",
+          download: "ڈاؤنلوڈ کریں",
+          cancel: "منسوخ کریں",
+          fileNameTitle: "فائل کے نام",
+          fileNameDescription: "براہ کرم فائل کے نام درج کریں (بغیر ایکسٹینشن)",
+          fileNamePlaceholder: "مثلاً: poetry",
+          save: "محفوظ کریں",
+          downloadError: "تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے",
+        };
+    }
+  }, [language]);
   // State for selected background image
   const [selectedImage, setSelectedImage] = useState<string | null>(
     "/backgrounds/1.jpeg"
   );
-  const [fileName, setFileName] = useState<string>("poetry");
+  const [fileName, setFileName] = useState<string>(copy.defaultFileName);
   const [askNameOpen, setAskNameOpen] = useState<boolean>(false);
   const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } = useAuthGuard();
 
@@ -108,27 +185,19 @@ const DynamicDownloadHandler: React.FC<{
 
     try {
       const dataUrl = await toPng(downloadArea as HTMLElement, options as any);
-      const base = sanitizeFilename(fileName || "poetry");
+      const base = sanitizeFilename(fileName || copy.defaultFileName);
       const a = document.createElement("a");
       document.body.appendChild(a);
-      a.download = `${base} جہاں نما کی ویبسائٹ سے.png`;
+      a.download = `${base}-jahannuma.png`;
       a.href = dataUrl;
       a.target = "_blank";
       a.click();
       a.remove();
       onCancel();
     } catch (error) {
-      toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
+      toast.error(copy.downloadError);
       console.error("Error generating image:", error);
     }
-  };
-
-
-  // accordian
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleAccordion = () => {
-    setIsOpen(!isOpen);
   };
 
   return (
@@ -136,8 +205,8 @@ const DynamicDownloadHandler: React.FC<{
       <Dialog open={true} onOpenChange={(open) => { if (!open) onCancel(); }}>
         <DialogContent className="sm:max-w-[380px] bg-background text-foreground border border-border p-0">
           <DialogHeader className="px-3 pt-3 mx-auto">
-            <DialogTitle className="text-center" >تصویر ڈاؤنلوڈ</DialogTitle>
-            <DialogDescription>پس منظر منتخب کریں اور تصویر محفوظ کریں</DialogDescription>
+            <DialogTitle className="text-center">{copy.title}</DialogTitle>
+            <DialogDescription>{copy.description}</DialogDescription>
           </DialogHeader>
           <div ref={downloadHandlerRef} className="max-h-[70svh] overflow-y-auto px-3 pb-3">
             {/* Display shaer information */}
@@ -156,9 +225,9 @@ const DynamicDownloadHandler: React.FC<{
                       </React.Fragment>
                     ))}
                   </p>
-                  <div className="m-3 text-xs">{data.fields?.shaer}</div>
-                  <div className="absolute text-white text-sm top-3 right-4">
-                    جہاں نما
+                  <div className="m-3 text-xs">{localizedShaer}</div>
+                  <div className={`absolute text-white text-sm top-3 ${isRTL ? "right-4" : "left-4"}`}>
+                    {copy.siteLabel}
                   </div>
                   <div className="absolute text-white text-xl font-bold w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-10 z-0">
                     Jahan Numa
@@ -169,7 +238,7 @@ const DynamicDownloadHandler: React.FC<{
 
             {/* Display background image selection */}
             <div className={`flex flex-col mt-2 mb-2 items-center justify-center`}>
-              <p className="text-base">پس منظر تصویر منتخب کریں </p>
+              <p className="text-base">{copy.selectBackground}</p>
               <div className="images_wraper flex w-[260px] overflow-x-auto">
                 {images.map((image, index) => (
                   <img
@@ -183,26 +252,26 @@ const DynamicDownloadHandler: React.FC<{
                   ></img>
                 ))}
               </div>
-              <Accordion dir="rtl" type="single" collapsible className="w-full mb-4">
+              <Accordion dir={isRTL ? "rtl" : "ltr"} type="single" collapsible className="w-full mb-4">
                 <AccordionItem value="tweaks">
-                  <AccordionTrigger dir="rtl" className="px-3">
-                    <span className="flex gap-2 items-center justify-between">ترمیم <Settings2 className="h-4 w-4" /></span>
+                  <AccordionTrigger dir={isRTL ? "rtl" : "ltr"} className="px-3">
+                    <span className="flex gap-2 items-center justify-between">{copy.tweaks} <Settings2 className="h-4 w-4" /></span>
                   </AccordionTrigger>
                   <AccordionContent className="border-t">
                     <div className="flex max-w-full overflow-x-auto flex-row h-[110px] gap-2 flex-wrap p-3">
-                      <div onClick={() => toast.info("Coming Soon!\nجلد آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                      <div onClick={() => toast.info(copy.comingSoon)} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                         <Baseline />
-                        <p className="text-xs">خط کا رنگ تبدیل کریں</p>
+                        <p className="text-xs">{copy.changeFontColor}</p>
                       </div>
-                      <div onClick={() => toast.info("Coming Soon!\nجلد آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                      <div onClick={() => toast.info(copy.comingSoon)} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                         <PaintBucket />
-                        <p className="text-xs">پسِ منظر کا رنگ تبدیل کریں</p>
+                        <p className="text-xs">{copy.changeBackgroundColor}</p>
                       </div>
-                      <div onClick={() => toast.info("Coming Soon!\nجلد آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                      <div onClick={() => toast.info(copy.comingSoon)} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                         <ImagePlus />
-                        <p className="text-xs">اپنی تصویر اپلوڈ کریں</p>
+                        <p className="text-xs">{copy.uploadImage}</p>
                       </div>
-                      <div onClick={() => toast.info("Coming Soon!\nجلد آ رہا ہے")} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
+                      <div onClick={() => toast.info(copy.comingSoon)} className="flex flex-col gap-2 border border-border rounded-md items-center p-2 w-[110px] cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-500 ease-in-out select-none">
                         <Plus />
                       </div>
                     </div>
@@ -212,9 +281,9 @@ const DynamicDownloadHandler: React.FC<{
             </div>
 
             {/* Display buttons for download and cancel */}
-            <div className="flex justify-around gap-3 mt-3 px-3 pb-3 flex-row-reverse">
-              <Button onClick={() => { setAskNameOpen(true); }} className="bg-primary text-primary-foreground hover:bg-primary/90">ڈاؤنلوڈ کریں</Button>
-              <Button onClick={onCancel} variant="outline">منسوخ کریں</Button>
+            <div className={`flex justify-around gap-3 mt-3 px-3 pb-3 ${isRTL ? "flex-row-reverse" : "flex-row"}`}>
+              <Button onClick={() => { setAskNameOpen(true); }} className="bg-primary text-primary-foreground hover:bg-primary/90">{copy.download}</Button>
+              <Button onClick={onCancel} variant="outline">{copy.cancel}</Button>
             </div>
           </div>
         </DialogContent>
@@ -222,12 +291,12 @@ const DynamicDownloadHandler: React.FC<{
       {/* Filename prompt dialog */}
       <PromptDialog
         open={askNameOpen}
-        title="فائل کے نام"
-        description="براہ کرم فائل کے نام درج کریں (بغیر ایکسٹینشن)"
+        title={copy.fileNameTitle}
+        description={copy.fileNameDescription}
         defaultValue={fileName}
-        placeholder="مثلاً: poetry"
-        confirmText="محفوظ کریں"
-        cancelText="منسوخ کریں"
+        placeholder={copy.fileNamePlaceholder}
+        confirmText={copy.save}
+        cancelText={copy.cancel}
         onSubmit={(val) => {
           setFileName(val);
           setAskNameOpen(false);

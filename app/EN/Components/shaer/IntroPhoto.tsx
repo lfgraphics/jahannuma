@@ -9,11 +9,11 @@ interface IntroProps {
   data: {
     name?: string;
     takhallus: string;
-    enTakhallus: string;
+    enTakhallus?: string | string[];
     dob?: string;
     description?: string;
     location?: string;
-    enLocation?: string;
+    enLocation?: string | string[];
     tafseel?: string;
     likes?: number;
     id?: string;
@@ -187,7 +187,7 @@ const Intro: React.FC<IntroProps> = ({
                     }}
                     disabled={like.isDisabled}
                     aria-disabled={like.isDisabled}
-                    title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+                    title={like.isLiked ? "Liked" : "Like"}
                   >
                     <Heart className="text-2xl" fill="currentColor" size={24} />
                     <span className="text-sm">{like.likesCount}</span>

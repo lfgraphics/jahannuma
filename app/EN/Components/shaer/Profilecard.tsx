@@ -42,7 +42,7 @@ const Card = ({
   const takhallus_str = Array.isArray(takhallus)
     ? takhallus.join(" ")
     : String(takhallus || "");
-  const name = takhallus_str.replace(/\s+/g, "-");
+  const name = takhallus_str.trim().replace(/\s+/g, "-");
 
   const likeEnabled = !!(showLikeButton && (fields?.id || recordId));
   const { requireAuth, showLoginDialog, setShowLoginDialog } = useAuthGuard();
@@ -96,7 +96,7 @@ const Card = ({
               }}
               disabled={like.isDisabled}
               aria-disabled={like.isDisabled}
-              title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+              title={like.isLiked ? "Liked" : "Like"}
             >
               <Heart className="inline" fill="currentColor" size={16} />
               <span className="text-xs text-foreground">{like.likesCount}</span>

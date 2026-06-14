@@ -79,7 +79,7 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
     try {
       await loadMore();
     } catch {
-      toast.error("مزید ڈیٹا لوڈ کرنے میں خرابی");
+      toast.error("Something went wrong while loading more poems.");
     }
   };
 
@@ -105,7 +105,7 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
             await updateNazmen(shaerData.id, { shares: updatedShares });
           } catch {
             optimisticUpdate.revert();
-            toast.error("شیئر کرنے میں خرابی");
+            toast.error("Something went wrong while sharing.");
           }
         },
       }
@@ -139,7 +139,7 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
         await updateNazmen(dataId, { comments: nextCommentCount });
       } catch {
         optimisticUpdate.revert();
-        toast.error("کمنٹ اپ ڈیٹ کرنے میں خرابی");
+        toast.error("Something went wrong while updating the comment count.");
       }
     } catch {}
   };
@@ -149,13 +149,13 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
   return (
     <>
       <div
-        dir="rtl"
+        dir="ltr"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
       >
         {isLoading && <ComponentsLoader />}
         {!isLoading && formattedRecords.length === 0 && (
           <div className="h-[30vh] col-span-full grid place-items-center text-muted-foreground">
-            کوئی مواد نہیں ملا
+            No content found.
           </div>
         )}
         {!isLoading &&
@@ -188,10 +188,10 @@ const Nazmen: React.FC<Props> = ({ takhallus }) => {
               className="text-[#984A02] disabled:text-gray-500 disabled:cursor-auto cursor-pointer"
             >
               {isLoadingMore
-                ? "لوڈ ہو رہا ہے۔۔۔"
+                ? "Loading..."
                 : !hasMore
-                  ? "مزید نظمیں نہیں ہیں"
-                  : "اور نظمیں لوڈ کریں"}
+                  ? "No more poems available."
+                  : "Load more poems"}
             </button>
           </div>
         )}

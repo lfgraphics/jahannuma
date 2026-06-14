@@ -96,12 +96,12 @@ const Rubai: React.FC<Props> = ({ takhallus }) => {
       {!isLoading && (
         <div
           id="section"
-          dir="rtl"
+          dir="ltr"
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3"
         >
           {dataItems.length === 0 && (
             <div className="col-span-full h-[30vh] grid place-items-center text-muted-foreground">
-              کوئی مواد نہیں ملا
+              No content found.
             </div>
           )}
           {dataItems.map((item: AirtableRecord<RubaiType>, index: number) => (

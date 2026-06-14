@@ -80,13 +80,25 @@ const ShaerComponent = ({
     // - other multi-value fields can stay arrays (split later in UI as needed)
     const toStringMultiline = (v?: string | string[]) =>
       Array.isArray(v) ? v.join("\n") : String(v ?? "");
+    const toSingleLine = (primary?: string | string[], fallback?: string | string[]) => {
+      const preferred = Array.isArray(primary)
+        ? primary.find(Boolean)
+        : String(primary ?? "").trim();
+      if (preferred) return String(preferred).trim();
+      if (Array.isArray(fallback)) return String(fallback.find(Boolean) ?? "").trim();
+      return String(fallback ?? "").trim();
+    };
     const toLines = (v?: string | string[]) =>
       typeof v === "string"
         ? v.replace(/\r\n?/g, "\n").split("\n").filter(Boolean)
         : (v as string[] | undefined);
     return {
       ...rec,
-      tafseel: toStringMultiline(rec.enTafseel),
+      description: toStringMultiline(rec.enDescription ?? rec.description),
+      takhallus: toSingleLine(rec.enTakhallus, rec.takhallus),
+      name: toSingleLine(rec.enName, rec.name),
+      location: toSingleLine(rec.enLocation, rec.location),
+      tafseel: toStringMultiline(rec.enTafseel ?? rec.tafseel),
       searchKeys: toLines(rec.searchKeys),
       enTakhallus: toLines(rec.enTakhallus),
       hiTakhallus: toLines(rec.hiTakhallus),

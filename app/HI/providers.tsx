@@ -13,7 +13,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <Toaster richColors position="top-right" closeButton dir="rtl" />
+        <Toaster richColors position="top-right" closeButton dir="ltr" />
         {children}
       </ThemeProvider>
     </LanguageProvider>

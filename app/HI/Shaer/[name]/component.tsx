@@ -22,6 +22,7 @@ interface IntroFields {
   location?: string;
   tafseel?: string | string[];
   enTafseel?: string | string[];
+  hiTafseel?: string | string[];
   searchKeys?: string | string[];
   enTakhallus?: string | string[];
   hiTakhallus?: string | string[];
@@ -80,13 +81,25 @@ const ShaerComponent = ({
     // - other multi-value fields can stay arrays (split later in UI as needed)
     const toStringMultiline = (v?: string | string[]) =>
       Array.isArray(v) ? v.join("\n") : String(v ?? "");
+    const toSingleLine = (primary?: string | string[], fallback?: string | string[]) => {
+      const preferred = Array.isArray(primary)
+        ? primary.find(Boolean)
+        : String(primary ?? "").trim();
+      if (preferred) return String(preferred).trim();
+      if (Array.isArray(fallback)) return String(fallback.find(Boolean) ?? "").trim();
+      return String(fallback ?? "").trim();
+    };
     const toLines = (v?: string | string[]) =>
       typeof v === "string"
         ? v.replace(/\r\n?/g, "\n").split("\n").filter(Boolean)
         : (v as string[] | undefined);
     return {
       ...rec,
-      tafseel: toStringMultiline((rec as any).hiTafseel),
+      description: toStringMultiline((rec as any).hiDescription ?? rec.description),
+      takhallus: toSingleLine((rec as any).hiTakhallus, rec.takhallus),
+      name: toSingleLine((rec as any).hiName, rec.name),
+      location: toSingleLine((rec as any).hiLocation, rec.location),
+      tafseel: toStringMultiline((rec as any).hiTafseel ?? rec.tafseel),
       searchKeys: toLines(rec.searchKeys),
       enTakhallus: toLines(rec.enTakhallus),
       hiTakhallus: toLines(rec.hiTakhallus),

@@ -12,6 +12,7 @@ interface IntroFields {
   dob?: string;
   location?: string;
   tafseel?: string | string[];
+  enTafseel?: string | string[];
   searchKeys?: string | string[];
   enTakhallus?: string | string[];
   hiTakhallus?: string | string[];
@@ -50,8 +51,9 @@ interface ShaerRecord {
 async function fetchShaerData(nameParam: string): Promise<ShaerRecord | null> {
   try {
     const decoded = decodeURIComponent(nameParam).replace(/-/g, " ").trim();
-    const safe = escapeAirtableFormulaValue(decoded);
-    const filterByFormula = `OR({takhallus}='${safe}', {enTakhallus}='${safe}', {hiTakhallus}='${safe}')`;
+    const normalized = decoded.replace(/\s+/g, " ");
+    const safe = escapeAirtableFormulaValue(normalized);
+    const filterByFormula = `OR(TRIM({takhallus})='${safe}', TRIM({enTakhallus})='${safe}', TRIM({hiTakhallus})='${safe}')`;
 
     const searchParams = new URLSearchParams({
       pageSize: "1",
@@ -123,8 +125,8 @@ export async function generateMetadata({
 
     if (!nameParam) {
       return {
-        title: "شاعر - جہاں نما",
-        description: "اردو شاعری کا خزانہ",
+        title: "Poet - Jahannuma",
+        description: "A treasury of Urdu literature and poetry.",
       };
     }
 
@@ -135,7 +137,7 @@ export async function generateMetadata({
     const poetName = shaerData?.fields?.enTakhallus ||
       shaerData?.fields?.enName ||
       decodeURIComponent(nameParam).replace(/-/g, " ").trim() ||
-      "نامعلوم شاعر";
+      "Unknown Poet";
 
     // Ensure description is always a string for metadata
     const getStringDescription = (field?: string | string[]): string => {
@@ -145,11 +147,12 @@ export async function generateMetadata({
       return field || '';
     };
 
-    const description = shaerData?.fields?.description ||
-      shaerData?.fields?.enDescription ||
+    const description = shaerData?.fields?.enDescription ||
+      shaerData?.fields?.description ||
       shaerData?.fields?.hiDescription ||
+      getStringDescription(shaerData?.fields?.enTafseel) ||
       getStringDescription(shaerData?.fields?.tafseel) ||
-      `${poetName} کی شاعری اور تخلیقات - جہاں نما`;
+      `${poetName}'s poetry and writings on Jahannuma.`;
 
     // Get poet's image for social media sharing
     const poetImage = shaerData?.fields?.photo && Array.isArray(shaerData.fields.photo) && shaerData.fields.photo.length > 0
@@ -157,27 +160,27 @@ export async function generateMetadata({
       : null;
 
     const baseMetadata = {
-      title: `${poetName} - جہاں نما`,
+      title: `${poetName} - Jahannuma`,
       description,
       alternates: {
-        canonical: `/Shaer/${nameParam}`,
+        canonical: `/EN/Shaer/${nameParam}`,
       },
     };
 
     // Enhanced Open Graph metadata with poet's image
     const openGraphMetadata = {
-      title: `${poetName} - جہاں نما`,
+      title: `${poetName} - Jahannuma`,
       description,
       type: "profile" as const,
-      locale: "ur_PK",
-      siteName: "جہاں نما",
-      ...(poetImage && { images: [{ url: poetImage, alt: `${poetName} کی تصویر` }] }),
+      locale: "en_US",
+      siteName: "Jahannuma",
+      ...(poetImage && { images: [{ url: poetImage, alt: `${poetName} portrait` }] }),
     };
 
     // Enhanced Twitter metadata with poet's image
     const twitterMetadata = {
       card: "summary_large_image" as const,
-      title: `${poetName} - جہاں نما`,
+      title: `${poetName} - Jahannuma`,
       description,
       ...(poetImage && { images: [poetImage] }),
     };
@@ -190,8 +193,8 @@ export async function generateMetadata({
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "شاعر - جہاں نما",
-      description: "اردو شاعری کا خزانہ",
+      title: "Poet - Jahannuma",
+      description: "A treasury of Urdu literature and poetry.",
     };
   }
 }

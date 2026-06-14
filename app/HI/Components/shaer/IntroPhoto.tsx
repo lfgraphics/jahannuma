@@ -9,11 +9,11 @@ interface IntroProps {
   data: {
     name?: string;
     takhallus: string;
-    enTakhallus: string;
+    enTakhallus?: string | string[];
     dob?: string;
     description?: string;
     location?: string;
-    enLocation?: string;
+    enLocation?: string | string[];
     tafseel?: string;
     likes?: number;
     id?: string;
@@ -160,7 +160,7 @@ const Intro: React.FC<IntroProps> = ({
                 )}
               </div>
               <div className="mini_intro mr-5 text-white ">
-                <p className="text-4xl">{data?.enTakhallus || data?.takhallus}</p>
+                <p className="text-4xl">{data?.takhallus || data?.enTakhallus}</p>
                 <p className="mt-3 flex gap-2 items-baseline">
                   <span className="icon ml-2">
                     <CalendarDays color="white" size={16} />
@@ -171,7 +171,7 @@ const Intro: React.FC<IntroProps> = ({
                   <span className="icon ml-2">
                     <MapPin color="white" size={16} />
                   </span>
-                  {data.enLocation || data?.location}
+                  {data?.location || data.enLocation}
                 </p>
               </div>
               <span className="mx-3 text-white font-bold">|</span>{" "}
@@ -187,7 +187,7 @@ const Intro: React.FC<IntroProps> = ({
                     }}
                     disabled={like.isDisabled}
                     aria-disabled={like.isDisabled}
-                    title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+                    title={like.isLiked ? "पसंदीदा" : "पसंद करें"}
                   >
                     <Heart className="text-2xl" fill="currentColor" size={24} />
                     <span className="text-sm">{like.likesCount}</span>

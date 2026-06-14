@@ -59,7 +59,7 @@ const Ghazlen: React.FC<Props> = ({ takhallus }) => {
             await updateGhazlen(shaerData.id, { shares: updatedShares });
           } catch {
             optimisticUpdate.revert();
-            toast.error("شیئر کرنے میں خرابی");
+            toast.error("साझा करने में गड़बड़ी हुई।");
           }
         },
       }
@@ -72,13 +72,13 @@ const Ghazlen: React.FC<Props> = ({ takhallus }) => {
 
   return (
     <div
-      dir="rtl"
+      dir="ltr"
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-3"
     >
       {loading && <ComponentsLoader />}
       {!loading && dataItems.length === 0 && (
         <div className="h-[30vh] col-span-full grid place-items-center text-muted-foreground">
-          کوئی مواد نہیں ملا
+          कोई सामग्री नहीं मिली।
         </div>
       )}
       {!loading &&
