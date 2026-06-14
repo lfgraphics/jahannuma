@@ -72,7 +72,7 @@ export default function Page() {
     if (typeof window !== "undefined") {
       const referrer = document.referrer || "";
       if (!referrer.includes("/Ashaar")) {
-        window.location.href = `${window.location.origin}/Ashaar`;
+        window.location.href = `${window.location.origin}/HI/Ashaar`;
       } else {
         window.history.back();
       }
@@ -83,56 +83,75 @@ export default function Page() {
   const noResult = attemptsSettled && !rec;
 
   return (
-    <div className="flex justify-center">
+    <div dir="ltr" className="flex justify-center">
       {!effectiveId ? (
-        <div className="h-[90vh] w-full flex items-center justify-center">Invalid record id</div>
+        <div className="h-[90vh] w-full flex items-center justify-center">
+          अमान्य रिकॉर्ड आईडी
+        </div>
       ) : (listLoading || recordLoading) ? (
         <div className="h-[90vh] w-full flex items-center justify-center">
           <Loader />
         </div>
       ) : (listError || recordError) ? (
-        <div className="p-4 mt-3 w-screen md:w-[450px] text-center">ریکاڑڈ دستیاب نہیں۔</div>
+        <div className="p-4 mt-3 w-screen md:w-[450px] text-center">
+          रिकॉर्ड उपलब्ध नहीं है।
+        </div>
       ) : noResult ? (
-        <div className="p-4 mt-3 w-screen md:w-[450px] text-center">ریکارڈ دستیاب نہیں۔</div>
+        <div className="p-4 mt-3 w-screen md:w-[450px] text-center">
+          रिकॉर्ड उपलब्ध नहीं है।
+        </div>
       ) : (
         <div className="p-4 mt-3 w-screen md:w-[450px]">
           <div className="ghazalHead text-2xl text-center leading-[3rem]">
-            {(fields?.enGhazalHead || []).map((line: string, index: number) => (
-              <h2 key={index}>{line}</h2>
-            ))}
+            {String(fields?.hiSher || "")
+              .split("\n")
+              .filter(Boolean)
+              .map((line: string, index: number) => (
+                <h2 key={index}>{line}</h2>
+              ))}
           </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
-            <Link href={`/EN/Shaer/${encodeURIComponent(fields?.enShaer ?? "")}`}>
-              <h2>{fields?.enShaer}</h2>
+            <Link
+              href={`/HI/Shaer/${encodeURIComponent(
+                (fields?.hiShaer ?? fields?.shaer ?? "").toString()
+              )}?tab=intro`}
+            >
+              <h2>{fields?.hiShaer ?? fields?.shaer}</h2>
             </Link>
           </div>
           <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
           <div className="text-2xl mb-4 flex flex-col justify-center ">
-            {(fields?.enGhazal || []).map((line: string, index: number) => (
+            {String(fields?.hiBody || "")
+              .split("\n")
+              .filter(Boolean)
+              .map((line: string, index: number) => (
               <p data-aos="fade-up" key={index} className="justif w-full px-10 pb-3 text-2xl">
                 {line}
               </p>
             ))}
           </div>
           <div className="flex gap-5 text-md mb-4 justify-center" data-aos="fade-up">
-            {(fields?.enUnwan?.split('\n') || []).map((unwan: string, index: number) => (
-              <Link href={`/EN/Ashaar/mozu/${encodeURIComponent(unwan)}`} className="text-blue-500 underline cursor-pointer" style={{ lineHeight: "normal" }} key={index}>
+            {String(fields?.hiUnwan || "")
+              .split("\n")
+              .filter(Boolean)
+              .map((unwan: string, index: number) => (
+              <Link href={`/HI/Ashaar/mozu/${encodeURIComponent(unwan)}`} className="text-blue-500 underline cursor-pointer" style={{ lineHeight: "normal" }} key={index}>
                 {unwan}
               </Link>
             ))}
           </div>
-          {(fields?.enRef || fields?.ref) && (
+          {(fields?.hiRef || fields?.ref) && (
             <div className="reference mb-4 text-left border-l-4 border-gray-400 pl-3" data-aos="fade-up">
-                      <h3 className="text-gray-500 text-sm mb-1">Makhaz:</h3>
-              <p className="text-gray-700 text-sm">{fields.enRef || fields.ref}</p>
+              <h3 className="text-gray-500 text-sm mb-1">स्रोत:</h3>
+              <p className="text-gray-700 text-sm">{fields.hiRef || fields.ref}</p>
             </div>
           )}
           <div className="mazeed flex justify-around" data-aos="fade-up">
             <button onClick={visitGhazlen} className="bg-white text-[#984A02] border active:bg-[#984a02ac] active:text-white border-[#984A02] px-4 py-2 rounded-md">
-              More
+              और
             </button>
-            <Link scroll={false} href={`/EN/Ashaar/shaer/${fields?.enShaer?.replace(" ", "_")}`} className="text-blue-600 underline">
-              More of {fields?.enShaer}
+            <Link scroll={false} href={`/HI/Ashaar/shaer/${(fields?.hiShaer ?? fields?.shaer ?? "").replace(/\s+/g, "_")}`} className="text-blue-600 underline">
+              {(fields?.hiShaer ?? fields?.shaer) ? `${fields?.hiShaer ?? fields?.shaer} के और अशआर` : "और अशआर"}
             </Link>
           </div>
         </div>

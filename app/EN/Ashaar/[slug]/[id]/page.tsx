@@ -72,7 +72,7 @@ export default function Page() {
     if (typeof window !== "undefined") {
       const referrer = document.referrer || "";
       if (!referrer.includes("/Ashaar")) {
-        window.location.href = `${window.location.origin}/Ashaar`;
+        window.location.href = `${window.location.origin}/EN/Ashaar`;
       } else {
         window.history.back();
       }
@@ -91,9 +91,9 @@ export default function Page() {
           <Loader />
         </div>
       ) : (listError || recordError) ? (
-        <div className="p-4 mt-3 w-screen md:w-[450px] text-center">ریکاڑڈ دستیاب نہیں۔</div>
+        <div className="p-4 mt-3 w-screen md:w-[450px] text-center">Record is not available.</div>
       ) : noResult ? (
-        <div className="p-4 mt-3 w-screen md:w-[450px] text-center">ریکارڈ دستیاب نہیں۔</div>
+        <div className="p-4 mt-3 w-screen md:w-[450px] text-center">Record is not available.</div>
       ) : (
         <div className="p-4 mt-3 w-screen md:w-[450px]">
           <div className="ghazalHead text-2xl text-center leading-[3rem]">
@@ -123,13 +123,13 @@ export default function Page() {
           </div>
           {(fields?.enRef || fields?.ref) && (
             <div className="reference mb-4 text-left border-l-4 border-gray-400 pl-3" data-aos="fade-up">
-                      <h3 className="text-gray-500 text-sm mb-1">Makhaz:</h3>
+              <h3 className="text-gray-500 text-sm mb-1">Source:</h3>
               <p className="text-gray-700 text-sm">{fields.enRef || fields.ref}</p>
             </div>
           )}
           <div className="mazeed flex justify-around" data-aos="fade-up">
             <button onClick={visitGhazlen} className="bg-white text-[#984A02] border active:bg-[#984a02ac] active:text-white border-[#984A02] px-4 py-2 rounded-md">
-              More
+              More Ashaar
             </button>
             <Link scroll={false} href={`/EN/Ashaar/shaer/${fields?.enShaer?.replace(" ", "_")}`} className="text-blue-600 underline">
               More of {fields?.enShaer}

@@ -147,7 +147,7 @@ export default function Page({ params }: { params: MozuPageParams }) {
     return (
         <div>
             <div className="flex flex-row w-screen border-b-2 p-3 justify-center items-center">
-                <div className="text-4xl m-5">{`اشعار بعنوان : ${decodedUnwan}`}</div>
+                <div dir="ltr" className="text-4xl m-5">{`Poems titled: ${decodedUnwan}`}</div>
             </div>
             {isLoading && <SkeletonLoader />}
             {!isLoading && (

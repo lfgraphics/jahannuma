@@ -1,9 +1,11 @@
 "use client";
 // ShaerCard.tsx
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useLikeButton } from "@/hooks/useLikeButton";
 import { createSlug } from "@/lib/airtable-utils";
+import { getLanguageFieldValue } from "@/lib/language-field-utils";
 import { Download, Heart, MessageCircle, Share2, Tag } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
@@ -13,8 +15,17 @@ export type MinimalShaer = {
   id: string;
   fields?: {
     shaer?: string;
+    enShaer?: string;
+    hiShaer?: string;
     ghazalHead?: string | string[];
+    enGhazalHead?: string | string[];
+    hiGhazalHead?: string | string[];
+    sher?: string | string[];
+    enSher?: string | string[];
+    hiSher?: string | string[];
     unwan?: string | string[];
+    enUnwan?: string | string[];
+    hiUnwan?: string | string[];
     likes?: number;
     comments?: number;
     shares?: number;
@@ -59,7 +70,7 @@ export interface ShaerCardProps<T extends MinimalShaer = MinimalShaer> {
   id?: string;
 }
 
-const DataCard = <T extends MinimalShaer>({
+function DataCard<T extends MinimalShaer>({
   page,
   shaerData,
   index,
@@ -79,7 +90,8 @@ const DataCard = <T extends MinimalShaer>({
   heartDisabled,
   id,
   onLikeChange,
-}: ShaerCardProps<T>) => {
+}: ShaerCardProps<T>) {
+  const { language, isRTL } = useLanguage();
   const [selectedShaer, setSelectedShaer] = useState<MinimalShaer | null>(null);
   const { requireAuth, showLoginDialog, setShowLoginDialog, pendingAction } =
     useAuthGuard();
@@ -92,22 +104,99 @@ const DataCard = <T extends MinimalShaer>({
   // Normalize heads: ensure we always have an array of lines
   const sd = shaerData as MinimalShaer;
 
+  const prefix = language === "UR" ? "" : `/${language}`;
+  const withPrefix = (pathname: string) =>
+    `${prefix}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
+
+  const shaerName = useMemo(() => {
+    const f = (sd?.fields ?? {}) as Record<string, any>;
+    const v = getLanguageFieldValue<string>(f, "shaer", language);
+    return String(v ?? f.shaer ?? "");
+  }, [sd, language]);
+
   const ghazalHeadLines: string[] = useMemo(() => {
-    const head = sd?.fields?.ghazalHead;
+    const f = (sd?.fields ?? {}) as Record<string, any>;
+    const fallbackHead =
+      language === "EN"
+        ? f.enSher ?? f.sher
+        : language === "HI"
+          ? f.hiSher ?? f.sher
+          : f.sher;
+    const head =
+      language === "EN"
+        ? f.enGhazalHead ?? fallbackHead
+        : language === "HI"
+          ? f.hiGhazalHead ?? fallbackHead
+          : f.ghazalHead ?? fallbackHead;
     if (!head) return [];
     if (Array.isArray(head)) return head.filter(Boolean);
     return head.split("\n").filter(Boolean);
-  }, [sd]);
+  }, [sd, language]);
+
+  const nazmLines: string[] = useMemo(() => {
+    const f = (sd?.fields ?? {}) as Record<string, any>;
+    const nazm =
+      language === "EN"
+        ? f.enNazm ?? f.nazm
+        : language === "HI"
+          ? f.hiNazm ?? f.nazm
+          : f.nazm;
+    if (!nazm) return [];
+    if (Array.isArray(nazm)) return nazm.filter(Boolean);
+    return String(nazm)
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line && line !== "****");
+  }, [sd, language]);
+
+  const nazmPreviewLines = useMemo(() => {
+    if (ghazalHeadLines.length > 0) return ghazalHeadLines;
+    return nazmLines.slice(0, 2);
+  }, [ghazalHeadLines, nazmLines]);
 
   // Normalize unwan entries as array
   const unwanList: string[] = useMemo(() => {
-    const u = sd?.fields?.unwan;
+    const f = (sd?.fields ?? {}) as Record<string, any>;
+    const u = getLanguageFieldValue<string | string[]>(f, "unwan", language);
     if (!u) return [];
     if (Array.isArray(u)) return u.filter(Boolean);
     return u.split("\n").filter(Boolean);
-  }, [sd]);
+  }, [sd, language]);
+
+  const texts = useMemo(() => {
+    if (language === "EN") {
+      return {
+        topics: "Topics:",
+        read: "Read...",
+        readGhazal: "Read Ghazal",
+        more: "More",
+        noMore: "",
+        andMore: (n: number) => (n > 0 ? ` and ${n} more` : ""),
+      };
+    }
+    if (language === "HI") {
+      return {
+        topics: "विषय:",
+        read: "पढ़ें...",
+        readGhazal: "ग़ज़ल पढ़ें",
+        more: "और",
+        noMore: "",
+        andMore: (n: number) => (n > 0 ? ` और ${n} और` : ""),
+      };
+    }
+    return {
+      topics: ":موضوعات",
+      read: "پڑھیں۔۔۔",
+      readGhazal: "غزل پڑھیں",
+      more: "مزید",
+      noMore: "",
+      andMore: (n: number) => (n > 0 ? ` ، ${n} اور ` : ""),
+    };
+  }, [language]);
 
   const recordId = sd?.id || sd?.fields?.id || "";
+  const nazmSlugSource =
+    unwanList[0] || nazmPreviewLines[0] || shaerName || recordId || "nazm";
   const heartElementId = id || recordId;
 
   // Built-in like logic: enabled only if baseId/table/storageKey and record id are available
@@ -168,6 +257,7 @@ const DataCard = <T extends MinimalShaer>({
     <>
       {page == "nazm" && (
         <div
+          dir={isRTL ? "rtl" : "ltr"}
           key={index}
           id={`card${index}`}
           className={`${
@@ -181,23 +271,24 @@ const DataCard = <T extends MinimalShaer>({
               </p>
               <Link
                 href={{
-                  pathname: `/Shaer/${(sd?.fields?.shaer || "").replace(
-                    " ",
-                    "-"
-                  )}`,
+                  pathname: withPrefix(
+                    `/Shaer/${encodeURIComponent(
+                      shaerName.replace(/\s+/g, "-")
+                    )}`
+                  ),
                   query: {
-                    tab: "تعارف",
+                    tab: "intro",
                   },
                 }}
               >
                 <h2 className="text-foreground text-xl">
-                  {shaerData?.fields?.shaer}
+                  {shaerName}
                 </h2>
               </Link>
             </div>
             <div className="flex items-center justify-baseline text-center icons">
               <div className="sec1 basis-1/2">
-                {ghazalHeadLines.map((lin, index) => (
+                {nazmPreviewLines.map((lin, index) => (
                   <p
                     key={index}
                     className="text-foreground text-lg cursor-default"
@@ -211,14 +302,14 @@ const DataCard = <T extends MinimalShaer>({
                 <button className="text-[#984A02] font-semibold m-3">
                   <Link
                     href={{
-                      pathname: `/Nazmen/${encodeURIComponent(
-                        createSlug(
-                          shaerData?.fields?.ghazalHead?.[0] || ""
-                        ) as string
-                      )}/${encodeURIComponent(shaerData?.id)}`,
+                      pathname: withPrefix(
+                        `/Nazmen/${encodeURIComponent(
+                          createSlug(nazmSlugSource) as string
+                        )}/${encodeURIComponent(shaerData?.id)}`
+                      ),
                     }}
                   >
-                    پڑھیں۔۔۔
+                    {texts.read}
                   </Link>
                 </button>
                 <button
@@ -262,7 +353,7 @@ const DataCard = <T extends MinimalShaer>({
       )}
       {page !== "nazm" && (
         <div
-          dir="rtl"
+          dir={isRTL ? "rtl" : "ltr"}
           key={index}
           id={`card${index}`}
           className={`${
@@ -271,13 +362,13 @@ const DataCard = <T extends MinimalShaer>({
         >
           <Link
             href={{
-              pathname: `/Shaer/${(sd?.fields?.shaer || "").replace(" ", "-")}`,
-              query: { tab: "تعارف" },
+              pathname: withPrefix(
+                `/Shaer/${encodeURIComponent(shaerName.replace(/\s+/g, "-"))}`
+              ),
+              query: { tab: "intro" },
             }}
           >
-            <h2 className="text-foreground text-lg mb-4">
-              {shaerData?.fields?.shaer}
-            </h2>
+            <h2 className="text-foreground text-lg mb-4">{shaerName}</h2>
           </Link>
           <div className="unwan flex flex-col w-full items-center mb-2">
             {ghazalHeadLines.map((lin: string, index: number) => (
@@ -297,13 +388,12 @@ const DataCard = <T extends MinimalShaer>({
             >
               {page !== "rand" &&
                 unwanList.map((unwaan, index) => (
-                  <span
-                    key={index}
-                    className="text-md text-blue-500 underline p-2"
-                  >
+                  <span key={index} className="text-md text-blue-500 underline p-2">
                     <Link
                       href={{
-                        pathname: `/Ghazlen/mozu/${encodeURIComponent(unwaan)}`,
+                        pathname: withPrefix(
+                          `/Ghazlen/mozu/${encodeURIComponent(unwaan)}`
+                        ),
                       }}
                     >
                       {unwaan}
@@ -312,13 +402,12 @@ const DataCard = <T extends MinimalShaer>({
                 ))}
               {page == "rand" &&
                 unwanList.map((unwaan, index) => (
-                  <span
-                    key={index}
-                    className="text-md text-blue-500 underline p-2"
-                  >
+                  <span key={index} className="text-md text-blue-500 underline p-2">
                     <Link
                       href={{
-                        pathname: `/Ashaar/mozu/${encodeURIComponent(unwaan)}`,
+                        pathname: withPrefix(
+                          `/Ashaar/mozu/${encodeURIComponent(unwaan)}`
+                        ),
                       }}
                     >
                       {unwaan}
@@ -332,7 +421,7 @@ const DataCard = <T extends MinimalShaer>({
               onClick={() => toggleanaween(`card${index}`)}
             >
               <span className="flex items-center">
-                :موضوعات{" "}
+                {texts.topics}{" "}
                 <Tag
                   className="ml-2 text-yellow-400 cursor-pointer"
                   size={16}
@@ -343,9 +432,9 @@ const DataCard = <T extends MinimalShaer>({
                   <Link
                     className="text-blue-500 underline"
                     href={{
-                      pathname: `/Ashaar/mozu/${encodeURIComponent(
-                        unwanList[0] || ""
-                      )}`,
+                      pathname: withPrefix(
+                        `/Ashaar/mozu/${encodeURIComponent(unwanList[0] || "")}`
+                      ),
                     }}
                   >
                     {unwanList[0] ?? ""}
@@ -354,9 +443,9 @@ const DataCard = <T extends MinimalShaer>({
                   <Link
                     className="text-blue-500 underline"
                     href={{
-                      pathname: `/Ghazlen/mozu/${encodeURIComponent(
-                        unwanList[0] || ""
-                      )}`,
+                      pathname: withPrefix(
+                        `/Ghazlen/mozu/${encodeURIComponent(unwanList[0] || "")}`
+                      ),
                     }}
                   >
                     {unwanList[0] ?? ""}
@@ -367,9 +456,11 @@ const DataCard = <T extends MinimalShaer>({
                   <Link
                     className="text-blue-500 underline"
                     href={{
-                      pathname: `/Ashaar/mozu/${encodeURIComponent(
-                        unwanList[0] || "nothing"
-                      )}`,
+                      pathname: withPrefix(
+                        `/Ashaar/mozu/${encodeURIComponent(
+                          unwanList[0] || "nothing"
+                        )}`
+                      ),
                     }}
                   >
                     {unwanList[0] ?? "nothing"}
@@ -378,16 +469,18 @@ const DataCard = <T extends MinimalShaer>({
                   <Link
                     className="text-blue-500 underline"
                     href={{
-                      pathname: `/Ghazlen/mozu/${encodeURIComponent(
-                        unwanList[0] || "nothing"
-                      )}`,
+                      pathname: withPrefix(
+                        `/Ghazlen/mozu/${encodeURIComponent(
+                          unwanList[0] || "nothing"
+                        )}`
+                      ),
                     }}
                   >
                     {unwanList[0] ?? "nothing"}
                   </Link>
                 ))}
-              <span dir="rtl" className="cursor-auto">
-                {unwanList.length > 1 ? ` ، ${unwanList.length - 1} اور ` : ""}
+              <span dir={isRTL ? "rtl" : "ltr"} className="cursor-auto">
+                {texts.andMore(unwanList.length > 1 ? unwanList.length - 1 : 0)}
               </span>
             </button>
           </div>
@@ -433,22 +526,26 @@ const DataCard = <T extends MinimalShaer>({
               {download ? (
                 <Link
                   href={{
-                    pathname: `/Ashaar/${encodeURIComponent(
-                      createSlug(shaerData?.fields?.ghazalHead?.[0] || "")
-                    )}/${encodeURIComponent(shaerData?.id)}`,
+                    pathname: withPrefix(
+                      `/Ashaar/${encodeURIComponent(
+                        createSlug(ghazalHeadLines[0] || "") as string
+                      )}/${encodeURIComponent(shaerData?.id)}`
+                    ),
                   }}
                 >
-                  غزل پڑھیں
+                  {texts.readGhazal}
                 </Link>
               ) : (
                 <Link
                   href={{
-                    pathname: `/Ghazlen/${encodeURIComponent(
-                      createSlug(shaerData?.fields?.ghazalHead?.[0] || "")
-                    )}/${encodeURIComponent(shaerData?.id)}`,
+                    pathname: withPrefix(
+                      `/Ghazlen/${encodeURIComponent(
+                        createSlug(ghazalHeadLines[0] || "") as string
+                      )}/${encodeURIComponent(shaerData?.id)}`
+                    ),
                   }}
                 >
-                  غزل پڑھیں
+                  {texts.readGhazal}
                 </Link>
               )}
             </button>
@@ -481,6 +578,6 @@ const DataCard = <T extends MinimalShaer>({
       />
     </>
   );
-};
+}
 
 export default DataCard;

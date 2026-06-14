@@ -73,13 +73,16 @@ export default function Page() {
     [rec]
   );
   const fields = formatted?.fields as NazmenRecord | undefined;
-  const ghazalLines = fields?.ghazalLines;
+  const nazmLines = useMemo(() => {
+    const raw = (fields as any)?.enNazm ?? fields?.nazm;
+    return String(raw ?? "").split("\n");
+  }, [fields]);
 
   const visitNazmen = () => {
     if (typeof window !== "undefined") {
       const referrer = document.referrer || "";
       if (!referrer.includes("/Nazmen")) {
-        window.location.href = `${window.location.origin}/Nazmen`;
+        window.location.href = `${window.location.origin}/EN/Nazmen`;
       } else {
         window.history.back();
       }
@@ -91,7 +94,7 @@ export default function Page() {
   const noResult = attemptsSettled && !rec;
 
   return (
-    <div dir="rtl" className="flex justify-center">
+    <div dir="ltr" className="flex justify-center">
       {!id ? (
         <div className="p-4 mt-3 w-screen md:w-[400px] text-center">
           Invalid record id
@@ -100,11 +103,11 @@ export default function Page() {
         <ComponentsLoader />
       ) : listError || recordError ? (
         <div className="p-4 mt-3 w-screen md:w-[400px] text-center">
-          ریکاڑڈ دستیاب نہیں۔
+          Record is not available.
         </div>
       ) : noResult ? (
         <div className="p-4 mt-3 w-screen md:w-[400px] text-center">
-          ریکارڈ دستیاب نہیں۔
+          Record is not available.
         </div>
       ) : (
         <div className="p-4 mt-3 w-screen md:w-[400px]">
@@ -112,17 +115,21 @@ export default function Page() {
             className="ghazalHead text-3xl text-center mb-2"
             style={{ lineHeight: "46px" }}
           >
-            <h2>{fields?.unwan}</h2>
+            <h2>{(fields as any)?.enUnwan ?? fields?.unwan}</h2>
           </div>
           <div className="ghazalHead mb-3 text-[#984A02]">
-            <Link href={`/Shaer/${encodeURIComponent(fields?.shaer ?? "")}`}>
-              <h2>{fields?.shaer}</h2>
+            <Link
+              href={`/EN/Shaer/${encodeURIComponent(
+                ((fields as any)?.enShaer ?? fields?.shaer ?? "").toString()
+              )}?tab=intro`}
+            >
+              <h2>{(fields as any)?.enShaer ?? fields?.shaer}</h2>
             </Link>
           </div>
           <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
           {!fields?.paband && (
             <div className="text-2xl mb-4 text-center">
-              {ghazalLines?.map((line: string, index: number) => (
+              {nazmLines?.map((line: string, index: number) => (
                 <p
                   className={`${line == "****" ? "my-12 md:my-9 opacity-0" : ""
                     }`}
@@ -136,7 +143,7 @@ export default function Page() {
           )}
           {fields?.paband && (
             <div className="text-2xl mb-4 flex flex-col justify-center">
-              {ghazalLines?.map((line: string, index: number) => (
+              {nazmLines?.map((line: string, index: number) => (
                 <p
                   data-aos="fade-up"
                   key={index}
@@ -150,7 +157,7 @@ export default function Page() {
           )}
           {(fields?.enRef || fields?.ref) && (
             <div className="reference mb-4 text-left border-l-4 border-gray-400 pl-3" data-aos="fade-up">
-                      <h3 className="text-gray-500 text-sm mb-1">مأخذ:</h3>
+              <h3 className="text-gray-500 text-sm mb-1">Source:</h3>
               <p className="text-gray-700 text-sm">{fields.enRef || fields.ref}</p>
             </div>
           )}
@@ -159,15 +166,15 @@ export default function Page() {
               onClick={visitNazmen}
               className="bg-white text-[#984A02] border active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
             >
-              مزید نظمیں
+              More Nazms
             </button>
             <Link
-              href={`/Nazmen/shaer/${encodeURIComponent(
-                (fields?.shaer ?? "").replace(/\s+/g, "_")
+              href={`/EN/Nazmen/shaer/${encodeURIComponent(
+                (((fields as any)?.enShaer ?? fields?.shaer ?? "") as string).replace(/\s+/g, "_")
               )}`}
               className="text-blue-600 underline"
             >
-              {fields?.shaer} کی مزید نظمیں
+              {((fields as any)?.enShaer ?? fields?.shaer) ? `More nazms by ${(fields as any)?.enShaer ?? fields?.shaer}` : "More Nazms"}
             </Link>
           </div>
         </div>

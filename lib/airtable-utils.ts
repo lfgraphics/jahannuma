@@ -134,10 +134,12 @@ export function formatGhazlenRecord(
     hiRef: f.hiRef,
     // Include multilingual fields
     enGhazal: f.enGhazal,
+    enGhazalHead: f.enGhazalHead,
     enUnwan: f.enUnwan,
     enShaer: f.enShaer,
     enTakhallus: f.enTakhallus,
     hiGhazal: f.hiGhazal,
+    hiGhazalHead: f.hiGhazalHead,
     hiUnwan: f.hiUnwan,
     hiShaer: f.hiShaer,
     hiTakhallus: f.hiTakhallus,

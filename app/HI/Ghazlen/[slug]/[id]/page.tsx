@@ -25,17 +25,17 @@ const Page: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
         <div className="max-w-md mx-auto">
-          <h2 className="text-2xl font-bold text-red-600 mb-4" dir="rtl">
-            غلط لنک
+          <h2 className="text-2xl font-bold text-red-600 mb-4" dir="ltr">
+            अमान्य लिंक
           </h2>
-          <p className="text-gray-600 mb-6" dir="rtl">
-            غزل کی شناخت نہیں ملی۔ براہ کرم صحیح لنک استعمال کریں۔
+          <p className="text-gray-600 mb-6" dir="ltr">
+            ग़ज़ल की पहचान नहीं मिली। कृपया सही लिंक का उपयोग करें।
           </p>
           <Link
-            href="/Ghazlen"
+            href="/HI/Ghazlen"
             className="px-4 py-2 bg-[#984A02] text-white rounded hover:bg-[#7a3a02] transition-colors"
           >
-            تمام غزلیں دیکھیں
+            सभी ग़ज़लें देखें
           </Link>
         </div>
       </div>
@@ -59,14 +59,25 @@ const Page: React.FC = () => {
   // Improved loading and error state logic
   const hasError = !!error;
   const hasData = !!data;
-  const ghazalLines = useMemo(() => (Array.isArray(data?.ghazal) ? data?.ghazal : String(data?.ghazal ?? "").split("\n")), [data?.ghazal]);
-  const anaween = useMemo(() => (Array.isArray(data?.unwan) ? data?.unwan : String(data?.unwan ?? "").split("\n")), [data?.unwan]);
+  const shaerName = useMemo(() => (data?.hiShaer ?? data?.shaer ?? "").toString(), [data?.hiShaer, data?.shaer]);
+  const ghazalHeadLines = useMemo(() => {
+    const v = (data as any)?.hiGhazalHead ?? data?.ghazalHead;
+    return Array.isArray(v) ? v : String(v ?? "").split("\n").filter(Boolean);
+  }, [data]);
+  const ghazalLines = useMemo(() => {
+    const v = (data as any)?.hiGhazal ?? data?.ghazal;
+    return Array.isArray(v) ? v : String(v ?? "").split("\n").filter(Boolean);
+  }, [data]);
+  const anaween = useMemo(() => {
+    const v = (data as any)?.hiUnwan ?? data?.unwan;
+    return Array.isArray(v) ? v : String(v ?? "").split("\n").filter(Boolean);
+  }, [data]);
 
   const visitGhazlen = () => {
     if (typeof window !== "undefined") {
       const referrer = document.referrer || "";
       if (!referrer.includes("/Ghazlen")) {
-        window.location.href = `${window.location.origin}/Ghazlen`;
+        window.location.href = `${window.location.origin}/HI/Ghazlen`;
       } else {
         window.history.back();
       }
@@ -96,7 +107,7 @@ const Page: React.FC = () => {
       const mainElement = mainRef.current;
       if (!mainElement) {
         console.error("Main content element not found.");
-        toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
+        toast.error("चित्र डाउनलोड करते समय त्रुटि हुई");
         return;
       }
 
@@ -257,7 +268,7 @@ const Page: React.FC = () => {
         a.remove();
       } catch (error) {
         console.error("Failed to generate and download image:", error);
-        toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
+        toast.error("चित्र डाउनलोड करते समय त्रुटि हुई");
       } finally {
         // Restore hidden elements and cleanup
         const elementsToHide = document.querySelectorAll<HTMLElement>(".ghazalHead, .unwan");
@@ -271,38 +282,38 @@ const Page: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to generate and download image:", error);
-      toast.error("تصویر ڈاؤنلوڈ کے وقت خرابی ہوئی ہے");
+      toast.error("चित्र डाउनलोड करते समय त्रुटि हुई");
     } finally {
       setIsDownloading(false);
     }
   };
 
   return (
-    <div dir="rtl" className="flex flex-col items-center">
+    <div dir="ltr" className="flex flex-col items-center">
       <div className="w-full sm:w-[400px]">
         {isLoading ? (
           <ComponentsLoader />
         ) : hasError ? (
           <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
             <div className="max-w-md mx-auto">
-              <h2 className="text-2xl font-bold text-red-600 mb-4" dir="rtl">
-                خرابی ہوئی ہے
+              <h2 className="text-2xl font-bold text-red-600 mb-4" dir="ltr">
+                त्रुटि हुई है
               </h2>
-              <p className="text-gray-600 mb-6" dir="rtl">
-                غزل لوڈ کرنے میں مسئلہ ہوا ہے۔ براہ کرم دوبارہ کوشش کریں۔
+              <p className="text-gray-600 mb-6" dir="ltr">
+                ग़ज़ल लोड करने में समस्या हुई। कृपया फिर से कोशिश करें।
               </p>
               <div className="flex gap-4 justify-center">
                 <button
                   onClick={() => window.location.reload()}
                   className="px-4 py-2 bg-[#984A02] text-white rounded hover:bg-[#7a3a02] transition-colors"
                 >
-                  دوبارہ کوشش کریں
+                  फिर से कोशिश करें
                 </button>
                 <button
                   onClick={() => window.history.back()}
                   className="px-4 py-2 border border-[#984A02] text-[#984A02] rounded hover:bg-[#984A02] hover:text-white transition-colors"
                 >
-                  واپس جائیں
+                  वापस जाएं
                 </button>
               </div>
             </div>
@@ -310,24 +321,24 @@ const Page: React.FC = () => {
         ) : !hasData ? (
           <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
             <div className="max-w-md mx-auto">
-              <h2 className="text-2xl font-bold text-gray-600 mb-4" dir="rtl">
-                غزل نہیں ملی
+              <h2 className="text-2xl font-bold text-gray-600 mb-4" dir="ltr">
+                ग़ज़ल नहीं मिली
               </h2>
-              <p className="text-gray-500 mb-6" dir="rtl">
-                یہ غزل دستیاب نہیں ہے یا ہٹا دی گئی ہے۔
+              <p className="text-gray-500 mb-6" dir="ltr">
+                यह ग़ज़ल उपलब्ध नहीं है या हटा दी गई है।
               </p>
               <div className="flex gap-4 justify-center">
                 <Link
-                  href="/Ghazlen"
+                  href="/HI/Ghazlen"
                   className="px-4 py-2 bg-[#984A02] text-white rounded hover:bg-[#7a3a02] transition-colors"
                 >
-                  تمام غزلیں دیکھیں
+                  सभी ग़ज़लें देखें
                 </Link>
                 <button
                   onClick={() => window.history.back()}
                   className="px-4 py-2 border border-[#984A02] text-[#984A02] rounded hover:bg-[#984A02] hover:text-white transition-colors"
                 >
-                  واپس جائیں
+                  वापस जाएं
                 </button>
               </div>
             </div>
@@ -335,15 +346,15 @@ const Page: React.FC = () => {
         ) : (
           <div id="main" ref={mainRef} className="p-4 mt-3 relative bg-background text-foreground">
             <div className={`ghazalHead text-2xl text-foreground text-center leading-[3rem]`}>
-              {(Array.isArray(data?.ghazalHead) ? data?.ghazalHead : String(data?.ghazalHead ?? "").split("\n"))?.map((line, index) => (
+              {ghazalHeadLines.map((line, index) => (
                 <h2 key={index} className="text-foreground">
                   {line}
                 </h2>
               ))}
             </div>
             <div className="shaer mb-3 text-[#984A02]">
-              <Link href={`/Shaer/${data?.shaer ?? ""}`}>
-                <h2>{data?.shaer}</h2>
+              <Link href={`/HI/Shaer/${encodeURIComponent(shaerName)}?tab=intro`}>
+                <h2>{shaerName}</h2>
               </Link>
             </div>
             <div className="w-[100%] h-[1px] mb-4 bg-gray-500 "></div>
@@ -361,7 +372,7 @@ const Page: React.FC = () => {
             <div className="flex gap-5 text-md mb-4 justify-center" data-aos="fade-up">
               {anaween?.map((unwan, index) => (
                 <Link
-                  href={`/Ghazlen/mozu/${unwan}`}
+                  href={`/HI/Ghazlen/mozu/${encodeURIComponent(unwan)}`}
                   className={`unwan text-blue-500 underline cursor-pointer`}
                   style={{ lineHeight: "normal" }}
                   key={index}
@@ -370,10 +381,10 @@ const Page: React.FC = () => {
                 </Link>
               ))}
             </div>
-            {(data?.enRef || data?.ref) && (
+            {((data as any)?.hiRef || data?.ref) && (
               <div className="reference mb-4 text-left border-l-4 border-gray-400 pl-3" data-aos="fade-up">
-                      <h3 className="text-gray-500 text-sm mb-1">مأخذ:</h3>
-                <p className="text-gray-700 text-sm">{data.enRef || data.ref}</p>
+                <h3 className="text-gray-500 text-sm mb-1">स्रोत:</h3>
+                <p className="text-gray-700 text-sm">{(data as any).hiRef || data.ref}</p>
               </div>
             )}
           </div>
@@ -384,21 +395,21 @@ const Page: React.FC = () => {
               onClick={visitGhazlen}
               className="bg-white text-[#984A02] border active:bg-[#984a02ac] active:text-white border-[#984A02] px-4 py-2 rounded-md"
             >
-              مزید غزلیں
+              और ग़ज़लें
             </button>
             <Link
               scroll={false}
-              href={`/Ghazlen/shaer/${(data?.shaer || "").replace(" ", "_")}`}
+              href={`/HI/Ghazlen/shaer/${shaerName.replace(/\s+/g, "_")}`}
               className="text-blue-600 underline"
             >
-              {data?.shaer} کی مزید غزلیں
+              {shaerName ? `${shaerName} की और ग़ज़लें` : "और ग़ज़लें"}
             </Link>
             <button
               onClick={() => { if (requireAuth("download")) downloadImageWithWatermark(); }}
               disabled={isDownloading}
               className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isDownloading ? "ڈاؤن لوڈ ہو رہا ہے..." : "تصویر ڈاؤن لوڈ کریں"}
+              {isDownloading ? "डाउनलोड हो रहा है..." : "चित्र डाउनलोड करें"}
             </button>
           </div>
         )}

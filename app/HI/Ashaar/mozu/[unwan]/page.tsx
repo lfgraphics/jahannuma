@@ -72,10 +72,14 @@ export default function Page({ params }: { params: MozuPageParams }) {
         try {
             if (navigator.share) {
                 const target = (shaerData.fields as any).slugId ?? shaerData.id;
+                const title = (shaerData.fields as any).hiShaer || shaerData.fields.shaer;
+                const headLines = String((shaerData.fields as any).hiSher || (shaerData.fields as any).sher || "")
+                    .split("\n")
+                    .filter(Boolean);
                 await navigator.share({
-                    title: shaerData.fields.enShaer,
-                    text: (shaerData.fields.enGhazalHead || []).join("\n") + `\nFound this on Jahannuma webpage\nCheckout there webpage here>> `,
-                    url: `${window.location.origin}/EN/Ashaar/${encodeURIComponent(target)}`,
+                    title,
+                    text: headLines.join("\n") + `\nयह जहांनुमा वेबसाइट पर मिला\nयहाँ देखें:`,
+                    url: `${window.location.origin}/HI/Ashaar/${encodeURIComponent(target)}`,
                 });
                 const inc = 1;
                 const targetId = shaerData.id;
@@ -147,7 +151,7 @@ export default function Page({ params }: { params: MozuPageParams }) {
     return (
         <div>
             <div className="flex flex-row w-screen border-b-2 p-3 justify-center items-center">
-                <div className="text-4xl m-5">{`اشعار بعنوان : ${decodedUnwan}`}</div>
+                <div dir="ltr" className="text-4xl m-5">{`अशआर शीर्षक: ${decodedUnwan}`}</div>
             </div>
             {isLoading && <SkeletonLoader />}
             {!isLoading && (

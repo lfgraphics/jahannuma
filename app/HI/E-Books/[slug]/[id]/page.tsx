@@ -14,6 +14,7 @@ import { TTL } from "@/lib/airtable-fetcher";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Heart, RefreshCwIcon, Share2 } from "lucide-react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 
 // Dynamically import PdfViewer on the client only to avoid SSR/window issues
@@ -88,13 +89,29 @@ export default function Page() {
     },
   });
 
+  const bookName = useMemo(
+    () => record?.fields?.hiBookName || record?.fields?.bookName || "किताब",
+    [record]
+  );
+  const writerName = useMemo(
+    () => record?.fields?.hiWriter || record?.fields?.writer || "",
+    [record]
+  );
+  const desc = useMemo(
+    () => record?.fields?.hiDesc || record?.fields?.desc || "",
+    [record]
+  );
+  const maloomat = useMemo(
+    () => record?.fields?.hiMaloomat || record?.fields?.maloomat || "",
+    [record]
+  );
+
   // Share functionality
   const handleShareClick = () => {
     try {
       if (navigator.share) {
-        const title = record?.fields?.bookName || "کتاب";
-        const writer = record?.fields?.writer;
-        const desc = record?.fields?.desc;
+        const title = bookName;
+        const writer = writerName;
         const text = `${title}${writer ? ` - ${writer}` : ""}\n${desc || ""}`;
         const shareUrl = window.location.href;
 
@@ -110,12 +127,12 @@ export default function Page() {
         // Fallback: copy to clipboard
         const shareUrl = window.location.href;
         navigator.clipboard.writeText(shareUrl).then(() => {
-          toast.success("لنک کاپی ہو گیا");
+          toast.success("लिंक कॉपी हो गया");
         });
       }
     } catch (error) {
       console.error("Error sharing:", error);
-      toast.error("شیئر کرنے میں خرابی");
+      toast.error("शेयर करने में त्रुटि");
     }
   };
 
@@ -215,7 +232,7 @@ export default function Page() {
   };
 
   return (
-    <div dir="rtl" className="flex flex-col min-h-screen w-screen">
+    <div dir="ltr" className="flex flex-col min-h-screen w-screen">
       {isLoading && <SkeletonLoader />}
       {!isLoading && (
         <div className="relative">
@@ -237,13 +254,13 @@ export default function Page() {
               {record?.fields ? (
                 <div className="text-lg" data-aos="fade-up">
                   <p className="my-2">
-                    کتاب کا نام:{" "}
+                    किताब का नाम:{" "}
                     <span className="text-primary">
-                      {record.fields.bookName}
+                      {bookName}
                     </span>
                   </p>
                   <p className="my-2">
-                    اشاعت:{" "}
+                    प्रकाशन:{" "}
                     {formatDate(record?.fields?.publishingDate).split("/")[2] ||
                       formatDate(record?.fields?.publishingDate).split(
                         "/"
@@ -251,19 +268,19 @@ export default function Page() {
                       record?.fields?.publishingDate}
                   </p>
                   <p className="my-2">
-                    مصنف:
-                    <Link href={`/Shaer/${record.fields.writer}`}>
-                      {record.fields.writer}
+                    लेखक:{" "}
+                    <Link href={`/HI/Shaer/${encodeURIComponent(writerName)}?tab=intro`}>
+                      {writerName}
                     </Link>
                   </p>
-                  <p className="my-2">تفصیل: {record.fields.desc}</p>
-                  {record.fields.maloomat && (
+                  <p className="my-2">विवरण: {desc}</p>
+                  {maloomat && (
                     <div className="bg-muted py-2 mt-4 rounded-sm border">
                       <p className="text-xs mr-4 text-foreground">
-                        دلچسپ معلومات:
+                        अतिरिक्त जानकारी:
                       </p>
                       <p className="maloomat mr-4 mt-2 text-sm">
-                        {record.fields.maloomat}
+                        {maloomat}
                       </p>
                     </div>
                   )}
@@ -279,7 +296,7 @@ export default function Page() {
                         if (requireAuth("like")) like.handleLikeClick();
                       }}
                       disabled={like.isDisabled}
-                      title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+                      title={like.isLiked ? "पसंदीदा" : "पसंद करें"}
                     >
                       <Heart className="w-5 h-5" fill="currentColor" />
                       <span>{like.likesCount}</span>
@@ -288,7 +305,7 @@ export default function Page() {
                     <button
                       className="flex items-center gap-2 px-4 py-2 rounded-md bg-blue-100 text-blue-600 border border-blue-300 hover:bg-blue-200 transition-colors duration-300"
                       onClick={handleShareClick}
-                      title="شیئر کریں"
+                      title="शेयर करें"
                     >
                       <Share2 className="w-5 h-5" />
                     </button>
@@ -299,7 +316,7 @@ export default function Page() {
                       href={`#pdf`}
                       className=" text-background block mx-auto m-4 p-2 bg-blue-500 text-center w-[200px] px-8 rounded-md"
                     >
-                      کتاب پڑھیں
+                      किताब पढ़ें
                     </Link>
                     {bookUrl && record.fields.download && (
                       <Link
@@ -312,7 +329,7 @@ export default function Page() {
                         }}
                         className=" text-foreground block mx-auto m-4 mb-1 p-2 border-2 border-blue-500 text-center w-[200px] px-8 rounded-md"
                       >
-                        کتاب ڈاؤنلوڈ کریں
+                        किताब डाउनलोड करें
                       </Link>
                     )}
                   </div>
@@ -322,7 +339,7 @@ export default function Page() {
                   className="text-center text-sm text-muted-foreground"
                   data-aos="fade-up"
                 >
-                  ریکارڈ دستیاب نہیں ہے
+                  रिकॉर्ड उपलब्ध नहीं है
                 </div>
               )}
             </div>
@@ -331,7 +348,7 @@ export default function Page() {
             <RefreshCwIcon
               className="sticky top-[95px] right-3"
             />
-            ریفرش
+            रीफ़्रेश
           </Button>
           <div id="pdf" className="p-4" key={bookKey}>
             {bookUrl && <PdfViewer url={bookUrl} />}

@@ -100,12 +100,27 @@ const ShaerComponent = ({
   }, [initialData]);
 
   // Active tab handling
-  const [activeNav, setActiveNav] = useState<string>("");
+  const [activeNav, setActiveNav] = useState<string>("intro");
   useEffect(() => {
     const initializeActiveNav = () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const tab = urlParams.get("tab");
-      setActiveNav(tab || "تعارف");
+      const tab = (urlParams.get("tab") || "").trim();
+      const lower = tab.toLowerCase();
+      const normalized =
+        lower === "intro" || lower === "ta'aruf" || tab === "تعارف"
+          ? "intro"
+          : lower === "ghazlen" || tab === "غزلیں"
+            ? "ghazlen"
+            : lower === "nazmen" || tab === "نظمیں"
+              ? "nazmen"
+              : lower === "ashaar" || lower === "ash'ar" || tab === "اشعار"
+                ? "ashaar"
+                : lower === "ebooks" || lower === "e-books" || tab === "ای-بکس" || tab === "ئی - بکس"
+                  ? "ebooks"
+                  : lower === "rubai" || lower === "ruba'i" || tab === "رباعی"
+                    ? "rubai"
+                    : "intro";
+      setActiveNav(normalized);
     };
     initializeActiveNav();
     window.addEventListener("popstate", initializeActiveNav);
@@ -116,8 +131,8 @@ const ShaerComponent = ({
     setActiveNav(nav);
     // Update URL to reflect the active tab
     const url = new URL(window.location.href);
-    url.searchParams.set('tab', nav);
-    window.history.pushState({}, '', url.toString());
+    url.searchParams.set("tab", nav);
+    window.history.pushState({}, "", url.toString());
   };
 
   const handleLinkClick =
@@ -133,16 +148,16 @@ const ShaerComponent = ({
   // Show loading state during hydration to prevent hook mismatch
   if (!isClient) {
     return (
-      <div className="container mx-auto flex flex-col">
+      <div dir="ltr" className="container mx-auto flex flex-col">
         <div className="h-screen flex items-center justify-center">
-          <div className="text-lg">لوڈ ہو رہا ہے...</div>
+          <div className="text-lg">Loading...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto flex flex-col">
+    <div dir="ltr" className="container mx-auto flex flex-col">
       <Intro
         data={data as any}
         currentTab={activeNav}
@@ -157,26 +172,24 @@ const ShaerComponent = ({
       />
       <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 border-b-2 self-center pb-0 px-4 pt-4 text-xl">
         <div
-          className={`nav-item ${activeNav === "ta'aruf" ? "active" : ""
+          className={`nav-item ${activeNav === "intro" ? "active" : ""
             } min-w-[40px] text-center transition-all ease-in-out duration-500`}
         >
           <a
-            href={`/Shaer/${nameParam}?tab=${encodeURIComponent("تعارف")}`}
-            onClick={handleLinkClick("ta'aruf")}
+            href={`/EN/Shaer/${nameParam}?tab=intro`}
+            onClick={handleLinkClick("intro")}
           >
             Ta'aruf
           </a>
         </div>
         {data.ghazlen && (
           <div
-            className={`nav-item ${activeNav === "Ghazlen" ? "active" : ""
+            className={`nav-item ${activeNav === "ghazlen" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "Ghazlen"
-              )}`}
-              onClick={handleLinkClick("Ghazlen")}
+              href={`/EN/Shaer/${nameParam}?tab=ghazlen`}
+              onClick={handleLinkClick("ghazlen")}
             >
               Ghazlen
             </a>
@@ -184,14 +197,12 @@ const ShaerComponent = ({
         )}
         {data.nazmen && (
           <div
-            className={`nav-item ${activeNav === "Nazmen" ? "active" : ""
+            className={`nav-item ${activeNav === "nazmen" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "Nazmen"
-              )}`}
-              onClick={handleLinkClick("Nazmen")}
+              href={`/EN/Shaer/${nameParam}?tab=nazmen`}
+              onClick={handleLinkClick("nazmen")}
             >
               Nazmen
             </a>
@@ -199,14 +210,12 @@ const ShaerComponent = ({
         )}
         {data.ashaar && (
           <div
-            className={`nav-item ${activeNav === "Ash'ar" ? "active" : ""
+            className={`nav-item ${activeNav === "ashaar" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "Ash'ar"
-              )}`}
-              onClick={handleLinkClick("Ash'ar")}
+              href={`/EN/Shaer/${nameParam}?tab=ashaar`}
+              onClick={handleLinkClick("ashaar")}
             >
               Ash'ar
             </a>
@@ -214,14 +223,12 @@ const ShaerComponent = ({
         )}
         {data.eBooks && (
           <div
-            className={`nav-item ${activeNav === "e-books" ? "active" : ""
+            className={`nav-item ${activeNav === "ebooks" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "e-books"
-              )}`}
-              onClick={handleLinkClick("e-books")}
+              href={`/EN/Shaer/${nameParam}?tab=ebooks`}
+              onClick={handleLinkClick("ebooks")}
             >
               E-Books
             </a>
@@ -229,34 +236,32 @@ const ShaerComponent = ({
         )}
         {data.rubai && (
           <div
-            className={`nav-item ${activeNav === "Ruba'i" ? "active" : ""
+            className={`nav-item ${activeNav === "rubai" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "Ruba'i"
-              )}`}
-              onClick={handleLinkClick("Ruba'i")}
+              href={`/EN/Shaer/${nameParam}?tab=rubai`}
+              onClick={handleLinkClick("rubai")}
             >
               Ruba'i
             </a>
           </div>
         )}
       </div>
-      {activeNav === "ta'aruf" && <Intro2 data={data as any} />}
-      {activeNav === "Ghazlen" && (
+      {activeNav === "intro" && <Intro2 data={data as any} />}
+      {activeNav === "ghazlen" && (
         <Ghazlen takhallus={data.takhallus as string} />
       )}
-      {activeNav === "Nazmen" && (
+      {activeNav === "nazmen" && (
         <Nazmen takhallus={data.takhallus as string} />
       )}
-      {activeNav === "Ash'ar" && (
+      {activeNav === "ashaar" && (
         <Ashaar takhallus={data.takhallus as string} />
       )}
-      {activeNav === "e-books" && (
+      {activeNav === "ebooks" && (
         <EBkooks takhallus={data.takhallus as string} />
       )}
-      {activeNav === "Ruba'i" && (
+      {activeNav === "rubai" && (
         <Rubai takhallus={data.takhallus as string} />
       )}
     </div>

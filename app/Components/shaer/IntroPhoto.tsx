@@ -1,8 +1,9 @@
 import LoginRequiredDialog from "@/components/ui/login-required-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 import useAuthGuard from "@/hooks/useAuthGuard";
 import { useLikeButton } from "@/hooks/useLikeButton";
 import { CalendarDays, Heart, MapPin, Share2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Loader from "../Loader";
 
 interface IntroProps {
@@ -64,6 +65,7 @@ const Intro: React.FC<IntroProps> = ({
   storageKey = "Shura",
   onLikeChange
 }) => {
+  const { language, isRTL } = useLanguage();
   const [insideBrowser, setInsideBrowser] = useState(false);
   const { requireAuth, showLoginDialog, setShowLoginDialog } = useAuthGuard();
 
@@ -92,14 +94,16 @@ const Intro: React.FC<IntroProps> = ({
         const tab = (currentTab || currentParams.get("tab") || "").trim();
         const shareUrl = `${origin}${decodedPath}${tab ? `?tab=${tab}` : ""}`;
 
-        navigator
-          .share({
-            text: `${title}\n\n${text !== "" ? `${text}\n` : ""
-              }Found this on Jahannuma webpage\nVisit it here\n${shareUrl}`,
-            url: shareUrl,
-          })
-          .then(() => console.log("Successful share"))
-          .catch((error) => console.log("Error sharing", error));
+        const tail =
+          language === "UR"
+            ? `جہاں نما ویب سائٹ پر ملا\nیہاں دیکھیں\n${shareUrl}`
+            : language === "HI"
+              ? `यह जहांनुमा वेबसाइट पर मिला\nयहाँ देखें\n${shareUrl}`
+              : `Found this on Jahannuma website\nVisit it here\n${shareUrl}`;
+        navigator.share({
+          text: `${title}\n\n${text !== "" ? `${text}\n` : ""}${tail}`,
+          url: shareUrl,
+        });
       } else {
         console.log("Web Share API is not supported.");
       }
@@ -119,12 +123,18 @@ const Intro: React.FC<IntroProps> = ({
     }
   }, []);
 
+  const likeTitle = useMemo(() => {
+    if (language === "UR") return like?.isLiked ? "پسندیدہ" : "پسند کریں";
+    if (language === "HI") return like?.isLiked ? "पसंदीदा" : "पसंद करें";
+    return like?.isLiked ? "Favorite" : "Like";
+  }, [language, like?.isLiked]);
+
   return (
     <>
       {!data && <Loader />}
       {data && (
         <div
-          dir="rtl"
+          dir={isRTL ? "rtl" : "ltr"}
           className="container mx-auto flex flex-col justify-center "
         >
           <div
@@ -132,7 +142,7 @@ const Intro: React.FC<IntroProps> = ({
             className="bg-cover bg-center h-32 lg:h-52 w-full"
           >
             <div
-              dir="rtl"
+              dir={isRTL ? "rtl" : "ltr"}
               // style={{ filter: "backGroundBlur(10px)" }}
               className="h-full w-full bg-black/70 backdrop-blur-[1px] flex items-center justify-center gap-2"
             >
@@ -187,7 +197,7 @@ const Intro: React.FC<IntroProps> = ({
                     }}
                     disabled={like.isDisabled}
                     aria-disabled={like.isDisabled}
-                    title={like.isLiked ? "پسندیدہ" : "پسند کریں"}
+                    title={likeTitle}
                   >
                     <Heart className="text-2xl" fill="currentColor" size={24} />
                     <span className="text-sm">{like.likesCount}</span>

@@ -99,12 +99,26 @@ const ShaerComponent = ({
   }, [initialData]);
 
   // Active tab handling
-  const [activeNav, setActiveNav] = useState<string>("");
+  const [activeNav, setActiveNav] = useState<string>("intro");
   useEffect(() => {
     const initializeActiveNav = () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const tab = urlParams.get("tab");
-      setActiveNav(tab || "تعارف");
+      const tab = (urlParams.get("tab") || "").trim();
+      const normalized =
+        tab === "intro" || tab === "تعارف"
+          ? "intro"
+          : tab === "ghazlen" || tab === "غزلیں"
+            ? "ghazlen"
+            : tab === "nazmen" || tab === "نظمیں"
+              ? "nazmen"
+              : tab === "ashaar" || tab === "اشعار"
+                ? "ashaar"
+                : tab === "ebooks" || tab === "e-books" || tab === "ئی - بکس" || tab === "ای-بکس"
+                  ? "ebooks"
+                  : tab === "rubai" || tab === "رباعی"
+                    ? "rubai"
+                    : "intro";
+      setActiveNav(normalized);
     };
     initializeActiveNav();
     window.addEventListener("popstate", initializeActiveNav);
@@ -115,8 +129,8 @@ const ShaerComponent = ({
     setActiveNav(nav);
     // Update URL to reflect the active tab
     const url = new URL(window.location.href);
-    url.searchParams.set('tab', nav);
-    window.history.pushState({}, '', url.toString());
+    url.searchParams.set("tab", nav);
+    window.history.pushState({}, "", url.toString());
   };
 
   const handleLinkClick =
@@ -156,26 +170,24 @@ const ShaerComponent = ({
       />
       <div className="inner-navs w-full md:w-[80vw] flex flex-row gap-3 border-b-2 self-center pb-0 px-4 pt-4 text-xl">
         <div
-          className={`nav-item ${activeNav === "تعارف" ? "active" : ""
+          className={`nav-item ${activeNav === "intro" ? "active" : ""
             } min-w-[40px] text-center transition-all ease-in-out duration-500`}
         >
           <a
-            href={`/Shaer/${nameParam}?tab=${encodeURIComponent("تعارف")}`}
-            onClick={handleLinkClick("تعارف")}
+            href={`/Shaer/${nameParam}?tab=intro`}
+            onClick={handleLinkClick("intro")}
           >
             تعارف
           </a>
         </div>
         {data.ghazlen && (
           <div
-            className={`nav-item ${activeNav === "غزلیں" ? "active" : ""
+            className={`nav-item ${activeNav === "ghazlen" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "غزلیں"
-              )}`}
-              onClick={handleLinkClick("غزلیں")}
+              href={`/Shaer/${nameParam}?tab=ghazlen`}
+              onClick={handleLinkClick("ghazlen")}
             >
               غزلیں
             </a>
@@ -183,14 +195,12 @@ const ShaerComponent = ({
         )}
         {data.nazmen && (
           <div
-            className={`nav-item ${activeNav === "نظمیں" ? "active" : ""
+            className={`nav-item ${activeNav === "nazmen" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "نظمیں"
-              )}`}
-              onClick={handleLinkClick("نظمیں")}
+              href={`/Shaer/${nameParam}?tab=nazmen`}
+              onClick={handleLinkClick("nazmen")}
             >
               نظمیں
             </a>
@@ -198,14 +208,12 @@ const ShaerComponent = ({
         )}
         {data.ashaar && (
           <div
-            className={`nav-item ${activeNav === "اشعار" ? "active" : ""
+            className={`nav-item ${activeNav === "ashaar" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "اشعار"
-              )}`}
-              onClick={handleLinkClick("اشعار")}
+              href={`/Shaer/${nameParam}?tab=ashaar`}
+              onClick={handleLinkClick("ashaar")}
             >
               اشعار
             </a>
@@ -213,14 +221,12 @@ const ShaerComponent = ({
         )}
         {data.eBooks && (
           <div
-            className={`nav-item ${activeNav === "ئی - بکس" ? "active" : ""
+            className={`nav-item ${activeNav === "ebooks" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "ئی - بکس"
-              )}`}
-              onClick={handleLinkClick("ئی - بکس")}
+              href={`/Shaer/${nameParam}?tab=ebooks`}
+              onClick={handleLinkClick("ebooks")}
             >
               ای-بکس
             </a>
@@ -228,34 +234,32 @@ const ShaerComponent = ({
         )}
         {data.rubai && (
           <div
-            className={`nav-item ${activeNav === "رباعی" ? "active" : ""
+            className={`nav-item ${activeNav === "rubai" ? "active" : ""
               } min-w-[40px] text-center transition-all ease-in-out duration-500`}
           >
             <a
-              href={`/Shaer/${nameParam}?tab=${encodeURIComponent(
-                "رباعی"
-              )}`}
-              onClick={handleLinkClick("رباعی")}
+              href={`/Shaer/${nameParam}?tab=rubai`}
+              onClick={handleLinkClick("rubai")}
             >
               رباعی
             </a>
           </div>
         )}
       </div>
-      {activeNav === "تعارف" && <Intro2 data={data as any} />}
-      {activeNav === "غزلیں" && (
+      {activeNav === "intro" && <Intro2 data={data as any} />}
+      {activeNav === "ghazlen" && (
         <Ghazlen takhallus={data.takhallus as string} />
       )}
-      {activeNav === "نظمیں" && (
+      {activeNav === "nazmen" && (
         <Nazmen takhallus={data.takhallus as string} />
       )}
-      {activeNav === "اشعار" && (
+      {activeNav === "ashaar" && (
         <Ashaar takhallus={data.takhallus as string} />
       )}
-      {activeNav === "ئی - بکس" && (
+      {activeNav === "ebooks" && (
         <EBkooks takhallus={data.takhallus as string} />
       )}
-      {activeNav === "رباعی" && (
+      {activeNav === "rubai" && (
         <Rubai takhallus={data.takhallus as string} />
       )}
     </div>
