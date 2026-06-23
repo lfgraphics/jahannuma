@@ -17,7 +17,7 @@ export const navPages: Array<TranslatedText & { EN: string }> = [
   { EN: "Rubai", UR: "رباعی", HI: "रुबाई" },
   { EN: "Ghazlen", UR: "غزلیں", HI: "ग़ज़लें" },
   { EN: "Nazmen", UR: "نظمیں", HI: "नज़्में" },
-  { EN: "E-Books", UR: "ای-بکس", HI: "ई-बुक्स" },
+  { EN: "EBooks", UR: "ای-بکس", HI: "ई-बुक्स" },
   { EN: "Blogs", UR: "بلاگز", HI: "ब्लॉग्स" },
   { EN: "Interview", UR: "انٹرویوز", HI: "इंटरव्यूज़" },
   { EN: "Favorites", UR: "پسندیدہ", HI: "पसंदीदा" },

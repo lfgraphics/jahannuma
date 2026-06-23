@@ -270,7 +270,13 @@ export function formatRubaiRecord(
 // Filter formula builders
 const esc = (s: string) => String(s).replace(/'/g, "''");
 export const buildShaerFilter = (shaerName: string) =>
-  `({shaer}='${esc(shaerName)}')`;
+  `OR(TRIM({shaer})='${esc(
+    String(shaerName).trim().replace(/\s+/g, " ")
+  )}', TRIM({enShaer})='${esc(
+    String(shaerName).trim().replace(/\s+/g, " ")
+  )}', TRIM({hiShaer})='${esc(
+    String(shaerName).trim().replace(/\s+/g, " ")
+  )}')`;
 // Handle both single text {unwan} and array/multi-select {unwan}
 // We coerce text to string with {unwan}&'' and also check ARRAYJOIN for array schemas
 export const buildUnwanFilter = (unwan: string) =>

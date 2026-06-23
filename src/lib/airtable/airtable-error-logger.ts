@@ -461,9 +461,13 @@ export class AirtableErrorLogger {
     response?: Response,
     error?: Error
   ): void {
-    const success = !error && response?.ok;
-    const message = `Airtable API ${method} ${url} - ${success ? 'success' : 'failed'}`;
-    const logLevel = success ? LogLevel.DEBUG : LogLevel.ERROR;
+    const isStarted = !response && !error;
+    const success = !error && !!response?.ok;
+    const message = `Airtable API ${method} ${url} - ${
+      isStarted ? "started" : success ? "success" : "failed"
+    }`;
+    const logLevel =
+      error || (response && !response.ok) ? LogLevel.ERROR : LogLevel.DEBUG;
 
     if (logLevel === LogLevel.DEBUG) {
       logger.debug('AIRTABLE_API', message, {
@@ -473,7 +477,7 @@ export class AirtableErrorLogger {
         status: response?.status,
         statusText: response?.statusText,
         error: error?.message,
-        success
+        success: isStarted ? undefined : success
       });
     } else {
       logger.error('AIRTABLE_API', message, error ? error as EnhancedError : undefined, {

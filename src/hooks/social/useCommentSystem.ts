@@ -1,7 +1,7 @@
 "use client";
 import type { CommentFormData, CommentRecord } from "@/types";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import useSWR, { mutate } from "swr";
 
@@ -25,7 +25,8 @@ const fetcher = async (url: string) => {
   if (!response.ok) {
     throw new Error(`Failed to fetch: ${response.status}`);
   }
-  return response.json();
+  const json = await response.json();
+  return json;
 };
 
 export function useCommentSystem(
@@ -56,7 +57,18 @@ export function useCommentSystem(
     revalidateOnReconnect: true,
   });
 
-  const comments: CommentRecord[] = commentsData?.data?.records || [];
+  const comments: CommentRecord[] = useMemo(() => {
+    const rawRecords = commentsData?.data?.records || [];
+    return rawRecords.map((record: any) => {
+      const fields = record?.fields ?? record ?? {};
+      return {
+        dataId: fields.dataId ?? "",
+        commentorName: fields.commentorName ?? "",
+        timestamp: fields.timestamp ?? record?.createdTime ?? "",
+        comment: fields.comment ?? "",
+      };
+    });
+  }, [commentsData]);
   const isLoading = !error && !commentsData && !!currentRecordId;
 
   // Get commenter name from user metadata
@@ -127,6 +139,7 @@ export function useCommentSystem(
       } catch (error) {
         console.error("Comment submission failed:", error);
         toast.error("Failed to add comment. Please try again.");
+        throw error;
       } finally {
         setIsSubmitting(false);
       }
