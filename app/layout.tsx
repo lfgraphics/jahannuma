@@ -123,6 +123,15 @@ export default function RootLayout({
         <meta name="theme-color" content="#F0D586" />
         <meta name="color-scheme" content="light dark" />
 
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SLC704MYG2"></script>
+        <script>
+          {`window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-SLC704MYG2');`}
+        </script>
+
         {/* Critical CSS for font loading */}
         <style
           dangerouslySetInnerHTML={{
