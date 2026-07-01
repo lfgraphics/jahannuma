@@ -73,6 +73,9 @@ const Ads: React.FC = () => {
     });
   }, [records, error]);
 
+  const adItemClassName =
+    "flex-shrink-0 w-[calc(100vw-2rem)] sm:w-[320px] md:w-[350px] lg:w-[400px]";
+
   if (isLoading && !error) {
     return (
       <ScrollArea className="w-full whitespace-nowrap">
@@ -80,7 +83,7 @@ const Ads: React.FC = () => {
           {[1, 2, 3].map((i) => (
             <div 
               key={i} 
-              className="flex-shrink-0 w-[280px] sm:w-[320px] md:w-[350px] lg:w-[400px] h-[200px] md:h-[220px] lg:h-[240px] bg-gray-200 animate-pulse rounded-md"
+              className={`${adItemClassName} h-[200px] md:h-[220px] lg:h-[240px] bg-gray-200 animate-pulse rounded-md`}
             />
           ))}
         </div>
@@ -94,8 +97,8 @@ const Ads: React.FC = () => {
       <div className="flex gap-3 p-3">
         {adsData.map((ad, index) => {
           const AdContent = (
-            <div className="flex-shrink-0 w-full sm:w-[320px] md:w-[350px] lg:w-[400px] shadow-md rounded-md overflow-hidden bg-background">
-              <div className="w-full h-[70%] overflow-hidden">
+            <div className="w-full shadow-md rounded-md overflow-hidden bg-background">
+              <div className="w-full aspect-[3/1] overflow-hidden">
                 <img
                   src={ad.imageUrl}
                   alt={ad.title || `Ad ${index + 1}`}
@@ -125,12 +128,12 @@ const Ads: React.FC = () => {
               key={index} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="block"
+              className={adItemClassName}
             >
               {AdContent}
             </Link>
           ) : (
-            <div key={index}>
+            <div key={index} className={adItemClassName}>
               {AdContent}
             </div>
           );
