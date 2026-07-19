@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { getContentRouteSegment } from "@/lib/content-route-segments";
 
 export interface PageMetadataOptions {
   title: string;
@@ -312,13 +313,13 @@ export function generateContentPageMetadata(options: {
     title,
     description: enhancedDescription,
     keywords: dynamicKeywords,
-    url: `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
+    url: `/${getContentRouteSegment(contentType)}`,
     image: config.image,
     language,
     alternateLanguages: {
-      ur: `https://jahan-numa.org/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
-      en: `https://jahan-numa.org/EN/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
-      hi: `https://jahan-numa.org/HI/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
+      ur: `https://jahan-numa.org/${getContentRouteSegment(contentType)}`,
+      en: `https://jahan-numa.org/EN/${getContentRouteSegment(contentType)}`,
+      hi: `https://jahan-numa.org/HI/${getContentRouteSegment(contentType)}`,
     },
   });
 }

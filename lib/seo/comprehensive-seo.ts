@@ -3,6 +3,7 @@
  * for optimal search engine optimization across all content types.
  */
 
+import { getContentRouteSegment } from "@/lib/content-route-segments";
 import { generatePageMetadata } from "@/src";
 import { Metadata } from "next";
 import {
@@ -90,25 +91,25 @@ export async function generateCollectionPageSEO(params: {
 
   // Generate base metadata using the available function
   const baseMetadata = generatePageMetadata({
-    title: `${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Collection`,
+    title: `${getContentRouteSegment(contentType)} Collection`,
     description: `Explore our collection of ${contentType}`,
     keywords: featuredAuthors || [],
-    url: `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
+    url: `/${getContentRouteSegment(contentType)}`,
     language,
   });
 
   // Enhance with dynamic content
   const metadata = generateDynamicContentMetadata({
     ...baseMetadata,
-    url: `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
-    title: (typeof baseMetadata.title === 'string' ? baseMetadata.title : baseMetadata.title?.toString()) || `${contentType.charAt(0).toUpperCase() + contentType.slice(1)} - Jahannuma`,
+    url: `/${getContentRouteSegment(contentType)}`,
+    title: (typeof baseMetadata.title === 'string' ? baseMetadata.title : baseMetadata.title?.toString()) || `${getContentRouteSegment(contentType)} - Jahannuma`,
     description: baseMetadata.description || `Explore ${contentType} collection on Jahannuma`,
     keywords: Array.isArray(baseMetadata.keywords) ? baseMetadata.keywords : (baseMetadata.keywords ? [baseMetadata.keywords] : undefined)
   }, dynamicContent);
 
   // Generate structured data
   const pageData: SEOPageData = {
-    url: `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
+    url: `/${getContentRouteSegment(contentType)}`,
     title: metadata.title as string,
     description: metadata.description as string,
     language,
@@ -268,7 +269,7 @@ export function generateSEOBreadcrumbs(params: {
 
     breadcrumbs.push({
       name: contentNames[contentType][language],
-      url: `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
+      url: `/${getContentRouteSegment(contentType)}`,
     });
 
     if (authorName) {

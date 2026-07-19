@@ -1,5 +1,8 @@
+import { normalizeContentRouteSegment } from "@/lib/content-route-segments";
 import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
 // Simple path-based protected route check
 const isProtectedPath = (pathname: string) => {
     return (
@@ -31,6 +34,16 @@ export default clerkMiddleware(async (auth: () => any, req: NextRequest) => {
         }
     }
 
+    // Normalize only the page section segment, e.g. /EBooks -> /E-Books
+    const contentSegmentIndex = segments[0] === "EN" || segments[0] === "HI" ? 1 : 0;
+    const normalizedContentSegment = segments[contentSegmentIndex]
+        ? normalizeContentRouteSegment(segments[contentSegmentIndex])
+        : null;
+    if (normalizedContentSegment && segments[contentSegmentIndex] !== normalizedContentSegment) {
+        segments[contentSegmentIndex] = normalizedContentSegment;
+        changed = true;
+    }
+
     // Normalize any favorites segment to capitalized 'Favorites'
     for (let i = 0; i < segments.length; i++) {
         if (segments[i].toLowerCase() === "favorites") {
@@ -40,7 +53,7 @@ export default clerkMiddleware(async (auth: () => any, req: NextRequest) => {
 
     if (changed) {
         url.pathname = "/" + segments.join("/");
-        return Response.redirect(url.toString(), 308);
+        return NextResponse.redirect(url, 308);
     }
 
     // Auth protect canonical Favorites paths (including nested)

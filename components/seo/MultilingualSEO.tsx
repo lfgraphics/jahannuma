@@ -1,4 +1,5 @@
 import { Language } from "@/lib/multilingual-texts";
+import { getContentRouteSegment } from "@/lib/content-route-segments";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { generateBreadcrumbStructuredData, generateOrganizationStructuredData, generateWebsiteStructuredData } from "@/lib/seo/structured-data";
 import { Metadata } from "next";
@@ -354,7 +355,7 @@ export function generateCollectionSEO(params: {
     description += ` Featured: ${authors}.`;
   }
 
-  const pagePath = path || `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`;
+  const pagePath = path || `/${getContentRouteSegment(contentType)}`;
 
   return generateMultilingualSEO({
     language,
@@ -427,7 +428,7 @@ export function generateIndividualContentSEO(params: {
     wordCount: content.split(/\s+/).length,
     breadcrumbs: [
       { name: "Home", url: "/" },
-      { name: contentType.charAt(0).toUpperCase() + contentType.slice(1), url: `/${contentType}` },
+      { name: getContentRouteSegment(contentType), url: `/${getContentRouteSegment(contentType)}` },
       { name: title, url: pagePath },
     ],
   });

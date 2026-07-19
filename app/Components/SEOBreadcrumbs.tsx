@@ -3,6 +3,7 @@
  */
 
 import { BreadcrumbItem, generateBreadcrumbStructuredData } from "@/lib/seo/structured-data";
+import { getContentRouteSegment } from "@/lib/content-route-segments";
 
 interface SEOBreadcrumbsProps {
   items: BreadcrumbItem[];
@@ -100,7 +101,7 @@ export function generateContentBreadcrumbs(params: {
 
   breadcrumbs.push({
     name: contentNames[contentType][language],
-    url: `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`,
+    url: `/${getContentRouteSegment(contentType)}`,
   });
 
   if (authorName) {

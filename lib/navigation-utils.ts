@@ -1,3 +1,4 @@
+import { getContentRouteSegment } from "@/lib/content-route-segments";
 import { Language } from "@/lib/multilingual-texts";
 
 /**
@@ -117,7 +118,7 @@ export function generateContentNavigation(params: {
   const { language, contentType, includeSubRoutes = true } = params;
 
   const baseUrl = generateLanguageUrl("", language);
-  const contentPath = `${baseUrl}/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`;
+  const contentPath = `${baseUrl}/${getContentRouteSegment(contentType)}`;
 
   const navigation = [
     {
@@ -204,15 +205,15 @@ export function generateSiteNavigation(language: Language) {
     },
     content: contentTypes.map(type => ({
       name: getContentTypeLabel(type, language),
-      url: `${baseUrl}/${type.charAt(0).toUpperCase() + type.slice(1)}`,
+      url: `${baseUrl}/${getContentRouteSegment(type)}`,
       children: type !== "ebooks" ? [
         {
           name: getPoetLabel(language),
-          url: `${baseUrl}/${type.charAt(0).toUpperCase() + type.slice(1)}/shaer`,
+          url: `${baseUrl}/${getContentRouteSegment(type)}/shaer`,
         },
         ...(["ashaar", "ghazlen"].includes(type) ? [{
           name: getTopicLabel(language),
-          url: `${baseUrl}/${type.charAt(0).toUpperCase() + type.slice(1)}/mozu`,
+          url: `${baseUrl}/${getContentRouteSegment(type)}/mozu`,
         }] : []),
       ] : [],
     })),

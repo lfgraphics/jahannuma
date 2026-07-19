@@ -1,6 +1,7 @@
 "use client";
 
 import { Language } from "@/lib/multilingual-texts";
+import { getContentRouteSegment } from "@/lib/content-route-segments";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -140,7 +141,7 @@ export function generateContentBreadcrumbs(params: {
   };
 
   const sectionLabel = contentTypeLabels[contentType][language];
-  const sectionUrl = getLanguageUrl(language, `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`);
+  const sectionUrl = getLanguageUrl(language, `/${getContentRouteSegment(contentType)}`);
 
   // Add section breadcrumb
   breadcrumbs.push({
@@ -232,7 +233,7 @@ export function generateNestedRouteBreadcrumbs(params: {
   };
 
   const sectionLabel = contentTypeLabels[contentType][language];
-  const sectionUrl = getLanguageUrl(language, `/${contentType.charAt(0).toUpperCase() + contentType.slice(1)}`);
+  const sectionUrl = getLanguageUrl(language, `/${getContentRouteSegment(contentType)}`);
 
   // Add section breadcrumb
   breadcrumbs.push({
