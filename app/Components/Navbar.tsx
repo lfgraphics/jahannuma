@@ -196,8 +196,8 @@ const Navbar: React.FC = () => {
               </SelectTrigger>
               <SelectContent className="bg-transparent text-primary backdrop-blur-sm border border-border w-fit">
                 <SelectItem value="UR">اردو</SelectItem>
-                <SelectItem value="EN">EN</SelectItem>
-                <SelectItem value="HI">HI</SelectItem>
+                <SelectItem value="EN">English</SelectItem>
+                <SelectItem value="HI">हिन्दी</SelectItem>
               </SelectContent>
             </Select>
             <Link href={language === "UR" ? `/search` : `/${language}/search`}>

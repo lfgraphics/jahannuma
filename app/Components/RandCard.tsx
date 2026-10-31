@@ -168,17 +168,15 @@ const RandCard: React.FC<{}> = () => {
   if (loading || !randomItem) return <Loader />;
 
   return (
-    <div className="justify-center flex flex-col items-center m-4">
-      <h4 className="text-2xl my-4">ایک منتخب شعر</h4>
+    <div className="relative overflow-hidden justify-center flex flex-col items-center mt-4 pb-4">
+      <div
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-15 dark:opacity-10 pointer-events-none select-none"
+        style={{ backgroundImage: "url('/sherbgbanner.jpg')" }}
+      />
+      <h4 className="text-2xl my-4 relative z-10">ایک منتخب شعر</h4>
       {loading && <Loader></Loader>} {/* Show loader while fetching */}
       {!loading && (
-        <div className="relative">
-          {/* <div className="bg-white absolute left-0 top-0 bg-opacity-10 w-screen h-[300px] z-auto"></div> */}
-          <img
-            src="https://jahan-numa.org/carousel/jnd.jpeg"
-            className="object-cover bg-center absolute top-0 left-0 w-screen opacity-[0.09] rounded-lg overflow-clip scale-x-125 scale-y-110 translate-y-3 select-none z-0 touch-none h-[220px]"
-            draggable="false"
-          />
+        <div className="relative border-3 rounded-md pb-0 bg-background/20">
           <DataCard
             page="rand"
             download={true}

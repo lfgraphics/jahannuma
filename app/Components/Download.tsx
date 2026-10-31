@@ -29,6 +29,10 @@ type MinimalDownloadData = {
     ghazalHead?: string | string[];
     enGhazalHead?: string | string[];
     hiGhazalHead?: string | string[];
+    sher?: string | string[];
+    enSher?: string | string[];
+    hiSher?: string | string[];
+    [key: string]: any;
   };
 };
 
@@ -39,20 +43,46 @@ const DynamicDownloadHandler: React.FC<{
 }> = ({ data, onCancel }) => {
   const { language } = useLanguage();
   const isRTL = language === "UR";
-  const localizedShaer = useMemo(
-    () => getLanguageFieldValue<string>(data.fields ?? {}, "shaer", language) ?? "",
-    [data.fields, language]
-  );
+  const localizedShaer = useMemo(() => {
+    const f = (data?.fields ?? {}) as Record<string, any>;
+    const val = getLanguageFieldValue<string>(f, "shaer", language);
+    if (val && typeof val === "string" && val.trim()) return val;
+    if (language === "HI") return f.hiShaer || f.shaer || f.enShaer || "";
+    if (language === "EN") return f.enShaer || f.shaer || f.hiShaer || "";
+    return f.shaer || f.enShaer || f.hiShaer || "";
+  }, [data?.fields, language]);
+
   const ghazalHeadLines = useMemo(() => {
-    const head = getLanguageFieldValue<string | string[]>(
-      data.fields ?? {},
-      "ghazalHead",
-      language
-    );
+    const f = (data?.fields ?? {}) as Record<string, any>;
+    const getFirstValid = (...candidates: any[]) => {
+      for (const c of candidates) {
+        if (c !== undefined && c !== null) {
+          if (Array.isArray(c) && c.length > 0) return c;
+          if (typeof c === "string" && c.trim() !== "") return c;
+        }
+      }
+      return undefined;
+    };
+
+    const head =
+      language === "EN"
+        ? getFirstValid(f.enSher, f.enGhazalHead, f.sher, f.ghazalHead, f.hiSher, f.hiGhazalHead)
+        : language === "HI"
+          ? getFirstValid(f.hiSher, f.hiGhazalHead, f.sher, f.ghazalHead, f.enSher, f.enGhazalHead)
+          : getFirstValid(f.sher, f.ghazalHead, f.enSher, f.enGhazalHead, f.hiSher, f.hiGhazalHead);
+
     if (!head) return [] as string[];
-    if (Array.isArray(head)) return head.filter(Boolean);
-    return head.split("\n").map((line) => line.trim()).filter(Boolean);
-  }, [data.fields, language]);
+    if (Array.isArray(head)) {
+      return head
+        .flatMap((line) => (typeof line === "string" ? line.split("\n") : []))
+        .map((line) => line.trim())
+        .filter(Boolean);
+    }
+    return String(head)
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }, [data?.fields, language]);
   const copy = useMemo(() => {
     switch (language) {
       case "EN":
@@ -226,11 +256,11 @@ const DynamicDownloadHandler: React.FC<{
                     ))}
                   </p>
                   <div className="m-3 text-xs">{localizedShaer}</div>
-                  <div className={`absolute text-white text-sm top-3 ${isRTL ? "right-4" : "left-4"}`}>
-                    {copy.siteLabel}
+                  <div className={`absolute text-white text-sm top-2 ${isRTL ? "right-2" : "left-2"}`}>
+                    <img width={50} src="white-logo.png" alt="" />
                   </div>
                   <div className="absolute text-white text-xl font-bold w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-10 z-0">
-                    Jahan Numa
+                    jahan-numa.org
                   </div>
                 </div>
               </div>

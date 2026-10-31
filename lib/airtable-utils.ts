@@ -63,6 +63,9 @@ export function formatAshaarRecord(
     enGhazalHead: f.enSher
       ? String(f.enSher).split("\n")
       : [],
+    hiGhazalHead: f.hiSher
+      ? String(f.hiSher).split("\n")
+      : [],
     ghazal: Array.isArray(f.ghazal)
       ? f.ghazal
       : f.body
@@ -72,6 +75,11 @@ export function formatAshaarRecord(
       ? f.enGhazal
       : f.enBody
         ? String(f.enBody).split("\n")
+        : [],
+    hiGhazal: Array.isArray(f.ghazal)
+      ? f.hiGhazal
+      : f.hiBody
+        ? String(f.hiBody).split("\n")
         : [],
     anaween: Array.isArray(f.anaween)
       ? f.anaween
