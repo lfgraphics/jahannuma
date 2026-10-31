@@ -46,22 +46,28 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'any'
       },
       {
-        src: '/favicon/android-icon-192x192.png',
+        src: '/favicon/icon-192x192.png',
         sizes: '192x192',
-        type: 'image/png',
-        purpose: 'maskable'
-      },
-      {
-        src: '/favicon/android-icon-192x192.png',
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'maskable'
-      },
-      {
-        src: '/logo.png',
-        sizes: '6180x6180',
         type: 'image/png',
         purpose: 'any'
+      },
+      {
+        src: '/favicon/icon-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any'
+      },
+      {
+        src: '/favicon/icon-maskable-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'maskable'
+      },
+      {
+        src: '/favicon/icon-maskable-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable'
       }
     ],
 

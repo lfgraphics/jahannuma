@@ -66,13 +66,22 @@ const Intro2: React.FC<IntroProps> = ({ data }) => {
           }
           <ul>
             <p>
-              {data.tafseel?.split("\n").map((line, index) => (
+              {data?.tafseel?.split('---')[0]?.split("\n").map((line, index) => (
                 <li data-aos="fade-up" className="my-2" key={index}>
                   {line}
                 </li>
               ))}
             </p>
           </ul>
+          <div className="flex flex-row gap-2 mt-4">
+            {
+              data.tafseel.split('---')[1]?.split('*').map((mozu, index) => (
+                <div key={index} className="px-4 pt-0 border-2 rounded-sm border-gray-300 text-center">
+                  {mozu}
+                </div>
+              ))
+            }
+          </div>
         </div>
       )}
     </div>

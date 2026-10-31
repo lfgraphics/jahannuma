@@ -1,6 +1,6 @@
-const CACHE_NAME = "jahannuma-v2";
-const STATIC_CACHE = "jahannuma-static-v2";
-const DYNAMIC_CACHE = "jahannuma-dynamic-v2";
+const CACHE_NAME = "jahannuma-v3";
+const STATIC_CACHE = "jahannuma-static-v3";
+const DYNAMIC_CACHE = "jahannuma-dynamic-v3";
 
 // Assets to cache immediately
 const STATIC_ASSETS = [
@@ -8,6 +8,10 @@ const STATIC_ASSETS = [
   "/logo.png",
   "/logo_text.png",
   "/Mehr_Nastaliq.ttf",
+  "/favicon/icon-192x192.png",
+  "/favicon/icon-512x512.png",
+  "/favicon/icon-maskable-192x192.png",
+  "/favicon/icon-maskable-512x512.png",
   "/favicon/android-icon-192x192.png",
   "/favicon/apple-icon-180x180.png",
   "/favicon/favicon-32x32.png",

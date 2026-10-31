@@ -280,6 +280,56 @@ const Page: React.FC<{}> = () => {
 
   return (
     <>
+      <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
+        <div className="filter-btn basis-[75%] text-center flex">
+          <div
+            dir="rtl"
+            className="flex justify-center items-center basis-[100%] h-auto pt-1"
+          >
+            <House
+              color="#984A02"
+              className="ml-3 cursor-pointer"
+              size={30}
+              onClick={() => {
+                window.location.href = "/";
+              }}
+            />
+            <input
+              type="text"
+              placeholder="لکھ کر تلاش کریں"
+              className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
+              id="searchBox"
+              onKeyUp={(e) => {
+                handleSearchKeyUp(e);
+                if (e.key === "Enter") {
+                  if (document.activeElement === e.target) {
+                    e.preventDefault();
+                    searchQuery();
+                  }
+                }
+              }}
+            />
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
+              <X
+                color="#984A02"
+                size={24}
+                onClick={clearSearch}
+                id="searchClear"
+                className="hidden text-[#984A02] cursor-pointer"
+              />
+            </div>
+            <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
+              <Search
+                color="#984A02"
+                size={24}
+                onClick={searchQuery}
+                id="searchIcon"
+                className="hidden text-[#984A02] text-xl cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
       {loading && <SkeletonLoader />}
       {initialDataItems.length > 0 && data.length == 0 && (
         <div className="block mx-auto text-center my-3 text-2xl">
@@ -290,7 +340,7 @@ const Page: React.FC<{}> = () => {
         <button
           className="bg-white text-[#984A02] hover:px-7 transition-all duration-200 ease-in-out border block mx-auto my-4 active:bg-[#984A02] active:text-white border-[#984A02] px-4 py-2 rounded-md"
           onClick={resetSearch}
-          // disabled={!searchText}
+        // disabled={!searchText}
         >
           تلاش ریسیٹ کریں
         </button>
@@ -298,56 +348,6 @@ const Page: React.FC<{}> = () => {
       {!loading && (
         <>
           <div className="flex flex-col gap-4">
-            <div className="w-full z-20 flex flex-row bg-transparent backdrop-blur-sm pb-1 justify-center sticky top-[90px] lg:top-[56px] border-foreground">
-              <div className="filter-btn basis-[75%] text-center flex">
-                <div
-                  dir="rtl"
-                  className="flex justify-center items-center basis-[100%] h-auto pt-1"
-                >
-                  <House
-                    color="#984A02"
-                    className="ml-3 cursor-pointer"
-                    size={30}
-                    onClick={() => {
-                      window.location.href = "/";
-                    }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="لکھ کر تلاش کریں"
-                    className="text-foreground border border-foreground focus:outline-none focus:border-l-0 border-l-0 p-1 w-64 leading-7 bg-transparent"
-                    id="searchBox"
-                    onKeyUp={(e) => {
-                      handleSearchKeyUp(e);
-                      if (e.key === "Enter") {
-                        if (document.activeElement === e.target) {
-                          e.preventDefault();
-                          searchQuery();
-                        }
-                      }
-                    }}
-                  />
-                  <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border border-r-0 border-l-0 border-foreground">
-                    <X
-                      color="#984A02"
-                      size={24}
-                      onClick={clearSearch}
-                      id="searchClear"
-                      className="hidden text-[#984A02] cursor-pointer"
-                    />
-                  </div>
-                  <div className="justify-center bg-transparent h-[100%] items-center flex w-11 border-t border-b border-l border-foreground">
-                    <Search
-                      color="#984A02"
-                      size={24}
-                      onClick={searchQuery}
-                      id="searchIcon"
-                      className="hidden text-[#984A02] text-xl cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
             <div
               id="section"
               dir="rtl"

@@ -65,20 +65,20 @@ export function LoginRequiredDialog({
           <AlertDialogCancel>
             {getButtonText("cancel", language)}
           </AlertDialogCancel>
-          <Button>
-            <Link
-              href={{ pathname: "/sign-up", query: { returnUrl: currentUrl } }}
-            >
+          <Link
+            href={{ pathname: "/sign-up", query: { returnUrl: currentUrl } }}
+          >
+            <Button>
               {getButtonText("signUp", language)}
-            </Link>
-          </Button>
-          <Button>
-            <Link
-              href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }}
-            >
+            </Button>
+          </Link>
+          <Link
+            href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }}
+          >
+            <Button>
               {getButtonText("signIn", language)}
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

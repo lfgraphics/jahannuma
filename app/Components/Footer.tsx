@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
 
   const quickLinks = [
     { EN: "Founders", HI: "मालिक की मालूमात", UR: "بانی و سرپرست" },
-    { EN: "", HI: "", UR: "" },
+    { EN: "About_us", HI: "हमारे बारे में", UR: "ہمارے بارے میں" },
     { EN: "", HI: "", UR: "" },
   ];
 
@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
           {/* <!-- Contact Info --> */}
           <h6 className="text-xl font-semibold mt-8 mb-4">Contact Info</h6>
           <address>
-            <p>Email: jahannuma1.7@gmail.com</p>
+            <p>Email: <a href="mailto:jahannuma1.7@gmail.com">jahannuma1.7@gmail.com</a></p>
             {/* <p>Phone: +123 456 789</p> */}
           </address>
         </div>
@@ -69,7 +69,7 @@ const Footer: React.FC = () => {
                 href={`/${language === "UR" ? "privacypolicy" : `${language}/privacypolicy`}`}
                 className="hover:underline"
               >
-                {language === "UR" ? "پرائیویسی پالیسی" : language === "HI" ? "गोपनीयता नीति" : "Privacy Policy"}
+                {language === "UR" ? "پرائیویسی پالیسی" : language === "HI" ? "प्राइवेसी पॉलिसी" : "Privacy Policy"}
               </Link>
             </li>
             {/* <li>
