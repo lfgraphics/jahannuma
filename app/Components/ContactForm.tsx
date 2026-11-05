@@ -53,6 +53,7 @@ const ContactForm: React.FC<LangProps> = ({ language }) => {
   return (
     <form
       dir={language === "UR" ? "rtl" : "ltr"}
+      data-tour="contact-form"
       onSubmit={handleSubmit}
       className="bg-background text-muted-foreground rounded-lg shadow-md p-6"
     >

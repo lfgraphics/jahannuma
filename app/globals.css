@@ -263,3 +263,138 @@ p.justif {
     letter-spacing: var(--tracking-normal);
   }
 }
+
+
+/* ========================================================
+   Driver.js Website Tour Styling & RTL Support
+   ======================================================== */
+[data-tour] {
+  scroll-margin-top: 110px;
+}
+
+.jahannuma-tour-popover {
+  background-color: var(--card, #ffffff);
+  color: var(--card-foreground, #1f2937);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 16px 20px;
+  max-width: 340px;
+  min-width: 280px;
+  z-index: 1000000000;
+}
+
+.dark .jahannuma-tour-popover {
+  background-color: #1e1e24;
+  color: #f3f4f6;
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+.jahannuma-tour-popover .driver-popover-title {
+  color: var(--primary, #984A02);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.dark .jahannuma-tour-popover .driver-popover-title {
+  color: #F0D586;
+}
+
+.jahannuma-tour-popover .driver-popover-description {
+  color: var(--muted-foreground, #4b5563);
+  font-size: 0.925rem;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.dark .jahannuma-tour-popover .driver-popover-description {
+  color: #d1d5db;
+}
+
+.jahannuma-tour-popover .driver-popover-progress-text {
+  font-size: 0.8rem;
+  color: var(--muted-foreground, #6b7280);
+  font-weight: 500;
+}
+
+.jahannuma-tour-popover .driver-popover-close-btn {
+  color: #9ca3af;
+  font-size: 20px;
+  transition: color 0.2s ease;
+  top: 8px;
+  right: 10px;
+}
+
+.jahannuma-tour-popover .driver-popover-close-btn:hover {
+  color: #ef4444;
+}
+
+.jahannuma-tour-popover .driver-popover-footer-btn {
+  background-color: var(--primary, #984A02);
+  color: var(--primary-foreground, #ffffff);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.dark .jahannuma-tour-popover .driver-popover-footer-btn {
+  background-color: #F0D586;
+  color: #1a1a1a;
+}
+
+.jahannuma-tour-popover .driver-popover-footer-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.jahannuma-tour-popover .driver-popover-prev-btn {
+  background-color: transparent;
+  color: var(--muted-foreground, #4b5563);
+  border: 1px solid var(--border, #d1d5db);
+}
+
+.dark .jahannuma-tour-popover .driver-popover-prev-btn {
+  background-color: transparent;
+  color: #9ca3af;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* RTL Specific Styles for Urdu */
+.jahannuma-tour-popover.tour-rtl {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Noto Nastaliq Urdu', serif, system-ui;
+}
+
+.jahannuma-tour-popover.tour-rtl .driver-popover-title {
+  text-align: right;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.jahannuma-tour-popover.tour-rtl .driver-popover-description {
+  text-align: right;
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+.jahannuma-tour-popover.tour-rtl .driver-popover-close-btn {
+  left: 10px;
+  right: auto;
+}
+
+.jahannuma-tour-popover.tour-rtl .driver-popover-footer {
+  flex-direction: row-reverse;
+}
+
+.jahannuma-tour-popover.tour-rtl .driver-popover-navigation-btns {
+  flex-direction: row-reverse;
+  gap: 6px;
+}

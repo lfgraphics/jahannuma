@@ -7,6 +7,8 @@ import { PerformanceMonitor } from "@/app/Components/SEOEnhanced";
 
 import DialogManager from "@/components/dialogs/dialog-manager";
 import { ClerkProvider } from "@clerk/nextjs";
+import Script from "next/script";
+import "driver.js/dist/driver.css";
 import "./globals.css";
 import Providers from "./providers";
 import SWRProvider from "./swr-provider";
@@ -123,14 +125,17 @@ export default function RootLayout({
         <meta name="theme-color" content="#F0D586" />
         <meta name="color-scheme" content="light dark" />
 
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SLC704MYG2"></script>
-        <script>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-SLC704MYG2"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
           {`window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
 
           gtag('config', 'G-SLC704MYG2');`}
-        </script>
+        </Script>
 
         {/* Critical CSS for font loading */}
         <style
@@ -170,13 +175,14 @@ export default function RootLayout({
                 <main className="flex-1 mt-[96px] lg:mt-[60px]">{children}</main>
                 <Footer />
               </div>
+              <DialogManager />
             </SWRProvider>
           </Providers>
           <CoreWebVitalsOptimizer />
           <ResourceHints />
           <PerformanceMonitor />
           <PWAInstall />
-          <DialogManager />
+
 
         </ClerkProvider>
       </body>

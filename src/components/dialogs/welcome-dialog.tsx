@@ -9,22 +9,31 @@ import { useEffect, useState } from 'react';
 
 const WELCOME_DIALOG_KEY = 'welcome-dialog-shown';
 
-export default function WelcomeDialog() {
+interface WelcomeDialogProps {
+  onClose?: () => void;
+}
+
+export default function WelcomeDialog({ onClose }: WelcomeDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     // Check if welcome dialog has been shown before
-    const hasBeenShown = localStorage.getItem(WELCOME_DIALOG_KEY);
+    const hasBeenShown = typeof window !== 'undefined' ? localStorage.getItem(WELCOME_DIALOG_KEY) : null;
 
     if (!hasBeenShown) {
       setIsOpen(true);
+    } else {
+      onClose?.();
     }
-  }, []);
+  }, [onClose]);
 
   const handleClose = () => {
     setIsOpen(false);
     // Mark as shown so it doesn't appear again
-    localStorage.setItem(WELCOME_DIALOG_KEY, 'true');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(WELCOME_DIALOG_KEY, 'true');
+    }
+    onClose?.();
   };
 
   return (

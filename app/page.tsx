@@ -256,7 +256,9 @@ export default async function Home() {
         <div className="w-full flex justify-center my-3">
           <InstallPWAButton />
         </div>
-        <Quiz />
+        <div data-tour="daily-quiz">
+          <Quiz />
+        </div>
         <Ads />
         <Mutala />
         <DoYouKnow />

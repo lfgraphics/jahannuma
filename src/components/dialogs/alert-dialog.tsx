@@ -26,7 +26,11 @@ interface AlertItem {
 const ALERT_DIALOG_KEY = 'alert-dialog-last-shown';
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-export default function AlertDialog() {
+interface AlertDialogProps {
+  onClose?: () => void;
+}
+
+export default function AlertDialog({ onClose }: AlertDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +42,7 @@ export default function AlertDialog() {
   const fetchAlerts = async () => {
     try {
       // Check if alerts were shown in the last 24 hours
-      const lastShown = localStorage.getItem(ALERT_DIALOG_KEY);
+      const lastShown = typeof window !== 'undefined' ? localStorage.getItem(ALERT_DIALOG_KEY) : null;
       const now = Date.now();
 
       if (lastShown) {
@@ -48,6 +52,7 @@ export default function AlertDialog() {
         if (timeSinceLastShown < TWENTY_FOUR_HOURS) {
           console.log('Alerts were shown recently, skipping for 24 hours');
           setLoading(false);
+          onClose?.();
           return;
         }
       }
@@ -61,11 +66,16 @@ export default function AlertDialog() {
           setAlerts(activeAlerts);
           setIsOpen(true);
           // Mark as shown now
-          localStorage.setItem(ALERT_DIALOG_KEY, now.toString());
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(ALERT_DIALOG_KEY, now.toString());
+          }
+          return;
         }
       }
+      onClose?.();
     } catch (error) {
       console.error('Failed to fetch alerts:', error);
+      onClose?.();
     } finally {
       setLoading(false);
     }
@@ -97,6 +107,7 @@ export default function AlertDialog() {
 
   const handleClose = () => {
     setIsOpen(false);
+    onClose?.();
   };
 
   if (loading || alerts.length === 0) {

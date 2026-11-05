@@ -76,7 +76,7 @@ const Navbar: React.FC = () => {
           {/* Hamburger (mobile) */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden text-primary p-0 h-10 w-10" aria-label="menu">
+              <Button data-tour="hamburger" variant="ghost" size="icon" className="lg:hidden text-primary p-0 h-10 w-10" aria-label="menu">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
@@ -162,7 +162,7 @@ const Navbar: React.FC = () => {
           {/* Desktop right controls: search | language | theme | login | donate */}
           <div className="hidden lg:flex items-center gap-3 ml-auto">
             <Select value={language} onValueChange={(val: string) => handleLanguageChange(val as Language)}>
-              <SelectTrigger id="langChange" className="langChange h-9 px-3 shadow-none bg-transparent dark:bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none text-primary" aria-label="Select language">
+              <SelectTrigger data-tour="language-switcher" id="langChange" className="langChange h-9 px-3 shadow-none bg-transparent dark:bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none text-primary" aria-label="Select language">
                 <SelectValue className="bg-transparent dark:bg-transparent shadow-none" />
               </SelectTrigger>
               <SelectContent className="bg-transparent text-primary dark:text-secondary backdrop-blur-sm border border-border w-fit">
@@ -171,27 +171,27 @@ const Navbar: React.FC = () => {
                 <SelectItem value="HI">हिंदी</SelectItem>
               </SelectContent>
             </Select>
-            <Link href={language === "UR" ? `/search` : `/${language}/search`}>
+            <Link data-tour="search-button" href={language === "UR" ? `/search` : `/${language}/search`}>
               <Search className="h-6 w-6 text-primary" />
             </Link>
-            <ModeToggle />
+            <span data-tour="theme-toggle" className="inline-flex"><ModeToggle /></span>
             <SignedOut>
-              <Link href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }} className="text-primary underline text-sm">
+              <Link data-tour="login-button" href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }} className="text-primary underline text-sm">
                 {getButtonText("signIn" as any, language as any)}
               </Link>
             </SignedOut>
-            <Link href="/donate" className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out px-3.5 py-2.5 rounded-sm text-[1rem]">
+            <Link data-tour="donate-button" href="/donate" className="bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out px-3.5 py-2.5 rounded-sm text-[1rem]">
               {language === "UR" ? "ہمیں عطیہ کریں" : language == "EN" ? "Donate Us" : "हमें दान करें"}
             </Link>
             <SignedIn>
-              <UserButton />
+              <span data-tour="login-button" className="inline-flex"><UserButton /></span>
             </SignedIn>
           </div>
 
           {/* Mobile right controls: search | language | theme | login */}
           <div className="lg:hidden ml-auto flex items-center gap-1.5">
             <Select value={language} onValueChange={(val: string) => handleLanguageChange(val as Language)}>
-              <SelectTrigger id="langChange" className="langChange h-8 w-18 px-2.5 shadow-none bg-transparent dark:bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none text-primary" aria-label="Select language">
+              <SelectTrigger data-tour="language-switcher" id="langChange" className="langChange h-8 w-18 px-2.5 shadow-none bg-transparent dark:bg-transparent focus:border-none border-none outline-none focus:outline-none rounded-none text-primary" aria-label="Select language">
                 <SelectValue className="bg-transparent dark:bg-transparent shadow-none" />
               </SelectTrigger>
               <SelectContent className="bg-transparent text-primary backdrop-blur-sm border border-border w-fit">
@@ -200,27 +200,27 @@ const Navbar: React.FC = () => {
                 <SelectItem value="HI">हिन्दी</SelectItem>
               </SelectContent>
             </Select>
-            <Link href={language === "UR" ? `/search` : `/${language}/search`}>
+            <Link data-tour="search-button" href={language === "UR" ? `/search` : `/${language}/search`}>
               <Search className="h-6 w-6 text-primary" />
             </Link>
-            <ModeToggle />
+            <span data-tour="theme-toggle" className="inline-flex"><ModeToggle /></span>
             <SignedOut>
-              <Link href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }} className="text-primary underline text-xs">
+              <Link data-tour="login-button" href={{ pathname: "/sign-in", query: { returnUrl: currentUrl } }} className="text-primary underline text-xs">
                 {getButtonText("signIn" as any, language as any)}
               </Link>
             </SignedOut>
-            <Link href="/donate" className="ml-1 bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out px-2.5 py-1.5 rounded-sm text-[0.8rem] whitespace-nowrap">
+            <Link data-tour="donate-button" href="/donate" className="ml-1 bg-primary text-primary-foreground hover:text-primary hover:bg-background transition-all duration-500 ease-in-out px-2.5 py-1.5 rounded-sm text-[0.8rem] whitespace-nowrap">
               {language === "UR" ? "عطیہ" : language == "EN" ? "Donate" : "दान"}
             </Link>
             <SignedIn>
-              <UserButton />
+              <span data-tour="login-button" className="inline-flex"><UserButton /></span>
             </SignedIn>
           </div>
         </div>
       </header>
 
       {/* Small-screen horizontal nav below header */}
-      <div dir={language === 'UR' ? "rtl" : "ltr"} className="w-full lg:hidden py-2 px-3 overflow-x-auto bg-transparent border-border fixed top-[44px] sm:top-[55px] left-0 right-0 z-50 backdrop-blur-sm">
+      <div data-tour="mobile-category-nav" dir={language === 'UR' ? "rtl" : "ltr"} className="w-full lg:hidden py-2 px-3 overflow-x-auto bg-transparent border-border fixed top-[44px] sm:top-[55px] left-0 right-0 z-50 backdrop-blur-sm">
         <div className="flex text-[16px] gap-3">
           {navPages.map((page: any) => {
             const active = isActive(page.EN);

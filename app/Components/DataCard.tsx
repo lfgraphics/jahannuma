@@ -339,7 +339,7 @@ function DataCard<T extends MinimalShaer>({
                 </button>
                 <button
                   className="m-3 flex items-center gap-1"
-                  onClick={() => handleShareClick(shaerData, index)}
+              onClick={() => handleShareClick(shaerData, index)}
                 >
                   <Share2 color="#984A02" size={16} />{" "}
                   <span className="text-gray-500 text-sm">
@@ -484,7 +484,7 @@ function DataCard<T extends MinimalShaer>({
               </span>
             </button>
           </div>
-          <div className="flex items-end text-center w-full">
+          <div data-tour="card-actions" className="flex items-end text-center w-full">
             <button
               id={heartElementId}
               className={`m-3 flex gap-1 items-center transition-all duration-500 ${
@@ -512,6 +512,7 @@ function DataCard<T extends MinimalShaer>({
             </button>
             <button
               className="m-3 flex items-center gap-1"
+              data-tour="card-share"
               onClick={() => handleShareClick(shaerData, index)}
             >
               <Share2 color="#984A02" size={16} />{" "}
@@ -551,6 +552,7 @@ function DataCard<T extends MinimalShaer>({
             </button>
             {download && (
               <button
+                data-tour="card-download"
                 className="m-3 flex items-center gap-1"
                 onClick={() => {
                   if (requireAuth("download")) setSelectedShaer(shaerData);
