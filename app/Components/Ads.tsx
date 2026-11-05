@@ -108,7 +108,7 @@ const Ads: React.FC = () => {
               {ad.title && (
                 <div className="p-3 h-[30%] flex items-center justify-center">
                   <h3 
-                    className="text-sm md:text-base font-medium text-gray-800 text-center overflow-hidden"
+                    className="text-sm md:text-base font-medium text-muted-foreground text-center overflow-hidden"
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,

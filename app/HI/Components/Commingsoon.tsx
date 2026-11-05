@@ -51,7 +51,7 @@ const ComingSoon: React.FC = () => {
       >
         <div className="max-w-lg mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
           <div className="py-4 px-6">
-            <h2 className="text-4xl font-bold text-gray-800">जल्द आ रहा है</h2>
+            <h2 className="text-4xl font-bold text-muted-foreground">जल्द आ रहा है</h2>
             <p className="mt-2 text-lg text-gray-600">
               हम आपके लिए एक अद्भुत वेबसाइट लाने के लिए कड़ी मेहनत कर रहे हैं। बने रहें!
             </p>
@@ -60,22 +60,22 @@ const ComingSoon: React.FC = () => {
           <div className="py-4 px-6">
             <div className="flex flex-wrap gap-4 justify-center items-center">
               <div className="border rounded-lg px-4 py-2">
-                <div className="font-bold font-mono text-2xl text-gray-800">
+                <div className="font-bold font-mono text-2xl text-muted-foreground">
                   {countdown.days}d
                 </div>
               </div>
               <div className="border rounded-lg px-4 py-2">
-                <div className="font-bold font-mono text-2xl text-gray-800">
+                <div className="font-bold font-mono text-2xl text-muted-foreground">
                   {countdown.hours}h
                 </div>
               </div>
               <div className="border rounded-lg px-4 py-2">
-                <div className="font-bold font-mono text-2xl text-gray-800">
+                <div className="font-bold font-mono text-2xl text-muted-foreground">
                   {countdown.minutes}m
                 </div>
               </div>
               <div className="border rounded-lg px-4 py-2">
-                <div className="font-bold font-mono text-2xl text-gray-800">
+                <div className="font-bold font-mono text-2xl text-muted-foreground">
                   {countdown.seconds}s
                 </div>
               </div>

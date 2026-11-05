@@ -153,7 +153,7 @@ function AlertItem({ alert, onClick }: AlertItemProps) {
 
   return (
     <div
-      className={`relative ${alert.url ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+      className={`relative ${alert.url ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''} flex justify-center`}
       onClick={onClick}
     >
       <div className="relative w-64 h-64 rounded-lg overflow-hidden">

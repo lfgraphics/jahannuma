@@ -93,7 +93,7 @@ const Quiz = () => {
     const optionNumber = index + 1;
 
     if (selectedOption === null) {
-      return `${baseClasses} bg-gradient-to-r from-orange-100 to-orange-50 hover:from-orange-200 hover:to-orange-100 text-gray-800 hover:scale-105 cursor-pointer border-2 border-orange-200 hover:border-orange-300 shadow-md hover:shadow-lg`;
+      return `${baseClasses} bg-gradient-to-r from-orange-100 to-orange-50 hover:from-orange-200 hover:to-orange-100 text-muted-foreground hover:scale-105 cursor-pointer border-2 border-orange-200 hover:border-orange-300 shadow-md hover:shadow-lg`;
     }
 
     if (optionNumber === correctAnswer) {
@@ -123,7 +123,7 @@ const Quiz = () => {
           <h2 className="text-4xl md:text-5xl font-bold text-center pb-6 text-primary">
             جہاں نما کوئز
           </h2>
-          <h3 className="text-2xl md:text-3xl text-center mb-8 text-gray-800 font-medium">
+          <h3 className="text-2xl md:text-3xl text-center mb-8 text-muted-foreground font-medium">
             {quizData.fields?.question}
           </h3>
           <div className="space-y-4 flex flex-col ">
